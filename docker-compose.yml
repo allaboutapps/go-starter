@@ -9,6 +9,7 @@ services:
     working_dir: /app
     volumes:
       - .:/app #:delegated -> enable for better performance, but less write guarantees
+      - ./.pkg:/go/pkg #:delegated -> enable for better performance, but less write guarantees
     depends_on:
       - postgres
     environment:
