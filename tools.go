@@ -7,5 +7,5 @@ package tools
 // https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
 
 import (
-	_ "github.com/rubenv/sql-migrate"
+	_ "github.com/rubenv/sql-migrate/sql-migrate"
 )
