@@ -2,6 +2,7 @@ build:
 	go build -o bin/app
 
 init: modules tools tidy build
+	@go version
 
 # cache go modules (locally into .pkg)
 modules:

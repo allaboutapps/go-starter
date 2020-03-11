@@ -6,6 +6,8 @@
 
 make init
 
+sql-migrate status
+
 app
 
 ```
