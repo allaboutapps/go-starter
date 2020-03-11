@@ -2,6 +2,10 @@
 FROM golang:1.14
 # EXPOSE 8080
 
+# https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
+ENV GOBIN /app/bin
+ENV PATH $GOBIN:$PATH
+
 # Yes no maybe. This is strange. Although all default shells are bash and bash has been set as the shell for yarn/npm to use, 
 # it still runs everything as /bin/sh for some weird reason. Let's make sure it doesn't. Naughty yarn. 
 # RUN rm /bin/sh \ 
