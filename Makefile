@@ -1,5 +1,6 @@
 build: format
 	go build -o bin/app
+	go vet
 
 format:
 	go fmt
