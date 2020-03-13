@@ -6,6 +6,22 @@ FROM golang:1.14
 ENV GOBIN /app/bin
 ENV PATH $GOBIN:$PATH
 
+# Install the same version of pg_formatter as used in your editors, as of 2020-03 thats v4.2
+# https://github.com/darold/pgFormatter/releases
+# https://github.com/bradymholt/vscode-pgFormatter/commits/master
+RUN wget https://github.com/darold/pgFormatter/archive/v4.2.tar.gz \
+    && tar xzf v4.2.tar.gz \
+    && cd pgFormatter-4.2 \
+    && perl Makefile.PL \
+    && make && make install
+
+# Install required system dependencies
+# RUN apt-get update \
+#     && apt-get install -y \
+#     ...package... \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
+
 # Yes no maybe. This is strange. Although all default shells are bash and bash has been set as the shell for yarn/npm to use, 
 # it still runs everything as /bin/sh for some weird reason. Let's make sure it doesn't. Naughty yarn. 
 # RUN rm /bin/sh \ 

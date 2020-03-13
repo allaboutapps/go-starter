@@ -1,4 +1,5 @@
 **/.git
+.vscode
 .pkg
 .tools-versions
 dev.Dockerfile
