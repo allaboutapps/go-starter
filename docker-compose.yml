@@ -9,10 +9,10 @@ services:
       - "5432"
     ports:
       - "5432:5432"
-    environment: &postgres-env
-      POSTGRES_USER: dbuser
-      POSTGRES_PASSWORD: 9bed16f749d74a3c8bfbced18a7647f5
-      POSTGRES_DB: sample
+    environment:
+      POSTGRES_DB: &POSTGRES_DB "sample" 
+      POSTGRES_USER: &POSTGRES_USER "dbuser"
+      POSTGRES_PASSWORD: &POSTGRES_PASSWORD "9bed16f749d74a3c8bfbced18a7647f5"
     volumes:
       - .:/app
       - pgvolume:/var/lib/postgresql/data
@@ -30,10 +30,13 @@ services:
     depends_on:
       - postgres
     environment:
-      <<: *postgres-env
-      PGHOST: postgres
-      PGPORT: 5432
-      PGSSLMODE: disable
+      PSQL_DBNAME: *POSTGRES_DB
+      PSQL_USER: *POSTGRES_USER
+      PSQL_PASS: *POSTGRES_PASSWORD
+      PSQL_HOST: postgres
+      PSQL_PORT: 5432
+      PSQL_SSLMODE: disable
+      PSQL_SCHEMA: public
 
 volumes:
   pgvolume: #declare a named volume to persist DB data

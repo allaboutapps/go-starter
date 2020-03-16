@@ -1,4 +1,5 @@
 build: format
+	go generate
 	go build -o bin/app
 	go vet
 

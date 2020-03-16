@@ -6,6 +6,7 @@
         "ms-vscode.go",
         "ms-azuretools.vscode-docker",
         "heaths.vscode-guid",
-        "bradymholt.pgformatter"
+        "bradymholt.pgformatter",
+        "bungcip.better-toml"
     ]
 }
