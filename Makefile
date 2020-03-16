@@ -1,13 +1,15 @@
-build: format
-	go generate
+build: prebuild format
 	go build -o bin/app
 	go vet
+
+prebuild:
+	go generate
 
 format:
 	go fmt
 	find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print | xargs -i pg_format {} -o {}
 
-init: modules tools tidy build
+init: modules tools tidy
 	@go version
 
 # cache go modules (locally into .pkg)

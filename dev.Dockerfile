@@ -1,6 +1,10 @@
-# No build here, only dev environment
-FROM golang:1.14
-# EXPOSE 8080
+FROM postgres:12.2-alpine AS database
+
+FROM golang:1.14 AS development
+
+# Copy postgresql-client tools directly from the above image
+COPY --from=database /usr/local/bin \
+    /usr/local/bin/
 
 # https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
 ENV GOBIN /app/bin
