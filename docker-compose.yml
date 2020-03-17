@@ -25,8 +25,8 @@ services:
     #   - "8080:8080"
     working_dir: /app
     volumes:
-      - .:/app #:delegated -> enable for better performance, but less write guarantees
-      - ./.pkg:/go/pkg #:delegated -> enable for better performance, but less write guarantees
+      - .:/app #:delegated
+      # - ./.pkg:/go/pkg # enable this to reuse the pkg cache
     depends_on:
       - postgres
     environment:
@@ -39,4 +39,4 @@ services:
       PSQL_SCHEMA: public
 
 volumes:
-  pgvolume: #declare a named volume to persist DB data
+  pgvolume: # declare a named volume to persist DB data
