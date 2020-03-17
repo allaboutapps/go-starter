@@ -81,13 +81,6 @@ func TestCount(t *testing.T) {
 	t.Run("Pilots", testPilotsCount)
 }
 
-func TestHooks(t *testing.T) {
-	t.Run("Jets", testJetsHooks)
-	t.Run("Languages", testLanguagesHooks)
-	t.Run("PilotLanguages", testPilotLanguagesHooks)
-	t.Run("Pilots", testPilotsHooks)
-}
-
 func TestInsert(t *testing.T) {
 	t.Run("Jets", testJetsInsert)
 	t.Run("Jets", testJetsInsertWhitelist)

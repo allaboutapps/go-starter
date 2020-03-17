@@ -93,8 +93,6 @@ type (
 	// PilotSlice is an alias for a slice of pointers to Pilot.
 	// This should generally be used opposed to []Pilot.
 	PilotSlice []*Pilot
-	// PilotHook is the signature for custom Pilot hook methods
-	PilotHook func(context.Context, boil.ContextExecutor, *Pilot) error
 
 	pilotQuery struct {
 		*queries.Query
@@ -122,174 +120,14 @@ var (
 	_ = qmhelper.Where
 )
 
-var pilotBeforeInsertHooks []PilotHook
-var pilotBeforeUpdateHooks []PilotHook
-var pilotBeforeDeleteHooks []PilotHook
-var pilotBeforeUpsertHooks []PilotHook
-
-var pilotAfterInsertHooks []PilotHook
-var pilotAfterSelectHooks []PilotHook
-var pilotAfterUpdateHooks []PilotHook
-var pilotAfterDeleteHooks []PilotHook
-var pilotAfterUpsertHooks []PilotHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Pilot) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
+// OneP returns a single pilot record from the query, and panics on error.
+func (q pilotQuery) OneP(ctx context.Context, exec boil.ContextExecutor) *Pilot {
+	o, err := q.One(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	for _, hook := range pilotBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Pilot) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Pilot) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Pilot) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Pilot) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Pilot) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Pilot) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Pilot) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Pilot) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range pilotAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPilotHook registers your hook function for all future operations.
-func AddPilotHook(hookPoint boil.HookPoint, pilotHook PilotHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		pilotBeforeInsertHooks = append(pilotBeforeInsertHooks, pilotHook)
-	case boil.BeforeUpdateHook:
-		pilotBeforeUpdateHooks = append(pilotBeforeUpdateHooks, pilotHook)
-	case boil.BeforeDeleteHook:
-		pilotBeforeDeleteHooks = append(pilotBeforeDeleteHooks, pilotHook)
-	case boil.BeforeUpsertHook:
-		pilotBeforeUpsertHooks = append(pilotBeforeUpsertHooks, pilotHook)
-	case boil.AfterInsertHook:
-		pilotAfterInsertHooks = append(pilotAfterInsertHooks, pilotHook)
-	case boil.AfterSelectHook:
-		pilotAfterSelectHooks = append(pilotAfterSelectHooks, pilotHook)
-	case boil.AfterUpdateHook:
-		pilotAfterUpdateHooks = append(pilotAfterUpdateHooks, pilotHook)
-	case boil.AfterDeleteHook:
-		pilotAfterDeleteHooks = append(pilotAfterDeleteHooks, pilotHook)
-	case boil.AfterUpsertHook:
-		pilotAfterUpsertHooks = append(pilotAfterUpsertHooks, pilotHook)
-	}
+	return o
 }
 
 // One returns a single pilot record from the query.
@@ -306,11 +144,17 @@ func (q pilotQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Pilot,
 		return nil, errors.Wrap(err, "models: failed to execute a one query for pilots")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
+	return o, nil
+}
+
+// AllP returns all Pilot records from the query, and panics on error.
+func (q pilotQuery) AllP(ctx context.Context, exec boil.ContextExecutor) PilotSlice {
+	o, err := q.All(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	return o, nil
+	return o
 }
 
 // All returns all Pilot records from the query.
@@ -322,15 +166,17 @@ func (q pilotQuery) All(ctx context.Context, exec boil.ContextExecutor) (PilotSl
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Pilot slice")
 	}
 
-	if len(pilotAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
+	return o, nil
+}
+
+// CountP returns the count of all Pilot records in the query, and panics on error.
+func (q pilotQuery) CountP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	c, err := q.Count(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	return o, nil
+	return c
 }
 
 // Count returns the count of all Pilot records in the query.
@@ -346,6 +192,16 @@ func (q pilotQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64
 	}
 
 	return count, nil
+}
+
+// ExistsP checks if the row exists in the table, and panics on error.
+func (q pilotQuery) ExistsP(ctx context.Context, exec boil.ContextExecutor) bool {
+	e, err := q.Exists(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -467,13 +323,6 @@ func (pilotL) LoadJets(ctx context.Context, e boil.ContextExecutor, singular boo
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for jets")
 	}
 
-	if len(jetAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.Jets = resultSlice
 		for _, foreign := range resultSlice {
@@ -562,13 +411,6 @@ func (pilotL) LoadPilotLanguages(ctx context.Context, e boil.ContextExecutor, si
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for pilot_languages")
 	}
 
-	if len(pilotLanguageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.PilotLanguages = resultSlice
 		for _, foreign := range resultSlice {
@@ -594,6 +436,17 @@ func (pilotL) LoadPilotLanguages(ctx context.Context, e boil.ContextExecutor, si
 	}
 
 	return nil
+}
+
+// AddJetsP adds the given related objects to the existing relationships
+// of the pilot, optionally inserting them as new records.
+// Appends related to o.R.Jets.
+// Sets related.R.Pilot appropriately.
+// Panics on error.
+func (o *Pilot) AddJetsP(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Jet) {
+	if err := o.AddJets(ctx, exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // AddJets adds the given related objects to the existing relationships
@@ -647,6 +500,17 @@ func (o *Pilot) AddJets(ctx context.Context, exec boil.ContextExecutor, insert b
 		}
 	}
 	return nil
+}
+
+// AddPilotLanguagesP adds the given related objects to the existing relationships
+// of the pilot, optionally inserting them as new records.
+// Appends related to o.R.PilotLanguages.
+// Sets related.R.Pilot appropriately.
+// Panics on error.
+func (o *Pilot) AddPilotLanguagesP(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PilotLanguage) {
+	if err := o.AddPilotLanguages(ctx, exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // AddPilotLanguages adds the given related objects to the existing relationships
@@ -708,6 +572,16 @@ func Pilots(mods ...qm.QueryMod) pilotQuery {
 	return pilotQuery{NewQuery(mods...)}
 }
 
+// FindPilotP retrieves a single record by ID with an executor, and panics on error.
+func FindPilotP(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) *Pilot {
+	retobj, err := FindPilot(ctx, exec, iD, selectCols...)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return retobj
+}
+
 // FindPilot retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindPilot(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Pilot, error) {
@@ -734,6 +608,14 @@ func FindPilot(ctx context.Context, exec boil.ContextExecutor, iD string, select
 	return pilotObj, nil
 }
 
+// InsertP a single record using an executor, and panics on error. See Insert
+// for whitelist behavior description.
+func (o *Pilot) InsertP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) {
+	if err := o.Insert(ctx, exec, columns); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
 func (o *Pilot) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
@@ -751,10 +633,6 @@ func (o *Pilot) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		if queries.MustTime(o.UpdatedAt).IsZero() {
 			queries.SetScanner(&o.UpdatedAt, currTime)
 		}
-	}
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pilotColumnsWithDefault, o)
@@ -820,7 +698,18 @@ func (o *Pilot) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		pilotInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
+}
+
+// UpdateP uses an executor to update the Pilot, and panics on error.
+// See Update for more documentation.
+func (o *Pilot) UpdateP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) int64 {
+	rowsAff, err := o.Update(ctx, exec, columns)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // Update uses an executor to update the Pilot.
@@ -834,9 +723,6 @@ func (o *Pilot) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	pilotUpdateCacheMut.RLock()
 	cache, cached := pilotUpdateCache[key]
@@ -889,7 +775,17 @@ func (o *Pilot) Update(ctx context.Context, exec boil.ContextExecutor, columns b
 		pilotUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
+}
+
+// UpdateAllP updates all rows with matching column names, and panics on error.
+func (q pilotQuery) UpdateAllP(ctx context.Context, exec boil.ContextExecutor, cols M) int64 {
+	rowsAff, err := q.UpdateAll(ctx, exec, cols)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -907,6 +803,16 @@ func (q pilotQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	return rowsAff, nil
+}
+
+// UpdateAllP updates all rows with the specified column values, and panics on error.
+func (o PilotSlice) UpdateAllP(ctx context.Context, exec boil.ContextExecutor, cols M) int64 {
+	rowsAff, err := o.UpdateAll(ctx, exec, cols)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -957,6 +863,14 @@ func (o PilotSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, co
 	return rowsAff, nil
 }
 
+// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
+// UpsertP panics on error.
+func (o *Pilot) UpsertP(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
+	if err := o.Upsert(ctx, exec, updateOnConflict, conflictColumns, updateColumns, insertColumns); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
 func (o *Pilot) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
@@ -970,10 +884,6 @@ func (o *Pilot) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 			o.CreatedAt = currTime
 		}
 		queries.SetScanner(&o.UpdatedAt, currTime)
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(pilotColumnsWithDefault, o)
@@ -1077,7 +987,19 @@ func (o *Pilot) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 		pilotUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
+}
+
+// DeleteP deletes a single Pilot record with an executor.
+// DeleteP will match against the primary key column to find the record to delete.
+// Panics on error.
+func (o *Pilot) DeleteP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	rowsAff, err := o.Delete(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // Delete deletes a single Pilot record with an executor.
@@ -1085,10 +1007,6 @@ func (o *Pilot) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnC
 func (o *Pilot) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Pilot provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), pilotPrimaryKeyMapping)
@@ -1109,11 +1027,17 @@ func (o *Pilot) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, e
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for pilots")
 	}
 
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
+	return rowsAff, nil
+}
+
+// DeleteAllP deletes all rows, and panics on error.
+func (q pilotQuery) DeleteAllP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	rowsAff, err := q.DeleteAll(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	return rowsAff, nil
+	return rowsAff
 }
 
 // DeleteAll deletes all matching rows.
@@ -1137,18 +1061,20 @@ func (q pilotQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 	return rowsAff, nil
 }
 
+// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
+func (o PilotSlice) DeleteAllP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	rowsAff, err := o.DeleteAll(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
+}
+
 // DeleteAll deletes all rows in the slice, using an executor.
 func (o PilotSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
-	}
-
-	if len(pilotBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	var args []interface{}
@@ -1175,15 +1101,14 @@ func (o PilotSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (i
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for pilots")
 	}
 
-	if len(pilotAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	return rowsAff, nil
+}
+
+// ReloadP refetches the object from the database with an executor. Panics on error.
+func (o *Pilot) ReloadP(ctx context.Context, exec boil.ContextExecutor) {
+	if err := o.Reload(ctx, exec); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // Reload refetches the object from the database
@@ -1196,6 +1121,15 @@ func (o *Pilot) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 	*o = *ret
 	return nil
+}
+
+// ReloadAllP refetches every row with matching primary key column values
+// and overwrites the original object slice with the newly updated slice.
+// Panics on error.
+func (o *PilotSlice) ReloadAllP(ctx context.Context, exec boil.ContextExecutor) {
+	if err := o.ReloadAll(ctx, exec); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1225,6 +1159,16 @@ func (o *PilotSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 	*o = slice
 
 	return nil
+}
+
+// PilotExistsP checks if the Pilot row exists. Panics on error.
+func PilotExistsP(ctx context.Context, exec boil.ContextExecutor, iD string) bool {
+	e, err := PilotExists(ctx, exec, iD)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return e
 }
 
 // PilotExists checks if the Pilot row exists.

@@ -1,4 +1,4 @@
-//go:generate sqlboiler psql
+//go:generate sqlboiler --wipe --no-hooks --add-panic-variants psql
 
 package main
 

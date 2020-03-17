@@ -181,8 +181,6 @@ type (
 	// JetSlice is an alias for a slice of pointers to Jet.
 	// This should generally be used opposed to []Jet.
 	JetSlice []*Jet
-	// JetHook is the signature for custom Jet hook methods
-	JetHook func(context.Context, boil.ContextExecutor, *Jet) error
 
 	jetQuery struct {
 		*queries.Query
@@ -210,174 +208,14 @@ var (
 	_ = qmhelper.Where
 )
 
-var jetBeforeInsertHooks []JetHook
-var jetBeforeUpdateHooks []JetHook
-var jetBeforeDeleteHooks []JetHook
-var jetBeforeUpsertHooks []JetHook
-
-var jetAfterInsertHooks []JetHook
-var jetAfterSelectHooks []JetHook
-var jetAfterUpdateHooks []JetHook
-var jetAfterDeleteHooks []JetHook
-var jetAfterUpsertHooks []JetHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Jet) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
+// OneP returns a single jet record from the query, and panics on error.
+func (q jetQuery) OneP(ctx context.Context, exec boil.ContextExecutor) *Jet {
+	o, err := q.One(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	for _, hook := range jetBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Jet) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Jet) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Jet) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Jet) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Jet) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Jet) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Jet) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Jet) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range jetAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddJetHook registers your hook function for all future operations.
-func AddJetHook(hookPoint boil.HookPoint, jetHook JetHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		jetBeforeInsertHooks = append(jetBeforeInsertHooks, jetHook)
-	case boil.BeforeUpdateHook:
-		jetBeforeUpdateHooks = append(jetBeforeUpdateHooks, jetHook)
-	case boil.BeforeDeleteHook:
-		jetBeforeDeleteHooks = append(jetBeforeDeleteHooks, jetHook)
-	case boil.BeforeUpsertHook:
-		jetBeforeUpsertHooks = append(jetBeforeUpsertHooks, jetHook)
-	case boil.AfterInsertHook:
-		jetAfterInsertHooks = append(jetAfterInsertHooks, jetHook)
-	case boil.AfterSelectHook:
-		jetAfterSelectHooks = append(jetAfterSelectHooks, jetHook)
-	case boil.AfterUpdateHook:
-		jetAfterUpdateHooks = append(jetAfterUpdateHooks, jetHook)
-	case boil.AfterDeleteHook:
-		jetAfterDeleteHooks = append(jetAfterDeleteHooks, jetHook)
-	case boil.AfterUpsertHook:
-		jetAfterUpsertHooks = append(jetAfterUpsertHooks, jetHook)
-	}
+	return o
 }
 
 // One returns a single jet record from the query.
@@ -394,11 +232,17 @@ func (q jetQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Jet, err
 		return nil, errors.Wrap(err, "models: failed to execute a one query for jets")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
+	return o, nil
+}
+
+// AllP returns all Jet records from the query, and panics on error.
+func (q jetQuery) AllP(ctx context.Context, exec boil.ContextExecutor) JetSlice {
+	o, err := q.All(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	return o, nil
+	return o
 }
 
 // All returns all Jet records from the query.
@@ -410,15 +254,17 @@ func (q jetQuery) All(ctx context.Context, exec boil.ContextExecutor) (JetSlice,
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Jet slice")
 	}
 
-	if len(jetAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
+	return o, nil
+}
+
+// CountP returns the count of all Jet records in the query, and panics on error.
+func (q jetQuery) CountP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	c, err := q.Count(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	return o, nil
+	return c
 }
 
 // Count returns the count of all Jet records in the query.
@@ -434,6 +280,16 @@ func (q jetQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	}
 
 	return count, nil
+}
+
+// ExistsP checks if the row exists in the table, and panics on error.
+func (q jetQuery) ExistsP(ctx context.Context, exec boil.ContextExecutor) bool {
+	e, err := q.Exists(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -529,14 +385,6 @@ func (jetL) LoadPilot(ctx context.Context, e boil.ContextExecutor, singular bool
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for pilots")
 	}
 
-	if len(jetAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -565,6 +413,16 @@ func (jetL) LoadPilot(ctx context.Context, e boil.ContextExecutor, singular bool
 	}
 
 	return nil
+}
+
+// SetPilotP of the jet to the related item.
+// Sets o.R.Pilot to related.
+// Adds o to related.R.Jets.
+// Panics on error.
+func (o *Jet) SetPilotP(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Pilot) {
+	if err := o.SetPilot(ctx, exec, insert, related); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // SetPilot of the jet to the related item.
@@ -620,6 +478,16 @@ func Jets(mods ...qm.QueryMod) jetQuery {
 	return jetQuery{NewQuery(mods...)}
 }
 
+// FindJetP retrieves a single record by ID with an executor, and panics on error.
+func FindJetP(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) *Jet {
+	retobj, err := FindJet(ctx, exec, iD, selectCols...)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return retobj
+}
+
 // FindJet retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindJet(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Jet, error) {
@@ -646,6 +514,14 @@ func FindJet(ctx context.Context, exec boil.ContextExecutor, iD string, selectCo
 	return jetObj, nil
 }
 
+// InsertP a single record using an executor, and panics on error. See Insert
+// for whitelist behavior description.
+func (o *Jet) InsertP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) {
+	if err := o.Insert(ctx, exec, columns); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
 func (o *Jet) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
@@ -663,10 +539,6 @@ func (o *Jet) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 		if queries.MustTime(o.UpdatedAt).IsZero() {
 			queries.SetScanner(&o.UpdatedAt, currTime)
 		}
-	}
-
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(jetColumnsWithDefault, o)
@@ -732,7 +604,18 @@ func (o *Jet) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 		jetInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
+}
+
+// UpdateP uses an executor to update the Jet, and panics on error.
+// See Update for more documentation.
+func (o *Jet) UpdateP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) int64 {
+	rowsAff, err := o.Update(ctx, exec, columns)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // Update uses an executor to update the Jet.
@@ -746,9 +629,6 @@ func (o *Jet) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	jetUpdateCacheMut.RLock()
 	cache, cached := jetUpdateCache[key]
@@ -801,7 +681,17 @@ func (o *Jet) Update(ctx context.Context, exec boil.ContextExecutor, columns boi
 		jetUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
+}
+
+// UpdateAllP updates all rows with matching column names, and panics on error.
+func (q jetQuery) UpdateAllP(ctx context.Context, exec boil.ContextExecutor, cols M) int64 {
+	rowsAff, err := q.UpdateAll(ctx, exec, cols)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -819,6 +709,16 @@ func (q jetQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 	}
 
 	return rowsAff, nil
+}
+
+// UpdateAllP updates all rows with the specified column values, and panics on error.
+func (o JetSlice) UpdateAllP(ctx context.Context, exec boil.ContextExecutor, cols M) int64 {
+	rowsAff, err := o.UpdateAll(ctx, exec, cols)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -869,6 +769,14 @@ func (o JetSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 	return rowsAff, nil
 }
 
+// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
+// UpsertP panics on error.
+func (o *Jet) UpsertP(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
+	if err := o.Upsert(ctx, exec, updateOnConflict, conflictColumns, updateColumns, insertColumns); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
 func (o *Jet) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
@@ -882,10 +790,6 @@ func (o *Jet) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 			o.CreatedAt = currTime
 		}
 		queries.SetScanner(&o.UpdatedAt, currTime)
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(jetColumnsWithDefault, o)
@@ -989,7 +893,19 @@ func (o *Jet) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 		jetUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
+}
+
+// DeleteP deletes a single Jet record with an executor.
+// DeleteP will match against the primary key column to find the record to delete.
+// Panics on error.
+func (o *Jet) DeleteP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	rowsAff, err := o.Delete(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
 }
 
 // Delete deletes a single Jet record with an executor.
@@ -997,10 +913,6 @@ func (o *Jet) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCon
 func (o *Jet) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Jet provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), jetPrimaryKeyMapping)
@@ -1021,11 +933,17 @@ func (o *Jet) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, err
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for jets")
 	}
 
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
+	return rowsAff, nil
+}
+
+// DeleteAllP deletes all rows, and panics on error.
+func (q jetQuery) DeleteAllP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	rowsAff, err := q.DeleteAll(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
 	}
 
-	return rowsAff, nil
+	return rowsAff
 }
 
 // DeleteAll deletes all matching rows.
@@ -1049,18 +967,20 @@ func (q jetQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 	return rowsAff, nil
 }
 
+// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
+func (o JetSlice) DeleteAllP(ctx context.Context, exec boil.ContextExecutor) int64 {
+	rowsAff, err := o.DeleteAll(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rowsAff
+}
+
 // DeleteAll deletes all rows in the slice, using an executor.
 func (o JetSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
-	}
-
-	if len(jetBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	var args []interface{}
@@ -1087,15 +1007,14 @@ func (o JetSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for jets")
 	}
 
-	if len(jetAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	return rowsAff, nil
+}
+
+// ReloadP refetches the object from the database with an executor. Panics on error.
+func (o *Jet) ReloadP(ctx context.Context, exec boil.ContextExecutor) {
+	if err := o.Reload(ctx, exec); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // Reload refetches the object from the database
@@ -1108,6 +1027,15 @@ func (o *Jet) Reload(ctx context.Context, exec boil.ContextExecutor) error {
 
 	*o = *ret
 	return nil
+}
+
+// ReloadAllP refetches every row with matching primary key column values
+// and overwrites the original object slice with the newly updated slice.
+// Panics on error.
+func (o *JetSlice) ReloadAllP(ctx context.Context, exec boil.ContextExecutor) {
+	if err := o.ReloadAll(ctx, exec); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1137,6 +1065,16 @@ func (o *JetSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) err
 	*o = slice
 
 	return nil
+}
+
+// JetExistsP checks if the Jet row exists. Panics on error.
+func JetExistsP(ctx context.Context, exec boil.ContextExecutor, iD string) bool {
+	e, err := JetExists(ctx, exec, iD)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return e
 }
 
 // JetExists checks if the Jet row exists.
