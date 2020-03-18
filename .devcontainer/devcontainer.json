@@ -17,13 +17,22 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.shell.linux": null,
+		// postgres vscode integration
+		// "vscode-postgres.defaultConnection": "postgres",
+		// "vscode-postgres.defaultDatabase": "sample",
+		// "vscode-postgres.prettyPrintJSONfields": true
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
+		// required:
 		"ms-vscode.go",
-		"heaths.vscode-guid",
 		"bradymholt.pgformatter",
-		"bungcip.better-toml"
+		// optional:
+		"766b.go-outliner",
+		"heaths.vscode-guid",
+		"bungcip.better-toml",
+		"eamodio.gitlens",
+		// "ckolkman.vscode-postgres"
 	]
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],

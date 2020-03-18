@@ -11,7 +11,7 @@ if [ "$1" = "--halt" ]; then
 fi
 
 if [ "$1" = "--destroy" ]; then
-    docker-compose down -v --remove-orphans 
+    docker-compose down --rmi local -v --remove-orphans
 fi
 
 [ -n "$1" -a \( "$1" = "--up" -o "$1" = "--halt" -o "$1" = "--destroy" \) ] \
