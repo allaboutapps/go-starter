@@ -1,27 +1,18 @@
 #!/bin/bash
 
 if [ "$1" = "--up" ]; then
-    # --rm removes container after exit
-    # --service-ports maps ports to outside when using run
-    docker-compose run --rm --service-ports service bash
+    docker-compose up --no-start
+    docker-compose start # ensure we are started, handle also allowed to be consumed by vscode
+    docker-compose exec service bash
 fi
 
 if [ "$1" = "--halt" ]; then
-    echo
-    echo "Stopping db container ..."
-    docker stop go-mranftl-sample_postgres
-    echo
+    docker-compose stop
 fi
 
 if [ "$1" = "--destroy" ]; then
-    echo
-    echo "Stopping db container ..."
-    docker stop go-mranftl-sample_postgres
-    echo "Removing db container ..."
-    docker container rm -f go-mranftl-sample_postgres
-    echo "Removing service image ..."
-    docker image rm -f go-mranftl-sample_service
-    echo "Removing db volume ..."
-    docker volume rm -f go-mranftl-sample_pgvolume
-    echo
+    docker-compose down -v --remove-orphans 
 fi
+
+[ -n "$1" -a \( "$1" = "--up" -o "$1" = "--halt" -o "$1" = "--destroy" \) ] \
+    || { echo "usage: $0 --up | --halt | --destroy" >&2; exit 1; }

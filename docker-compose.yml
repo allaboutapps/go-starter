@@ -20,7 +20,7 @@ services:
   service:
     build:
       context: .
-      dockerfile: dev.Dockerfile  
+      dockerfile: .devcontainer/dev.Dockerfile  
     # ports:
     #   - "8080:8080"
     working_dir: /app
@@ -48,6 +48,14 @@ services:
       PGPORT: *PSQL_PORT
       PGSSLMODE: *PSQL_SSLMODE
 
+    # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: /bin/sh -c "while sleep 1000; do :; done"
 
 volumes:
   pgvolume: # declare a named volume to persist DB data
