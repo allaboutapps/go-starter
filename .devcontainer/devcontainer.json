@@ -17,28 +17,24 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.shell.linux": null,
-		"sqltools.connections": [
-			{
-				"database": "sample",
-				"dialect": "PostgreSQL",
-				"name": "postgres",
-				"password": "9bed16f749d74a3c8bfbced18a7647f5",
-				"port": 5432,
-				"server": "postgres",
-				"username": "dbuser"
-			}
-		],
-		"sqltools.autoConnectTo": [
-			"postgres"
-		],
-		// only use pg_format to actually format!
-		"sqltools.formatLanguages": [],
-		"sqltools.telemetry": false,
-		"sqltools.autoOpenSessionFiles": false
-		// postgres vscode integration
-		// "vscode-postgres.defaultConnection": "postgres",
-		// "vscode-postgres.defaultDatabase": "sample",
-		// "vscode-postgres.prettyPrintJSONfields": true
+		// "sqltools.connections": [
+		// 	{
+		// 		"database": "sample",
+		// 		"dialect": "PostgreSQL",
+		// 		"name": "postgres",
+		// 		"password": "9bed16f749d74a3c8bfbced18a7647f5",
+		// 		"port": 5432,
+		// 		"server": "postgres",
+		// 		"username": "dbuser"
+		// 	}
+		// ],
+		// "sqltools.autoConnectTo": [
+		// 	"postgres"
+		// ],
+		// // only use pg_format to actually format!
+		// "sqltools.formatLanguages": [],
+		// "sqltools.telemetry": false,
+		// "sqltools.autoOpenSessionFiles": false
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
@@ -47,12 +43,10 @@
 		"bradymholt.pgformatter",
 		// optional:
 		"766b.go-outliner",
-		// "windmilleng.vscode-go-autotest",
 		"heaths.vscode-guid",
 		"bungcip.better-toml",
 		"eamodio.gitlens",
-		"mtxr.sqltools",
-		// "ckolkman.vscode-postgres"
+		// "mtxr.sqltools",
 	]
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],
