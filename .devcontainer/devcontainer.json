@@ -17,6 +17,34 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
 		"terminal.integrated.shell.linux": null,
+		// https://github.com/golang/tools/blob/master/gopls/doc/vscode.md#vscode 
+		"go.useLanguageServer": true,
+		"[go]": {
+			"editor.formatOnSave": true,
+			"editor.codeActionsOnSave": {
+				"source.organizeImports": true,
+			},
+			// Optional: Disable snippets, as they conflict with completion ranking.
+			"editor.snippetSuggestions": "none",
+		},
+		"[go.mod]": {
+			"editor.formatOnSave": true,
+			"editor.codeActionsOnSave": {
+				"source.organizeImports": true,
+			},
+		},
+		"gopls": {
+			// Add parameter placeholders when completing a function.
+			"usePlaceholders": true,
+			// If true, enable additional analyses with staticcheck.
+			// Warning: This will significantly increase memory usage.
+			"staticcheck": false,
+		},
+		// general build settings in sync with our makefile
+		// "go.buildFlags": [
+		// 	"-o",
+		// 	"bin/app"
+		// ]
 		// "sqltools.connections": [
 		// 	{
 		// 		"database": "sample",
@@ -42,7 +70,7 @@
 		"ms-vscode.go",
 		"bradymholt.pgformatter",
 		// optional:
-		"766b.go-outliner",
+		// "766b.go-outliner",
 		"heaths.vscode-guid",
 		"bungcip.better-toml",
 		"eamodio.gitlens",
