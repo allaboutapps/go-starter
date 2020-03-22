@@ -37,3 +37,8 @@ RUN wget https://github.com/darold/pgFormatter/archive/v4.2.tar.gz \
     && cd pgFormatter-4.2 \
     && perl Makefile.PL \
     && make && make install
+
+# go linting: (this package should NOT be installed via go get)
+# https://github.com/golangci/golangci-lint#binary
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+    | sh -s -- -b $(go env GOPATH)/bin v1.24.0

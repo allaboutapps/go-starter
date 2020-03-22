@@ -38,8 +38,17 @@
 			"usePlaceholders": true,
 			// If true, enable additional analyses with staticcheck.
 			// Warning: This will significantly increase memory usage.
+			// DISABLED, done via 
 			"staticcheck": false,
 		},
+		// https://code.visualstudio.com/docs/languages/go#_intellisense
+		"go.autocompleteUnimportedPackages": true,
+		// https://github.com/golangci/golangci-lint#editor-integration
+		"go.lintTool": "golangci-lint",
+		"go.lintFlags": [
+			"--fast"
+		],
+		// "go.lintOnSave": "workspace"
 		// general build settings in sync with our makefile
 		// "go.buildFlags": [
 		// 	"-o",

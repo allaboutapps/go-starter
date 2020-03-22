@@ -1,6 +1,6 @@
 build: prebuild format
 	go build -o bin/app
-	go vet
+	golangci-lint run --fast
 
 prebuild:
 	go generate
