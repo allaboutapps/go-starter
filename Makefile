@@ -1,13 +1,18 @@
-build: prebuild format
-	go build -o bin/app
-	golangci-lint run --fast
+# default task when running "make" without args
+build: generate format gobuild lint
 
-prebuild:
+generate:
 	go generate
 
 format:
 	go fmt
 	find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print | xargs -i pg_format {} -o {}
+
+gobuild: 
+	go build -o bin/app
+
+lint:
+	golangci-lint run --fast
 
 # https://github.com/golang/go/issues/24573
 # w/o cache - see "go help testflag"

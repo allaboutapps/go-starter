@@ -48,6 +48,12 @@
 		"go.lintFlags": [
 			"--fast"
 		],
+		// disable test caching, race and show coverage (in sync with makefile)
+		"go.testFlags": [
+			"-cover",
+			"-race",
+			"-count=1"
+		],
 		// "go.lintOnSave": "workspace"
 		// general build settings in sync with our makefile
 		// "go.buildFlags": [
