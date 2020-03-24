@@ -1,4 +1,4 @@
-# default task when running "make" without args
+# first is default task when running "make" without args
 build: generate format gobuild lint
 
 generate:
@@ -18,7 +18,7 @@ lint:
 # w/o cache - see "go help testflag"
 # use https://github.com/kyoh86/richgo to color
 test:
-	richgo test -cover -race -count=1 ./...
+	richgo test -cover -race -count=1 -v ./...
 
 init: modules tools tidy
 	@go version
@@ -36,3 +36,7 @@ tidy:
 
 clean:
 	rm -rf bin
+
+# https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
+# ignore matching file/make rule combinations in working-dir
+.PHONY: test
