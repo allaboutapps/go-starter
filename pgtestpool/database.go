@@ -1,10 +1,12 @@
 package pgtestpool
 
 type Database struct {
-	Config   ConnectionConfig
-	Closed   bool
-	Dirty    bool
-	Template bool
+	ID           int
+	TemplateHash string
+	Config       ConnectionConfig
+	Closed       bool
+	Dirty        bool
+	Template     bool
 }
 
 func (d *Database) Ready() bool {

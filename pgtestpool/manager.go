@@ -210,7 +210,7 @@ func (m *Manager) CreateTestDatabasePool(hash string, count int) error {
 	}
 
 	for i := 0; i < count; i++ {
-		db, err := m.createTestDatabase(template.Config.Database, m.nextDatabaseID[hash])
+		db, err := m.createTestDatabase(hash, template.Config.Database, m.nextDatabaseID[hash])
 		if err != nil {
 			return errors.Wrap(err, "failed to create test database for pool")
 		}
@@ -255,7 +255,7 @@ func (m *Manager) GetTestDatabaseFromPool(hash string) (*Database, error) {
 	}
 
 	if testDB == nil {
-		db, err := m.createTestDatabase(template.Config.Database, m.nextDatabaseID[hash])
+		db, err := m.createTestDatabase(hash, template.Config.Database, m.nextDatabaseID[hash])
 		if err != nil {
 			return nil, errors.Wrap(err, "no ready test database available, failed to create fresh one")
 		}
@@ -268,7 +268,7 @@ func (m *Manager) GetTestDatabaseFromPool(hash string) (*Database, error) {
 
 	testDB.Dirty = true
 
-	newDB, err := m.createTestDatabase(template.Config.Database, m.nextDatabaseID[hash])
+	newDB, err := m.createTestDatabase(hash, template.Config.Database, m.nextDatabaseID[hash])
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new test database after retrieving one from pool")
 	}
@@ -279,7 +279,56 @@ func (m *Manager) GetTestDatabaseFromPool(hash string) (*Database, error) {
 	return testDB, nil
 }
 
-func (m *Manager) createTestDatabase(templateDatabaseName string, id int) (*Database, error) {
+func (m *Manager) ReturnTestDatabaseToPool(db *Database, dirty bool, destroy bool) error {
+	if !m.Ready() {
+		return ErrManagerNotReady
+	}
+
+	m.databaseMutex.Lock()
+	defer m.databaseMutex.Unlock()
+
+	if _, ok := m.databases[db.TemplateHash]; !ok {
+		return errors.New("no pool created for template hash, cannot return test database")
+	}
+
+	if destroy {
+		idx := -1
+		for i, testDB := range m.databases[db.TemplateHash] {
+			if testDB.ID == db.ID {
+				if err := m.destroyTestDatabase(testDB); err != nil {
+					return errors.Wrap(err, "failed to destroy test database after returning to pool")
+				}
+
+				idx = i
+				break
+			}
+		}
+
+		if idx < 0 {
+			return errors.New("test database not found for template hash, cannot destroy")
+		}
+
+		// Delete while preserving order without causing memory leaks due to pointers, according to: https://github.com/golang/go/wiki/SliceTricks
+		if idx < len(m.databases[db.TemplateHash])-1 {
+			copy(m.databases[db.TemplateHash][idx:], m.databases[db.TemplateHash][idx+1:])
+		}
+		m.databases[db.TemplateHash][len(m.databases[db.TemplateHash])-1] = nil
+		m.databases[db.TemplateHash] = m.databases[db.TemplateHash][:len(m.databases[db.TemplateHash])-1]
+
+		return nil
+	}
+
+	for _, testDB := range m.databases[db.TemplateHash] {
+		if testDB.ID == db.ID {
+			testDB.Dirty = dirty
+			testDB.Closed = dirty
+		}
+	}
+
+	return nil
+}
+
+func (m *Manager) createTestDatabase(hash string, templateDatabaseName string, id int) (*Database, error) {
 	if !m.Ready() {
 		return nil, ErrManagerNotReady
 	}
@@ -295,6 +344,8 @@ func (m *Manager) createTestDatabase(templateDatabaseName string, id int) (*Data
 	}
 
 	db := &Database{
+		ID: id,
+		TemplateHash: hash,
 		Config: ConnectionConfig{
 			Host:     m.config.DatabaseConfig.Host,
 			Port:     m.config.DatabaseConfig.Port,
@@ -308,4 +359,16 @@ func (m *Manager) createTestDatabase(templateDatabaseName string, id int) (*Data
 	}
 
 	return db, nil
+}
+
+func (m *Manager) destroyTestDatabase(db *Database) error {
+	if !m.Ready() {
+		return ErrManagerNotReady
+	}
+
+	if _, err := m.db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(db.Config.Database))); err != nil {
+		return errors.Wrap(err, "failed to destroy test database")
+	}
+
+	return nil
 }

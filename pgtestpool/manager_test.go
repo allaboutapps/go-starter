@@ -150,7 +150,7 @@ func TestManagerInitTemplateDatabase(t *testing.T) {
 	}
 }
 
-func TestManagerGetTestDatabaseFromPool(t *testing.T) {
+func TestManagerFullTestCycle(t *testing.T) {
 	m := NewManager(defaultManagerConfig)
 	if err := m.Connect(); err != nil {
 		t.Fatalf("manager connection failed: %v", err)
@@ -233,4 +233,49 @@ func TestManagerGetTestDatabaseFromPool(t *testing.T) {
 	}
 
 	verifyTestDatabase(t, testDB)
+
+	testDB2, err := m.GetTestDatabaseFromPool(templateHash)
+	if err != nil {
+		t.Fatalf("failed to get seconds test database from pool: %v", err)
+	}
+
+	if !testDB2.Dirty {
+		t.Error("second test database was not flagged as dirty on retrieval")
+	}
+
+	verifyTestDatabase(t, testDB2)
+
+	if err := m.ReturnTestDatabaseToPool(testDB, true, false); err != nil {
+		t.Fatalf("failed to return test database to pool: %v", err)
+	}
+
+	returnedDBName := testDB2.Config.Database
+
+	if err := m.ReturnTestDatabaseToPool(testDB2, false, false); err != nil {
+		t.Fatalf("failed to return second test database to pool: %v", err)
+	}
+
+	testDB3, err := m.GetTestDatabaseFromPool(templateHash)
+	if err != nil {
+		t.Fatalf("failed to get third test database from pool: %v", err)
+	}
+
+	if !testDB3.Dirty {
+		t.Error("third test database was not flagged as dirty on retrieval")
+	}
+
+	verifyTestDatabase(t, testDB3)
+
+	if testDB3.Config.Database != returnedDBName {
+		t.Errorf("third test database name does not match returned clean second one, got %q, want %q", testDB3.Config.Database, returnedDBName)
+	}
+
+	if err := m.ReturnTestDatabaseToPool(testDB3, true, true); err != nil {
+		t.Fatalf("failed to return third test database to pool: %v", err)
+	}
+
+	var returnedDBExists bool
+	if err := m.db.QueryRow("SELECT 1 as exists FROM pg_database WHERE datname = $1", returnedDBName).Scan(&returnedDBExists); err != sql.ErrNoRows || returnedDBExists {
+		t.Fatal("third test database was not destroyed upon return")
+	}
 }
