@@ -7,11 +7,12 @@ import (
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
+// A common interface for all model instances do allow all of the to be exposed in a []Fixture
 type Fixture interface {
 	Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error
 }
 
-// Any colums non specified will be boil.Infer()ed!
+// Any colums non specified will be boil.Infer()ed
 var (
 	pilot1 = Pilot{
 		ID:   "0ed44d09-3d8e-43c2-b203-5da10e5e266f",
@@ -64,7 +65,7 @@ var (
 		Name:    "Jet2",
 	}
 
-	// This defines the order in which everything will get inserted
+	// Defines the order in which everything will get inserted
 	fixtures = []Fixture{
 		&pilot1,
 		&pilot2,
