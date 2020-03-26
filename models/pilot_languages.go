@@ -120,16 +120,6 @@ var (
 	_ = qmhelper.Where
 )
 
-// OneP returns a single pilotLanguage record from the query, and panics on error.
-func (q pilotLanguageQuery) OneP(ctx context.Context, exec boil.ContextExecutor) *PilotLanguage {
-	o, err := q.One(ctx, exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // One returns a single pilotLanguage record from the query.
 func (q pilotLanguageQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PilotLanguage, error) {
 	o := &PilotLanguage{}
@@ -147,16 +137,6 @@ func (q pilotLanguageQuery) One(ctx context.Context, exec boil.ContextExecutor) 
 	return o, nil
 }
 
-// AllP returns all PilotLanguage records from the query, and panics on error.
-func (q pilotLanguageQuery) AllP(ctx context.Context, exec boil.ContextExecutor) PilotLanguageSlice {
-	o, err := q.All(ctx, exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return o
-}
-
 // All returns all PilotLanguage records from the query.
 func (q pilotLanguageQuery) All(ctx context.Context, exec boil.ContextExecutor) (PilotLanguageSlice, error) {
 	var o []*PilotLanguage
@@ -167,16 +147,6 @@ func (q pilotLanguageQuery) All(ctx context.Context, exec boil.ContextExecutor) 
 	}
 
 	return o, nil
-}
-
-// CountP returns the count of all PilotLanguage records in the query, and panics on error.
-func (q pilotLanguageQuery) CountP(ctx context.Context, exec boil.ContextExecutor) int64 {
-	c, err := q.Count(ctx, exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return c
 }
 
 // Count returns the count of all PilotLanguage records in the query.
@@ -192,16 +162,6 @@ func (q pilotLanguageQuery) Count(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	return count, nil
-}
-
-// ExistsP checks if the row exists in the table, and panics on error.
-func (q pilotLanguageQuery) ExistsP(ctx context.Context, exec boil.ContextExecutor) bool {
-	e, err := q.Exists(ctx, exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // Exists checks if the row exists in the table.
@@ -434,16 +394,6 @@ func (pilotLanguageL) LoadPilot(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
-// SetLanguageP of the pilotLanguage to the related item.
-// Sets o.R.Language to related.
-// Adds o to related.R.PilotLanguages.
-// Panics on error.
-func (o *PilotLanguage) SetLanguageP(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Language) {
-	if err := o.SetLanguage(ctx, exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // SetLanguage of the pilotLanguage to the related item.
 // Sets o.R.Language to related.
 // Adds o to related.R.PilotLanguages.
@@ -489,16 +439,6 @@ func (o *PilotLanguage) SetLanguage(ctx context.Context, exec boil.ContextExecut
 	}
 
 	return nil
-}
-
-// SetPilotP of the pilotLanguage to the related item.
-// Sets o.R.Pilot to related.
-// Adds o to related.R.PilotLanguages.
-// Panics on error.
-func (o *PilotLanguage) SetPilotP(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Pilot) {
-	if err := o.SetPilot(ctx, exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // SetPilot of the pilotLanguage to the related item.
@@ -554,16 +494,6 @@ func PilotLanguages(mods ...qm.QueryMod) pilotLanguageQuery {
 	return pilotLanguageQuery{NewQuery(mods...)}
 }
 
-// FindPilotLanguageP retrieves a single record by ID with an executor, and panics on error.
-func FindPilotLanguageP(ctx context.Context, exec boil.ContextExecutor, pilotID string, languageID string, selectCols ...string) *PilotLanguage {
-	retobj, err := FindPilotLanguage(ctx, exec, pilotID, languageID, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
-}
-
 // FindPilotLanguage retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func FindPilotLanguage(ctx context.Context, exec boil.ContextExecutor, pilotID string, languageID string, selectCols ...string) (*PilotLanguage, error) {
@@ -588,14 +518,6 @@ func FindPilotLanguage(ctx context.Context, exec boil.ContextExecutor, pilotID s
 	}
 
 	return pilotLanguageObj, nil
-}
-
-// InsertP a single record using an executor, and panics on error. See Insert
-// for whitelist behavior description.
-func (o *PilotLanguage) InsertP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) {
-	if err := o.Insert(ctx, exec, columns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Insert a single record using an executor.
@@ -683,17 +605,6 @@ func (o *PilotLanguage) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	return nil
 }
 
-// UpdateP uses an executor to update the PilotLanguage, and panics on error.
-// See Update for more documentation.
-func (o *PilotLanguage) UpdateP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) int64 {
-	rowsAff, err := o.Update(ctx, exec, columns)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
 // Update uses an executor to update the PilotLanguage.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
@@ -760,16 +671,6 @@ func (o *PilotLanguage) Update(ctx context.Context, exec boil.ContextExecutor, c
 	return rowsAff, nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q pilotLanguageQuery) UpdateAllP(ctx context.Context, exec boil.ContextExecutor, cols M) int64 {
-	rowsAff, err := q.UpdateAll(ctx, exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
 // UpdateAll updates all rows with the specified column values.
 func (q pilotLanguageQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
@@ -785,16 +686,6 @@ func (q pilotLanguageQuery) UpdateAll(ctx context.Context, exec boil.ContextExec
 	}
 
 	return rowsAff, nil
-}
-
-// UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o PilotLanguageSlice) UpdateAllP(ctx context.Context, exec boil.ContextExecutor, cols M) int64 {
-	rowsAff, err := o.UpdateAll(ctx, exec, cols)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
@@ -843,14 +734,6 @@ func (o PilotLanguageSlice) UpdateAll(ctx context.Context, exec boil.ContextExec
 		return 0, errors.Wrap(err, "models: unable to retrieve rows affected all in update all pilotLanguage")
 	}
 	return rowsAff, nil
-}
-
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *PilotLanguage) UpsertP(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert(ctx, exec, updateOnConflict, conflictColumns, updateColumns, insertColumns); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
@@ -972,18 +855,6 @@ func (o *PilotLanguage) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 	return nil
 }
 
-// DeleteP deletes a single PilotLanguage record with an executor.
-// DeleteP will match against the primary key column to find the record to delete.
-// Panics on error.
-func (o *PilotLanguage) DeleteP(ctx context.Context, exec boil.ContextExecutor) int64 {
-	rowsAff, err := o.Delete(ctx, exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
 // Delete deletes a single PilotLanguage record with an executor.
 // Delete will match against the primary key column to find the record to delete.
 func (o *PilotLanguage) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
@@ -1012,16 +883,6 @@ func (o *PilotLanguage) Delete(ctx context.Context, exec boil.ContextExecutor) (
 	return rowsAff, nil
 }
 
-// DeleteAllP deletes all rows, and panics on error.
-func (q pilotLanguageQuery) DeleteAllP(ctx context.Context, exec boil.ContextExecutor) int64 {
-	rowsAff, err := q.DeleteAll(ctx, exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
-}
-
 // DeleteAll deletes all matching rows.
 func (q pilotLanguageQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if q.Query == nil {
@@ -1041,16 +902,6 @@ func (q pilotLanguageQuery) DeleteAll(ctx context.Context, exec boil.ContextExec
 	}
 
 	return rowsAff, nil
-}
-
-// DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o PilotLanguageSlice) DeleteAllP(ctx context.Context, exec boil.ContextExecutor) int64 {
-	rowsAff, err := o.DeleteAll(ctx, exec)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return rowsAff
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
@@ -1086,13 +937,6 @@ func (o PilotLanguageSlice) DeleteAll(ctx context.Context, exec boil.ContextExec
 	return rowsAff, nil
 }
 
-// ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *PilotLanguage) ReloadP(ctx context.Context, exec boil.ContextExecutor) {
-	if err := o.Reload(ctx, exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
-
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *PilotLanguage) Reload(ctx context.Context, exec boil.ContextExecutor) error {
@@ -1103,15 +947,6 @@ func (o *PilotLanguage) Reload(ctx context.Context, exec boil.ContextExecutor) e
 
 	*o = *ret
 	return nil
-}
-
-// ReloadAllP refetches every row with matching primary key column values
-// and overwrites the original object slice with the newly updated slice.
-// Panics on error.
-func (o *PilotLanguageSlice) ReloadAllP(ctx context.Context, exec boil.ContextExecutor) {
-	if err := o.ReloadAll(ctx, exec); err != nil {
-		panic(boil.WrapErr(err))
-	}
 }
 
 // ReloadAll refetches every row with matching primary key column values
@@ -1141,16 +976,6 @@ func (o *PilotLanguageSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 	*o = slice
 
 	return nil
-}
-
-// PilotLanguageExistsP checks if the PilotLanguage row exists. Panics on error.
-func PilotLanguageExistsP(ctx context.Context, exec boil.ContextExecutor, pilotID string, languageID string) bool {
-	e, err := PilotLanguageExists(ctx, exec, pilotID, languageID)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }
 
 // PilotLanguageExists checks if the PilotLanguage row exists.

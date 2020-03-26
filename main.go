@@ -1,4 +1,4 @@
-//go:generate sqlboiler --wipe --no-hooks --add-panic-variants psql
+//go:generate sqlboiler --wipe --no-hooks psql
 
 package main
 
@@ -48,9 +48,17 @@ func main() {
 	var p1 models.Pilot
 	p1.Name = "Mario"
 
-	p1.InsertP(context.Background(), db, boil.Infer())
+	err = p1.Insert(context.Background(), db, boil.Infer())
 
-	pilots := models.Pilots().AllP(context.Background(), db)
+	if err != nil {
+		panic(err)
+	}
+
+	pilots, err := models.Pilots().All(context.Background(), db)
+
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println(len(pilots), "pilots")
 

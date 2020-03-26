@@ -7,8 +7,8 @@ import (
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
-type Insertable interface {
-	InsertP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns)
+type Fixture interface {
+	Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error
 }
 
 // Any colums non specified will be boil.Infer()ed!
@@ -65,7 +65,7 @@ var (
 	}
 
 	// This defines the order in which everything will get inserted
-	fixtures = []Insertable{
+	fixtures = []Fixture{
 		&pilot1,
 		&pilot2,
 		&pilot3,

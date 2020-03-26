@@ -20,15 +20,20 @@ var (
 	dbname          = os.Getenv("PSQL_DBNAME")
 )
 
+type Model interface {
+	DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error)
+}
+
 func TestFixturesThroughSQLBoiler(t *testing.T) {
 
 	fmt.Println("Connecting...")
 
-	boil.DebugMode = true
+	// boil.DebugMode = true
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
+
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
@@ -46,10 +51,12 @@ func TestFixturesThroughSQLBoiler(t *testing.T) {
 	fmt.Println("Successfully connected!")
 
 	// trunc (only for now, will be useless when integrated with pgpool)
-	models.Jets().DeleteAllP(context.Background(), db)
-	models.PilotLanguages().DeleteAllP(context.Background(), db)
-	models.Languages().DeleteAllP(context.Background(), db)
-	models.Pilots().DeleteAllP(context.Background(), db)
+	for _, model := range []Model{models.Jets(), models.PilotLanguages(), models.Languages(), models.Pilots()} {
+		_, err = model.DeleteAll(context.TODO(), db)
+		if err != nil {
+			t.Error("truncate fail", model)
+		}
+	}
 
 	tx, err := db.BeginTx(context.TODO(), nil)
 
@@ -57,8 +64,12 @@ func TestFixturesThroughSQLBoiler(t *testing.T) {
 		t.Error("transaction fail")
 	}
 
-	for _, item := range fixtures {
-		item.InsertP(context.Background(), db, boil.Infer())
+	for _, fixture := range fixtures {
+		err = fixture.Insert(context.Background(), db, boil.Infer())
+
+		if err != nil {
+			t.Error("Failed to insert fixture", fixture)
+		}
 	}
 
 	// Rollback or commit
@@ -68,7 +79,11 @@ func TestFixturesThroughSQLBoiler(t *testing.T) {
 		t.Error("transaction commit failed")
 	}
 
-	pilot1.ReloadP(context.TODO(), db)
+	err = pilot1.Reload(context.TODO(), db)
+
+	if err != nil {
+		t.Error("failed to reload")
+	}
 
 	fmt.Println(pilot1)
 
