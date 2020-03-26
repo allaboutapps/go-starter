@@ -45,14 +45,11 @@ func TestFixturesThroughSQLBoiler(t *testing.T) {
 
 	fmt.Println("Successfully connected!")
 
-	// trunc.
+	// trunc (only for now, will be useless when integrated with pgpool)
 	models.Jets().DeleteAllP(context.Background(), db)
 	models.PilotLanguages().DeleteAllP(context.Background(), db)
 	models.Languages().DeleteAllP(context.Background(), db)
 	models.Pilots().DeleteAllP(context.Background(), db)
-
-	pilots, languages, pilotLanguages, jets := GetFixtures()
-	t.Log(pilots)
 
 	tx, err := db.BeginTx(context.TODO(), nil)
 
@@ -60,19 +57,7 @@ func TestFixturesThroughSQLBoiler(t *testing.T) {
 		t.Error("transaction fail")
 	}
 
-	for _, item := range pilots {
-		item.InsertP(context.Background(), db, boil.Infer())
-	}
-
-	for _, item := range languages {
-		item.InsertP(context.Background(), db, boil.Infer())
-	}
-
-	for _, item := range pilotLanguages {
-		item.InsertP(context.Background(), db, boil.Infer())
-	}
-
-	for _, item := range jets {
+	for _, item := range fixtures {
 		item.InsertP(context.Background(), db, boil.Infer())
 	}
 
@@ -82,5 +67,9 @@ func TestFixturesThroughSQLBoiler(t *testing.T) {
 	if err != nil {
 		t.Error("transaction commit failed")
 	}
+
+	pilot1.ReloadP(context.TODO(), db)
+
+	fmt.Println(pilot1)
 
 }
