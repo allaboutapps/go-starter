@@ -17,8 +17,9 @@ lint:
 # https://github.com/golang/go/issues/24573
 # w/o cache - see "go help testflag"
 # use https://github.com/kyoh86/richgo to color
+# note that these tests should not run verbose by default (e.g. use your IDE for this)
 test:
-	richgo test -cover -race -count=1 -v ./...
+	richgo test -cover -race -count=1 ./...
 
 init: modules tools tidy
 	@go version
