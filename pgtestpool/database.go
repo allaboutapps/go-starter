@@ -1,18 +1,50 @@
 package pgtestpool
 
+import "sync"
+
 type Database struct {
-	ID           int
 	TemplateHash string
-	Config       ConnectionConfig
-	Closed       bool
-	Dirty        bool
-	Template     bool
+	Config       DatabaseConfig
+	ready        bool
+	mutex        *sync.RWMutex
+	cond         *sync.Cond
 }
 
 func (d *Database) Ready() bool {
-	return !d.Closed && !d.Dirty
+	d.mutex.RLock()
+	defer d.mutex.RUnlock()
+
+	return d.ready
 }
 
-func (d *Database) ReadyForTest() bool {
-	return !d.Closed && !d.Dirty && !d.Template
+func (d *Database) WaitUntilReady() {
+	if d.Ready() {
+		return
+	}
+
+	if d.cond == nil {
+		d.cond = &sync.Cond{L: &sync.Mutex{}}
+	}
+
+	d.cond.L.Lock()
+
+	for !d.Ready() {
+		d.cond.Wait()
+	}
+
+	d.cond.L.Unlock()
+}
+
+func (d *Database) FlagAsReady() {
+	if d.Ready() {
+		return
+	}
+
+	d.mutex.Lock()
+	d.ready = true
+	d.mutex.Unlock()
+
+	if d.cond != nil {
+		d.cond.Broadcast()
+	}
 }

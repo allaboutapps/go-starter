@@ -1,7 +1,25 @@
 package pgtestpool
 
+import "os"
+
 type ManagerConfig struct {
-	TemplateDatabaseBaseName string           // Optional base name to be used for template databases, will have hash appended. Defaults to manager database name with "_template" appended if empty
-	TestDatabaseBaseName     string           // Optional base name to be used for test databases, will have continuous numeric ID appended. Defaults to managater database name if empty
-	DatabaseConfig           ConnectionConfig // Config for manager to connect to database, will require privileged user for creating test databases and managing templates
+	DatabasePrefix            string
+	TestDatabaseOwner         string
+	TestDatabaseOwnerPassword string
+	ManagerDatabaseConfig     DatabaseConfig
+}
+
+func DefaultManagerConfigFromEnv() ManagerConfig {
+	return ManagerConfig{
+		DatabasePrefix:            "test",
+		TestDatabaseOwner:         os.Getenv("PSQL_USER"),
+		TestDatabaseOwnerPassword: os.Getenv("PSQL_PASS"),
+		ManagerDatabaseConfig: DatabaseConfig{
+			Host:     os.Getenv("PSQL_HOST"),
+			Port:     5432,
+			Username: os.Getenv("PSQL_USER"),
+			Password: os.Getenv("PSQL_PASS"),
+			Database: "postgres",
+		},
+	}
 }

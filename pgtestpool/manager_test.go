@@ -1,31 +1,22 @@
 package pgtestpool
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"os"
-	"sort"
+	"sync"
 	"testing"
+	"time"
+
+	"github.com/lib/pq"
 )
 
-var (
-	defaultManagerConfig = ManagerConfig{
-		TestDatabaseBaseName: fmt.Sprintf("%s_test", os.Getenv("PSQL_DBNAME")),
-		DatabaseConfig: ConnectionConfig{
-			Host:     os.Getenv("PSQL_HOST"),
-			Port:     5432,
-			Username: os.Getenv("PSQL_USER"),
-			Password: os.Getenv("PSQL_PASS"),
-			Database: os.Getenv("PSQL_DBNAME"),
-		},
-	}
-)
-
-func TestManagerConnectionSuccess(t *testing.T) {
+func TestManagerConnect(t *testing.T) {
 	t.Parallel()
 
-	m := NewManager(defaultManagerConfig)
-	if err := m.Connect(); err != nil {
+	m := DefaultManagerFromEnv()
+	if err := m.Connect(context.Background()); err != nil {
 		t.Errorf("manager connection failed: %v", err)
 	}
 
@@ -36,11 +27,11 @@ func TestManagerConnectionSuccess(t *testing.T) {
 	}
 }
 
-func TestManagerConnectionError(t *testing.T) {
+func TestManagerConnectError(t *testing.T) {
 	t.Parallel()
 
 	m := NewManager(ManagerConfig{
-		DatabaseConfig: ConnectionConfig{
+		ManagerDatabaseConfig: DatabaseConfig{
 			Host:     "definitelydoesnotexist",
 			Port:     2345,
 			Username: "definitelydoesnotexist",
@@ -48,7 +39,7 @@ func TestManagerConnectionError(t *testing.T) {
 			Database: "definitelydoesnotexist",
 		},
 	})
-	if err := m.Connect(); err == nil {
+	if err := m.Connect(context.Background()); err == nil {
 		t.Error("manager connection succeeded")
 	}
 
@@ -57,22 +48,24 @@ func TestManagerConnectionError(t *testing.T) {
 	}
 }
 
-func TestManagerConnectionAlreadyEstablished(t *testing.T) {
+func TestManagerReconnect(t *testing.T) {
 	t.Parallel()
 
-	m := NewManager(defaultManagerConfig)
-	if err := m.Connect(); err != nil {
-		t.Fatalf("manager connection failed: %v", err)
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Connect(ctx); err != nil {
+		t.Errorf("manager connection failed: %v", err)
 	}
 
 	defer disconnectManager(t, m)
 
 	if !m.Ready() {
-		t.Fatal("manager is not ready")
+		t.Error("manager is not ready")
 	}
 
-	if err := m.Connect(); err == nil {
-		t.Error("manager connection succeeded although already connected")
+	if err := m.Reconnect(ctx, true); err != nil {
+		t.Errorf("manager reconnect failed: %v", err)
 	}
 
 	if !m.Ready() {
@@ -80,202 +73,494 @@ func TestManagerConnectionAlreadyEstablished(t *testing.T) {
 	}
 }
 
-func TestManagerReconnectSuccess(t *testing.T) {
-	t.Parallel()
+func TestManagerInitialize(t *testing.T) {
+	ctx := context.Background()
 
-	m := NewManager(defaultManagerConfig)
-	if err := m.Connect(); err != nil {
-		t.Fatalf("manager connection failed: %v", err)
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
 	}
 
 	defer disconnectManager(t, m)
 
 	if !m.Ready() {
-		t.Fatal("manager is not ready")
-	}
-
-	if err := m.Reconnect(false); err != nil {
-		t.Errorf("manager reconnect failed: %v", err)
-	}
-
-	if !m.Ready() {
-		t.Error("manager is not ready after reconnect")
+		t.Error("manager is not ready")
 	}
 }
 
-func TestManagerInitTemplateDatabase(t *testing.T) {
-	m := NewManager(defaultManagerConfig)
-	if err := m.Connect(); err != nil {
-		t.Fatalf("manager connection failed: %v", err)
+func TestManagerInitializeTemplateDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
 	}
 
 	defer disconnectManager(t, m)
 
-	if !m.Ready() {
-		t.Fatal("manager is not ready")
-	}
+	hash := "hashinghash"
 
-	templateHash := "definitelydoesnotexist"
-	template, err := m.InitTemplateDatabase(templateHash, false)
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
 	if err != nil {
 		t.Fatalf("failed to initialize template database: %v", err)
 	}
 
-	expectedDatabaseName := fmt.Sprintf("%s_template_%s", defaultManagerConfig.DatabaseConfig.Database, templateHash)
-	if template.Config.Database != expectedDatabaseName {
-		t.Errorf("invalid template database name, got %q, want %q", template.Config.Database, expectedDatabaseName)
+	if template.Ready() {
+		t.Error("template database is marked as ready")
 	}
-
-	if template.Closed {
-		t.Error("template database is flagged as closed")
-	}
-	if template.Dirty {
-		t.Error("template database is flagged as dirty")
-	}
-	if !template.Template {
-		t.Error("template database is not flagged as template")
-	}
-
-	if !template.Ready() {
-		t.Error("template database is not ready")
-	}
-
-	templateHashes := m.GetTemplateDatabaseHashes()
-	if len(templateHashes) != 1 {
-		t.Fatalf("invalid number of template hashes, got %d, want 1", len(templateHashes))
-	}
-
-	if templateHashes[0] != templateHash {
-		t.Errorf("invalid template hash, got %q, want %q", templateHashes[0], templateHash)
+	if template.TemplateHash != hash {
+		t.Errorf("template has not set correctly, got %q, want %q", template.TemplateHash, hash)
 	}
 }
 
-func TestManagerFullTestCycle(t *testing.T) {
-	m := NewManager(defaultManagerConfig)
-	if err := m.Connect(); err != nil {
-		t.Fatalf("manager connection failed: %v", err)
+func TestManagerInitializeTemplateDatabaseConcurrently(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
 	}
 
 	defer disconnectManager(t, m)
 
-	if !m.Ready() {
-		t.Fatal("manager is not ready")
+	templateDBCount := 5
+	var errs = make(chan error, templateDBCount)
+
+	var wg sync.WaitGroup
+	wg.Add(templateDBCount)
+
+	for i := 0; i < templateDBCount; i++ {
+		go initTemplateDB(&wg, errs, m)
 	}
 
-	templateHash := "definitelydoesnotexist"
-	template, err := m.InitTemplateDatabase(templateHash, true)
+	wg.Wait()
+
+	var results = make([]error, 0, templateDBCount)
+	for i := 0; i < templateDBCount; i++ {
+		results = append(results, <-errs)
+	}
+
+	close(errs)
+
+	success := 0
+	failed := 0
+	errored := 0
+	for _, err := range results {
+		if err == nil {
+			success++
+		} else {
+			if err == ErrTemplateAlreadyInitialized {
+				failed++
+			} else {
+				errored++
+			}
+		}
+	}
+
+	if success != 1 {
+		t.Errorf("invalid number of successful initializations, got %d, want %d", success, 1)
+	}
+	if failed != templateDBCount-1 {
+		t.Errorf("invalid number of failed initializations, got %d, want %d", failed, templateDBCount-1)
+	}
+	if errored != 0 {
+		t.Errorf("invalid number of errored initializations, got %d, want %d", errored, 0)
+	}
+}
+
+func TestManagerFinalizeTemplateDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
 	if err != nil {
 		t.Fatalf("failed to initialize template database: %v", err)
 	}
 
-	createTestTables(t, template)
+	populateTemplateDB(t, template)
 
-	template, err = m.FinalizeTemplateDatabase(templateHash)
+	template, err = m.FinalizeTemplateDatabase(ctx, hash)
 	if err != nil {
 		t.Fatalf("failed to finalize template database: %v", err)
 	}
 
-	if template.Ready() {
-		t.Fatal("template database is still ready after finalizing")
+	if !template.Ready() {
+		t.Error("template database is flagged as not ready")
+	}
+}
+
+func TestManagerFinalizeUntrackedTemplateDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
 	}
 
-	if !template.Closed {
-		t.Fatal("template database is not closed after finalizing")
-	}
+	defer disconnectManager(t, m)
 
-	testDatabaseCount := 10
-	if err := m.CreateTestDatabasePool(templateHash, testDatabaseCount); err != nil {
-		t.Fatalf("failed to create test database pool: %v", err)
-	}
-
-	db, err := sql.Open("postgres", defaultManagerConfig.DatabaseConfig.ConnectionString())
+	db, err := sql.Open("postgres", m.config.ManagerDatabaseConfig.ConnectionString())
 	if err != nil {
-		t.Fatalf("failed to open master database connection: %v", err)
+		t.Fatalf("failed to open connection to manager database: %v", err)
 	}
-
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
-		t.Fatalf("failed to ping master database connection: %v", err)
+	if err := db.PingContext(ctx); err != nil {
+		t.Fatalf("failed to ping connection to manager database: %v", err)
 	}
 
-	rows, err := db.Query("SELECT datname FROM pg_database WHERE datname LIKE $1", fmt.Sprintf("%s_%%", defaultManagerConfig.TestDatabaseBaseName))
+	hash := "hashinghash"
+	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
+
+	if _, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
+		t.Fatalf("failed to manually drop template database %q: %v", dbName, err)
+	}
+	if _, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s OWNER %s TEMPLATE %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(m.config.ManagerDatabaseConfig.Username), pq.QuoteIdentifier(templateDatabaseTemplate))); err != nil {
+		t.Fatalf("failed to manually create template database %q: %v", dbName, err)
+	}
+
+	template, err := m.FinalizeTemplateDatabase(ctx, hash)
 	if err != nil {
-		t.Fatalf("failed to query test database names: %v", err)
+		t.Fatalf("failed to finalize manually created template database: %v", err)
 	}
-	defer rows.Close()
 
-	dbNames := make([]string, 0)
-	for rows.Next() {
-		var dbName string
-		if err := rows.Scan(&dbName); err != nil {
-			t.Fatalf("failed to scan test database row: %v", err)
+	if !template.Ready() {
+		t.Error("template database is flagged as not ready")
+	}
+}
+
+func TestManagerFinalizeUnknownTemplateDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "definitelydoesnotexist"
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err == nil {
+		t.Fatal("succeeded in finalizing unknown template database")
+	}
+}
+
+func TestManagerGetTestDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
+	}
+
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
+	}
+
+	test, err := m.GetTestDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to get test database: %v", err)
+	}
+
+	if !test.Ready() {
+		t.Error("test database is flagged not ready")
+	}
+
+	verifyTestDB(t, test)
+}
+
+func TestManagerFinalizeTemplateAndGetTestDatabaseConcurrently(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
+	}
+
+	testCh := make(chan error, 1)
+	go func() {
+		test, err := m.GetTestDatabase(ctx, hash)
+		if err != nil {
+			testCh <- err
+			return
 		}
-		dbNames = append(dbNames, dbName)
+
+		if !test.Ready() {
+			testCh <- errors.New("test database is flagged as not ready")
+			return
+		}
+		if !test.Dirty() {
+			testCh <- errors.New("test database is not flagged as dirty")
+		}
+
+		testCh <- nil
+	}()
+
+	populateTemplateDB(t, template)
+
+	finalizeCh := make(chan error, 1)
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+
+		if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+			finalizeCh <- err
+		}
+
+		finalizeCh <- nil
+	}()
+
+	testDone := false
+	finalizeDone := false
+	for {
+		select {
+		case err := <-testCh:
+			if err != nil {
+				t.Fatalf("failed to get test database: %v", err)
+			}
+
+			testDone = true
+		case err := <-finalizeCh:
+			if err != nil {
+				t.Fatalf("failed to finalize template database: %v", err)
+			}
+
+			finalizeDone = true
+		}
+
+		if testDone && finalizeDone {
+			break
+		} else if testDone && !finalizeDone {
+			t.Fatal("getting test database completed before finalizing template database")
+		}
+	}
+}
+
+func TestManagerGetTestDatabaseConcurrently(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
 	}
 
-	sort.Strings(dbNames)
+	defer disconnectManager(t, m)
 
-	for i := 0; i < len(dbNames); i++ {
-		expectedDBName := fmt.Sprintf("%s_%03d", defaultManagerConfig.TestDatabaseBaseName, i)
-		if dbNames[i] != expectedDBName {
-			t.Errorf("invalid test database name, got %q, want %q", dbNames[i], expectedDBName)
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
+	}
+
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
+	}
+
+	testDBCount := 5
+	var errs = make(chan error, testDBCount)
+
+	var wg sync.WaitGroup
+	wg.Add(testDBCount)
+
+	for i := 0; i < testDBCount; i++ {
+		go getTestDB(&wg, errs, m)
+	}
+
+	wg.Wait()
+
+	var results = make([]error, 0, testDBCount)
+	for i := 0; i < testDBCount; i++ {
+		results = append(results, <-errs)
+	}
+
+	close(errs)
+
+	success := 0
+	errored := 0
+	for _, err := range results {
+		if err == nil {
+			success++
+		} else {
+			errored++
 		}
 	}
 
-	testDB, err := m.GetTestDatabaseFromPool(templateHash)
+	if success != testDBCount {
+		t.Errorf("invalid number of successful retrievals, got %d, want %d", success, testDBCount)
+	}
+	if errored != 0 {
+		t.Errorf("invalid number of errored retrievals, got %d, want %d", errored, 0)
+	}
+}
+
+func TestManagerGetTestDatabaseForUnknownTemplate(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	if _, err := m.GetTestDatabase(ctx, hash); err == nil {
+		t.Fatal("succeeded in getting test database for unknown template")
+	}
+}
+
+func TestManagerReturnTestDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
 	if err != nil {
-		t.Fatalf("failed to get test database from pool: %v", err)
+		t.Fatalf("failed to initialize template database: %v", err)
 	}
 
-	if !testDB.Dirty {
-		t.Error("test database was not flagged as dirty on retrieval")
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
 	}
 
-	verifyTestDatabase(t, testDB)
-
-	testDB2, err := m.GetTestDatabaseFromPool(templateHash)
+	test, err := m.GetTestDatabase(ctx, hash)
 	if err != nil {
-		t.Fatalf("failed to get seconds test database from pool: %v", err)
+		t.Fatalf("failed to get test database: %v", err)
 	}
 
-	if !testDB2.Dirty {
-		t.Error("second test database was not flagged as dirty on retrieval")
+	if err := m.ReturnTestDatabase(ctx, hash, test.ID); err != nil {
+		t.Fatalf("failed to return test database: %v", err)
 	}
 
-	verifyTestDatabase(t, testDB2)
+	originalID := test.ID
 
-	if err := m.ReturnTestDatabaseToPool(testDB, true, false); err != nil {
-		t.Fatalf("failed to return test database to pool: %v", err)
-	}
-
-	returnedDBName := testDB2.Config.Database
-
-	if err := m.ReturnTestDatabaseToPool(testDB2, false, false); err != nil {
-		t.Fatalf("failed to return second test database to pool: %v", err)
-	}
-
-	testDB3, err := m.GetTestDatabaseFromPool(templateHash)
+	test, err = m.GetTestDatabase(ctx, hash)
 	if err != nil {
-		t.Fatalf("failed to get third test database from pool: %v", err)
+		t.Fatalf("failed to get additional test database: %v", err)
 	}
 
-	if !testDB3.Dirty {
-		t.Error("third test database was not flagged as dirty on retrieval")
+	if test.ID != originalID {
+		t.Fatalf("failed to reuse returned test database, got ID %d, want ID %d", test.ID, originalID)
+	}
+}
+
+func TestManagerReturnUntrackedTemplateDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
 	}
 
-	verifyTestDatabase(t, testDB3)
+	defer disconnectManager(t, m)
 
-	if testDB3.Config.Database != returnedDBName {
-		t.Errorf("third test database name does not match returned clean second one, got %q, want %q", testDB3.Config.Database, returnedDBName)
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
 	}
 
-	if err := m.ReturnTestDatabaseToPool(testDB3, true, true); err != nil {
-		t.Fatalf("failed to return third test database to pool: %v", err)
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
 	}
 
-	var returnedDBExists bool
-	if err := m.db.QueryRow("SELECT 1 as exists FROM pg_database WHERE datname = $1", returnedDBName).Scan(&returnedDBExists); err != sql.ErrNoRows || returnedDBExists {
-		t.Fatal("third test database was not destroyed upon return")
+	db, err := sql.Open("postgres", m.config.ManagerDatabaseConfig.ConnectionString())
+	if err != nil {
+		t.Fatalf("failed to open connection to manager database: %v", err)
+	}
+	defer db.Close()
+
+	if err := db.PingContext(ctx); err != nil {
+		t.Fatalf("failed to ping connection to manager database: %v", err)
+	}
+
+	id := 321
+	dbName := fmt.Sprintf("%s_%s_%s_%d", m.config.DatabasePrefix, prefixTestDatabase, hash, id)
+
+	if _, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
+		t.Fatalf("failed to manually drop template database %q: %v", dbName, err)
+	}
+	if _, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s OWNER %s TEMPLATE %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(m.config.ManagerDatabaseConfig.Username), pq.QuoteIdentifier(template.Config.Database))); err != nil {
+		t.Fatalf("failed to manually create template database %q: %v", dbName, err)
+	}
+
+	if err := m.ReturnTestDatabase(ctx, hash, id); err != nil {
+		t.Fatalf("failed to return manually created test database: %v", err)
+	}
+}
+
+func TestManagerReturnUnknownTemplateDatabase(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
+	}
+
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
+	}
+
+	if err := m.ReturnTestDatabase(ctx, hash, 321); err == nil {
+		t.Error("succeeded in returning unknown test database")
+	}
+
+	if err := m.ReturnTestDatabase(ctx, "definitelydoesnotexist", 0); err == nil {
+		t.Error("succeeded in returning test database for unknown template")
 	}
 }

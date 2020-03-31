@@ -4,59 +4,65 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sort"
 	"sync"
-	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/lib/pq"
 )
 
 var (
-	ErrManagerNotReady = errors.New("manager is not ready")
+	ErrManagerNotReady            = errors.New("manager not ready")
+	ErrTemplateAlreadyInitialized = errors.New("template is already initialized")
+	ErrTemplateDoesNotExist       = errors.New("template does not exist")
+)
+
+const (
+	prefixTemplateDatabase   = "template"
+	prefixTestDatabase       = "test"
+	templateDatabaseTemplate = "template0"
 )
 
 type Manager struct {
-	config         ManagerConfig
-	db             *sql.DB
-	templates      map[string]*Database
-	templateMutex  sync.RWMutex
-	databases      map[string][]*Database
-	nextDatabaseID map[string]int
-	databaseMutex  sync.Mutex
+	config        ManagerConfig
+	db            *sql.DB
+	templates     map[string]*TemplateDatabase
+	templateMutex sync.RWMutex
+	wg            sync.WaitGroup
 }
 
 func NewManager(config ManagerConfig) *Manager {
 	m := &Manager{
-		config:         config,
-		db:             nil,
-		templates:      map[string]*Database{},
-		databases:      map[string][]*Database{},
-		nextDatabaseID: map[string]int{},
+		config:    config,
+		db:        nil,
+		templates: map[string]*TemplateDatabase{},
+		wg:        sync.WaitGroup{},
 	}
 
-	if len(m.config.TemplateDatabaseBaseName) == 0 {
-		m.config.TemplateDatabaseBaseName = fmt.Sprintf("%s_template", m.config.DatabaseConfig.Database)
+	if len(m.config.TestDatabaseOwner) == 0 {
+		m.config.TestDatabaseOwner = m.config.ManagerDatabaseConfig.Username
 	}
 
-	if len(m.config.TestDatabaseBaseName) == 0 {
-		m.config.TestDatabaseBaseName = m.config.DatabaseConfig.Database
+	if len(m.config.TestDatabaseOwnerPassword) == 0 {
+		m.config.TestDatabaseOwnerPassword = m.config.ManagerDatabaseConfig.Password
 	}
 
 	return m
 }
 
-func (m *Manager) Connect() error {
+func DefaultManagerFromEnv() *Manager {
+	return NewManager(DefaultManagerConfigFromEnv())
+}
+
+func (m *Manager) Connect(ctx context.Context) error {
 	if m.db != nil {
 		return errors.New("manager is already connected")
 	}
 
-	db, err := sql.Open("postgres", m.config.DatabaseConfig.ConnectionString())
+	db, err := sql.Open("postgres", m.config.ManagerDatabaseConfig.ConnectionString())
 	if err != nil {
 		return errors.Wrap(err, "failed to open manager database connection")
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
 
 	if err := db.PingContext(ctx); err != nil {
 		return errors.Wrap(err, "failed to ping manager database connection")
@@ -67,9 +73,20 @@ func (m *Manager) Connect() error {
 	return nil
 }
 
-func (m *Manager) Disconnect(ignoreCloseError bool) error {
+func (m *Manager) Disconnect(ctx context.Context, ignoreCloseError bool) error {
 	if m.db == nil {
 		return errors.New("manager is not connected")
+	}
+
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		m.wg.Wait()
+	}()
+
+	select {
+	case <-c:
+	case <-ctx.Done():
 	}
 
 	if err := m.db.Close(); err != nil && !ignoreCloseError {
@@ -81,148 +98,140 @@ func (m *Manager) Disconnect(ignoreCloseError bool) error {
 	return nil
 }
 
-func (m *Manager) Reconnect(ignoreDisconnectError bool) error {
-	if err := m.Disconnect(ignoreDisconnectError); err != nil && !ignoreDisconnectError {
+func (m *Manager) Reconnect(ctx context.Context, ignoreDisconnectError bool) error {
+	if err := m.Disconnect(ctx, ignoreDisconnectError); err != nil && !ignoreDisconnectError {
 		return errors.Wrap(err, "failed to disconnect manager while reconnecting")
 	}
 
-	return m.Connect()
+	return m.Connect(ctx)
 }
 
 func (m *Manager) Ready() bool {
 	return m.db != nil
 }
 
-func (m *Manager) GetTemplateDatabaseHashes() []string {
-	m.templateMutex.RLock()
-
-	hashes := make([]string, 0, len(m.templates))
-
-	for hash := range m.templates {
-		hashes = append(hashes, hash)
-	}
-
-	m.templateMutex.RUnlock()
-
-	return hashes
-}
-
-func (m *Manager) InitTemplateDatabase(hash string, recreate bool) (*Database, error) {
+func (m *Manager) Initialize(ctx context.Context) error {
 	if !m.Ready() {
-		return nil, ErrManagerNotReady
-	}
-
-	m.templateMutex.Lock()
-	defer m.templateMutex.Unlock()
-
-	if _, ok := m.templates[hash]; ok {
-		return nil, errors.New("cannot to initialize template database, hash already exists")
-	}
-
-	templateDatabaseName := fmt.Sprintf("%s_%s", m.config.TemplateDatabaseBaseName, hash)
-
-	var exists bool
-	err := m.db.QueryRow("SELECT 1 as exists FROM pg_database WHERE datname = $1", templateDatabaseName).Scan(&exists)
-	if err == sql.ErrNoRows {
-		exists = false
-	} else if err != nil {
-		return nil, errors.Wrap(err, "failed to query whether template database exists")
-	}
-
-	if exists && recreate {
-		if _, err := m.db.Exec(fmt.Sprintf("DROP DATABASE %s", pq.QuoteIdentifier(templateDatabaseName))); err != nil {
-			return nil, errors.Wrap(err, "failed to drop template database")
+		if err := m.Connect(ctx); err != nil {
+			return errors.Wrap(err, "failed to connect manager while initializing")
 		}
 	}
 
-	if !exists || recreate {
-		if _, err := m.db.Exec(fmt.Sprintf("CREATE DATABASE %s WITH OWNER %s TEMPLATE \"template0\"", pq.QuoteIdentifier(templateDatabaseName), pq.QuoteIdentifier(m.config.DatabaseConfig.Username))); err != nil {
-			return nil, errors.Wrap(err, "failed to create template database")
-		}
+	rows, err := m.db.QueryContext(ctx, "SELECT datname FROM pg_database WHERE datname LIKE $1", fmt.Sprintf("%s_%s_%%", m.config.DatabasePrefix, prefixTestDatabase))
+	if err != nil {
+		return errors.Wrap(err, "failed to query for existing test databases")
 	}
+	defer rows.Close()
 
-	db := &Database{
-		Config: ConnectionConfig{
-			Host:     m.config.DatabaseConfig.Host,
-			Port:     m.config.DatabaseConfig.Port,
-			Username: m.config.DatabaseConfig.Username,
-			Password: m.config.DatabaseConfig.Password,
-			Database: templateDatabaseName,
-		},
-		Closed:   false,
-		Dirty:    false,
-		Template: true,
-	}
-
-	m.templates[hash] = db
-
-	return db, nil
-}
-
-func (m *Manager) FinalizeTemplateDatabase(hash string) (*Database, error) {
-	if !m.Ready() {
-		return nil, ErrManagerNotReady
-	}
-
-	m.templateMutex.Lock()
-	defer m.templateMutex.Unlock()
-
-	template, ok := m.templates[hash]
-	if !ok {
-		return nil, errors.New("cannot finalize template database, hash does not exist")
-	}
-
-	if template.Closed {
-		return nil, errors.New("cannot finalize template database, already flagged as closed")
-	}
-
-	template.Closed = true
-
-	return template, nil
-}
-
-func (m *Manager) CreateTestDatabasePool(hash string, count int) error {
-	if !m.Ready() {
-		return ErrManagerNotReady
-	}
-
-	m.templateMutex.RLock()
-	template, ok := m.templates[hash]
-	m.templateMutex.RUnlock()
-
-	if !ok {
-		return errors.New("cannot create test database pool, template hash does not exist")
-	}
-
-	if !template.Closed {
-		return errors.New("cannot create test database pool, template database has not been finalized yet")
-	}
-
-	m.databaseMutex.Lock()
-	defer m.databaseMutex.Unlock()
-
-	if _, ok := m.databases[hash]; !ok {
-		m.databases[hash] = make([]*Database, 0)
-	}
-
-	if _, ok := m.nextDatabaseID[hash]; !ok {
-		m.nextDatabaseID[hash] = 0
-	}
-
-	for i := 0; i < count; i++ {
-		db, err := m.createTestDatabase(hash, template.Config.Database, m.nextDatabaseID[hash])
-		if err != nil {
-			return errors.Wrap(err, "failed to create test database for pool")
+	for rows.Next() {
+		var dbName string
+		if err := rows.Scan(&dbName); err != nil {
+			return errors.Wrap(err, "failed to scan existing test database row")
 		}
 
-		m.databases[hash] = append(m.databases[hash], db)
-		m.nextDatabaseID[hash]++
+		if _, err := m.db.Exec(fmt.Sprintf("DROP DATABASE %s", pq.QuoteIdentifier(dbName))); err != nil {
+			return errors.Wrapf(err, "failed to drop existing test database %q", dbName)
+		}
 	}
 
 	return nil
 }
 
-func (m *Manager) GetTestDatabaseFromPool(hash string) (*Database, error) {
+func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (*TemplateDatabase, error) {
+	if !m.Ready() {
+		return nil, ErrManagerNotReady
+	}
+
+	m.templateMutex.RLock()
+	template, ok := m.templates[hash]
+	m.templateMutex.RUnlock()
+
+	if ok {
+		if template.Ready() {
+			return template, nil
+		}
+
+		return nil, ErrTemplateAlreadyInitialized
+	}
+
+	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
+	template = &TemplateDatabase{
+		Database: Database{
+			TemplateHash: hash,
+			Config: DatabaseConfig{
+				Host:     m.config.ManagerDatabaseConfig.Host,
+				Port:     m.config.ManagerDatabaseConfig.Port,
+				Username: m.config.ManagerDatabaseConfig.Username,
+				Password: m.config.ManagerDatabaseConfig.Password,
+				Database: dbName,
+			},
+			ready: false,
+			mutex: &sync.RWMutex{},
+		},
+		NextTestID:    0,
+		TestDatabases: make([]*TestDatabase, 0),
+	}
+
+	m.templateMutex.Lock()
+	defer m.templateMutex.Unlock()
+
+	m.templates[hash] = template
+
+	if err := m.dropAndCreateDatabase(ctx, dbName, m.config.ManagerDatabaseConfig.Username, templateDatabaseTemplate); err != nil {
+		m.templates[hash] = nil
+
+		return nil, errors.Wrapf(err, "failed to drop and create template database %q", dbName)
+	}
+
+	return template, nil
+}
+
+func (m *Manager) FinalizeTemplateDatabase(ctx context.Context, hash string) (*TemplateDatabase, error) {
+	if !m.Ready() {
+		return nil, ErrManagerNotReady
+	}
+
+	m.templateMutex.Lock()
+	defer m.templateMutex.Unlock()
+
+	template, ok := m.templates[hash]
+	if !ok {
+		dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
+		exists, err := m.checkDatabaseExists(ctx, dbName)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to check whether template database %q exists while finalizing", dbName)
+		}
+
+		if !exists {
+			return nil, errors.Errorf("failed to finalize template database, hash %q does not exist", hash)
+		}
+
+		template = &TemplateDatabase{
+			Database: Database{
+				TemplateHash: hash,
+				Config: DatabaseConfig{
+					Host:     m.config.ManagerDatabaseConfig.Host,
+					Port:     m.config.ManagerDatabaseConfig.Port,
+					Username: m.config.ManagerDatabaseConfig.Username,
+					Password: m.config.ManagerDatabaseConfig.Password,
+					Database: dbName,
+				},
+				ready: false,
+				mutex: &sync.RWMutex{},
+			},
+			NextTestID:    0,
+			TestDatabases: make([]*TestDatabase, 0),
+		}
+
+		m.templates[hash] = template
+	}
+
+	template.FlagAsReady()
+
+	return template, nil
+}
+
+func (m *Manager) GetTestDatabase(ctx context.Context, hash string) (*TestDatabase, error) {
 	if !m.Ready() {
 		return nil, ErrManagerNotReady
 	}
@@ -232,22 +241,16 @@ func (m *Manager) GetTestDatabaseFromPool(hash string) (*Database, error) {
 	m.templateMutex.RUnlock()
 
 	if !ok {
-		return nil, errors.New("cannot get test database from pool, template hash does not exist")
+		return nil, ErrTemplateDoesNotExist
 	}
 
-	m.databaseMutex.Lock()
-	defer m.databaseMutex.Unlock()
+	template.WaitUntilReady()
 
-	if _, ok := m.databases[hash]; !ok {
-		return nil, errors.New("no test database pool created for template hash")
-	}
+	template.Lock()
+	defer template.Unlock()
 
-	if _, ok := m.nextDatabaseID[hash]; !ok {
-		return nil, errors.New("no next database ID available for template hash")
-	}
-
-	var testDB *Database
-	for _, db := range m.databases[hash] {
+	var testDB *TestDatabase
+	for _, db := range template.TestDatabases {
 		if db.ReadyForTest() {
 			testDB = db
 			break
@@ -255,120 +258,171 @@ func (m *Manager) GetTestDatabaseFromPool(hash string) (*Database, error) {
 	}
 
 	if testDB == nil {
-		db, err := m.createTestDatabase(hash, template.Config.Database, m.nextDatabaseID[hash])
-		if err != nil {
-			return nil, errors.Wrap(err, "no ready test database available, failed to create fresh one")
+		dbName := fmt.Sprintf("%s_%s_%s_%d", m.config.DatabasePrefix, prefixTestDatabase, template.TemplateHash, template.NextTestID)
+
+		if err := m.createDatabase(ctx, dbName, m.config.TestDatabaseOwner, template.Config.Database); err != nil {
+			return nil, errors.Wrapf(err, "failed to create test database %q while retrieving one for hash %q", dbName, hash)
 		}
 
-		m.databases[hash] = append(m.databases[hash], db)
-		m.nextDatabaseID[hash]++
+		testDB = &TestDatabase{
+			Database: Database{
+				TemplateHash: template.TemplateHash,
+				Config: DatabaseConfig{
+					Host:     m.config.ManagerDatabaseConfig.Host,
+					Port:     m.config.ManagerDatabaseConfig.Port,
+					Username: m.config.TestDatabaseOwner,
+					Password: m.config.TestDatabaseOwnerPassword,
+					Database: dbName,
+				},
+				ready: true,
+				mutex: &sync.RWMutex{},
+			},
+			ID:    template.NextTestID,
+			dirty: false,
+		}
 
-		testDB = db
+		template.TestDatabases = append(template.TestDatabases, testDB)
+		template.NextTestID++
 	}
 
-	testDB.Dirty = true
+	testDB.FlagAsDirty()
 
-	newDB, err := m.createTestDatabase(hash, template.Config.Database, m.nextDatabaseID[hash])
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create new test database after retrieving one from pool")
-	}
-
-	m.databases[hash] = append(m.databases[hash], newDB)
-	m.nextDatabaseID[hash]++
+	m.wg.Add(1)
+	go m.addTestDatabaseInBackground(template)
 
 	return testDB, nil
 }
 
-func (m *Manager) ReturnTestDatabaseToPool(db *Database, dirty bool, destroy bool) error {
+func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) error {
 	if !m.Ready() {
 		return ErrManagerNotReady
 	}
 
-	m.databaseMutex.Lock()
-	defer m.databaseMutex.Unlock()
+	m.templateMutex.RLock()
+	template, ok := m.templates[hash]
+	m.templateMutex.RUnlock()
 
-	if _, ok := m.databases[db.TemplateHash]; !ok {
-		return errors.New("no pool created for template hash, cannot return test database")
+	if !ok {
+		return ErrTemplateDoesNotExist
 	}
 
-	if destroy {
-		idx := -1
-		for i, testDB := range m.databases[db.TemplateHash] {
-			if testDB.ID == db.ID {
-				if err := m.destroyTestDatabase(testDB); err != nil {
-					return errors.Wrap(err, "failed to destroy test database after returning to pool")
-				}
+	template.WaitUntilReady()
 
-				idx = i
-				break
-			}
+	template.Lock()
+	defer template.Unlock()
+
+	found := false
+	for _, db := range template.TestDatabases {
+		if db.ID == id {
+			found = true
+			db.FlagAsClean()
+			break
 		}
-
-		if idx < 0 {
-			return errors.New("test database not found for template hash, cannot destroy")
-		}
-
-		// Delete while preserving order without causing memory leaks due to pointers, according to: https://github.com/golang/go/wiki/SliceTricks
-		if idx < len(m.databases[db.TemplateHash])-1 {
-			copy(m.databases[db.TemplateHash][idx:], m.databases[db.TemplateHash][idx+1:])
-		}
-		m.databases[db.TemplateHash][len(m.databases[db.TemplateHash])-1] = nil
-		m.databases[db.TemplateHash] = m.databases[db.TemplateHash][:len(m.databases[db.TemplateHash])-1]
-
-		return nil
 	}
 
-	for _, testDB := range m.databases[db.TemplateHash] {
-		if testDB.ID == db.ID {
-			testDB.Dirty = dirty
-			testDB.Closed = dirty
+	if !found {
+		dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, hash, id)
+		exists, err := m.checkDatabaseExists(ctx, dbName)
+		if err != nil {
+			return errors.Wrapf(err, "failed to check whether test database %q exists while returning", dbName)
 		}
+
+		if !exists {
+			return errors.Errorf("failed to return test database %d for template %q", id, hash)
+		}
+
+		db := &TestDatabase{
+			Database: Database{
+				TemplateHash: hash,
+				Config: DatabaseConfig{
+					Host:     m.config.ManagerDatabaseConfig.Host,
+					Port:     m.config.ManagerDatabaseConfig.Port,
+					Username: m.config.TestDatabaseOwner,
+					Password: m.config.TestDatabaseOwnerPassword,
+					Database: dbName,
+				},
+				ready: true,
+				mutex: &sync.RWMutex{},
+			},
+			ID: id,
+			dirty: false,
+		}
+
+		template.TestDatabases = append(template.TestDatabases, db)
+		sort.Sort(ByID(template.TestDatabases))
 	}
 
 	return nil
 }
 
-func (m *Manager) createTestDatabase(hash string, templateDatabaseName string, id int) (*Database, error) {
-	if !m.Ready() {
-		return nil, ErrManagerNotReady
+func (m *Manager) checkDatabaseExists(ctx context.Context, dbName string) (bool, error) {
+	var exists bool
+	if err := m.db.QueryRowContext(ctx, "SELECT 1 AS exists FROM pg_database WHERE datname = $1", dbName).Scan(&exists); err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+
+		return false, errors.Wrapf(err, "failed to check whether database %q exists", dbName)
 	}
 
-	testDatabaseName := fmt.Sprintf("%s_%03d", m.config.TestDatabaseBaseName, id)
+	return exists, nil
+}
 
-	if _, err := m.db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(testDatabaseName))); err != nil {
-		return nil, errors.Wrap(err, "failed to drop test database")
+func (m *Manager) createDatabase(ctx context.Context, dbName string, owner string, template string) error {
+	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s WITH OWNER %s TEMPLATE %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(owner), pq.QuoteIdentifier(template))); err != nil {
+		return errors.Wrapf(err, "failed to create database %q", dbName)
 	}
 
-	if _, err := m.db.Exec(fmt.Sprintf("CREATE DATABASE %s WITH OWNER %s TEMPLATE %s", pq.QuoteIdentifier(testDatabaseName), pq.QuoteIdentifier(m.config.DatabaseConfig.Username), pq.QuoteIdentifier(templateDatabaseName))); err != nil {
-		return nil, errors.Wrap(err, "failed to create test database")
+	return nil
+}
+
+func (m *Manager) addTestDatabaseInBackground(template *TemplateDatabase) {
+	defer m.wg.Done()
+
+	// TODO avoid code duplication somehow without running into mutex issues?
+	template.Lock()
+	defer template.Unlock()
+
+	dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, template.TemplateHash, template.NextTestID)
+
+	if err := m.createDatabase(context.Background(), dbName, m.config.TestDatabaseOwner, template.Config.Database); err != nil {
+		// TODO log error somewhere instead of silently swallowing it?
+		return
 	}
 
-	db := &Database{
-		ID: id,
-		TemplateHash: hash,
-		Config: ConnectionConfig{
-			Host:     m.config.DatabaseConfig.Host,
-			Port:     m.config.DatabaseConfig.Port,
-			Username: m.config.DatabaseConfig.Username,
-			Password: m.config.DatabaseConfig.Password,
-			Database: testDatabaseName,
+	testDB := &TestDatabase{
+		Database: Database{
+			TemplateHash: template.TemplateHash,
+			Config: DatabaseConfig{
+				Host:     m.config.ManagerDatabaseConfig.Host,
+				Port:     m.config.ManagerDatabaseConfig.Port,
+				Username: m.config.TestDatabaseOwner,
+				Password: m.config.TestDatabaseOwnerPassword,
+				Database: dbName,
+			},
+			ready: true,
+			mutex: &sync.RWMutex{},
 		},
-		Closed:   false,
-		Dirty:    false,
-		Template: false,
+		ID:    template.NextTestID,
+		dirty: false,
 	}
 
-	return db, nil
+	template.TestDatabases = append(template.TestDatabases, testDB)
+	template.NextTestID++
 }
 
-func (m *Manager) destroyTestDatabase(db *Database) error {
-	if !m.Ready() {
-		return ErrManagerNotReady
-	}
-
-	if _, err := m.db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(db.Config.Database))); err != nil {
-		return errors.Wrap(err, "failed to destroy test database")
+func (m *Manager) dropDatabase(ctx context.Context, dbName string) error {
+	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
+		return errors.Wrapf(err, "failed to drop database %q", dbName)
 	}
 
 	return nil
+}
+
+func (m *Manager) dropAndCreateDatabase(ctx context.Context, dbName string, owner string, template string) error {
+	if err := m.dropDatabase(ctx, dbName); err != nil {
+		return errors.Wrapf(err, "failed to drop database %q before recreating", dbName)
+	}
+
+	return m.createDatabase(ctx, dbName, owner, template)
 }

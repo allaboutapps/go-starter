@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type ConnectionConfig struct {
+type DatabaseConfig struct {
 	Host             string
 	Port             int
 	Username         string
@@ -16,7 +16,7 @@ type ConnectionConfig struct {
 }
 
 // Generates a connection string to be passed to sql.Open or equivalents, assuming Postgres syntax
-func (c ConnectionConfig) ConnectionString() string {
+func (c DatabaseConfig) ConnectionString() string {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s", c.Host, c.Port, c.Username, c.Password, c.Database))
 
