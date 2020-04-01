@@ -3,16 +3,18 @@ package pgtestpool
 import "sync"
 
 type Database struct {
+	sync.RWMutex
+
 	TemplateHash string
 	Config       DatabaseConfig
-	ready        bool
-	mutex        *sync.RWMutex
-	cond         *sync.Cond
+
+	ready bool
+	cond  *sync.Cond
 }
 
 func (d *Database) Ready() bool {
-	d.mutex.RLock()
-	defer d.mutex.RUnlock()
+	d.RLock()
+	defer d.RUnlock()
 
 	return d.ready
 }
@@ -40,9 +42,9 @@ func (d *Database) FlagAsReady() {
 		return
 	}
 
-	d.mutex.Lock()
+	d.Lock()
 	d.ready = true
-	d.mutex.Unlock()
+	d.Unlock()
 
 	if d.cond != nil {
 		d.cond.Broadcast()

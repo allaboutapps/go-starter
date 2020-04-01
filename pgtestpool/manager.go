@@ -47,6 +47,10 @@ func NewManager(config ManagerConfig) *Manager {
 		m.config.TestDatabaseOwnerPassword = m.config.ManagerDatabaseConfig.Password
 	}
 
+	if m.config.TestDatabaseInitialPoolSize > m.config.TestDatabaseMaxPoolSize && m.config.TestDatabaseMaxPoolSize > 0 {
+		m.config.TestDatabaseInitialPoolSize = m.config.TestDatabaseMaxPoolSize
+	}
+
 	return m
 }
 
@@ -166,10 +170,9 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 				Database: dbName,
 			},
 			ready: false,
-			mutex: &sync.RWMutex{},
 		},
-		NextTestID:    0,
-		TestDatabases: make([]*TestDatabase, 0),
+		nextTestID:    0,
+		testDatabases: make([]*TestDatabase, 0),
 	}
 
 	m.templateMutex.Lock()
@@ -217,16 +220,18 @@ func (m *Manager) FinalizeTemplateDatabase(ctx context.Context, hash string) (*T
 					Database: dbName,
 				},
 				ready: false,
-				mutex: &sync.RWMutex{},
 			},
-			NextTestID:    0,
-			TestDatabases: make([]*TestDatabase, 0),
+			nextTestID:    0,
+			testDatabases: make([]*TestDatabase, m.config.TestDatabaseInitialPoolSize),
 		}
 
 		m.templates[hash] = template
 	}
 
 	template.FlagAsReady()
+
+	m.wg.Add(1)
+	go m.addTestDatabasesInBackground(template, m.config.TestDatabaseInitialPoolSize)
 
 	return template, nil
 }
@@ -250,7 +255,7 @@ func (m *Manager) GetTestDatabase(ctx context.Context, hash string) (*TestDataba
 	defer template.Unlock()
 
 	var testDB *TestDatabase
-	for _, db := range template.TestDatabases {
+	for _, db := range template.testDatabases {
 		if db.ReadyForTest() {
 			testDB = db
 			break
@@ -258,37 +263,17 @@ func (m *Manager) GetTestDatabase(ctx context.Context, hash string) (*TestDataba
 	}
 
 	if testDB == nil {
-		dbName := fmt.Sprintf("%s_%s_%s_%d", m.config.DatabasePrefix, prefixTestDatabase, template.TemplateHash, template.NextTestID)
-
-		if err := m.createDatabase(ctx, dbName, m.config.TestDatabaseOwner, template.Config.Database); err != nil {
-			return nil, errors.Wrapf(err, "failed to create test database %q while retrieving one for hash %q", dbName, hash)
+		var err error
+		testDB, err = m.createNextTestDatabase(ctx, template)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to create next test database while retrieving one for hash %q", hash)
 		}
-
-		testDB = &TestDatabase{
-			Database: Database{
-				TemplateHash: template.TemplateHash,
-				Config: DatabaseConfig{
-					Host:     m.config.ManagerDatabaseConfig.Host,
-					Port:     m.config.ManagerDatabaseConfig.Port,
-					Username: m.config.TestDatabaseOwner,
-					Password: m.config.TestDatabaseOwnerPassword,
-					Database: dbName,
-				},
-				ready: true,
-				mutex: &sync.RWMutex{},
-			},
-			ID:    template.NextTestID,
-			dirty: false,
-		}
-
-		template.TestDatabases = append(template.TestDatabases, testDB)
-		template.NextTestID++
 	}
 
 	testDB.FlagAsDirty()
 
 	m.wg.Add(1)
-	go m.addTestDatabaseInBackground(template)
+	go m.addTestDatabasesInBackground(template, 1)
 
 	return testDB, nil
 }
@@ -312,7 +297,7 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 	defer template.Unlock()
 
 	found := false
-	for _, db := range template.TestDatabases {
+	for _, db := range template.testDatabases {
 		if db.ID == id {
 			found = true
 			db.FlagAsClean()
@@ -342,14 +327,13 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 					Database: dbName,
 				},
 				ready: true,
-				mutex: &sync.RWMutex{},
 			},
-			ID: id,
+			ID:    id,
 			dirty: false,
 		}
 
-		template.TestDatabases = append(template.TestDatabases, db)
-		sort.Sort(ByID(template.TestDatabases))
+		template.testDatabases = append(template.testDatabases, db)
+		sort.Sort(ByID(template.testDatabases))
 	}
 
 	return nil
@@ -376,41 +360,6 @@ func (m *Manager) createDatabase(ctx context.Context, dbName string, owner strin
 	return nil
 }
 
-func (m *Manager) addTestDatabaseInBackground(template *TemplateDatabase) {
-	defer m.wg.Done()
-
-	// TODO avoid code duplication somehow without running into mutex issues?
-	template.Lock()
-	defer template.Unlock()
-
-	dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, template.TemplateHash, template.NextTestID)
-
-	if err := m.createDatabase(context.Background(), dbName, m.config.TestDatabaseOwner, template.Config.Database); err != nil {
-		// TODO log error somewhere instead of silently swallowing it?
-		return
-	}
-
-	testDB := &TestDatabase{
-		Database: Database{
-			TemplateHash: template.TemplateHash,
-			Config: DatabaseConfig{
-				Host:     m.config.ManagerDatabaseConfig.Host,
-				Port:     m.config.ManagerDatabaseConfig.Port,
-				Username: m.config.TestDatabaseOwner,
-				Password: m.config.TestDatabaseOwnerPassword,
-				Database: dbName,
-			},
-			ready: true,
-			mutex: &sync.RWMutex{},
-		},
-		ID:    template.NextTestID,
-		dirty: false,
-	}
-
-	template.TestDatabases = append(template.TestDatabases, testDB)
-	template.NextTestID++
-}
-
 func (m *Manager) dropDatabase(ctx context.Context, dbName string) error {
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
 		return errors.Wrapf(err, "failed to drop database %q", dbName)
@@ -425,4 +374,73 @@ func (m *Manager) dropAndCreateDatabase(ctx context.Context, dbName string, owne
 	}
 
 	return m.createDatabase(ctx, dbName, owner, template)
+}
+
+// Creates a new test database for the template and increments the next ID.
+// ! ATTENTION: this function assumes `template` has already been LOCKED by its caller and will NOT synchronize access again !
+// The newly created database object is returned as well as added to the template's DB list automatically.
+func (m *Manager) createNextTestDatabase(ctx context.Context, template *TemplateDatabase) (*TestDatabase, error) {
+	dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, template.TemplateHash, template.nextTestID)
+
+	if err := m.dropAndCreateDatabase(ctx, dbName, m.config.TestDatabaseOwner, template.Config.Database); err != nil {
+		return nil, errors.Wrap(err, "failed to create next test database")
+	}
+
+	testDB := &TestDatabase{
+		Database: Database{
+			TemplateHash: template.TemplateHash,
+			Config: DatabaseConfig{
+				Host:     m.config.ManagerDatabaseConfig.Host,
+				Port:     m.config.ManagerDatabaseConfig.Port,
+				Username: m.config.TestDatabaseOwner,
+				Password: m.config.TestDatabaseOwnerPassword,
+				Database: dbName,
+			},
+			ready: true,
+		},
+		ID:    template.nextTestID,
+		dirty: false,
+	}
+
+	template.testDatabases = append(template.testDatabases, testDB)
+	template.nextTestID++
+
+	if template.nextTestID > m.config.TestDatabaseMaxPoolSize {
+		i := 0
+		for idx, db := range template.testDatabases {
+			if db.Dirty() {
+				i = idx
+				break
+			}
+		}
+
+		if err := m.dropDatabase(ctx, template.testDatabases[i].Config.Database); err != nil {
+			return nil, errors.Wrapf(err, "failed to drop test database %d while cleaning up due to max pool size", i)
+		}
+
+		// Delete while preserving order, avoiding memory leaks due to points in accordance to: https://github.com/golang/go/wiki/SliceTricks
+		if i < len(template.testDatabases)-1 {
+			copy(template.testDatabases[i:], template.testDatabases[i+1:])
+		}
+		template.testDatabases[len(template.testDatabases)-1] = nil
+		template.testDatabases = template.testDatabases[:len(template.testDatabases)-1]
+	}
+
+	return testDB, nil
+}
+
+// Adds new test databases for a template, intended to be run asynchronously from other operations in a separate goroutine, using the manager's WaitGroup to synchronize for shutdown.
+// This function will lock `template` until all requested test DBs have been created and signal the WaitGroup about completion afterwards.
+func (m *Manager) addTestDatabasesInBackground(template *TemplateDatabase, count int) {
+	defer m.wg.Done()
+
+	template.Lock()
+	defer template.Unlock()
+
+	ctx := context.Background()
+
+	for i := 0; i < count; i++ {
+		// TODO log error somewhere instead of silently swallowing it?
+		_, _ = m.createNextTestDatabase(ctx, template)
+	}
 }

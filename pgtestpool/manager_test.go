@@ -424,6 +424,47 @@ func TestManagerGetTestDatabaseConcurrently(t *testing.T) {
 	}
 }
 
+func TestManagerGetTestDatabaseReusingIDs(t *testing.T) {
+	ctx := context.Background()
+
+	cfg := DefaultManagerConfigFromEnv()
+	cfg.TestDatabaseMaxPoolSize = 3
+
+	m := NewManager(cfg)
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
+	}
+
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
+	}
+
+	seenIDs := map[int]bool{}
+	for i := 0; i <= cfg.TestDatabaseMaxPoolSize*3; i++ {
+		test, err := m.GetTestDatabase(ctx, hash)
+		if err != nil {
+			t.Fatalf("failed to get test database: %v", err)
+		}
+
+		if _, ok := seenIDs[test.ID]; ok {
+			t.Errorf("received already seen test database ID %d", test.ID)
+		}
+
+		seenIDs[test.ID] = true
+	}
+}
+
 func TestManagerGetTestDatabaseForUnknownTemplate(t *testing.T) {
 	ctx := context.Background()
 

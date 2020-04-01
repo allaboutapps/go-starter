@@ -3,29 +3,41 @@ package pgtestpool
 type TestDatabase struct {
 	Database
 
-	ID    int
+	ID int
+
 	dirty bool
 }
 
 func (t *TestDatabase) Dirty() bool {
-	t.mutex.RLock()
-	defer t.mutex.RUnlock()
+	t.RLock()
+	defer t.RUnlock()
 
 	return t.dirty
 }
 
 func (t *TestDatabase) FlagAsDirty() {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	t.Lock()
+	defer t.Unlock()
 
 	t.dirty = true
 }
 
 func (t *TestDatabase) FlagAsClean() {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
+	t.Lock()
+	defer t.Unlock()
 
 	t.dirty = false
+}
+
+func (t *TestDatabase) ResetStatus() {
+	t.Lock()
+	t.dirty = false
+	t.ready = true
+	t.Unlock()
+
+	if t.cond != nil {
+		t.cond.Broadcast()
+	}
 }
 
 func (t *TestDatabase) ReadyForTest() bool {
