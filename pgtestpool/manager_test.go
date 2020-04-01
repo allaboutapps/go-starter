@@ -605,3 +605,47 @@ func TestManagerReturnUnknownTemplateDatabase(t *testing.T) {
 		t.Error("succeeded in returning test database for unknown template")
 	}
 }
+
+func TestManagerClearTrackedTestDatabases(t *testing.T) {
+	ctx := context.Background()
+
+	m := DefaultManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
+	}
+
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
+	}
+
+	test, err := m.GetTestDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to get test database: %v", err)
+	}
+
+	originalID := test.ID
+
+	if err := m.ClearTrackedTestDatabases(ctx, hash); err != nil {
+		t.Fatalf("failed to clear tracked test databases: %v", err)
+	}
+
+	test, err = m.GetTestDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to get test database again: %v", err)
+	}
+
+	if test.ID != originalID {
+		t.Errorf("received invalid test ID, got %d, want %d", test.ID, originalID)
+	}
+}

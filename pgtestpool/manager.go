@@ -339,6 +339,34 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 	return nil
 }
 
+func (m *Manager) ClearTrackedTestDatabases(ctx context.Context, hash string) error {
+	if !m.Ready() {
+		return ErrManagerNotReady
+	}
+
+	m.templateMutex.RLock()
+	template, ok := m.templates[hash]
+	m.templateMutex.RUnlock()
+
+	if !ok {
+		return ErrTemplateDoesNotExist
+	}
+
+	template.WaitUntilReady()
+
+	template.Lock()
+	defer template.Unlock()
+
+	for i := range template.testDatabases {
+		template.testDatabases[i] = nil
+	}
+
+	template.testDatabases = make([]*TestDatabase, 0)
+	template.nextTestID = 0
+
+	return nil
+}
+
 func (m *Manager) checkDatabaseExists(ctx context.Context, dbName string) (bool, error) {
 	var exists bool
 	if err := m.db.QueryRowContext(ctx, "SELECT 1 AS exists FROM pg_database WHERE datname = $1", dbName).Scan(&exists); err != nil {
