@@ -14,7 +14,8 @@ import (
 var (
 	ErrManagerNotReady            = errors.New("manager not ready")
 	ErrTemplateAlreadyInitialized = errors.New("template is already initialized")
-	ErrTemplateDoesNotExist       = errors.New("template does not exist")
+	ErrTemplateNotFound           = errors.New("template not found")
+	ErrTestNotFound               = errors.New("test database not found")
 )
 
 const (
@@ -147,19 +148,15 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 	}
 
 	m.templateMutex.RLock()
-	template, ok := m.templates[hash]
+	_, ok := m.templates[hash]
 	m.templateMutex.RUnlock()
 
 	if ok {
-		if template.Ready() {
-			return template, nil
-		}
-
 		return nil, ErrTemplateAlreadyInitialized
 	}
 
 	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
-	template = &TemplateDatabase{
+	template := &TemplateDatabase{
 		Database: Database{
 			TemplateHash: hash,
 			Config: DatabaseConfig{
@@ -206,7 +203,7 @@ func (m *Manager) FinalizeTemplateDatabase(ctx context.Context, hash string) (*T
 		}
 
 		if !exists {
-			return nil, errors.Errorf("failed to finalize template database, hash %q does not exist", hash)
+			return nil, ErrTemplateNotFound
 		}
 
 		template = &TemplateDatabase{
@@ -222,7 +219,7 @@ func (m *Manager) FinalizeTemplateDatabase(ctx context.Context, hash string) (*T
 				ready: false,
 			},
 			nextTestID:    0,
-			testDatabases: make([]*TestDatabase, m.config.TestDatabaseInitialPoolSize),
+			testDatabases: make([]*TestDatabase, 0, m.config.TestDatabaseInitialPoolSize),
 		}
 
 		m.templates[hash] = template
@@ -246,7 +243,7 @@ func (m *Manager) GetTestDatabase(ctx context.Context, hash string) (*TestDataba
 	m.templateMutex.RUnlock()
 
 	if !ok {
-		return nil, ErrTemplateDoesNotExist
+		return nil, ErrTemplateNotFound
 	}
 
 	template.WaitUntilReady()
@@ -288,7 +285,7 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 	m.templateMutex.RUnlock()
 
 	if !ok {
-		return ErrTemplateDoesNotExist
+		return ErrTemplateNotFound
 	}
 
 	template.WaitUntilReady()
@@ -313,7 +310,7 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 		}
 
 		if !exists {
-			return errors.Errorf("failed to return test database %d for template %q", id, hash)
+			return ErrTestNotFound
 		}
 
 		db := &TestDatabase{
@@ -349,7 +346,7 @@ func (m *Manager) ClearTrackedTestDatabases(ctx context.Context, hash string) er
 	m.templateMutex.RUnlock()
 
 	if !ok {
-		return ErrTemplateDoesNotExist
+		return ErrTemplateNotFound
 	}
 
 	template.WaitUntilReady()

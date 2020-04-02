@@ -3,10 +3,10 @@ package pgtestpool
 import "sync"
 
 type Database struct {
-	sync.RWMutex
+	sync.RWMutex `json:"-"`
 
-	TemplateHash string
-	Config       DatabaseConfig
+	TemplateHash string         `json:"templateHash"`
+	Config       DatabaseConfig `json:"config"`
 
 	ready bool
 	cond  *sync.Cond

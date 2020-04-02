@@ -7,12 +7,12 @@ import (
 )
 
 type DatabaseConfig struct {
-	Host             string
-	Port             int
-	Username         string
-	Password         string
-	Database         string
-	AdditionalParams map[string]string // Optional additional connection parameters mapped into the connection string
+	Host             string            `json:"host"`
+	Port             int               `json:"port"`
+	Username         string            `json:"username"`
+	Password         string            `json:"password"`
+	Database         string            `json:"database"`
+	AdditionalParams map[string]string `json:"-"` // Optional additional connection parameters mapped into the connection string
 }
 
 // Generates a connection string to be passed to sql.Open or equivalents, assuming Postgres syntax

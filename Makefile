@@ -1,6 +1,8 @@
 # first is default task when running "make" without args
 build: generate format gobuild lint
 
+build-pgserve: format gobuild-pgserve lint
+
 generate:
 	go generate
 
@@ -10,6 +12,9 @@ format:
 
 gobuild: 
 	go build -o bin/app
+
+gobuild-pgserve:
+	go build -o bin/pgserve ./pgserve
 
 lint:
 	golangci-lint run --fast

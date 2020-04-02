@@ -1,9 +1,9 @@
 package pgtestpool
 
 type TestDatabase struct {
-	Database
+	Database `json:"database"`
 
-	ID int
+	ID int `json:"id"`
 
 	dirty bool
 }

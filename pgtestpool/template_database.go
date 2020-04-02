@@ -1,8 +1,8 @@
 package pgtestpool
 
 type TemplateDatabase struct {
-	Database
+	Database `json:"database"`
 
-	nextTestID     int
-	testDatabases  []*TestDatabase
+	nextTestID    int
+	testDatabases []*TestDatabase
 }
