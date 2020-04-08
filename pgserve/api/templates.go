@@ -107,7 +107,7 @@ func (s *Server) ReturnTestDatabaseHandler() echo.HandlerFunc {
 				return echo.ErrServiceUnavailable
 			case pgtestpool.ErrTemplateNotFound:
 				return echo.NewHTTPError(http.StatusNotFound, "template not found")
-			case pgtestpool.ErrTemplateNotFound:
+			case pgtestpool.ErrTestNotFound:
 				return echo.NewHTTPError(http.StatusNotFound, "test database not found")
 			default:
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
