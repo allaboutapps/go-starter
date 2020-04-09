@@ -1,4 +1,4 @@
-FROM golang:1.14 AS development
+FROM golang:1.14.1 AS development
 
 # https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
 ENV GOBIN /app/bin
