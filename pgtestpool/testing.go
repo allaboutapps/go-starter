@@ -15,6 +15,7 @@ import (
 // https://about.sourcegraph.com/go/advanced-testing-in-go
 
 func disconnectManager(t *testing.T, m *Manager) {
+
 	t.Helper()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

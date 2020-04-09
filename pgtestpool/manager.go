@@ -144,16 +144,20 @@ func (m *Manager) Initialize(ctx context.Context) error {
 
 func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (*TemplateDatabase, error) {
 	if !m.Ready() {
+		fmt.Println("manager not ready")
 		return nil, ErrManagerNotReady
 	}
 
-	m.templateMutex.RLock()
+	m.templateMutex.Lock()
+	defer m.templateMutex.Unlock()
 	_, ok := m.templates[hash]
-	m.templateMutex.RUnlock()
 
 	if ok {
+		// fmt.Println("initialized!", ok)
 		return nil, ErrTemplateAlreadyInitialized
 	}
+
+	// fmt.Println("initializing...", ok)
 
 	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
 	template := &TemplateDatabase{
@@ -171,9 +175,6 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 		nextTestID:    0,
 		testDatabases: make([]*TestDatabase, 0),
 	}
-
-	m.templateMutex.Lock()
-	defer m.templateMutex.Unlock()
 
 	m.templates[hash] = template
 
