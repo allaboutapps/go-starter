@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"allaboutapps.at/aw/go-mranftl-sample/pgserve/api"
@@ -28,13 +30,13 @@ func main() {
 	}()
 
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := router.Shutdown(ctx); err != nil {
+	if err := router.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Failed to gracefully shut down HTTP server: %v", err)
 	}
 }

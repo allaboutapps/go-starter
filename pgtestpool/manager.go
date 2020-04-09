@@ -336,7 +336,7 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 	return nil
 }
 
-func (m *Manager) ClearTrackedTestDatabases(ctx context.Context, hash string) error {
+func (m *Manager) ClearTrackedTestDatabases(hash string) error {
 	if !m.Ready() {
 		return ErrManagerNotReady
 	}
@@ -349,7 +349,8 @@ func (m *Manager) ClearTrackedTestDatabases(ctx context.Context, hash string) er
 		return ErrTemplateNotFound
 	}
 
-	template.WaitUntilReady()
+	// TODO: re-enable when `WaitUntilReady` is able to accept a context with timeout
+	// template.WaitUntilReady()
 
 	template.Lock()
 	defer template.Unlock()
@@ -360,6 +361,32 @@ func (m *Manager) ClearTrackedTestDatabases(ctx context.Context, hash string) er
 
 	template.testDatabases = make([]*TestDatabase, 0)
 	template.nextTestID = 0
+
+	return nil
+}
+
+func (m *Manager) ResetAllTracking() error {
+	if !m.Ready() {
+		return ErrManagerNotReady
+	}
+
+	m.templateMutex.Lock()
+	defer m.templateMutex.Unlock()
+
+	for hash := range m.templates {
+		// TODO: re-enable when `WaitUntilReady` is able to accept a context with timeout
+		// m.templates[hash].WaitUntilReady()
+
+		m.templates[hash].Lock()
+		for i := range m.templates[hash].testDatabases {
+			m.templates[hash].testDatabases[i] = nil
+		}
+		m.templates[hash].Unlock()
+
+		m.templates[hash] = nil
+	}
+
+	m.templates = map[string]*TemplateDatabase{}
 
 	return nil
 }

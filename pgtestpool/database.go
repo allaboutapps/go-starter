@@ -24,6 +24,7 @@ func (d *Database) WaitUntilReady() {
 		return
 	}
 
+	// TODO: replace sync.Cond with channel "broadcast" (using `close(ch)`) to support ctx/timeouts
 	if d.cond == nil {
 		d.cond = &sync.Cond{L: &sync.Mutex{}}
 	}

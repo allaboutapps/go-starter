@@ -26,7 +26,8 @@ func Init(s *api.Server) *echo.Echo {
 
 	v1Admin := v1.Group("/admin")
 	v1AdminTemplates := v1Admin.Group("/templates")
-	v1AdminTemplates.GET("", s.GetAdminTemplates())
+	v1AdminTemplates.GET("", s.GetAdminTemplatesHandler())
+	v1AdminTemplates.DELETE("", s.ResetAllTemplatesHandler())
 
 	v1Templates := v1.Group("/templates")
 	v1Templates.POST("", s.InitializeTemplateHandler())
