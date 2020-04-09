@@ -38,6 +38,7 @@ func TestManagerConnectError(t *testing.T) {
 			Password: "definitelydoesnotexist",
 			Database: "definitelydoesnotexist",
 		},
+		DatabasePrefix: "pgtestpool", // ensure we don't overlap with other pools running concurrently
 	})
 	if err := m.Connect(context.Background()); err == nil {
 		t.Error("manager connection succeeded")
