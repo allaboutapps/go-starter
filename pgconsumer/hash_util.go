@@ -128,6 +128,7 @@ func GetFileHash(filePath string) (string, error) {
 	return fmt.Sprintf("%x", md5.Sum(data)), nil
 }
 
+// TODO variadic paths, check if directory of file, sort by order, append
 func GetTemplateHash(migrationsDir string, fixturesFile string) (string, error) {
 	dirHash, err := GetDirectoryHash(migrationsDir)
 	if err != nil {

@@ -147,11 +147,10 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 		return nil, ErrManagerNotReady
 	}
 
-	m.templateMutex.RLock()
-	_, ok := m.templates[hash]
-	m.templateMutex.RUnlock()
+	m.templateMutex.Lock()
+	defer m.templateMutex.Unlock()
 
-	if ok {
+	if _, ok := m.templates[hash]; ok {
 		return nil, ErrTemplateAlreadyInitialized
 	}
 
@@ -171,9 +170,6 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 		nextTestID:    0,
 		testDatabases: make([]*TestDatabase, 0),
 	}
-
-	m.templateMutex.Lock()
-	defer m.templateMutex.Unlock()
 
 	m.templates[hash] = template
 

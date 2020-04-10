@@ -3,88 +3,80 @@ package test
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 	"testing"
 
-	"allaboutapps.at/aw/go-mranftl-sample/models"
-	_ "github.com/lib/pq"
+	"allaboutapps.at/aw/go-mranftl-sample/pgconsumer"
+	migrate "github.com/rubenv/sql-migrate"
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
-var (
-	host            = os.Getenv("PSQL_HOST")
-	port     int64  = 5432
-	user            = os.Getenv("PSQL_USER")
-	password string = os.Getenv("PSQL_PASS")
-	dbname          = os.Getenv("PSQL_DBNAME")
-)
-
-type Model interface {
-	DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error)
-}
-
-func TestFixturesThroughSQLBoiler(t *testing.T) {
-
-	fmt.Println("Connecting...")
-
-	// boil.DebugMode = true
-
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-
-	db, err := sql.Open("postgres", psqlInfo)
-
+func TestMain(m *testing.M) {
+	migDir, err := filepath.Abs("../migrations")
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to get absolute path of migrations directory: %v", err)
+	}
+	fixFile, err := filepath.Abs("./fixtures.go")
+	if err != nil {
+		log.Fatalf("Failed to get absolut path of fixtures file: %v", err)
 	}
 
-	defer db.Close()
-
-	err = db.Ping()
-
+	hash, err := pgconsumer.GetTemplateHash(migDir, fixFile)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to get template hash: %#v", err)
 	}
 
-	fmt.Println("Successfully connected!")
+	c, err := pgconsumer.DefaultClientFromEnv()
+	if err != nil {
+		log.Fatalf("Failed to create new pgconsumer client: %v", err)
+	}
 
-	// trunc (only for now, will be useless when integrated with pgpool)
-	for _, model := range []Model{models.Jets(), models.PilotLanguages(), models.Languages(), models.Pilots()} {
-		_, err = model.DeleteAll(context.TODO(), db)
+	ctx := context.Background()
+
+	if err := c.ResetAllTracking(ctx); err != nil {
+		log.Fatalf("lol: %v", err)
+	}
+
+	initTemplate := func(db *sql.DB) error {
+		migrations := &migrate.FileMigrationSource{Dir: migDir}
+		n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
 		if err != nil {
-			t.Error("truncate fail", model)
+			return err
 		}
-	}
 
-	tx, err := db.BeginTx(context.TODO(), nil)
+		log.Printf("Applied %d migrations for hash %q", n, hash)
 
-	if err != nil {
-		t.Error("transaction fail")
-	}
-
-	for _, fixture := range fixtures {
-		err = fixture.Insert(context.Background(), db, boil.Infer())
-
+		tx, err := db.BeginTx(ctx, nil)
 		if err != nil {
-			t.Error("Failed to insert fixture", fixture)
+			return err
 		}
+
+		for _, fixture := range fixtures {
+			if err := fixture.Insert(ctx, db, boil.Infer()); err != nil {
+				if errr := tx.Rollback(); errr != nil {
+					return errr
+				}
+
+				return err
+			}
+		}
+
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+
+		log.Printf("Inserted %d fixtures for hash %q", len(fixtures), hash)
+
+		return nil
 	}
 
-	// Rollback or commit
-	err = tx.Commit()
-
-	if err != nil {
-		t.Error("transaction commit failed")
+	if err := c.SetupTemplateWithDBClient(ctx, hash, initTemplate); err != nil {
+		log.Fatalf("Failed to setup template database for hash %q: %v", hash, err)
 	}
 
-	err = pilot1.Reload(context.TODO(), db)
+	exit := m.Run()
 
-	if err != nil {
-		t.Error("failed to reload")
-	}
-
-	fmt.Println(pilot1)
-
+	os.Exit(exit)
 }
