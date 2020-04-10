@@ -149,9 +149,8 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 
 	m.templateMutex.Lock()
 	defer m.templateMutex.Unlock()
-	_, ok := m.templates[hash]
 
-	if ok {
+	if _, ok := m.templates[hash]; ok {
 		return nil, ErrTemplateAlreadyInitialized
 	}
 

@@ -3,6 +3,7 @@ package pgconsumer
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -93,6 +94,46 @@ func (c *Client) InitializeTemplate(ctx context.Context, hash string) (*pgtestpo
 		return nil, pgtestpool.ErrManagerNotReady
 	default:
 		return nil, errors.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
+	}
+}
+
+func (c *Client) SetupTemplate(ctx context.Context, hash string, init func(conn string) error) error {
+	template, err := c.InitializeTemplate(ctx, hash)
+	if err == nil {
+		if err := init(template.Config.ConnectionString()); err != nil {
+			return err
+		}
+
+		return c.FinalizeTemplate(ctx, hash)
+	} else if err == pgtestpool.ErrTemplateAlreadyInitialized {
+		return nil
+	} else {
+		return err
+	}
+}
+
+func (c *Client) SetupTemplateWithDBClient(ctx context.Context, hash string, init func(db *sql.DB) error) error {
+	template, err := c.InitializeTemplate(ctx, hash)
+	if err == nil {
+		db, err := sql.Open("postgres", template.Config.ConnectionString())
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+
+		if err := db.PingContext(ctx); err != nil {
+			return err
+		}
+
+		if err := init(db); err != nil {
+			return err
+		}
+
+		return c.FinalizeTemplate(ctx, hash)
+	} else if err == pgtestpool.ErrTemplateAlreadyInitialized {
+		return nil
+	} else {
+		return err
 	}
 }
 
