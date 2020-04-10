@@ -1,0 +1,157 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/templates": {
+      "get": {
+        "description": "Description of initializeTemplateHandler",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https",
+          "ws",
+          "wss"
+        ],
+        "tags": [
+          "templates",
+          "init"
+        ],
+        "summary": "Summary of initializeTemplateHandler",
+        "operationId": "initializeTemplateHandler",
+        "deprecated": true,
+        "parameters": [
+          {
+            "maxItems": 1,
+            "minItems": 1,
+            "uniqueItems": true,
+            "type": "string",
+            "x-go-name": "Hash",
+            "description": "Hash used in initializing a template",
+            "name": "hash",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/initializeTemplateResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Cond": {
+      "description": "Each Cond has an associated Locker L (often a *Mutex or *RWMutex),\nwhich must be held when changing the condition and\nwhen calling the Wait method.\n\nA Cond must not be copied after first use.",
+      "type": "object",
+      "title": "Cond implements a condition variable, a rendezvous point\nfor goroutines waiting for or announcing the occurrence\nof an event.",
+      "properties": {
+        "L": {
+          "$ref": "#/definitions/Locker"
+        }
+      },
+      "x-go-package": "sync"
+    },
+    "DatabaseConfig": {
+      "type": "object",
+      "properties": {
+        "database": {
+          "type": "string",
+          "x-go-name": "Database"
+        },
+        "host": {
+          "type": "string",
+          "x-go-name": "Host"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Port"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "_/app/pgtestpool"
+    },
+    "Locker": {
+      "type": "object",
+      "title": "A Locker represents an object that can be locked and unlocked.",
+      "x-go-package": "sync"
+    },
+    "Mutex": {
+      "description": "A Mutex must not be copied after first use.",
+      "type": "object",
+      "title": "A Mutex is a mutual exclusion lock.\nThe zero value for a Mutex is an unlocked mutex.",
+      "x-go-package": "sync"
+    },
+    "TestDatabase": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/DatabaseConfig"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "templateHash": {
+          "type": "string",
+          "x-go-name": "TemplateHash"
+        }
+      },
+      "x-go-package": "_/app/pgtestpool"
+    }
+  },
+  "responses": {
+    "initializeTemplateResponse": {
+      "schema": {
+        "$ref": "#/definitions/Cond"
+      },
+      "headers": {
+        "cond": {},
+        "config": {},
+        "nextTestID": {
+          "type": "integer",
+          "format": "int64",
+          "description": "some description for id"
+        },
+        "readerCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "readerSem": {
+          "type": "integer",
+          "format": "uint32"
+        },
+        "readerWait": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "templateHash": {
+          "type": "string"
+        },
+        "testDatabases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TestDatabase"
+          }
+        },
+        "w": {},
+        "writerSem": {
+          "type": "integer",
+          "format": "uint32"
+        }
+      }
+    }
+  }
+}
