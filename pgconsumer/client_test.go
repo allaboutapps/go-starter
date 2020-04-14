@@ -18,7 +18,7 @@ func TestClientInitializeTemplate(t *testing.T) {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
 	}
 
-	hash := "hashinghash"
+	hash := "hashinghash1"
 
 	template, err := c.InitializeTemplate(ctx, hash)
 	if err != nil {
@@ -42,7 +42,7 @@ func TestClientFinalzeTemplate(t *testing.T) {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
 	}
 
-	hash := "hashinghash"
+	hash := "hashinghash2"
 
 	if _, err := c.InitializeTemplate(ctx, hash); err != nil {
 		t.Fatalf("failed to initialize template: %v", err)
@@ -65,7 +65,7 @@ func TestClientGetTestDatabase(t *testing.T) {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
 	}
 
-	hash := "hashinghash"
+	hash := "hashinghash3"
 
 	if _, err := c.InitializeTemplate(ctx, hash); err != nil {
 		t.Fatalf("failed to initialize template: %v", err)
@@ -130,7 +130,7 @@ func TestClientReturnTestDatabase(t *testing.T) {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
 	}
 
-	hash := "hashinghash"
+	hash := "hashinghash4"
 
 	if _, err := c.InitializeTemplate(ctx, hash); err != nil {
 		t.Fatalf("failed to initialize template: %v", err)
