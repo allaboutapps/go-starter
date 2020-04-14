@@ -1,4 +1,4 @@
-package pgconsumer
+package pgconsumertest
 
 import (
 	"context"
@@ -11,10 +11,9 @@ import (
 func TestClientInitializeTemplate(t *testing.T) {
 	ctx := context.Background()
 
-	c, err := DefaultClientFromEnv()
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
+	s, m, c := initIsolatedManager(t)
+	defer disconnectManager(m)
+	defer s.Close()
 
 	if err := c.ResetAllTracking(ctx); err != nil {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
@@ -35,10 +34,9 @@ func TestClientInitializeTemplate(t *testing.T) {
 func TestClientFinalzeTemplate(t *testing.T) {
 	ctx := context.Background()
 
-	c, err := DefaultClientFromEnv()
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
+	s, m, c := initIsolatedManager(t)
+	defer disconnectManager(m)
+	defer s.Close()
 
 	if err := c.ResetAllTracking(ctx); err != nil {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
@@ -58,11 +56,9 @@ func TestClientFinalzeTemplate(t *testing.T) {
 func TestClientGetTestDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	c, err := DefaultClientFromEnv()
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
+	s, m, c := initIsolatedManager(t)
+	defer disconnectManager(m)
+	defer s.Close()
 	if err := c.ResetAllTracking(ctx); err != nil {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
 	}
@@ -123,10 +119,9 @@ func TestClientGetTestDatabase(t *testing.T) {
 func TestClientReturnTestDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	c, err := DefaultClientFromEnv()
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
+	s, m, c := initIsolatedManager(t)
+	defer disconnectManager(m)
+	defer s.Close()
 
 	if err := c.ResetAllTracking(ctx); err != nil {
 		t.Fatalf("failed to reset all test pool tracking: %v", err)
