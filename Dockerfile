@@ -42,3 +42,32 @@ RUN wget https://github.com/darold/pgFormatter/archive/v4.2.tar.gz \
 # https://github.com/golangci/golangci-lint#binary
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
     | sh -s -- -b $(go env GOPATH)/bin v1.24.0
+
+
+### -----------------------
+# --- Stage: builder
+### -----------------------
+
+FROM development as builder
+WORKDIR /app
+COPY . /app/
+# RUN make init -- only required for app service (TODO)
+
+### -----------------------
+# --- Stage: builder-pgserve
+### -----------------------
+
+FROM builder as builder-pgserve
+RUN make build-pgserve
+
+### -----------------------
+# --- Stage: pgserve
+### -----------------------
+
+# https://github.com/GoogleContainerTools/distroless
+FROM gcr.io/distroless/base as pgserve
+COPY --from=builder-pgserve /app/bin/pgserve /
+# Note that cmd is not supported with these kind of images, no shell included
+# see https://github.com/GoogleContainerTools/distroless/issues/62
+# and https://github.com/GoogleContainerTools/distroless#entrypoints
+ENTRYPOINT [ "/pgserve" ]

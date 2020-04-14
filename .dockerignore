@@ -3,6 +3,7 @@
 .vscode
 .pkg
 .tools-versions
-dev.Dockerfile
-docker-compose
+Dockerfile
+docker-compose.*
 docker-helper.sh
+bin

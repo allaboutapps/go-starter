@@ -1,8 +1,8 @@
-version: "3"
+version: "3.4"
 services:
 
   postgres:
-    image: postgres:12.2-alpine # should be the same version as used in .drone.yml, dev.Dockerfile and live
+    image: postgres:12.2-alpine # should be the same version as used in .drone.yml, Dockerfile and live
     container_name: go-mranftl-sample_postgres
     command: "postgres -c 'shared_buffers=128MB' -c 'fsync=off' -c 'synchronous_commit=off' -c 'full_page_writes=off' -c 'max_connections=100' -c 'client_min_messages=warning'"
     expose:
@@ -20,7 +20,7 @@ services:
   service:
     build:
       context: .
-      dockerfile: .devcontainer/dev.Dockerfile  
+      target: development
     # ports:
     #   - "8080:8080"
     working_dir: /app
@@ -61,15 +61,11 @@ services:
   pgserve:
     build:
       context: .
-      dockerfile: .devcontainer/dev.Dockerfile
+      target: pgserve
     expose:
       - "8080"
     ports:
       - "8080:8080"
-    working_dir: /app
-    volumes:
-      - .:/app #:delegated
-      # - ./.pkg:/go/pkg # enable this to reuse the pkg cache
     depends_on:
       - postgres
     environment:
@@ -92,7 +88,7 @@ services:
       PGSSLMODE: *PSQL_SSLMODE
 
     # Overrides default command so things don't shut down after the process ends.
-    command: /bin/sh -c "make build-pgserve && pgserve"
+    # command: /bin/sh -c "pgserve"
 
 volumes:
   pgvolume: # declare a named volume to persist DB data
