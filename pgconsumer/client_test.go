@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+
+	_ "github.com/lib/pq"
 )
 
 func TestClientInitializeTemplate(t *testing.T) {
