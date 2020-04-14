@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -16,7 +17,12 @@ import (
 
 func main() {
 	manager := pgtestpool.DefaultManagerFromEnv()
-	if err := manager.Initialize(context.Background()); err != nil {
+
+	pgtestpoolInitialize := func() error {
+		return manager.Initialize(context.Background())
+	}
+
+	if err := retry(30, 1*time.Second, pgtestpoolInitialize); err != nil {
 		log.Fatalf("Failed to initialize testpool manager: %v", err)
 	}
 
@@ -39,4 +45,25 @@ func main() {
 	if err := router.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Failed to gracefully shut down HTTP server: %v", err)
 	}
+}
+
+// https://stackoverflow.com/questions/47606761/repeat-code-if-an-error-occured
+func retry(attempts int, sleep time.Duration, f func() error) (err error) {
+
+	for i := 0; ; i++ {
+		err = f()
+		if err == nil {
+			return
+		}
+
+		if i >= (attempts - 1) {
+			break
+		}
+
+		time.Sleep(sleep)
+
+		log.Println("retrying after error:", err)
+	}
+
+	return fmt.Errorf("after %d attempts, last error: %s", attempts, err)
 }
