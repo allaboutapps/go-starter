@@ -1,22 +1,6 @@
 version: "3.4"
 services:
 
-  postgres:
-    image: postgres:12.2-alpine # should be the same version as used in .drone.yml, Dockerfile and live
-    container_name: go-mranftl-sample_postgres
-    command: "postgres -c 'shared_buffers=128MB' -c 'fsync=off' -c 'synchronous_commit=off' -c 'full_page_writes=off' -c 'max_connections=100' -c 'client_min_messages=warning'"
-    expose:
-      - "5432"
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: &POSTGRES_DB "sample" 
-      POSTGRES_USER: &POSTGRES_USER "dbuser"
-      POSTGRES_PASSWORD: &POSTGRES_PASSWORD "9bed16f749d74a3c8bfbced18a7647f5"
-    volumes:
-      - .:/app
-      - pgvolume:/var/lib/postgresql/data
-
   service:
     build:
       context: .
@@ -33,18 +17,18 @@ services:
     environment: &SERVICE_ENV
       
       # required: env for sqlboiler and sql-migrate
-      PSQL_DBNAME: *POSTGRES_DB
-      PSQL_USER: *POSTGRES_USER
-      PSQL_PASS: *POSTGRES_PASSWORD
+      PSQL_DBNAME: &PSQL_DBNAME "sample" 
+      PSQL_USER: &PSQL_USER "dbuser"
+      PSQL_PASS: &PSQL_PASS "9bed16f749d74a3c8bfbced18a7647f5"
       PSQL_HOST: &PSQL_HOST "postgres"
       PSQL_PORT: &PSQL_PORT "5432"
       PSQL_SSLMODE: &PSQL_SSLMODE "disable"
       PSQL_SCHEMA: &PSQL_SCHEMA "public"
       
       # optional: env for postgresql-client apt-get package (psql)
-      PGDATABASE: *POSTGRES_DB
-      PGUSER: *POSTGRES_USER
-      PGPASSWORD: *POSTGRES_PASSWORD
+      PGDATABASE: *PSQL_DBNAME
+      PGUSER: *PSQL_USER
+      PGPASSWORD: *PSQL_PASS
       PGHOST: *PSQL_HOST
       PGPORT: *PSQL_PORT
       PGSSLMODE: *PSQL_SSLMODE
@@ -67,6 +51,22 @@ services:
     depends_on:
       - postgres
     environment: *SERVICE_ENV
+
+  postgres:
+    image: postgres:12.2-alpine # should be the same version as used in .drone.yml, Dockerfile and live
+    container_name: go-mranftl-sample_postgres
+    command: "postgres -c 'shared_buffers=128MB' -c 'fsync=off' -c 'synchronous_commit=off' -c 'full_page_writes=off' -c 'max_connections=100' -c 'client_min_messages=warning'"
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: *PSQL_DBNAME
+      POSTGRES_USER: *PSQL_USER
+      POSTGRES_PASSWORD: *PSQL_PASS
+    volumes:
+      - .:/app
+      - pgvolume:/var/lib/postgresql/data
 
 volumes:
   pgvolume: # declare a named volume to persist DB data
