@@ -35,9 +35,10 @@ func TestMain(m *testing.M) {
 
 	ctx := context.Background()
 
-	if err := c.ResetAllTracking(ctx); err != nil {
-		log.Fatalf("lol: %v", err)
-	}
+	// ! DISABLE - interferes with pgconsumer paralell running tests!!!
+	// if err := c.ResetAllTracking(ctx); err != nil {
+	// 	log.Fatalf("lol: %v", err)
+	// }
 
 	initTemplate := func(db *sql.DB) error {
 		migrations := &migrate.FileMigrationSource{Dir: migDir}
