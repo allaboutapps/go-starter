@@ -26,11 +26,14 @@ func main() {
 		log.Fatalf("Failed to initialize testpool manager: %v", err)
 	}
 
-	server := &api.Server{M: manager}
+	server := &api.Server{
+		M:      manager,
+		Config: api.DefaultServerConfigFromEnv(),
+	}
 	router := router.Init(server)
 
 	go func() {
-		if err := router.Start(":8080"); err != nil {
+		if err := router.Start(fmt.Sprintf(":%d", server.Config.Port)); err != nil {
 			log.Fatalf("Failed to start HTTP server: %v", err)
 		}
 	}()
