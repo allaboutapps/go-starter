@@ -32,7 +32,7 @@ type initializeTemplatePayload struct {
     //
     //     Schemes: http, https, ws, wss
     //
-    //     Deprecated: true
+    //     Deprecated: false
     //
     //     Responses:
 	//       200: initializeTemplateResponse

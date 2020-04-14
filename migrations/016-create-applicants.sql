@@ -1,9 +1,9 @@
 -- +migrate Up
 CREATE TABLE applicants (
-	id uuid NOT NULL,
-    application_state_id NOT NULL,
-	name text NOT NULL,
-	email text NOT NULL,
+    id uuid NOT NULL,
+    application_state_id uuid NOT NULL,
+    name text NOT NULL,
+    email text NOT NULL,
     job_category text,
     previous_projects text,
     start_date date NOT NULL,
@@ -19,12 +19,15 @@ CREATE TABLE applicants (
     first_interview date,
     second_interview date,
     notes text,
-	created_at timestamptz NOT NULL,
-	updated_at timestamptz NOT NULL,
-	CONSTRAINT applicants_pkey PRIMARY KEY (id),
-	CONSTRAINT applicants_email_key UNIQUE (email)
+    created_at timestamptz NOT NULL,
+    updated_at timestamptz NOT NULL,
+    CONSTRAINT applicants_pkey PRIMARY KEY (id),
+    CONSTRAINT applicants_email_key UNIQUE (email)
 );
-ALTER TABLE applicants ADD CONSTRAINT applicants_application_state_id_fkey FOREIGN KEY (application_state_id) REFERENCES applicaton_states(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE applicants
+    ADD CONSTRAINT applicants_application_state_id_fkey FOREIGN KEY (application_state_id) REFERENCES application_states (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
 DROP TABLE applicants;
+
