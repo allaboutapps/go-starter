@@ -50,8 +50,11 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
 
 FROM development as builder
 WORKDIR /app
+COPY go.mod /app/go.mod
+COPY go.sum /app/go.sum
+COPY tools.go /app/tools.go
+RUN make modules && make tools
 COPY . /app/
-# RUN make init -- only required for app service (TODO)
 
 ### -----------------------
 # --- Stage: builder-pgserve
