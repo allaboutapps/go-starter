@@ -33,6 +33,9 @@
 				"source.organizeImports": true,
 			},
 		},
+		"[sql]": {
+			"editor.formatOnSave": true
+		},
 		"gopls": {
 			// Add parameter placeholders when completing a function.
 			"usePlaceholders": true,

@@ -14,6 +14,21 @@ type initializeTemplatePayload struct {
 	Hash string `json:"hash"`
 }
 
+// swagger:route GET /templates templates init initializeTemplateHandler
+//
+// Summary of initializeTemplateHandler
+//
+// Description of initializeTemplateHandler
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https, ws, wss
+//
+//     Deprecated: false
+//
+//     Responses:
+//       200: SomeSampleType
 func (s *Server) InitializeTemplateHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		payload := new(initializeTemplatePayload)

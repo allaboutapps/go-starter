@@ -47,3 +47,12 @@ clean:
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 # ignore matching file/make rule combinations in working-dir
 .PHONY: test
+
+check-swagger:
+	which swagger || (GO111MODULE=off go get -u github.com/go-swagger/go-swagger/cmd/swagger)
+
+swagger: check-swagger
+	GO111MODULE=on go mod vendor  && GO111MODULE=off swagger generate spec -o ./swagger.json --scan-models
+
+serve-swagger: check-swagger
+	swagger serve -F=swagger swagger.json

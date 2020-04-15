@@ -3,14 +3,11 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"os"
 
-	"allaboutapps.at/aw/go-mranftl-sample/models"
 	_ "github.com/lib/pq"
-	"github.com/volatiletech/sqlboiler/boil"
 )
 
 var (
@@ -44,26 +41,4 @@ func main() {
 	fmt.Println("Successfully connected!")
 
 	// jsut for the showcase, we will use the panic variants here currently...
-
-	var p1 models.Pilot
-	p1.Name = "Mario"
-
-	err = p1.Insert(context.Background(), db, boil.Infer())
-
-	if err != nil {
-		panic(err)
-	}
-
-	pilots, err := models.Pilots().All(context.Background(), db)
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(len(pilots), "pilots")
-
-	for _, pilot := range pilots {
-		fmt.Println(pilot)
-	}
-
 }
