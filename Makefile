@@ -70,5 +70,5 @@ swagger-models:
 
 swagger: swagger-spec swagger-models
 
-serve-swagger:
-	swagger serve -F=swagger swagger.json
+# serve-swagger:
+# 	swagger serve -F=swagger swaggertest/swagger.json --no-open
