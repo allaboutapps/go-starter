@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE password_reset_tokens (
-    token uuid NOT NULL,
+    token uuid NOT NULL DEFAULT uuid_generate_v4 (),
     valid_until timestamptz NOT NULL,
     user_id uuid NULL,
     created_at timestamptz NOT NULL,

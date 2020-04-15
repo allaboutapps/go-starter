@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE roles (
-    id uuid NOT NULL,
+    id uuid NOT NULL DEFAULT uuid_generate_v4 (),
     role text NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,

@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE applicants (
-    id uuid NOT NULL,
+    id uuid NOT NULL DEFAULT uuid_generate_v4 (),
     application_state_id uuid NOT NULL,
     name text NOT NULL,
     email text NOT NULL,
