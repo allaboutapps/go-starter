@@ -1,0 +1,13 @@
+# Feel free to customize the base swagger file here directly
+# Everything will be merged into the final swagger.json above 
+consumes:
+- application/json
+info:
+  title: Pgserveswagger
+  version: 0.1.0
+paths: {}
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"

@@ -55,20 +55,23 @@ reset-database:
 # ignore matching file/make rule combinations in working-dir
 .PHONY: test
 
-swagger-spec: 
+pgserve-swagger-spec: 
 	swagger generate spec \
-		-o swaggertest/swagger.json \
+		-i pgserveswagger/swagger.yml \
+		--include=allaboutapps.at/aw/go-mranftl-sample/pgserveswagger \
+		-o pgserveswagger/swagger.json \
 		--scan-models
 
-swagger-models:
+pgserve-swagger-models:
 	swagger generate model \
 		--allow-template-override \
-		--template-dir=swaggertest/templates \
-		--spec=swaggertest/swagger.json \
-		--existing-models=allaboutapps.at/aw/go-mranftl-sample/swaggertest \
-		--model-package=swaggertest
+		--template-dir=pgserveswagger/templates \
+		--spec=pgserveswagger/swagger.json \
+		--existing-models=allaboutapps.at/aw/go-mranftl-sample/pgserveswagger \
+		--model-package=pgserveswagger \
+		--all-definitions
 
-swagger: swagger-spec swagger-models
+pgserve-swagger: pgserve-swagger-spec pgserve-swagger-models
 
 # serve-swagger:
-# 	swagger serve -F=swagger swaggertest/swagger.json --no-open
+# 	swagger serve -F=swagger pgserveswagger/swagger.json --no-open

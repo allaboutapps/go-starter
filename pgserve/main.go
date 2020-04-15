@@ -13,7 +13,6 @@ import (
 	"allaboutapps.at/aw/go-mranftl-sample/pgserve/api"
 	"allaboutapps.at/aw/go-mranftl-sample/pgserve/router"
 	"allaboutapps.at/aw/go-mranftl-sample/pgtestpool"
-	_ "allaboutapps.at/aw/go-mranftl-sample/types"
 )
 
 func main() {

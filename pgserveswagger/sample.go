@@ -1,11 +1,9 @@
-package swaggertest
+package pgserveswagger
 
 import "github.com/go-openapi/strfmt"
 
-// SomeSampleType SomeSampleType some sample type
-//
-// swagger:model SomeSampleType
-type SomeSampleType struct {
+// swagger:model SampleEntry
+type SampleEntry struct {
 
 	// Min Length: 5
 	// Max Length: 10
