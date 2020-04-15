@@ -1,8 +1,11 @@
-package pgserveswagger
+package pgservetypes
 
 import "github.com/go-openapi/strfmt"
 
-// swagger:model SampleEntry
+// basic swagger model properties: https://goswagger.io/use/spec/model.html#properties
+// special types: https://goswagger.io/use/spec/strfmt.html
+
+// swagger:model
 type SampleEntry struct {
 
 	// Min Length: 5
@@ -22,4 +25,12 @@ type SampleEntry struct {
 	Mail strfmt.Email `json:"mail"`
 
 	MoreData string `json:"moreData"`
+}
+
+// swagger:model
+type HelloWorld struct {
+
+	// Allow: "World"
+	// Required: true
+	Hello string `json:"hello"`
 }

@@ -57,21 +57,23 @@ reset-database:
 
 pgserve-swagger-spec: 
 	swagger generate spec \
-		-i pgserveswagger/swagger.yml \
-		--include=allaboutapps.at/aw/go-mranftl-sample/pgserveswagger \
-		-o pgserveswagger/swagger.json \
-		--scan-models
+		-i pgservetypes/swagger/swagger.yml \
+		--include=allaboutapps.at/aw/go-mranftl-sample/pgservetypes \
+		-o pgservetypes/swagger/swagger.json \
+		--scan-models \
+		-q
 
 pgserve-swagger-models:
 	swagger generate model \
 		--allow-template-override \
-		--template-dir=pgserveswagger/templates \
-		--spec=pgserveswagger/swagger.json \
-		--existing-models=allaboutapps.at/aw/go-mranftl-sample/pgserveswagger \
-		--model-package=pgserveswagger \
-		--all-definitions
+		--template-dir=pgservetypes/swagger \
+		--spec=pgservetypes/swagger/swagger.json \
+		--existing-models=allaboutapps.at/aw/go-mranftl-sample/pgservetypes \
+		--model-package=pgservetypes \
+		--all-definitions \
+		-q
 
 pgserve-swagger: pgserve-swagger-spec pgserve-swagger-models
 
 # serve-swagger:
-# 	swagger serve -F=swagger pgserveswagger/swagger.json --no-open
+# 	swagger serve -F=swagger pgservetypes/swagger.json --no-open

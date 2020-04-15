@@ -10,11 +10,25 @@
   ],
   "swagger": "2.0",
   "info": {
-    "title": "Pgserveswagger",
+    "title": "pgservetypes",
     "version": "0.1.0"
   },
   "paths": {},
   "definitions": {
+    "HelloWorld": {
+      "type": "object",
+      "required": [
+        "hello"
+      ],
+      "properties": {
+        "hello": {
+          "description": "Allow: \"World\"",
+          "type": "string",
+          "x-go-name": "Hello"
+        }
+      },
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/pgservetypes"
+    },
     "SampleEntry": {
       "type": "object",
       "required": [
@@ -54,7 +68,7 @@
           "x-go-name": "Num"
         }
       },
-      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/pgserveswagger"
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/pgservetypes"
     }
   }
 }
