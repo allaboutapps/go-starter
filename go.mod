@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1 // indirect
+	github.com/ericlagergren/decimal v0.0.0-20191206042408-88212e6cfca9 // indirect
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12

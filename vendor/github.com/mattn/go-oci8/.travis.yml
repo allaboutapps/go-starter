@@ -1,0 +1,13 @@
+sudo: required
+
+services:
+  - docker
+
+language: bash
+
+before_install:
+  - docker pull wnameless/oracle-xe-11g
+  - docker run -d wnameless/oracle-xe-11g
+
+script:
+  - docker run --rm -i -e TESTDIR=$(pwd) -v $(pwd):$(pwd) wnameless/oracle-xe-11g /bin/bash < test.sh

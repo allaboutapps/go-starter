@@ -4,13 +4,39 @@
 package models
 
 var TableNames = struct {
-	Jets           string
-	Languages      string
-	PilotLanguages string
-	Pilots         string
+	AccessTokens                string
+	AppUserProfiles             string
+	ApplicantTags               string
+	Applicants                  string
+	ApplicationStateTransitions string
+	ApplicationStates           string
+	NotificationTemplates       string
+	PasswordResetTokens         string
+	Permissions                 string
+	RefreshTokens               string
+	RoleApplicationStates       string
+	RoleNotificationTemplates   string
+	Roles                       string
+	Tags                        string
+	UserPermissions             string
+	UserRoles                   string
+	Users                       string
 }{
-	Jets:           "jets",
-	Languages:      "languages",
-	PilotLanguages: "pilot_languages",
-	Pilots:         "pilots",
+	AccessTokens:                "access_tokens",
+	AppUserProfiles:             "app_user_profiles",
+	ApplicantTags:               "applicant_tags",
+	Applicants:                  "applicants",
+	ApplicationStateTransitions: "application_state_transitions",
+	ApplicationStates:           "application_states",
+	NotificationTemplates:       "notification_templates",
+	PasswordResetTokens:         "password_reset_tokens",
+	Permissions:                 "permissions",
+	RefreshTokens:               "refresh_tokens",
+	RoleApplicationStates:       "role_application_states",
+	RoleNotificationTemplates:   "role_notification_templates",
+	Roles:                       "roles",
+	Tags:                        "tags",
+	UserPermissions:             "user_permissions",
+	UserRoles:                   "user_roles",
+	Users:                       "users",
 }

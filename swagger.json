@@ -19,7 +19,6 @@
         ],
         "summary": "Summary of initializeTemplateHandler",
         "operationId": "initializeTemplateHandler",
-        "deprecated": true,
         "parameters": [
           {
             "maxItems": 1,

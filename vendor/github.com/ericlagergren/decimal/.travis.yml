@@ -1,0 +1,37 @@
+language: go
+
+go:
+  - "1.11.x"
+  - "1.12.x"
+  - master
+
+cache:
+  directories:
+    - testdata
+
+matrix:
+  allow_failures:
+    - go: master
+  fast_finish: true
+
+install: true
+
+notifications:
+  email: false
+
+addons:
+  apt:
+    sources:
+      - deadsnakes # for python 3.6
+    packages:
+      - python3.6
+
+before_script:
+  - ./testdata/dectest/generate.bash
+  - ./testdata/pytables/generate.bash
+  - GO_FILES=$(find . -type f -iname '*.go')
+  - go get -u -t ./...
+
+script:
+  - test -z $(gofmt -s -l $GO_FILES)
+  - travis_wait 30 go test -tags=ddebug -c; ./decimal.test -test.timeout=30m -test.short ./...
