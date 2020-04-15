@@ -143,6 +143,14 @@ pipeline:
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
+  "git diff --exit-code":
+    group: post-check
+    image: *IMAGE_DEPLOY_ID
+    commands:
+      - git diff --exit-code
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
 #   # ---------------------------------------------------------------------------
 #   # PUBLISH
 #   # ---------------------------------------------------------------------------
