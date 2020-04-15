@@ -60,32 +60,23 @@
   },
   "definitions": {
     "SomeSampleType": {
-      "description": "SomeSampleType some sample type",
       "type": "object",
       "required": [
-        "data",
         "id",
-        "moreData"
+        "data"
       ],
       "properties": {
         "data": {
-          "description": "data",
           "type": "string",
           "minLength": 5,
           "x-go-name": "Data"
         },
         "id": {
-          "description": "Id",
           "type": "string",
-          "x-go-name": "ID"
-        },
-        "moreData": {
-          "description": "moreData",
-          "type": "string",
-          "x-go-name": "MoreData"
+          "x-go-name": "Id"
         }
       },
-      "x-go-package": "_/app/models"
+      "x-go-package": "_/app/types"
     }
   },
   "securityDefinitions": {
