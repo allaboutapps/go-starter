@@ -113,6 +113,13 @@ func (w whereHelperfloat32) GT(x float32) qm.QueryMod { return qmhelper.Where(w.
 func (w whereHelperfloat32) GTE(x float32) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
+func (w whereHelperfloat32) IN(slice []float32) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
 
 type whereHelpertypes_StringArray struct{ field string }
 

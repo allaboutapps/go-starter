@@ -44,6 +44,13 @@ tidy:
 clean:
 	rm -rf bin
 
+reset-database:
+	@echo "DROP & CREATE database:"
+	@echo "  PGHOST=${PGHOST} PGDATABASE=${PGDATABASE}" PGUSER=${PGUSER}
+	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	psql -d postgres -c 'DROP DATABASE IF EXISTS "${PGDATABASE}";'
+	psql -d postgres -c 'CREATE DATABASE "${PGDATABASE}" WITH OWNER ${PGUSER} TEMPLATE "template0"'
+
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 # ignore matching file/make rule combinations in working-dir
 .PHONY: test

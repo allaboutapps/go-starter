@@ -434,7 +434,9 @@ func (o *AccessToken) RemoveUser(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.R.User = nil
+	if o.R != nil {
+		o.R.User = nil
+	}
 	if related == nil || related.R == nil {
 		return nil
 	}
