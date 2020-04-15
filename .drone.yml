@@ -136,7 +136,7 @@ pipeline:
     commands:
       - cd /app
       - make build-pgserve
-      - "pgserve &"
+      - "pgserve &> /dev/null &"
       - make init
       - sql-migrate up
       - make build
