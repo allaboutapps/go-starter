@@ -63,26 +63,40 @@
       "description": "SomeSampleType SomeSampleType some sample type",
       "type": "object",
       "required": [
-        "data",
-        "id",
-        "moreData"
+        "isActive"
       ],
       "properties": {
         "data": {
-          "description": "data",
           "type": "string",
+          "maxLength": 10,
           "minLength": 5,
           "x-go-name": "Data"
         },
         "id": {
-          "description": "Id",
           "type": "string",
+          "format": "uuid",
           "x-go-name": "ID"
         },
+        "isActive": {
+          "type": "boolean",
+          "default": false,
+          "x-go-name": "IsActive"
+        },
+        "mail": {
+          "type": "string",
+          "format": "email",
+          "x-go-name": "Mail"
+        },
         "moreData": {
-          "description": "moreData",
           "type": "string",
           "x-go-name": "MoreData"
+        },
+        "num": {
+          "type": "integer",
+          "format": "int64",
+          "maximum": 100,
+          "minimum": 1,
+          "x-go-name": "Num"
         }
       },
       "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/swaggertest"

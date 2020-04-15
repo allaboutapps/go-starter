@@ -24,7 +24,15 @@ func (m *SomeSampleType) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateMoreData(formats); err != nil {
+	if err := m.validateIsActive(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNum(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -36,11 +44,15 @@ func (m *SomeSampleType) Validate(formats strfmt.Registry) error {
 
 func (m *SomeSampleType) validateData(formats strfmt.Registry) error {
 
-	if err := validate.Required("data", "body", m.Data); err != nil {
+	if swag.IsZero(m.Data) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("data", "body", string(m.Data), 5); err != nil {
 		return err
 	}
 
-	if err := validate.MinLength("data", "body", string(*m.Data), 5); err != nil {
+	if err := validate.MaxLength("data", "body", string(m.Data), 10); err != nil {
 		return err
 	}
 
@@ -49,16 +61,50 @@ func (m *SomeSampleType) validateData(formats strfmt.Registry) error {
 
 func (m *SomeSampleType) validateID(formats strfmt.Registry) error {
 
-	if err := validate.Required("id", "body", m.ID); err != nil {
+	if swag.IsZero(m.ID) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("id", "body", "uuid", m.ID.String(), formats); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *SomeSampleType) validateMoreData(formats strfmt.Registry) error {
+func (m *SomeSampleType) validateIsActive(formats strfmt.Registry) error {
 
-	if err := validate.Required("moreData", "body", m.MoreData); err != nil {
+	if err := validate.Required("isActive", "body", bool(m.IsActive)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SomeSampleType) validateMail(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Mail) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("mail", "body", "email", m.Mail.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SomeSampleType) validateNum(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Num) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("num", "body", int64(m.Num), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("num", "body", int64(m.Num), 100, false); err != nil {
 		return err
 	}
 

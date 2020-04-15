@@ -1,20 +1,27 @@
 package swaggertest
 
+import "github.com/go-openapi/strfmt"
+
 // SomeSampleType SomeSampleType some sample type
 //
 // swagger:model SomeSampleType
 type SomeSampleType struct {
 
-	// data
-	// Required: true
 	// Min Length: 5
-	Data *string `json:"data"`
+	// Max Length: 10
+	Data string `json:"data"`
 
-	// Id
-	// Required: true
-	ID *string `json:"id"`
+	ID strfmt.UUID `json:"id"`
 
-	// moreData
+	// Min: 1
+	// Max: 100
+	Num int `json:"num"`
+
+	// Default: false
 	// Required: true
-	MoreData *string `json:"moreData"`
+	IsActive bool `json:"isActive"`
+
+	Mail strfmt.Email `json:"mail"`
+
+	MoreData string `json:"moreData"`
 }
