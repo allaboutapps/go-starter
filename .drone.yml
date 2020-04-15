@@ -78,6 +78,8 @@ alias:
     PSQL_SSLMODE: &PSQL_SSLMODE "disable"
     PSQL_SCHEMA: &PSQL_SCHEMA "public"
 
+    PGCONSUMER_BASE_URL: "http://127.0.0.1:5000/api"
+
     # optional: env for postgresql-client apt-get package (psql)
     PGDATABASE: *PSQL_DBNAME
     PGUSER: *PSQL_USER
