@@ -93,6 +93,7 @@
 		"heaths.vscode-guid",
 		"bungcip.better-toml",
 		"eamodio.gitlens",
+		"casualjim.gotemplate"
 		// "mtxr.sqltools",
 	]
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
