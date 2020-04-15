@@ -43,6 +43,11 @@ RUN wget https://github.com/darold/pgFormatter/archive/v4.2.tar.gz \
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
     | sh -s -- -b $(go env GOPATH)/bin v1.24.0
 
+# go swagger: (this package should NOT be installed via go get) 
+# https://github.com/go-swagger/go-swagger/releases
+RUN curl -o /usr/local/bin/swagger -L'#' \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.23.0/swagger_linux_amd64" \
+    && chmod +x /usr/local/bin/swagger
 
 ### -----------------------
 # --- Stage: builder
