@@ -92,8 +92,6 @@ type (
 	// UserPermissionSlice is an alias for a slice of pointers to UserPermission.
 	// This should generally be used opposed to []UserPermission.
 	UserPermissionSlice []*UserPermission
-	// UserPermissionHook is the signature for custom UserPermission hook methods
-	UserPermissionHook func(context.Context, boil.ContextExecutor, *UserPermission) error
 
 	userPermissionQuery struct {
 		*queries.Query
@@ -121,176 +119,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var userPermissionBeforeInsertHooks []UserPermissionHook
-var userPermissionBeforeUpdateHooks []UserPermissionHook
-var userPermissionBeforeDeleteHooks []UserPermissionHook
-var userPermissionBeforeUpsertHooks []UserPermissionHook
-
-var userPermissionAfterInsertHooks []UserPermissionHook
-var userPermissionAfterSelectHooks []UserPermissionHook
-var userPermissionAfterUpdateHooks []UserPermissionHook
-var userPermissionAfterDeleteHooks []UserPermissionHook
-var userPermissionAfterUpsertHooks []UserPermissionHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *UserPermission) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *UserPermission) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *UserPermission) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *UserPermission) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *UserPermission) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *UserPermission) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *UserPermission) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *UserPermission) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *UserPermission) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range userPermissionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddUserPermissionHook registers your hook function for all future operations.
-func AddUserPermissionHook(hookPoint boil.HookPoint, userPermissionHook UserPermissionHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		userPermissionBeforeInsertHooks = append(userPermissionBeforeInsertHooks, userPermissionHook)
-	case boil.BeforeUpdateHook:
-		userPermissionBeforeUpdateHooks = append(userPermissionBeforeUpdateHooks, userPermissionHook)
-	case boil.BeforeDeleteHook:
-		userPermissionBeforeDeleteHooks = append(userPermissionBeforeDeleteHooks, userPermissionHook)
-	case boil.BeforeUpsertHook:
-		userPermissionBeforeUpsertHooks = append(userPermissionBeforeUpsertHooks, userPermissionHook)
-	case boil.AfterInsertHook:
-		userPermissionAfterInsertHooks = append(userPermissionAfterInsertHooks, userPermissionHook)
-	case boil.AfterSelectHook:
-		userPermissionAfterSelectHooks = append(userPermissionAfterSelectHooks, userPermissionHook)
-	case boil.AfterUpdateHook:
-		userPermissionAfterUpdateHooks = append(userPermissionAfterUpdateHooks, userPermissionHook)
-	case boil.AfterDeleteHook:
-		userPermissionAfterDeleteHooks = append(userPermissionAfterDeleteHooks, userPermissionHook)
-	case boil.AfterUpsertHook:
-		userPermissionAfterUpsertHooks = append(userPermissionAfterUpsertHooks, userPermissionHook)
-	}
-}
-
 // One returns a single userPermission record from the query.
 func (q userPermissionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*UserPermission, error) {
 	o := &UserPermission{}
@@ -305,10 +133,6 @@ func (q userPermissionQuery) One(ctx context.Context, exec boil.ContextExecutor)
 		return nil, errors.Wrap(err, "models: failed to execute a one query for user_permissions")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -319,14 +143,6 @@ func (q userPermissionQuery) All(ctx context.Context, exec boil.ContextExecutor)
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to UserPermission slice")
-	}
-
-	if len(userPermissionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -454,14 +270,6 @@ func (userPermissionL) LoadPermission(ctx context.Context, e boil.ContextExecuto
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for permissions")
 	}
 
-	if len(userPermissionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -553,14 +361,6 @@ func (userPermissionL) LoadUser(ctx context.Context, e boil.ContextExecutor, sin
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userPermissionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -738,10 +538,6 @@ func (o *UserPermission) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(userPermissionColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -805,7 +601,7 @@ func (o *UserPermission) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		userPermissionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the UserPermission.
@@ -819,9 +615,6 @@ func (o *UserPermission) Update(ctx context.Context, exec boil.ContextExecutor, 
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	userPermissionUpdateCacheMut.RLock()
 	cache, cached := userPermissionUpdateCache[key]
@@ -874,7 +667,7 @@ func (o *UserPermission) Update(ctx context.Context, exec boil.ContextExecutor, 
 		userPermissionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -955,10 +748,6 @@ func (o *UserPermission) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(userPermissionColumnsWithDefault, o)
@@ -1062,7 +851,7 @@ func (o *UserPermission) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 		userPermissionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single UserPermission record with an executor.
@@ -1070,10 +859,6 @@ func (o *UserPermission) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 func (o *UserPermission) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no UserPermission provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), userPermissionPrimaryKeyMapping)
@@ -1092,10 +877,6 @@ func (o *UserPermission) Delete(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for user_permissions")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1128,14 +909,6 @@ func (o UserPermissionSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 		return 0, nil
 	}
 
-	if len(userPermissionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), userPermissionPrimaryKeyMapping)
@@ -1158,14 +931,6 @@ func (o UserPermissionSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for user_permissions")
-	}
-
-	if len(userPermissionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

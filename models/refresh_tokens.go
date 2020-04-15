@@ -90,8 +90,6 @@ type (
 	// RefreshTokenSlice is an alias for a slice of pointers to RefreshToken.
 	// This should generally be used opposed to []RefreshToken.
 	RefreshTokenSlice []*RefreshToken
-	// RefreshTokenHook is the signature for custom RefreshToken hook methods
-	RefreshTokenHook func(context.Context, boil.ContextExecutor, *RefreshToken) error
 
 	refreshTokenQuery struct {
 		*queries.Query
@@ -119,176 +117,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var refreshTokenBeforeInsertHooks []RefreshTokenHook
-var refreshTokenBeforeUpdateHooks []RefreshTokenHook
-var refreshTokenBeforeDeleteHooks []RefreshTokenHook
-var refreshTokenBeforeUpsertHooks []RefreshTokenHook
-
-var refreshTokenAfterInsertHooks []RefreshTokenHook
-var refreshTokenAfterSelectHooks []RefreshTokenHook
-var refreshTokenAfterUpdateHooks []RefreshTokenHook
-var refreshTokenAfterDeleteHooks []RefreshTokenHook
-var refreshTokenAfterUpsertHooks []RefreshTokenHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *RefreshToken) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *RefreshToken) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *RefreshToken) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *RefreshToken) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *RefreshToken) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *RefreshToken) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *RefreshToken) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *RefreshToken) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *RefreshToken) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range refreshTokenAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddRefreshTokenHook registers your hook function for all future operations.
-func AddRefreshTokenHook(hookPoint boil.HookPoint, refreshTokenHook RefreshTokenHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		refreshTokenBeforeInsertHooks = append(refreshTokenBeforeInsertHooks, refreshTokenHook)
-	case boil.BeforeUpdateHook:
-		refreshTokenBeforeUpdateHooks = append(refreshTokenBeforeUpdateHooks, refreshTokenHook)
-	case boil.BeforeDeleteHook:
-		refreshTokenBeforeDeleteHooks = append(refreshTokenBeforeDeleteHooks, refreshTokenHook)
-	case boil.BeforeUpsertHook:
-		refreshTokenBeforeUpsertHooks = append(refreshTokenBeforeUpsertHooks, refreshTokenHook)
-	case boil.AfterInsertHook:
-		refreshTokenAfterInsertHooks = append(refreshTokenAfterInsertHooks, refreshTokenHook)
-	case boil.AfterSelectHook:
-		refreshTokenAfterSelectHooks = append(refreshTokenAfterSelectHooks, refreshTokenHook)
-	case boil.AfterUpdateHook:
-		refreshTokenAfterUpdateHooks = append(refreshTokenAfterUpdateHooks, refreshTokenHook)
-	case boil.AfterDeleteHook:
-		refreshTokenAfterDeleteHooks = append(refreshTokenAfterDeleteHooks, refreshTokenHook)
-	case boil.AfterUpsertHook:
-		refreshTokenAfterUpsertHooks = append(refreshTokenAfterUpsertHooks, refreshTokenHook)
-	}
-}
-
 // One returns a single refreshToken record from the query.
 func (q refreshTokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*RefreshToken, error) {
 	o := &RefreshToken{}
@@ -303,10 +131,6 @@ func (q refreshTokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 		return nil, errors.Wrap(err, "models: failed to execute a one query for refresh_tokens")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -317,14 +141,6 @@ func (q refreshTokenQuery) All(ctx context.Context, exec boil.ContextExecutor) (
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to RefreshToken slice")
-	}
-
-	if len(refreshTokenAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -440,14 +256,6 @@ func (refreshTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(refreshTokenAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -609,10 +417,6 @@ func (o *RefreshToken) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(refreshTokenColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -676,7 +480,7 @@ func (o *RefreshToken) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		refreshTokenInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the RefreshToken.
@@ -690,9 +494,6 @@ func (o *RefreshToken) Update(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	refreshTokenUpdateCacheMut.RLock()
 	cache, cached := refreshTokenUpdateCache[key]
@@ -745,7 +546,7 @@ func (o *RefreshToken) Update(ctx context.Context, exec boil.ContextExecutor, co
 		refreshTokenUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -826,10 +627,6 @@ func (o *RefreshToken) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(refreshTokenColumnsWithDefault, o)
@@ -933,7 +730,7 @@ func (o *RefreshToken) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 		refreshTokenUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single RefreshToken record with an executor.
@@ -941,10 +738,6 @@ func (o *RefreshToken) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 func (o *RefreshToken) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no RefreshToken provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), refreshTokenPrimaryKeyMapping)
@@ -963,10 +756,6 @@ func (o *RefreshToken) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for refresh_tokens")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -999,14 +788,6 @@ func (o RefreshTokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 		return 0, nil
 	}
 
-	if len(refreshTokenBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), refreshTokenPrimaryKeyMapping)
@@ -1029,14 +810,6 @@ func (o RefreshTokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for refresh_tokens")
-	}
-
-	if len(refreshTokenAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

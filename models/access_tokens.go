@@ -178,8 +178,6 @@ type (
 	// AccessTokenSlice is an alias for a slice of pointers to AccessToken.
 	// This should generally be used opposed to []AccessToken.
 	AccessTokenSlice []*AccessToken
-	// AccessTokenHook is the signature for custom AccessToken hook methods
-	AccessTokenHook func(context.Context, boil.ContextExecutor, *AccessToken) error
 
 	accessTokenQuery struct {
 		*queries.Query
@@ -207,176 +205,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var accessTokenBeforeInsertHooks []AccessTokenHook
-var accessTokenBeforeUpdateHooks []AccessTokenHook
-var accessTokenBeforeDeleteHooks []AccessTokenHook
-var accessTokenBeforeUpsertHooks []AccessTokenHook
-
-var accessTokenAfterInsertHooks []AccessTokenHook
-var accessTokenAfterSelectHooks []AccessTokenHook
-var accessTokenAfterUpdateHooks []AccessTokenHook
-var accessTokenAfterDeleteHooks []AccessTokenHook
-var accessTokenAfterUpsertHooks []AccessTokenHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *AccessToken) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *AccessToken) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *AccessToken) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *AccessToken) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *AccessToken) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *AccessToken) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *AccessToken) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *AccessToken) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *AccessToken) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range accessTokenAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAccessTokenHook registers your hook function for all future operations.
-func AddAccessTokenHook(hookPoint boil.HookPoint, accessTokenHook AccessTokenHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		accessTokenBeforeInsertHooks = append(accessTokenBeforeInsertHooks, accessTokenHook)
-	case boil.BeforeUpdateHook:
-		accessTokenBeforeUpdateHooks = append(accessTokenBeforeUpdateHooks, accessTokenHook)
-	case boil.BeforeDeleteHook:
-		accessTokenBeforeDeleteHooks = append(accessTokenBeforeDeleteHooks, accessTokenHook)
-	case boil.BeforeUpsertHook:
-		accessTokenBeforeUpsertHooks = append(accessTokenBeforeUpsertHooks, accessTokenHook)
-	case boil.AfterInsertHook:
-		accessTokenAfterInsertHooks = append(accessTokenAfterInsertHooks, accessTokenHook)
-	case boil.AfterSelectHook:
-		accessTokenAfterSelectHooks = append(accessTokenAfterSelectHooks, accessTokenHook)
-	case boil.AfterUpdateHook:
-		accessTokenAfterUpdateHooks = append(accessTokenAfterUpdateHooks, accessTokenHook)
-	case boil.AfterDeleteHook:
-		accessTokenAfterDeleteHooks = append(accessTokenAfterDeleteHooks, accessTokenHook)
-	case boil.AfterUpsertHook:
-		accessTokenAfterUpsertHooks = append(accessTokenAfterUpsertHooks, accessTokenHook)
-	}
-}
-
 // One returns a single accessToken record from the query.
 func (q accessTokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AccessToken, error) {
 	o := &AccessToken{}
@@ -391,10 +219,6 @@ func (q accessTokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*
 		return nil, errors.Wrap(err, "models: failed to execute a one query for access_tokens")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -405,14 +229,6 @@ func (q accessTokenQuery) All(ctx context.Context, exec boil.ContextExecutor) (A
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to AccessToken slice")
-	}
-
-	if len(accessTokenAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -528,14 +344,6 @@ func (accessTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor, singul
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(accessTokenAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -697,10 +505,6 @@ func (o *AccessToken) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(accessTokenColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -764,7 +568,7 @@ func (o *AccessToken) Insert(ctx context.Context, exec boil.ContextExecutor, col
 		accessTokenInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the AccessToken.
@@ -778,9 +582,6 @@ func (o *AccessToken) Update(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	accessTokenUpdateCacheMut.RLock()
 	cache, cached := accessTokenUpdateCache[key]
@@ -833,7 +634,7 @@ func (o *AccessToken) Update(ctx context.Context, exec boil.ContextExecutor, col
 		accessTokenUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -914,10 +715,6 @@ func (o *AccessToken) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(accessTokenColumnsWithDefault, o)
@@ -1021,7 +818,7 @@ func (o *AccessToken) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 		accessTokenUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single AccessToken record with an executor.
@@ -1029,10 +826,6 @@ func (o *AccessToken) Upsert(ctx context.Context, exec boil.ContextExecutor, upd
 func (o *AccessToken) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no AccessToken provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), accessTokenPrimaryKeyMapping)
@@ -1051,10 +844,6 @@ func (o *AccessToken) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for access_tokens")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1087,14 +876,6 @@ func (o AccessTokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 		return 0, nil
 	}
 
-	if len(accessTokenBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), accessTokenPrimaryKeyMapping)
@@ -1117,14 +898,6 @@ func (o AccessTokenSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for access_tokens")
-	}
-
-	if len(accessTokenAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -92,8 +92,6 @@ type (
 	// ApplicantTagSlice is an alias for a slice of pointers to ApplicantTag.
 	// This should generally be used opposed to []ApplicantTag.
 	ApplicantTagSlice []*ApplicantTag
-	// ApplicantTagHook is the signature for custom ApplicantTag hook methods
-	ApplicantTagHook func(context.Context, boil.ContextExecutor, *ApplicantTag) error
 
 	applicantTagQuery struct {
 		*queries.Query
@@ -121,176 +119,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var applicantTagBeforeInsertHooks []ApplicantTagHook
-var applicantTagBeforeUpdateHooks []ApplicantTagHook
-var applicantTagBeforeDeleteHooks []ApplicantTagHook
-var applicantTagBeforeUpsertHooks []ApplicantTagHook
-
-var applicantTagAfterInsertHooks []ApplicantTagHook
-var applicantTagAfterSelectHooks []ApplicantTagHook
-var applicantTagAfterUpdateHooks []ApplicantTagHook
-var applicantTagAfterDeleteHooks []ApplicantTagHook
-var applicantTagAfterUpsertHooks []ApplicantTagHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ApplicantTag) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ApplicantTag) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ApplicantTag) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ApplicantTag) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ApplicantTag) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ApplicantTag) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ApplicantTag) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ApplicantTag) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ApplicantTag) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantTagAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddApplicantTagHook registers your hook function for all future operations.
-func AddApplicantTagHook(hookPoint boil.HookPoint, applicantTagHook ApplicantTagHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		applicantTagBeforeInsertHooks = append(applicantTagBeforeInsertHooks, applicantTagHook)
-	case boil.BeforeUpdateHook:
-		applicantTagBeforeUpdateHooks = append(applicantTagBeforeUpdateHooks, applicantTagHook)
-	case boil.BeforeDeleteHook:
-		applicantTagBeforeDeleteHooks = append(applicantTagBeforeDeleteHooks, applicantTagHook)
-	case boil.BeforeUpsertHook:
-		applicantTagBeforeUpsertHooks = append(applicantTagBeforeUpsertHooks, applicantTagHook)
-	case boil.AfterInsertHook:
-		applicantTagAfterInsertHooks = append(applicantTagAfterInsertHooks, applicantTagHook)
-	case boil.AfterSelectHook:
-		applicantTagAfterSelectHooks = append(applicantTagAfterSelectHooks, applicantTagHook)
-	case boil.AfterUpdateHook:
-		applicantTagAfterUpdateHooks = append(applicantTagAfterUpdateHooks, applicantTagHook)
-	case boil.AfterDeleteHook:
-		applicantTagAfterDeleteHooks = append(applicantTagAfterDeleteHooks, applicantTagHook)
-	case boil.AfterUpsertHook:
-		applicantTagAfterUpsertHooks = append(applicantTagAfterUpsertHooks, applicantTagHook)
-	}
-}
-
 // One returns a single applicantTag record from the query.
 func (q applicantTagQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ApplicantTag, error) {
 	o := &ApplicantTag{}
@@ -305,10 +133,6 @@ func (q applicantTagQuery) One(ctx context.Context, exec boil.ContextExecutor) (
 		return nil, errors.Wrap(err, "models: failed to execute a one query for applicant_tags")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -319,14 +143,6 @@ func (q applicantTagQuery) All(ctx context.Context, exec boil.ContextExecutor) (
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ApplicantTag slice")
-	}
-
-	if len(applicantTagAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -454,14 +270,6 @@ func (applicantTagL) LoadApplicant(ctx context.Context, e boil.ContextExecutor, 
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for applicants")
 	}
 
-	if len(applicantTagAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -553,14 +361,6 @@ func (applicantTagL) LoadTag(ctx context.Context, e boil.ContextExecutor, singul
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tags")
-	}
-
-	if len(applicantTagAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -738,10 +538,6 @@ func (o *ApplicantTag) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(applicantTagColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -805,7 +601,7 @@ func (o *ApplicantTag) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		applicantTagInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ApplicantTag.
@@ -819,9 +615,6 @@ func (o *ApplicantTag) Update(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	applicantTagUpdateCacheMut.RLock()
 	cache, cached := applicantTagUpdateCache[key]
@@ -874,7 +667,7 @@ func (o *ApplicantTag) Update(ctx context.Context, exec boil.ContextExecutor, co
 		applicantTagUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -955,10 +748,6 @@ func (o *ApplicantTag) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(applicantTagColumnsWithDefault, o)
@@ -1062,7 +851,7 @@ func (o *ApplicantTag) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 		applicantTagUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ApplicantTag record with an executor.
@@ -1070,10 +859,6 @@ func (o *ApplicantTag) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 func (o *ApplicantTag) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ApplicantTag provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), applicantTagPrimaryKeyMapping)
@@ -1092,10 +877,6 @@ func (o *ApplicantTag) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for applicant_tags")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1128,14 +909,6 @@ func (o ApplicantTagSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 		return 0, nil
 	}
 
-	if len(applicantTagBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), applicantTagPrimaryKeyMapping)
@@ -1158,14 +931,6 @@ func (o ApplicantTagSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for applicant_tags")
-	}
-
-	if len(applicantTagAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

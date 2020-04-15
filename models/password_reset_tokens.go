@@ -95,8 +95,6 @@ type (
 	// PasswordResetTokenSlice is an alias for a slice of pointers to PasswordResetToken.
 	// This should generally be used opposed to []PasswordResetToken.
 	PasswordResetTokenSlice []*PasswordResetToken
-	// PasswordResetTokenHook is the signature for custom PasswordResetToken hook methods
-	PasswordResetTokenHook func(context.Context, boil.ContextExecutor, *PasswordResetToken) error
 
 	passwordResetTokenQuery struct {
 		*queries.Query
@@ -124,176 +122,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var passwordResetTokenBeforeInsertHooks []PasswordResetTokenHook
-var passwordResetTokenBeforeUpdateHooks []PasswordResetTokenHook
-var passwordResetTokenBeforeDeleteHooks []PasswordResetTokenHook
-var passwordResetTokenBeforeUpsertHooks []PasswordResetTokenHook
-
-var passwordResetTokenAfterInsertHooks []PasswordResetTokenHook
-var passwordResetTokenAfterSelectHooks []PasswordResetTokenHook
-var passwordResetTokenAfterUpdateHooks []PasswordResetTokenHook
-var passwordResetTokenAfterDeleteHooks []PasswordResetTokenHook
-var passwordResetTokenAfterUpsertHooks []PasswordResetTokenHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *PasswordResetToken) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *PasswordResetToken) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *PasswordResetToken) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *PasswordResetToken) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *PasswordResetToken) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *PasswordResetToken) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *PasswordResetToken) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *PasswordResetToken) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *PasswordResetToken) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range passwordResetTokenAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPasswordResetTokenHook registers your hook function for all future operations.
-func AddPasswordResetTokenHook(hookPoint boil.HookPoint, passwordResetTokenHook PasswordResetTokenHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		passwordResetTokenBeforeInsertHooks = append(passwordResetTokenBeforeInsertHooks, passwordResetTokenHook)
-	case boil.BeforeUpdateHook:
-		passwordResetTokenBeforeUpdateHooks = append(passwordResetTokenBeforeUpdateHooks, passwordResetTokenHook)
-	case boil.BeforeDeleteHook:
-		passwordResetTokenBeforeDeleteHooks = append(passwordResetTokenBeforeDeleteHooks, passwordResetTokenHook)
-	case boil.BeforeUpsertHook:
-		passwordResetTokenBeforeUpsertHooks = append(passwordResetTokenBeforeUpsertHooks, passwordResetTokenHook)
-	case boil.AfterInsertHook:
-		passwordResetTokenAfterInsertHooks = append(passwordResetTokenAfterInsertHooks, passwordResetTokenHook)
-	case boil.AfterSelectHook:
-		passwordResetTokenAfterSelectHooks = append(passwordResetTokenAfterSelectHooks, passwordResetTokenHook)
-	case boil.AfterUpdateHook:
-		passwordResetTokenAfterUpdateHooks = append(passwordResetTokenAfterUpdateHooks, passwordResetTokenHook)
-	case boil.AfterDeleteHook:
-		passwordResetTokenAfterDeleteHooks = append(passwordResetTokenAfterDeleteHooks, passwordResetTokenHook)
-	case boil.AfterUpsertHook:
-		passwordResetTokenAfterUpsertHooks = append(passwordResetTokenAfterUpsertHooks, passwordResetTokenHook)
-	}
-}
-
 // One returns a single passwordResetToken record from the query.
 func (q passwordResetTokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*PasswordResetToken, error) {
 	o := &PasswordResetToken{}
@@ -308,10 +136,6 @@ func (q passwordResetTokenQuery) One(ctx context.Context, exec boil.ContextExecu
 		return nil, errors.Wrap(err, "models: failed to execute a one query for password_reset_tokens")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -322,14 +146,6 @@ func (q passwordResetTokenQuery) All(ctx context.Context, exec boil.ContextExecu
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to PasswordResetToken slice")
-	}
-
-	if len(passwordResetTokenAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -445,14 +261,6 @@ func (passwordResetTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor,
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(passwordResetTokenAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -614,10 +422,6 @@ func (o *PasswordResetToken) Insert(ctx context.Context, exec boil.ContextExecut
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(passwordResetTokenColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -681,7 +485,7 @@ func (o *PasswordResetToken) Insert(ctx context.Context, exec boil.ContextExecut
 		passwordResetTokenInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the PasswordResetToken.
@@ -695,9 +499,6 @@ func (o *PasswordResetToken) Update(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	passwordResetTokenUpdateCacheMut.RLock()
 	cache, cached := passwordResetTokenUpdateCache[key]
@@ -750,7 +551,7 @@ func (o *PasswordResetToken) Update(ctx context.Context, exec boil.ContextExecut
 		passwordResetTokenUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -831,10 +632,6 @@ func (o *PasswordResetToken) Upsert(ctx context.Context, exec boil.ContextExecut
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(passwordResetTokenColumnsWithDefault, o)
@@ -938,7 +735,7 @@ func (o *PasswordResetToken) Upsert(ctx context.Context, exec boil.ContextExecut
 		passwordResetTokenUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single PasswordResetToken record with an executor.
@@ -946,10 +743,6 @@ func (o *PasswordResetToken) Upsert(ctx context.Context, exec boil.ContextExecut
 func (o *PasswordResetToken) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no PasswordResetToken provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), passwordResetTokenPrimaryKeyMapping)
@@ -968,10 +761,6 @@ func (o *PasswordResetToken) Delete(ctx context.Context, exec boil.ContextExecut
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for password_reset_tokens")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1004,14 +793,6 @@ func (o PasswordResetTokenSlice) DeleteAll(ctx context.Context, exec boil.Contex
 		return 0, nil
 	}
 
-	if len(passwordResetTokenBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), passwordResetTokenPrimaryKeyMapping)
@@ -1034,14 +815,6 @@ func (o PasswordResetTokenSlice) DeleteAll(ctx context.Context, exec boil.Contex
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for password_reset_tokens")
-	}
-
-	if len(passwordResetTokenAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

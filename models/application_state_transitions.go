@@ -100,8 +100,6 @@ type (
 	// ApplicationStateTransitionSlice is an alias for a slice of pointers to ApplicationStateTransition.
 	// This should generally be used opposed to []ApplicationStateTransition.
 	ApplicationStateTransitionSlice []*ApplicationStateTransition
-	// ApplicationStateTransitionHook is the signature for custom ApplicationStateTransition hook methods
-	ApplicationStateTransitionHook func(context.Context, boil.ContextExecutor, *ApplicationStateTransition) error
 
 	applicationStateTransitionQuery struct {
 		*queries.Query
@@ -129,176 +127,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var applicationStateTransitionBeforeInsertHooks []ApplicationStateTransitionHook
-var applicationStateTransitionBeforeUpdateHooks []ApplicationStateTransitionHook
-var applicationStateTransitionBeforeDeleteHooks []ApplicationStateTransitionHook
-var applicationStateTransitionBeforeUpsertHooks []ApplicationStateTransitionHook
-
-var applicationStateTransitionAfterInsertHooks []ApplicationStateTransitionHook
-var applicationStateTransitionAfterSelectHooks []ApplicationStateTransitionHook
-var applicationStateTransitionAfterUpdateHooks []ApplicationStateTransitionHook
-var applicationStateTransitionAfterDeleteHooks []ApplicationStateTransitionHook
-var applicationStateTransitionAfterUpsertHooks []ApplicationStateTransitionHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *ApplicationStateTransition) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *ApplicationStateTransition) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *ApplicationStateTransition) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *ApplicationStateTransition) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *ApplicationStateTransition) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *ApplicationStateTransition) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *ApplicationStateTransition) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *ApplicationStateTransition) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *ApplicationStateTransition) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicationStateTransitionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddApplicationStateTransitionHook registers your hook function for all future operations.
-func AddApplicationStateTransitionHook(hookPoint boil.HookPoint, applicationStateTransitionHook ApplicationStateTransitionHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		applicationStateTransitionBeforeInsertHooks = append(applicationStateTransitionBeforeInsertHooks, applicationStateTransitionHook)
-	case boil.BeforeUpdateHook:
-		applicationStateTransitionBeforeUpdateHooks = append(applicationStateTransitionBeforeUpdateHooks, applicationStateTransitionHook)
-	case boil.BeforeDeleteHook:
-		applicationStateTransitionBeforeDeleteHooks = append(applicationStateTransitionBeforeDeleteHooks, applicationStateTransitionHook)
-	case boil.BeforeUpsertHook:
-		applicationStateTransitionBeforeUpsertHooks = append(applicationStateTransitionBeforeUpsertHooks, applicationStateTransitionHook)
-	case boil.AfterInsertHook:
-		applicationStateTransitionAfterInsertHooks = append(applicationStateTransitionAfterInsertHooks, applicationStateTransitionHook)
-	case boil.AfterSelectHook:
-		applicationStateTransitionAfterSelectHooks = append(applicationStateTransitionAfterSelectHooks, applicationStateTransitionHook)
-	case boil.AfterUpdateHook:
-		applicationStateTransitionAfterUpdateHooks = append(applicationStateTransitionAfterUpdateHooks, applicationStateTransitionHook)
-	case boil.AfterDeleteHook:
-		applicationStateTransitionAfterDeleteHooks = append(applicationStateTransitionAfterDeleteHooks, applicationStateTransitionHook)
-	case boil.AfterUpsertHook:
-		applicationStateTransitionAfterUpsertHooks = append(applicationStateTransitionAfterUpsertHooks, applicationStateTransitionHook)
-	}
-}
-
 // One returns a single applicationStateTransition record from the query.
 func (q applicationStateTransitionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*ApplicationStateTransition, error) {
 	o := &ApplicationStateTransition{}
@@ -313,10 +141,6 @@ func (q applicationStateTransitionQuery) One(ctx context.Context, exec boil.Cont
 		return nil, errors.Wrap(err, "models: failed to execute a one query for application_state_transitions")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -327,14 +151,6 @@ func (q applicationStateTransitionQuery) All(ctx context.Context, exec boil.Cont
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to ApplicationStateTransition slice")
-	}
-
-	if len(applicationStateTransitionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -476,14 +292,6 @@ func (applicationStateTransitionL) LoadApplicant(ctx context.Context, e boil.Con
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for applicants")
 	}
 
-	if len(applicationStateTransitionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -577,14 +385,6 @@ func (applicationStateTransitionL) LoadFromApplicationState(ctx context.Context,
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for application_states")
 	}
 
-	if len(applicationStateTransitionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -676,14 +476,6 @@ func (applicationStateTransitionL) LoadToApplicationState(ctx context.Context, e
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for application_states")
-	}
-
-	if len(applicationStateTransitionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -908,10 +700,6 @@ func (o *ApplicationStateTransition) Insert(ctx context.Context, exec boil.Conte
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(applicationStateTransitionColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -975,7 +763,7 @@ func (o *ApplicationStateTransition) Insert(ctx context.Context, exec boil.Conte
 		applicationStateTransitionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the ApplicationStateTransition.
@@ -989,9 +777,6 @@ func (o *ApplicationStateTransition) Update(ctx context.Context, exec boil.Conte
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	applicationStateTransitionUpdateCacheMut.RLock()
 	cache, cached := applicationStateTransitionUpdateCache[key]
@@ -1044,7 +829,7 @@ func (o *ApplicationStateTransition) Update(ctx context.Context, exec boil.Conte
 		applicationStateTransitionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1125,10 +910,6 @@ func (o *ApplicationStateTransition) Upsert(ctx context.Context, exec boil.Conte
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(applicationStateTransitionColumnsWithDefault, o)
@@ -1232,7 +1013,7 @@ func (o *ApplicationStateTransition) Upsert(ctx context.Context, exec boil.Conte
 		applicationStateTransitionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single ApplicationStateTransition record with an executor.
@@ -1240,10 +1021,6 @@ func (o *ApplicationStateTransition) Upsert(ctx context.Context, exec boil.Conte
 func (o *ApplicationStateTransition) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no ApplicationStateTransition provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), applicationStateTransitionPrimaryKeyMapping)
@@ -1262,10 +1039,6 @@ func (o *ApplicationStateTransition) Delete(ctx context.Context, exec boil.Conte
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for application_state_transitions")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1298,14 +1071,6 @@ func (o ApplicationStateTransitionSlice) DeleteAll(ctx context.Context, exec boi
 		return 0, nil
 	}
 
-	if len(applicationStateTransitionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), applicationStateTransitionPrimaryKeyMapping)
@@ -1328,14 +1093,6 @@ func (o ApplicationStateTransitionSlice) DeleteAll(ctx context.Context, exec boi
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for application_state_transitions")
-	}
-
-	if len(applicationStateTransitionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

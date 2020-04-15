@@ -211,26 +211,6 @@ func TestCount(t *testing.T) {
 	t.Run("Users", testUsersCount)
 }
 
-func TestHooks(t *testing.T) {
-	t.Run("AccessTokens", testAccessTokensHooks)
-	t.Run("AppUserProfiles", testAppUserProfilesHooks)
-	t.Run("ApplicantTags", testApplicantTagsHooks)
-	t.Run("Applicants", testApplicantsHooks)
-	t.Run("ApplicationStateTransitions", testApplicationStateTransitionsHooks)
-	t.Run("ApplicationStates", testApplicationStatesHooks)
-	t.Run("NotificationTemplates", testNotificationTemplatesHooks)
-	t.Run("PasswordResetTokens", testPasswordResetTokensHooks)
-	t.Run("Permissions", testPermissionsHooks)
-	t.Run("RefreshTokens", testRefreshTokensHooks)
-	t.Run("RoleApplicationStates", testRoleApplicationStatesHooks)
-	t.Run("RoleNotificationTemplates", testRoleNotificationTemplatesHooks)
-	t.Run("Roles", testRolesHooks)
-	t.Run("Tags", testTagsHooks)
-	t.Run("UserPermissions", testUserPermissionsHooks)
-	t.Run("UserRoles", testUserRolesHooks)
-	t.Run("Users", testUsersHooks)
-}
-
 func TestInsert(t *testing.T) {
 	t.Run("AccessTokens", testAccessTokensInsert)
 	t.Run("AccessTokens", testAccessTokensInsertWhitelist)

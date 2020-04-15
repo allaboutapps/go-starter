@@ -222,8 +222,6 @@ type (
 	// ApplicantSlice is an alias for a slice of pointers to Applicant.
 	// This should generally be used opposed to []Applicant.
 	ApplicantSlice []*Applicant
-	// ApplicantHook is the signature for custom Applicant hook methods
-	ApplicantHook func(context.Context, boil.ContextExecutor, *Applicant) error
 
 	applicantQuery struct {
 		*queries.Query
@@ -251,176 +249,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var applicantBeforeInsertHooks []ApplicantHook
-var applicantBeforeUpdateHooks []ApplicantHook
-var applicantBeforeDeleteHooks []ApplicantHook
-var applicantBeforeUpsertHooks []ApplicantHook
-
-var applicantAfterInsertHooks []ApplicantHook
-var applicantAfterSelectHooks []ApplicantHook
-var applicantAfterUpdateHooks []ApplicantHook
-var applicantAfterDeleteHooks []ApplicantHook
-var applicantAfterUpsertHooks []ApplicantHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Applicant) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Applicant) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Applicant) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Applicant) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Applicant) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Applicant) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Applicant) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Applicant) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Applicant) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range applicantAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddApplicantHook registers your hook function for all future operations.
-func AddApplicantHook(hookPoint boil.HookPoint, applicantHook ApplicantHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		applicantBeforeInsertHooks = append(applicantBeforeInsertHooks, applicantHook)
-	case boil.BeforeUpdateHook:
-		applicantBeforeUpdateHooks = append(applicantBeforeUpdateHooks, applicantHook)
-	case boil.BeforeDeleteHook:
-		applicantBeforeDeleteHooks = append(applicantBeforeDeleteHooks, applicantHook)
-	case boil.BeforeUpsertHook:
-		applicantBeforeUpsertHooks = append(applicantBeforeUpsertHooks, applicantHook)
-	case boil.AfterInsertHook:
-		applicantAfterInsertHooks = append(applicantAfterInsertHooks, applicantHook)
-	case boil.AfterSelectHook:
-		applicantAfterSelectHooks = append(applicantAfterSelectHooks, applicantHook)
-	case boil.AfterUpdateHook:
-		applicantAfterUpdateHooks = append(applicantAfterUpdateHooks, applicantHook)
-	case boil.AfterDeleteHook:
-		applicantAfterDeleteHooks = append(applicantAfterDeleteHooks, applicantHook)
-	case boil.AfterUpsertHook:
-		applicantAfterUpsertHooks = append(applicantAfterUpsertHooks, applicantHook)
-	}
-}
-
 // One returns a single applicant record from the query.
 func (q applicantQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Applicant, error) {
 	o := &Applicant{}
@@ -435,10 +263,6 @@ func (q applicantQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Ap
 		return nil, errors.Wrap(err, "models: failed to execute a one query for applicants")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -449,14 +273,6 @@ func (q applicantQuery) All(ctx context.Context, exec boil.ContextExecutor) (App
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Applicant slice")
-	}
-
-	if len(applicantAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -612,14 +428,6 @@ func (applicantL) LoadApplicationState(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for application_states")
 	}
 
-	if len(applicantAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -711,13 +519,6 @@ func (applicantL) LoadApplicantTags(ctx context.Context, e boil.ContextExecutor,
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for applicant_tags")
 	}
 
-	if len(applicantTagAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ApplicantTags = resultSlice
 		for _, foreign := range resultSlice {
@@ -806,13 +607,6 @@ func (applicantL) LoadApplicationStateTransitions(ctx context.Context, e boil.Co
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for application_state_transitions")
 	}
 
-	if len(applicationStateTransitionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.ApplicationStateTransitions = resultSlice
 		for _, foreign := range resultSlice {
@@ -1044,10 +838,6 @@ func (o *Applicant) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(applicantColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -1111,7 +901,7 @@ func (o *Applicant) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 		applicantInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Applicant.
@@ -1125,9 +915,6 @@ func (o *Applicant) Update(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	applicantUpdateCacheMut.RLock()
 	cache, cached := applicantUpdateCache[key]
@@ -1180,7 +967,7 @@ func (o *Applicant) Update(ctx context.Context, exec boil.ContextExecutor, colum
 		applicantUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -1261,10 +1048,6 @@ func (o *Applicant) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(applicantColumnsWithDefault, o)
@@ -1368,7 +1151,7 @@ func (o *Applicant) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 		applicantUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Applicant record with an executor.
@@ -1376,10 +1159,6 @@ func (o *Applicant) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 func (o *Applicant) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Applicant provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), applicantPrimaryKeyMapping)
@@ -1398,10 +1177,6 @@ func (o *Applicant) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for applicants")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1434,14 +1209,6 @@ func (o ApplicantSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 		return 0, nil
 	}
 
-	if len(applicantBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), applicantPrimaryKeyMapping)
@@ -1464,14 +1231,6 @@ func (o ApplicantSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for applicants")
-	}
-
-	if len(applicantAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

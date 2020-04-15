@@ -89,8 +89,6 @@ type (
 	// PermissionSlice is an alias for a slice of pointers to Permission.
 	// This should generally be used opposed to []Permission.
 	PermissionSlice []*Permission
-	// PermissionHook is the signature for custom Permission hook methods
-	PermissionHook func(context.Context, boil.ContextExecutor, *Permission) error
 
 	permissionQuery struct {
 		*queries.Query
@@ -118,176 +116,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var permissionBeforeInsertHooks []PermissionHook
-var permissionBeforeUpdateHooks []PermissionHook
-var permissionBeforeDeleteHooks []PermissionHook
-var permissionBeforeUpsertHooks []PermissionHook
-
-var permissionAfterInsertHooks []PermissionHook
-var permissionAfterSelectHooks []PermissionHook
-var permissionAfterUpdateHooks []PermissionHook
-var permissionAfterDeleteHooks []PermissionHook
-var permissionAfterUpsertHooks []PermissionHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Permission) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Permission) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Permission) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Permission) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Permission) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *Permission) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Permission) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Permission) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Permission) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range permissionAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddPermissionHook registers your hook function for all future operations.
-func AddPermissionHook(hookPoint boil.HookPoint, permissionHook PermissionHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		permissionBeforeInsertHooks = append(permissionBeforeInsertHooks, permissionHook)
-	case boil.BeforeUpdateHook:
-		permissionBeforeUpdateHooks = append(permissionBeforeUpdateHooks, permissionHook)
-	case boil.BeforeDeleteHook:
-		permissionBeforeDeleteHooks = append(permissionBeforeDeleteHooks, permissionHook)
-	case boil.BeforeUpsertHook:
-		permissionBeforeUpsertHooks = append(permissionBeforeUpsertHooks, permissionHook)
-	case boil.AfterInsertHook:
-		permissionAfterInsertHooks = append(permissionAfterInsertHooks, permissionHook)
-	case boil.AfterSelectHook:
-		permissionAfterSelectHooks = append(permissionAfterSelectHooks, permissionHook)
-	case boil.AfterUpdateHook:
-		permissionAfterUpdateHooks = append(permissionAfterUpdateHooks, permissionHook)
-	case boil.AfterDeleteHook:
-		permissionAfterDeleteHooks = append(permissionAfterDeleteHooks, permissionHook)
-	case boil.AfterUpsertHook:
-		permissionAfterUpsertHooks = append(permissionAfterUpsertHooks, permissionHook)
-	}
-}
-
 // One returns a single permission record from the query.
 func (q permissionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Permission, error) {
 	o := &Permission{}
@@ -302,10 +130,6 @@ func (q permissionQuery) One(ctx context.Context, exec boil.ContextExecutor) (*P
 		return nil, errors.Wrap(err, "models: failed to execute a one query for permissions")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -316,14 +140,6 @@ func (q permissionQuery) All(ctx context.Context, exec boil.ContextExecutor) (Pe
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to Permission slice")
-	}
-
-	if len(permissionAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -442,13 +258,6 @@ func (permissionL) LoadUserPermissions(ctx context.Context, e boil.ContextExecut
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user_permissions")
 	}
 
-	if len(userPermissionAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
 	if singular {
 		object.R.UserPermissions = resultSlice
 		for _, foreign := range resultSlice {
@@ -580,10 +389,6 @@ func (o *Permission) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(permissionColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -647,7 +452,7 @@ func (o *Permission) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 		permissionInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the Permission.
@@ -661,9 +466,6 @@ func (o *Permission) Update(ctx context.Context, exec boil.ContextExecutor, colu
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	permissionUpdateCacheMut.RLock()
 	cache, cached := permissionUpdateCache[key]
@@ -716,7 +518,7 @@ func (o *Permission) Update(ctx context.Context, exec boil.ContextExecutor, colu
 		permissionUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -797,10 +599,6 @@ func (o *Permission) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(permissionColumnsWithDefault, o)
@@ -904,7 +702,7 @@ func (o *Permission) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 		permissionUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single Permission record with an executor.
@@ -912,10 +710,6 @@ func (o *Permission) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 func (o *Permission) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Permission provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), permissionPrimaryKeyMapping)
@@ -934,10 +728,6 @@ func (o *Permission) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for permissions")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -970,14 +760,6 @@ func (o PermissionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 		return 0, nil
 	}
 
-	if len(permissionBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), permissionPrimaryKeyMapping)
@@ -1000,14 +782,6 @@ func (o PermissionSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for permissions")
-	}
-
-	if len(permissionAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

@@ -92,8 +92,6 @@ type (
 	// RoleNotificationTemplateSlice is an alias for a slice of pointers to RoleNotificationTemplate.
 	// This should generally be used opposed to []RoleNotificationTemplate.
 	RoleNotificationTemplateSlice []*RoleNotificationTemplate
-	// RoleNotificationTemplateHook is the signature for custom RoleNotificationTemplate hook methods
-	RoleNotificationTemplateHook func(context.Context, boil.ContextExecutor, *RoleNotificationTemplate) error
 
 	roleNotificationTemplateQuery struct {
 		*queries.Query
@@ -121,176 +119,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var roleNotificationTemplateBeforeInsertHooks []RoleNotificationTemplateHook
-var roleNotificationTemplateBeforeUpdateHooks []RoleNotificationTemplateHook
-var roleNotificationTemplateBeforeDeleteHooks []RoleNotificationTemplateHook
-var roleNotificationTemplateBeforeUpsertHooks []RoleNotificationTemplateHook
-
-var roleNotificationTemplateAfterInsertHooks []RoleNotificationTemplateHook
-var roleNotificationTemplateAfterSelectHooks []RoleNotificationTemplateHook
-var roleNotificationTemplateAfterUpdateHooks []RoleNotificationTemplateHook
-var roleNotificationTemplateAfterDeleteHooks []RoleNotificationTemplateHook
-var roleNotificationTemplateAfterUpsertHooks []RoleNotificationTemplateHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *RoleNotificationTemplate) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *RoleNotificationTemplate) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *RoleNotificationTemplate) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *RoleNotificationTemplate) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *RoleNotificationTemplate) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *RoleNotificationTemplate) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *RoleNotificationTemplate) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *RoleNotificationTemplate) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *RoleNotificationTemplate) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range roleNotificationTemplateAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddRoleNotificationTemplateHook registers your hook function for all future operations.
-func AddRoleNotificationTemplateHook(hookPoint boil.HookPoint, roleNotificationTemplateHook RoleNotificationTemplateHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		roleNotificationTemplateBeforeInsertHooks = append(roleNotificationTemplateBeforeInsertHooks, roleNotificationTemplateHook)
-	case boil.BeforeUpdateHook:
-		roleNotificationTemplateBeforeUpdateHooks = append(roleNotificationTemplateBeforeUpdateHooks, roleNotificationTemplateHook)
-	case boil.BeforeDeleteHook:
-		roleNotificationTemplateBeforeDeleteHooks = append(roleNotificationTemplateBeforeDeleteHooks, roleNotificationTemplateHook)
-	case boil.BeforeUpsertHook:
-		roleNotificationTemplateBeforeUpsertHooks = append(roleNotificationTemplateBeforeUpsertHooks, roleNotificationTemplateHook)
-	case boil.AfterInsertHook:
-		roleNotificationTemplateAfterInsertHooks = append(roleNotificationTemplateAfterInsertHooks, roleNotificationTemplateHook)
-	case boil.AfterSelectHook:
-		roleNotificationTemplateAfterSelectHooks = append(roleNotificationTemplateAfterSelectHooks, roleNotificationTemplateHook)
-	case boil.AfterUpdateHook:
-		roleNotificationTemplateAfterUpdateHooks = append(roleNotificationTemplateAfterUpdateHooks, roleNotificationTemplateHook)
-	case boil.AfterDeleteHook:
-		roleNotificationTemplateAfterDeleteHooks = append(roleNotificationTemplateAfterDeleteHooks, roleNotificationTemplateHook)
-	case boil.AfterUpsertHook:
-		roleNotificationTemplateAfterUpsertHooks = append(roleNotificationTemplateAfterUpsertHooks, roleNotificationTemplateHook)
-	}
-}
-
 // One returns a single roleNotificationTemplate record from the query.
 func (q roleNotificationTemplateQuery) One(ctx context.Context, exec boil.ContextExecutor) (*RoleNotificationTemplate, error) {
 	o := &RoleNotificationTemplate{}
@@ -305,10 +133,6 @@ func (q roleNotificationTemplateQuery) One(ctx context.Context, exec boil.Contex
 		return nil, errors.Wrap(err, "models: failed to execute a one query for role_notification_templates")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -319,14 +143,6 @@ func (q roleNotificationTemplateQuery) All(ctx context.Context, exec boil.Contex
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to RoleNotificationTemplate slice")
-	}
-
-	if len(roleNotificationTemplateAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -454,14 +270,6 @@ func (roleNotificationTemplateL) LoadNotificationTemplate(ctx context.Context, e
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for notification_templates")
 	}
 
-	if len(roleNotificationTemplateAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
 	if len(resultSlice) == 0 {
 		return nil
 	}
@@ -553,14 +361,6 @@ func (roleNotificationTemplateL) LoadRole(ctx context.Context, e boil.ContextExe
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for roles")
-	}
-
-	if len(roleNotificationTemplateAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -738,10 +538,6 @@ func (o *RoleNotificationTemplate) Insert(ctx context.Context, exec boil.Context
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(roleNotificationTemplateColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -805,7 +601,7 @@ func (o *RoleNotificationTemplate) Insert(ctx context.Context, exec boil.Context
 		roleNotificationTemplateInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the RoleNotificationTemplate.
@@ -819,9 +615,6 @@ func (o *RoleNotificationTemplate) Update(ctx context.Context, exec boil.Context
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	roleNotificationTemplateUpdateCacheMut.RLock()
 	cache, cached := roleNotificationTemplateUpdateCache[key]
@@ -874,7 +667,7 @@ func (o *RoleNotificationTemplate) Update(ctx context.Context, exec boil.Context
 		roleNotificationTemplateUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -955,10 +748,6 @@ func (o *RoleNotificationTemplate) Upsert(ctx context.Context, exec boil.Context
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(roleNotificationTemplateColumnsWithDefault, o)
@@ -1062,7 +851,7 @@ func (o *RoleNotificationTemplate) Upsert(ctx context.Context, exec boil.Context
 		roleNotificationTemplateUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single RoleNotificationTemplate record with an executor.
@@ -1070,10 +859,6 @@ func (o *RoleNotificationTemplate) Upsert(ctx context.Context, exec boil.Context
 func (o *RoleNotificationTemplate) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no RoleNotificationTemplate provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), roleNotificationTemplatePrimaryKeyMapping)
@@ -1092,10 +877,6 @@ func (o *RoleNotificationTemplate) Delete(ctx context.Context, exec boil.Context
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for role_notification_templates")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -1128,14 +909,6 @@ func (o RoleNotificationTemplateSlice) DeleteAll(ctx context.Context, exec boil.
 		return 0, nil
 	}
 
-	if len(roleNotificationTemplateBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), roleNotificationTemplatePrimaryKeyMapping)
@@ -1158,14 +931,6 @@ func (o RoleNotificationTemplateSlice) DeleteAll(ctx context.Context, exec boil.
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for role_notification_templates")
-	}
-
-	if len(roleNotificationTemplateAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil

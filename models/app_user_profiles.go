@@ -104,8 +104,6 @@ type (
 	// AppUserProfileSlice is an alias for a slice of pointers to AppUserProfile.
 	// This should generally be used opposed to []AppUserProfile.
 	AppUserProfileSlice []*AppUserProfile
-	// AppUserProfileHook is the signature for custom AppUserProfile hook methods
-	AppUserProfileHook func(context.Context, boil.ContextExecutor, *AppUserProfile) error
 
 	appUserProfileQuery struct {
 		*queries.Query
@@ -133,176 +131,6 @@ var (
 	_ = qmhelper.Where
 )
 
-var appUserProfileBeforeInsertHooks []AppUserProfileHook
-var appUserProfileBeforeUpdateHooks []AppUserProfileHook
-var appUserProfileBeforeDeleteHooks []AppUserProfileHook
-var appUserProfileBeforeUpsertHooks []AppUserProfileHook
-
-var appUserProfileAfterInsertHooks []AppUserProfileHook
-var appUserProfileAfterSelectHooks []AppUserProfileHook
-var appUserProfileAfterUpdateHooks []AppUserProfileHook
-var appUserProfileAfterDeleteHooks []AppUserProfileHook
-var appUserProfileAfterUpsertHooks []AppUserProfileHook
-
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *AppUserProfile) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileBeforeInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *AppUserProfile) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileBeforeUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *AppUserProfile) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileBeforeDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *AppUserProfile) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileBeforeUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterInsertHooks executes all "after Insert" hooks.
-func (o *AppUserProfile) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileAfterInsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterSelectHooks executes all "after Select" hooks.
-func (o *AppUserProfile) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileAfterSelectHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpdateHooks executes all "after Update" hooks.
-func (o *AppUserProfile) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileAfterUpdateHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *AppUserProfile) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileAfterDeleteHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *AppUserProfile) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	for _, hook := range appUserProfileAfterUpsertHooks {
-		if err := hook(ctx, exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// AddAppUserProfileHook registers your hook function for all future operations.
-func AddAppUserProfileHook(hookPoint boil.HookPoint, appUserProfileHook AppUserProfileHook) {
-	switch hookPoint {
-	case boil.BeforeInsertHook:
-		appUserProfileBeforeInsertHooks = append(appUserProfileBeforeInsertHooks, appUserProfileHook)
-	case boil.BeforeUpdateHook:
-		appUserProfileBeforeUpdateHooks = append(appUserProfileBeforeUpdateHooks, appUserProfileHook)
-	case boil.BeforeDeleteHook:
-		appUserProfileBeforeDeleteHooks = append(appUserProfileBeforeDeleteHooks, appUserProfileHook)
-	case boil.BeforeUpsertHook:
-		appUserProfileBeforeUpsertHooks = append(appUserProfileBeforeUpsertHooks, appUserProfileHook)
-	case boil.AfterInsertHook:
-		appUserProfileAfterInsertHooks = append(appUserProfileAfterInsertHooks, appUserProfileHook)
-	case boil.AfterSelectHook:
-		appUserProfileAfterSelectHooks = append(appUserProfileAfterSelectHooks, appUserProfileHook)
-	case boil.AfterUpdateHook:
-		appUserProfileAfterUpdateHooks = append(appUserProfileAfterUpdateHooks, appUserProfileHook)
-	case boil.AfterDeleteHook:
-		appUserProfileAfterDeleteHooks = append(appUserProfileAfterDeleteHooks, appUserProfileHook)
-	case boil.AfterUpsertHook:
-		appUserProfileAfterUpsertHooks = append(appUserProfileAfterUpsertHooks, appUserProfileHook)
-	}
-}
-
 // One returns a single appUserProfile record from the query.
 func (q appUserProfileQuery) One(ctx context.Context, exec boil.ContextExecutor) (*AppUserProfile, error) {
 	o := &AppUserProfile{}
@@ -317,10 +145,6 @@ func (q appUserProfileQuery) One(ctx context.Context, exec boil.ContextExecutor)
 		return nil, errors.Wrap(err, "models: failed to execute a one query for app_user_profiles")
 	}
 
-	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
-		return o, err
-	}
-
 	return o, nil
 }
 
@@ -331,14 +155,6 @@ func (q appUserProfileQuery) All(ctx context.Context, exec boil.ContextExecutor)
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
 		return nil, errors.Wrap(err, "models: failed to assign all query results to AppUserProfile slice")
-	}
-
-	if len(appUserProfileAfterSelectHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
-				return o, err
-			}
-		}
 	}
 
 	return o, nil
@@ -450,14 +266,6 @@ func (appUserProfileL) LoadUser(ctx context.Context, e boil.ContextExecutor, sin
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(appUserProfileAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
 	}
 
 	if len(resultSlice) == 0 {
@@ -588,10 +396,6 @@ func (o *AppUserProfile) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		}
 	}
 
-	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
-		return err
-	}
-
 	nzDefaults := queries.NonZeroDefaultSet(appUserProfileColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
@@ -655,7 +459,7 @@ func (o *AppUserProfile) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		appUserProfileInsertCacheMut.Unlock()
 	}
 
-	return o.doAfterInsertHooks(ctx, exec)
+	return nil
 }
 
 // Update uses an executor to update the AppUserProfile.
@@ -669,9 +473,6 @@ func (o *AppUserProfile) Update(ctx context.Context, exec boil.ContextExecutor, 
 	}
 
 	var err error
-	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
-		return 0, err
-	}
 	key := makeCacheKey(columns, nil)
 	appUserProfileUpdateCacheMut.RLock()
 	cache, cached := appUserProfileUpdateCache[key]
@@ -724,7 +525,7 @@ func (o *AppUserProfile) Update(ctx context.Context, exec boil.ContextExecutor, 
 		appUserProfileUpdateCacheMut.Unlock()
 	}
 
-	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
+	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values.
@@ -805,10 +606,6 @@ func (o *AppUserProfile) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 			o.CreatedAt = currTime
 		}
 		o.UpdatedAt = currTime
-	}
-
-	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
-		return err
 	}
 
 	nzDefaults := queries.NonZeroDefaultSet(appUserProfileColumnsWithDefault, o)
@@ -912,7 +709,7 @@ func (o *AppUserProfile) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 		appUserProfileUpsertCacheMut.Unlock()
 	}
 
-	return o.doAfterUpsertHooks(ctx, exec)
+	return nil
 }
 
 // Delete deletes a single AppUserProfile record with an executor.
@@ -920,10 +717,6 @@ func (o *AppUserProfile) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 func (o *AppUserProfile) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no AppUserProfile provided for delete")
-	}
-
-	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), appUserProfilePrimaryKeyMapping)
@@ -942,10 +735,6 @@ func (o *AppUserProfile) Delete(ctx context.Context, exec boil.ContextExecutor) 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for app_user_profiles")
-	}
-
-	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
-		return 0, err
 	}
 
 	return rowsAff, nil
@@ -978,14 +767,6 @@ func (o AppUserProfileSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 		return 0, nil
 	}
 
-	if len(appUserProfileBeforeDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
-	}
-
 	var args []interface{}
 	for _, obj := range o {
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), appUserProfilePrimaryKeyMapping)
@@ -1008,14 +789,6 @@ func (o AppUserProfileSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
 		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for app_user_profiles")
-	}
-
-	if len(appUserProfileAfterDeleteHooks) != 0 {
-		for _, obj := range o {
-			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
-				return 0, err
-			}
-		}
 	}
 
 	return rowsAff, nil
