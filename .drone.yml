@@ -115,13 +115,13 @@ pipeline:
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
-  "docker build (target development)":
+  "docker build (target builder)":
     group: build
     image: docker:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - "docker build --target development --compress -t ${DRONE_REPO,,}:${DRONE_COMMIT_SHA} ."
+      - "docker build --target builder --compress -t ${DRONE_REPO,,}:${DRONE_COMMIT_SHA} ."
     <<: *WHEN_BUILD_EVENT
 
   # ---------------------------------------------------------------------------
