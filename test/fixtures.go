@@ -39,6 +39,11 @@ var (
 		Language: "EN",
 	}
 
+	language3 = Language{
+		ID:       "20ecd47d-f453-4ab9-8e62-3289604211c0",
+		Language: "SE",
+	}
+
 	pilotLanguage1 = PilotLanguage{
 		LanguageID: language1.ID,
 		PilotID:    pilot1.ID,
@@ -47,6 +52,11 @@ var (
 	pilotLanguage2 = PilotLanguage{
 		LanguageID: language1.ID,
 		PilotID:    pilot2.ID,
+	}
+
+	pilotLanguage3 = PilotLanguage{
+		LanguageID: language3.ID,
+		PilotID:    pilot3.ID,
 	}
 
 	jet1 = Jet{
@@ -72,8 +82,10 @@ var (
 		&pilot3,
 		&language1,
 		&language2,
+		&language3,
 		&pilotLanguage1,
 		&pilotLanguage2,
+		&pilotLanguage3,
 		&jet1,
 		&jet2,
 	}

@@ -1,4 +1,4 @@
-package pgtestpool
+package pgconsumer
 
 import (
 	"fmt"

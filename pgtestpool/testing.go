@@ -10,11 +10,18 @@ import (
 	"github.com/friendsofgo/errors"
 )
 
+func testManagerFromEnv() *Manager {
+	conf := DefaultManagerConfigFromEnv()
+	conf.DatabasePrefix = "pgtestpool" // ensure we don't overlap with other pools running concurrently
+	return NewManager(conf)
+}
+
 // test helpers should never return errors, but are passed the *testing.T instance and fail if needed. It seems to be recommended helper functions are moved to a testing.go file...
 // https://medium.com/@povilasve/go-advanced-tips-tricks-a872503ac859
 // https://about.sourcegraph.com/go/advanced-testing-in-go
 
 func disconnectManager(t *testing.T, m *Manager) {
+
 	t.Helper()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

@@ -3,15 +3,21 @@ package pgconsumer
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"path"
+)
 
-	"allaboutapps.at/aw/go-mranftl-sample/pgtestpool"
-	"github.com/friendsofgo/errors"
+var (
+	ErrManagerNotReady            = errors.New("manager not ready")
+	ErrTemplateAlreadyInitialized = errors.New("template is already initialized")
+	ErrTemplateNotFound           = errors.New("template not found")
+	ErrTestNotFound               = errors.New("test database not found")
 )
 
 type Client struct {
@@ -37,7 +43,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 
 	u, err := url.Parse(c.config.BaseURL)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse base URL")
+		return nil, err
 	}
 
 	c.baseURL = u.ResolveReference(&url.URL{Path: path.Join(u.Path, c.config.APIVersion)})
@@ -64,35 +70,76 @@ func (c *Client) ResetAllTracking(ctx context.Context) error {
 	}
 
 	if resp.StatusCode != http.StatusNoContent {
-		return errors.Errorf("failed to reset all tracking: %v", msg)
+		return fmt.Errorf("failed to reset all tracking: %v", msg)
 	}
 
 	return nil
 }
 
-func (c *Client) InitializeTemplate(ctx context.Context, hash string) (*pgtestpool.TemplateDatabase, error) {
+func (c *Client) InitializeTemplate(ctx context.Context, hash string) (TemplateDatabase, error) {
+	var template TemplateDatabase
+
 	payload := map[string]string{"hash": hash}
 
 	req, err := c.newRequest(ctx, "POST", "/templates", payload)
 	if err != nil {
-		return nil, err
+		return template, err
 	}
 
-	template := new(pgtestpool.TemplateDatabase)
-	resp, err := c.do(req, template)
+	resp, err := c.do(req, &template)
 	if err != nil {
-		return nil, err
+		return template, err
 	}
 
 	switch resp.StatusCode {
 	case http.StatusOK:
 		return template, nil
 	case http.StatusLocked:
-		return nil, pgtestpool.ErrTemplateAlreadyInitialized
+		return template, ErrTemplateAlreadyInitialized
 	case http.StatusServiceUnavailable:
-		return nil, pgtestpool.ErrManagerNotReady
+		return template, ErrManagerNotReady
 	default:
-		return nil, errors.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
+		return template, fmt.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
+	}
+}
+
+func (c *Client) SetupTemplate(ctx context.Context, hash string, init func(conn string) error) error {
+	template, err := c.InitializeTemplate(ctx, hash)
+	if err == nil {
+		if err := init(template.Config.ConnectionString()); err != nil {
+			return err
+		}
+
+		return c.FinalizeTemplate(ctx, hash)
+	} else if err == ErrTemplateAlreadyInitialized {
+		return nil
+	} else {
+		return err
+	}
+}
+
+func (c *Client) SetupTemplateWithDBClient(ctx context.Context, hash string, init func(db *sql.DB) error) error {
+	template, err := c.InitializeTemplate(ctx, hash)
+	if err == nil {
+		db, err := sql.Open("postgres", template.Config.ConnectionString())
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+
+		if err := db.PingContext(ctx); err != nil {
+			return err
+		}
+
+		if err := init(db); err != nil {
+			return err
+		}
+
+		return c.FinalizeTemplate(ctx, hash)
+	} else if err == ErrTemplateAlreadyInitialized {
+		return nil
+	} else {
+		return err
 	}
 }
 
@@ -111,35 +158,36 @@ func (c *Client) FinalizeTemplate(ctx context.Context, hash string) error {
 	case http.StatusNoContent:
 		return nil
 	case http.StatusNotFound:
-		return pgtestpool.ErrTemplateNotFound
+		return ErrTemplateNotFound
 	case http.StatusServiceUnavailable:
-		return pgtestpool.ErrManagerNotReady
+		return ErrManagerNotReady
 	default:
-		return errors.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
+		return fmt.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
 	}
 }
 
-func (c *Client) GetTestDatabase(ctx context.Context, hash string) (*pgtestpool.TestDatabase, error) {
+func (c *Client) GetTestDatabase(ctx context.Context, hash string) (TestDatabase, error) {
+	var test TestDatabase
+
 	req, err := c.newRequest(ctx, "GET", fmt.Sprintf("/templates/%s/tests", hash), nil)
 	if err != nil {
-		return nil, err
+		return test, err
 	}
 
-	db := new(pgtestpool.TestDatabase)
-	resp, err := c.do(req, db)
+	resp, err := c.do(req, &test)
 	if err != nil {
-		return nil, err
+		return test, err
 	}
 
 	switch resp.StatusCode {
 	case http.StatusOK:
-		return db, nil
+		return test, nil
 	case http.StatusNotFound:
-		return nil, pgtestpool.ErrTemplateNotFound
+		return test, ErrTemplateNotFound
 	case http.StatusServiceUnavailable:
-		return nil, pgtestpool.ErrManagerNotReady
+		return test, ErrManagerNotReady
 	default:
-		return nil, errors.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
+		return test, fmt.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
 	}
 }
 
@@ -158,11 +206,11 @@ func (c *Client) ReturnTestDatabase(ctx context.Context, hash string, id int) er
 	case http.StatusNoContent:
 		return nil
 	case http.StatusNotFound:
-		return pgtestpool.ErrTemplateNotFound
+		return ErrTemplateNotFound
 	case http.StatusServiceUnavailable:
-		return pgtestpool.ErrManagerNotReady
+		return ErrManagerNotReady
 	default:
-		return errors.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
+		return fmt.Errorf("received unexpected HTTP status %d (%s)", resp.StatusCode, resp.Status)
 	}
 }
 
@@ -173,13 +221,13 @@ func (c *Client) newRequest(ctx context.Context, method string, endpoint string,
 	if body != nil {
 		buf = new(bytes.Buffer)
 		if err := json.NewEncoder(buf).Encode(body); err != nil {
-			return nil, errors.Wrap(err, "failed to encode request payload")
+			return nil, err
 		}
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, u.String(), buf)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create http request")
+		return nil, err
 	}
 
 	if body != nil {

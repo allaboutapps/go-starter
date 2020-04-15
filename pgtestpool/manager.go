@@ -147,13 +147,17 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 		return nil, ErrManagerNotReady
 	}
 
-	m.templateMutex.RLock()
+	m.templateMutex.Lock()
+	defer m.templateMutex.Unlock()
+
 	_, ok := m.templates[hash]
-	m.templateMutex.RUnlock()
 
 	if ok {
+		// fmt.Println("initialized!", ok)
 		return nil, ErrTemplateAlreadyInitialized
 	}
+
+	// fmt.Println("initializing...", ok)
 
 	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
 	template := &TemplateDatabase{
@@ -171,9 +175,6 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 		nextTestID:    0,
 		testDatabases: make([]*TestDatabase, 0),
 	}
-
-	m.templateMutex.Lock()
-	defer m.templateMutex.Unlock()
 
 	m.templates[hash] = template
 
@@ -405,6 +406,10 @@ func (m *Manager) checkDatabaseExists(ctx context.Context, dbName string) (bool,
 }
 
 func (m *Manager) createDatabase(ctx context.Context, dbName string, owner string, template string) error {
+
+	// ts := time.Now()
+	// fmt.Println("createDatabase", dbName, ts)
+
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s WITH OWNER %s TEMPLATE %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(owner), pq.QuoteIdentifier(template))); err != nil {
 		return errors.Wrapf(err, "failed to create database %q", dbName)
 	}
@@ -413,6 +418,10 @@ func (m *Manager) createDatabase(ctx context.Context, dbName string, owner strin
 }
 
 func (m *Manager) dropDatabase(ctx context.Context, dbName string) error {
+
+	// ts := time.Now()
+	// fmt.Println("dropDatabase", dbName, ts)
+
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
 		return errors.Wrapf(err, "failed to drop database %q", dbName)
 	}

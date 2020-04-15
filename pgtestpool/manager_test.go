@@ -15,7 +15,7 @@ import (
 func TestManagerConnect(t *testing.T) {
 	t.Parallel()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Connect(context.Background()); err != nil {
 		t.Errorf("manager connection failed: %v", err)
 	}
@@ -38,6 +38,7 @@ func TestManagerConnectError(t *testing.T) {
 			Password: "definitelydoesnotexist",
 			Database: "definitelydoesnotexist",
 		},
+		DatabasePrefix: "pgtestpool", // ensure we don't overlap with other pools running concurrently
 	})
 	if err := m.Connect(context.Background()); err == nil {
 		t.Error("manager connection succeeded")
@@ -53,7 +54,7 @@ func TestManagerReconnect(t *testing.T) {
 
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Connect(ctx); err != nil {
 		t.Errorf("manager connection failed: %v", err)
 	}
@@ -76,7 +77,7 @@ func TestManagerReconnect(t *testing.T) {
 func TestManagerInitialize(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -91,7 +92,7 @@ func TestManagerInitialize(t *testing.T) {
 func TestManagerInitializeTemplateDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -116,7 +117,7 @@ func TestManagerInitializeTemplateDatabase(t *testing.T) {
 func TestManagerInitializeTemplateDatabaseConcurrently(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -171,7 +172,7 @@ func TestManagerInitializeTemplateDatabaseConcurrently(t *testing.T) {
 func TestManagerFinalizeTemplateDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -200,7 +201,7 @@ func TestManagerFinalizeTemplateDatabase(t *testing.T) {
 func TestManagerFinalizeUntrackedTemplateDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -240,7 +241,7 @@ func TestManagerFinalizeUntrackedTemplateDatabase(t *testing.T) {
 func TestManagerFinalizeUnknownTemplateDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -257,7 +258,7 @@ func TestManagerFinalizeUnknownTemplateDatabase(t *testing.T) {
 func TestManagerGetTestDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -292,7 +293,7 @@ func TestManagerGetTestDatabase(t *testing.T) {
 func TestManagerFinalizeTemplateAndGetTestDatabaseConcurrently(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -367,7 +368,7 @@ func TestManagerFinalizeTemplateAndGetTestDatabaseConcurrently(t *testing.T) {
 func TestManagerGetTestDatabaseConcurrently(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -429,6 +430,7 @@ func TestManagerGetTestDatabaseReusingIDs(t *testing.T) {
 
 	cfg := DefaultManagerConfigFromEnv()
 	cfg.TestDatabaseMaxPoolSize = 3
+	cfg.DatabasePrefix = "pgtestpool" // ensure we don't overlap with other pools running concurrently
 
 	m := NewManager(cfg)
 	if err := m.Initialize(ctx); err != nil {
@@ -468,7 +470,7 @@ func TestManagerGetTestDatabaseReusingIDs(t *testing.T) {
 func TestManagerGetTestDatabaseForUnknownTemplate(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -485,7 +487,7 @@ func TestManagerGetTestDatabaseForUnknownTemplate(t *testing.T) {
 func TestManagerReturnTestDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -529,7 +531,7 @@ func TestManagerReturnTestDatabase(t *testing.T) {
 func TestManagerReturnUntrackedTemplateDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -577,7 +579,7 @@ func TestManagerReturnUntrackedTemplateDatabase(t *testing.T) {
 func TestManagerReturnUnknownTemplateDatabase(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}
@@ -609,7 +611,7 @@ func TestManagerReturnUnknownTemplateDatabase(t *testing.T) {
 func TestManagerClearTrackedTestDatabases(t *testing.T) {
 	ctx := context.Background()
 
-	m := DefaultManagerFromEnv()
+	m := testManagerFromEnv()
 	if err := m.Initialize(ctx); err != nil {
 		t.Fatalf("initializing manager failed: %v", err)
 	}

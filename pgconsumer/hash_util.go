@@ -2,14 +2,13 @@ package pgconsumer
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"sync"
-
-	"github.com/friendsofgo/errors"
 )
 
 // Taken from https://blog.golang.org/pipelines/parallel.go @ 2020-04-07T13:03:47+00:00
@@ -128,20 +127,31 @@ func GetFileHash(filePath string) (string, error) {
 	return fmt.Sprintf("%x", md5.Sum(data)), nil
 }
 
-func GetTemplateHash(migrationsDir string, fixturesFile string) (string, error) {
-	dirHash, err := GetDirectoryHash(migrationsDir)
-	if err != nil {
-		return "", err
-	}
-
-	fileHash, err := GetFileHash(fixturesFile)
-	if err != nil {
-		return "", err
-	}
-
+func GetTemplateHash(paths ...string) (string, error) {
 	h := md5.New()
 
-	fmt.Fprintf(h, "%s%s", dirHash, fileHash)
+	for _, p := range paths {
+		f, err := os.Stat(p)
+		if err != nil {
+			return "", err
+		}
+
+		var hash string
+		switch m := f.Mode(); {
+		case m.IsDir():
+			hash, err = GetDirectoryHash(p)
+		case m.IsRegular():
+			hash, err = GetFileHash(p)
+		default:
+			return "", errors.New("invalid file mode for path, cannot generate hash")
+		}
+
+		if err != nil {
+			return "", err
+		}
+
+		fmt.Fprintf(h, "%s", hash)
+	}
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
