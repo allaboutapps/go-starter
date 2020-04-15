@@ -29,17 +29,6 @@ func (t *TestDatabase) FlagAsClean() {
 	t.dirty = false
 }
 
-func (t *TestDatabase) ResetStatus() {
-	t.Lock()
-	t.dirty = false
-	t.ready = true
-	t.Unlock()
-
-	if t.cond != nil {
-		t.cond.Broadcast()
-	}
-}
-
 func (t *TestDatabase) ReadyForTest() bool {
 	return t.Ready() && !t.Dirty()
 }

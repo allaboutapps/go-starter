@@ -114,6 +114,26 @@ func TestManagerInitializeTemplateDatabase(t *testing.T) {
 	}
 }
 
+func TestManagerInitializeTemplateDatabaseTimeout(t *testing.T) {
+	ctx := context.Background()
+
+	m := testManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+	ctxt, cancel := context.WithTimeout(ctx, 10*time.Nanosecond)
+	defer cancel()
+
+	_, err := m.InitializeTemplateDatabase(ctxt, hash)
+	if err != context.DeadlineExceeded {
+		t.Fatalf("received unexpected error, got %v, want %v", err, context.DeadlineExceeded)
+	}
+}
+
 func TestManagerInitializeTemplateDatabaseConcurrently(t *testing.T) {
 	ctx := context.Background()
 
@@ -288,6 +308,37 @@ func TestManagerGetTestDatabase(t *testing.T) {
 	}
 
 	verifyTestDB(t, test)
+}
+
+func TestManagerGetTestDatabaseTimeout(t *testing.T) {
+	ctx := context.Background()
+
+	m := testManagerFromEnv()
+	if err := m.Initialize(ctx); err != nil {
+		t.Fatalf("initializing manager failed: %v", err)
+	}
+
+	defer disconnectManager(t, m)
+
+	hash := "hashinghash"
+
+	template, err := m.InitializeTemplateDatabase(ctx, hash)
+	if err != nil {
+		t.Fatalf("failed to initialize template database: %v", err)
+	}
+
+	populateTemplateDB(t, template)
+
+	if _, err := m.FinalizeTemplateDatabase(ctx, hash); err != nil {
+		t.Fatalf("failed to finalize template database: %v", err)
+	}
+
+	ctxt, cancel := context.WithTimeout(ctx, 10*time.Nanosecond)
+	defer cancel()
+
+	if _, err := m.GetTestDatabase(ctxt, hash); err != context.DeadlineExceeded {
+		t.Fatalf("received unexpected error, got %v, want %v", err, context.DeadlineExceeded)
+	}
 }
 
 func TestManagerFinalizeTemplateAndGetTestDatabaseConcurrently(t *testing.T) {

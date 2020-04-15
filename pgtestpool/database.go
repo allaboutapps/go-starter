@@ -1,6 +1,9 @@
 package pgtestpool
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
 type Database struct {
 	sync.RWMutex `json:"-"`
@@ -9,7 +12,7 @@ type Database struct {
 	Config       DatabaseConfig `json:"config"`
 
 	ready bool
-	cond  *sync.Cond
+	c     chan struct{}
 }
 
 func (d *Database) Ready() bool {
@@ -19,23 +22,21 @@ func (d *Database) Ready() bool {
 	return d.ready
 }
 
-func (d *Database) WaitUntilReady() {
+func (d *Database) WaitUntilReady(ctx context.Context) error {
 	if d.Ready() {
-		return
+		return nil
 	}
 
-	// TODO: replace sync.Cond with channel "broadcast" (using `close(ch)`) to support ctx/timeouts
-	if d.cond == nil {
-		d.cond = &sync.Cond{L: &sync.Mutex{}}
+	for {
+		select {
+		case <-d.c:
+			if d.Ready() {
+				return nil
+			}
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 	}
-
-	d.cond.L.Lock()
-
-	for !d.Ready() {
-		d.cond.Wait()
-	}
-
-	d.cond.L.Unlock()
 }
 
 func (d *Database) FlagAsReady() {
@@ -44,10 +45,11 @@ func (d *Database) FlagAsReady() {
 	}
 
 	d.Lock()
-	d.ready = true
-	d.Unlock()
+	defer d.Unlock()
 
-	if d.cond != nil {
-		d.cond.Broadcast()
+	d.ready = true
+
+	if d.c != nil {
+		close(d.c)
 	}
 }

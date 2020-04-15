@@ -3,11 +3,10 @@ package pgtestpool
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/friendsofgo/errors"
 )
 
 func testManagerFromEnv() *Manager {

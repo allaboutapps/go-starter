@@ -3,11 +3,12 @@ package pgtestpool
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/lib/pq"
 )
 
@@ -66,11 +67,11 @@ func (m *Manager) Connect(ctx context.Context) error {
 
 	db, err := sql.Open("postgres", m.config.ManagerDatabaseConfig.ConnectionString())
 	if err != nil {
-		return errors.Wrap(err, "failed to open manager database connection")
+		return err
 	}
 
 	if err := db.PingContext(ctx); err != nil {
-		return errors.Wrap(err, "failed to ping manager database connection")
+		return err
 	}
 
 	m.db = db
@@ -95,7 +96,7 @@ func (m *Manager) Disconnect(ctx context.Context, ignoreCloseError bool) error {
 	}
 
 	if err := m.db.Close(); err != nil && !ignoreCloseError {
-		return errors.Wrap(err, "failed to close database connection")
+		return err
 	}
 
 	m.db = nil
@@ -105,7 +106,7 @@ func (m *Manager) Disconnect(ctx context.Context, ignoreCloseError bool) error {
 
 func (m *Manager) Reconnect(ctx context.Context, ignoreDisconnectError bool) error {
 	if err := m.Disconnect(ctx, ignoreDisconnectError); err != nil && !ignoreDisconnectError {
-		return errors.Wrap(err, "failed to disconnect manager while reconnecting")
+		return err
 	}
 
 	return m.Connect(ctx)
@@ -118,24 +119,24 @@ func (m *Manager) Ready() bool {
 func (m *Manager) Initialize(ctx context.Context) error {
 	if !m.Ready() {
 		if err := m.Connect(ctx); err != nil {
-			return errors.Wrap(err, "failed to connect manager while initializing")
+			return err
 		}
 	}
 
 	rows, err := m.db.QueryContext(ctx, "SELECT datname FROM pg_database WHERE datname LIKE $1", fmt.Sprintf("%s_%s_%%", m.config.DatabasePrefix, prefixTestDatabase))
 	if err != nil {
-		return errors.Wrap(err, "failed to query for existing test databases")
+		return err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var dbName string
 		if err := rows.Scan(&dbName); err != nil {
-			return errors.Wrap(err, "failed to scan existing test database row")
+			return err
 		}
 
 		if _, err := m.db.Exec(fmt.Sprintf("DROP DATABASE %s", pq.QuoteIdentifier(dbName))); err != nil {
-			return errors.Wrapf(err, "failed to drop existing test database %q", dbName)
+			return err
 		}
 	}
 
@@ -171,6 +172,7 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 				Database: dbName,
 			},
 			ready: false,
+			c:     make(chan struct{}),
 		},
 		nextTestID:    0,
 		testDatabases: make([]*TestDatabase, 0),
@@ -181,7 +183,7 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 	if err := m.dropAndCreateDatabase(ctx, dbName, m.config.ManagerDatabaseConfig.Username, templateDatabaseTemplate); err != nil {
 		m.templates[hash] = nil
 
-		return nil, errors.Wrapf(err, "failed to drop and create template database %q", dbName)
+		return nil, err
 	}
 
 	return template, nil
@@ -200,7 +202,7 @@ func (m *Manager) FinalizeTemplateDatabase(ctx context.Context, hash string) (*T
 		dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
 		exists, err := m.checkDatabaseExists(ctx, dbName)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to check whether template database %q exists while finalizing", dbName)
+			return nil, err
 		}
 
 		if !exists {
@@ -218,6 +220,7 @@ func (m *Manager) FinalizeTemplateDatabase(ctx context.Context, hash string) (*T
 					Database: dbName,
 				},
 				ready: false,
+				c:     make(chan struct{}),
 			},
 			nextTestID:    0,
 			testDatabases: make([]*TestDatabase, 0, m.config.TestDatabaseInitialPoolSize),
@@ -247,7 +250,9 @@ func (m *Manager) GetTestDatabase(ctx context.Context, hash string) (*TestDataba
 		return nil, ErrTemplateNotFound
 	}
 
-	template.WaitUntilReady()
+	if err := template.WaitUntilReady(ctx); err != nil {
+		return nil, err
+	}
 
 	template.Lock()
 	defer template.Unlock()
@@ -264,7 +269,7 @@ func (m *Manager) GetTestDatabase(ctx context.Context, hash string) (*TestDataba
 		var err error
 		testDB, err = m.createNextTestDatabase(ctx, template)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to create next test database while retrieving one for hash %q", hash)
+			return nil, err
 		}
 	}
 
@@ -289,7 +294,9 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 		return ErrTemplateNotFound
 	}
 
-	template.WaitUntilReady()
+	if err := template.WaitUntilReady(ctx); err != nil {
+		return err
+	}
 
 	template.Lock()
 	defer template.Unlock()
@@ -307,7 +314,7 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 		dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, hash, id)
 		exists, err := m.checkDatabaseExists(ctx, dbName)
 		if err != nil {
-			return errors.Wrapf(err, "failed to check whether test database %q exists while returning", dbName)
+			return err
 		}
 
 		if !exists {
@@ -325,6 +332,7 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 					Database: dbName,
 				},
 				ready: true,
+				c:     make(chan struct{}),
 			},
 			ID:    id,
 			dirty: false,
@@ -350,8 +358,12 @@ func (m *Manager) ClearTrackedTestDatabases(hash string) error {
 		return ErrTemplateNotFound
 	}
 
-	// TODO: re-enable when `WaitUntilReady` is able to accept a context with timeout
-	// template.WaitUntilReady()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := template.WaitUntilReady(ctx); err != nil {
+		cancel()
+		return err
+	}
+	cancel()
 
 	template.Lock()
 	defer template.Unlock()
@@ -375,8 +387,12 @@ func (m *Manager) ResetAllTracking() error {
 	defer m.templateMutex.Unlock()
 
 	for hash := range m.templates {
-		// TODO: re-enable when `WaitUntilReady` is able to accept a context with timeout
-		// m.templates[hash].WaitUntilReady()
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if err := m.templates[hash].WaitUntilReady(ctx); err != nil {
+			cancel()
+			continue
+		}
+		cancel()
 
 		m.templates[hash].Lock()
 		for i := range m.templates[hash].testDatabases {
@@ -399,7 +415,7 @@ func (m *Manager) checkDatabaseExists(ctx context.Context, dbName string) (bool,
 			return false, nil
 		}
 
-		return false, errors.Wrapf(err, "failed to check whether database %q exists", dbName)
+		return false, err
 	}
 
 	return exists, nil
@@ -411,7 +427,7 @@ func (m *Manager) createDatabase(ctx context.Context, dbName string, owner strin
 	// fmt.Println("createDatabase", dbName, ts)
 
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s WITH OWNER %s TEMPLATE %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(owner), pq.QuoteIdentifier(template))); err != nil {
-		return errors.Wrapf(err, "failed to create database %q", dbName)
+		return err
 	}
 
 	return nil
@@ -423,7 +439,7 @@ func (m *Manager) dropDatabase(ctx context.Context, dbName string) error {
 	// fmt.Println("dropDatabase", dbName, ts)
 
 	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
-		return errors.Wrapf(err, "failed to drop database %q", dbName)
+		return err
 	}
 
 	return nil
@@ -431,7 +447,7 @@ func (m *Manager) dropDatabase(ctx context.Context, dbName string) error {
 
 func (m *Manager) dropAndCreateDatabase(ctx context.Context, dbName string, owner string, template string) error {
 	if err := m.dropDatabase(ctx, dbName); err != nil {
-		return errors.Wrapf(err, "failed to drop database %q before recreating", dbName)
+		return err
 	}
 
 	return m.createDatabase(ctx, dbName, owner, template)
@@ -444,7 +460,7 @@ func (m *Manager) createNextTestDatabase(ctx context.Context, template *Template
 	dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, template.TemplateHash, template.nextTestID)
 
 	if err := m.dropAndCreateDatabase(ctx, dbName, m.config.TestDatabaseOwner, template.Config.Database); err != nil {
-		return nil, errors.Wrap(err, "failed to create next test database")
+		return nil, err
 	}
 
 	testDB := &TestDatabase{
@@ -458,6 +474,7 @@ func (m *Manager) createNextTestDatabase(ctx context.Context, template *Template
 				Database: dbName,
 			},
 			ready: true,
+			c:     make(chan struct{}),
 		},
 		ID:    template.nextTestID,
 		dirty: false,
@@ -476,7 +493,7 @@ func (m *Manager) createNextTestDatabase(ctx context.Context, template *Template
 		}
 
 		if err := m.dropDatabase(ctx, template.testDatabases[i].Config.Database); err != nil {
-			return nil, errors.Wrapf(err, "failed to drop test database %d while cleaning up due to max pool size", i)
+			return nil, err
 		}
 
 		// Delete while preserving order, avoiding memory leaks due to points in accordance to: https://github.com/golang/go/wiki/SliceTricks
