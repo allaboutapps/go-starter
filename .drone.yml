@@ -134,11 +134,11 @@ pipeline:
     commands:
       - cd /app
       - make build-pgserve
-      # - pgserve &
-      # - make init
-      # - sql-migrate up
-      # - make build
-      # - make test
+      - "pgserve &"
+      - make init
+      - sql-migrate up
+      - make build
+      - make test
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
