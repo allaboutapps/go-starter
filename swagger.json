@@ -60,7 +60,7 @@
   },
   "definitions": {
     "SomeSampleType": {
-      "description": "SomeSampleType some sample type",
+      "description": "SomeSampleType SomeSampleType some sample type",
       "type": "object",
       "required": [
         "data",
@@ -85,7 +85,7 @@
           "x-go-name": "MoreData"
         }
       },
-      "x-go-package": "_/app/models"
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/models"
     }
   },
   "securityDefinitions": {
