@@ -135,6 +135,7 @@ pipeline:
     image: *IMAGE_DEPLOY_ID
     commands:
       - cd /app
+      - make init
       - make build-pgserve
       - "pgserve > /dev/null 2>&1 &"
       - sql-migrate up
