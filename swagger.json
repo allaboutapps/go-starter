@@ -1,5 +1,21 @@
 {
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
   "swagger": "2.0",
+  "info": {
+    "description": "Documentation of our awesome API.",
+    "title": "awesome.",
+    "version": "1.0.0"
+  },
+  "host": "some-url.com",
+  "basePath": "/",
   "paths": {
     "/templates": {
       "get": {
@@ -33,124 +49,48 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/initializeTemplateResponse"
+            "description": "SomeSampleType",
+            "schema": {
+              "$ref": "#/definitions/SomeSampleType"
+            }
           }
         }
       }
     }
   },
   "definitions": {
-    "Cond": {
-      "description": "Each Cond has an associated Locker L (often a *Mutex or *RWMutex),\nwhich must be held when changing the condition and\nwhen calling the Wait method.\n\nA Cond must not be copied after first use.",
+    "SomeSampleType": {
+      "description": "SomeSampleType some sample type",
       "type": "object",
-      "title": "Cond implements a condition variable, a rendezvous point\nfor goroutines waiting for or announcing the occurrence\nof an event.",
+      "required": [
+        "data",
+        "id",
+        "moreData"
+      ],
       "properties": {
-        "L": {
-          "$ref": "#/definitions/Locker"
-        }
-      },
-      "x-go-package": "sync"
-    },
-    "DatabaseConfig": {
-      "type": "object",
-      "properties": {
-        "database": {
+        "data": {
+          "description": "data",
           "type": "string",
-          "x-go-name": "Database"
-        },
-        "host": {
-          "type": "string",
-          "x-go-name": "Host"
-        },
-        "password": {
-          "type": "string",
-          "x-go-name": "Password"
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "x-go-name": "Port"
-        },
-        "username": {
-          "type": "string",
-          "x-go-name": "Username"
-        }
-      },
-      "x-go-package": "_/app/pgtestpool"
-    },
-    "Locker": {
-      "type": "object",
-      "title": "A Locker represents an object that can be locked and unlocked.",
-      "x-go-package": "sync"
-    },
-    "Mutex": {
-      "description": "A Mutex must not be copied after first use.",
-      "type": "object",
-      "title": "A Mutex is a mutual exclusion lock.\nThe zero value for a Mutex is an unlocked mutex.",
-      "x-go-package": "sync"
-    },
-    "TestDatabase": {
-      "type": "object",
-      "properties": {
-        "config": {
-          "$ref": "#/definitions/DatabaseConfig"
+          "minLength": 5,
+          "x-go-name": "Data"
         },
         "id": {
-          "type": "integer",
-          "format": "int64",
+          "description": "Id",
+          "type": "string",
           "x-go-name": "ID"
         },
-        "templateHash": {
+        "moreData": {
+          "description": "moreData",
           "type": "string",
-          "x-go-name": "TemplateHash"
+          "x-go-name": "MoreData"
         }
       },
-      "x-go-package": "_/app/pgtestpool"
+      "x-go-package": "_/app/models"
     }
   },
-  "responses": {
-    "initializeTemplateResponse": {
-      "schema": {
-        "$ref": "#/definitions/Cond"
-      },
-      "headers": {
-        "cond": {},
-        "config": {},
-        "nextTestID": {
-          "type": "integer",
-          "format": "int64",
-          "description": "some description for id"
-        },
-        "readerCount": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "readerSem": {
-          "type": "integer",
-          "format": "uint32"
-        },
-        "readerWait": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "ready": {
-          "type": "boolean"
-        },
-        "templateHash": {
-          "type": "string"
-        },
-        "testDatabases": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/TestDatabase"
-          }
-        },
-        "w": {},
-        "writerSem": {
-          "type": "integer",
-          "format": "uint32"
-        }
-      }
+  "securityDefinitions": {
+    "basic": {
+      "type": "basic"
     }
   }
 }
