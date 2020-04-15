@@ -1,0 +1,247 @@
+# -----------------------------------------------------------------------------
+# SETTINGS
+# -----------------------------------------------------------------------------
+
+# Drone matrix: Additional ENV vars for substitution - http://docs.drone.io/matrix-builds/
+# Will be evaluated BEFORE the YAML is parsed, ONLY strings allowed, NO substitutions ${XXX} here.
+
+matrix:
+  include:
+    - BUILD_ENV: all
+      # The name of the k8s namespaces that these pipelines will target.
+      # K8S_DEPLOY_NS_DEV:
+      # K8S_DEPLOY_NS_STAGING:
+      # K8S_DEPLOY_NS_PRODUCTION:
+
+# YAML Configuration anchors - https://learnxinyminutes.com/docs/yaml/
+# Will be evaluated WHILE the YAML is parsed, any valid yaml allowed, substitutions ${XXX} allowed.
+
+alias:
+  # The image will be tagged with this, pushed to gcr and referenced with this key in the k8s deployment
+  - &IMAGE_DEPLOY_TAG ${DRONE_COMMIT_SHA}
+
+  # The image name, defaults to lowercase repo name <owner>/<project>, e.g. aw/aaa-cab-kubernetes-test
+  - &IMAGE_DEPLOY_NAME ${DRONE_REPO,,}
+
+  # The full uniquely tagged image name
+  - &IMAGE_DEPLOY_ID ${DRONE_REPO,,}:${DRONE_COMMIT_SHA}
+
+  #   # Defines which branches will trigger a docker image push our Google Cloud Registry (tags are always published)
+  #   - &GCR_PUBLISH_BRANCHES [dev, staging, master]
+
+  #   # Docker registry publish default settings
+  #   - &GCR_REGISTRY_SETTINGS
+  #     image: plugins/gcr
+  #     repo: a3cloud-192413/${DRONE_REPO,,}
+  #     registry: eu.gcr.io
+  #     secrets:
+  #       - source: AAA_GCR_SERVICE_ACCOUNT_JSON
+  #         target: google_credentials
+  #     # local short-time-cache: don't cleanup any image layers after pushing
+  #     purge: false
+  #     # force compress of docker build context
+  #     compress: true
+  #     volumes: # mount needed to push the already build container
+  #       - /var/run/docker.sock:/var/run/docker.sock
+
+  #   # Deployment default settings
+  #   - &K8S_DEPLOY_SETTINGS
+  #     image: eu.gcr.io/a3cloud-192413/aw/aaa-drone-kubernetes:latest
+  #     pull: true
+  #     secrets:
+  #     - source: AAA_K8S_SERVER
+  #       target: KUBERNETES_SERVER
+  #     - source: AAA_K8S_SERVICE_ACCOUNT_CRT
+  #       target: KUBERNETES_CERT
+  #     - source: AAA_K8S_SERVICE_ACCOUNT_TOKEN
+  #       target: KUBERNETES_TOKEN
+  #     - source: AAA_GCR_SERVICE_ACCOUNT_JSON
+  #       target: GCR_SERVICE_ACCOUNT
+  #     deployment: app
+  #     repo: eu.gcr.io/a3cloud-192413/${DRONE_REPO,,}
+  #     container: [app]
+  #     tag: *IMAGE_DEPLOY_TAG
+  #     gcr_service_account_email: drone-ci-a3cloud@a3cloud-192413.iam.gserviceaccount.com
+  #     mgmt_repo: https://git.allaboutapps.at/scm/aw/a3cloud-mgmt.git
+  #     mgmt_git_email: infrastructure+drone@allaboutapps.at
+
+  # ENV variables for executing yarn:test (typically only the DB connector is relevant)
+  - &TEST_ENV
+    CI: ${CI}
+
+    # required: env for sqlboiler and sql-migrate
+    PSQL_DBNAME: &PSQL_DBNAME "sample"
+    PSQL_USER: &PSQL_USER "dbuser"
+    PSQL_PASS: &PSQL_PASS "9bed16f749d74a3c8bfbced18a7647f5"
+    PSQL_HOST: &PSQL_HOST "postgres"
+    PSQL_PORT: &PSQL_PORT "5432"
+    PSQL_SSLMODE: &PSQL_SSLMODE "disable"
+    PSQL_SCHEMA: &PSQL_SCHEMA "public"
+
+    PGCONSUMER_BASE_URL: "http://127.0.0.1:5000/api"
+
+    # optional: env for postgresql-client apt-get package (psql)
+    PGDATABASE: *PSQL_DBNAME
+    PGUSER: *PSQL_USER
+    PGPASSWORD: *PSQL_PASS
+    PGHOST: *PSQL_HOST
+    PGPORT: *PSQL_PORT
+    PGSSLMODE: *PSQL_SSLMODE
+
+  # Which build events should trigger the main pipeline (defaults to all)
+  - &BUILD_EVENTS [push, pull_request, tag]
+
+  # Pipeline merge helper: only execute if build event received
+  - &WHEN_BUILD_EVENT
+    when:
+      event: *BUILD_EVENTS
+
+# The actual pipeline building our product
+pipeline:
+  # ---------------------------------------------------------------------------
+  # BUILD
+  # ---------------------------------------------------------------------------
+
+  "database connection":
+    group: build
+    image: postgres:12.2-alpine
+    commands:
+      # wait for postgres service to become available
+      - |
+        until psql -U $PGUSER -d $PGDATABASE -h postgres \
+         -c "SELECT 1;" >/dev/null 2>&1; do sleep 1; done
+      # query the database
+      - |
+        psql -U $PGUSER -d $PGDATABASE -h postgres \
+          -c "SELECT name, setting FROM pg_settings;"
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  "docker build (target builder)":
+    group: build
+    image: docker:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - "docker build --target builder --compress -t ${DRONE_REPO,,}:${DRONE_COMMIT_SHA} ."
+    <<: *WHEN_BUILD_EVENT
+
+  # ---------------------------------------------------------------------------
+  # CHECK
+  # ---------------------------------------------------------------------------
+
+  "buildtest":
+    group: check
+    image: *IMAGE_DEPLOY_ID
+    commands:
+      - cd /app
+      - make build-pgserve
+      - "pgserve > /dev/null 2>&1 &"
+      - sql-migrate up
+      - make build
+      - make test
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+#   # ---------------------------------------------------------------------------
+#   # PUBLISH
+#   # ---------------------------------------------------------------------------
+
+#   # Built a allowed branch? Push to cloud registry
+#   "publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
+#     group: publish
+#     <<: *GCR_REGISTRY_SETTINGS
+#     tags:
+#       - build_${DRONE_BUILD_NUMBER}
+#       - ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}
+#       - *IMAGE_DEPLOY_TAG
+#       - latest
+#       - ${DRONE_BRANCH}
+#       - ${DRONE_COMMIT_SHA:0:10}
+#     when:
+#       branch: *GCR_PUBLISH_BRANCHES
+#       event: *BUILD_EVENTS
+
+#   # Built a tag? Push to cloud registry
+#   "publish tag_${DRONE_COMMIT_SHA:0:10}":
+#     group: publish
+#     <<: *GCR_REGISTRY_SETTINGS
+#     tags:
+#       - build_${DRONE_BUILD_NUMBER}
+#       - tag_${DRONE_COMMIT_SHA:0:10}
+#       - *IMAGE_DEPLOY_TAG
+#       - latest
+#       - ${DRONE_TAG}
+#       - ${DRONE_COMMIT_SHA:0:10}
+#     when:
+#       event: tag
+
+#   # ---------------------------------------------------------------------------
+#   # DEPLOYMENT
+#   # ---------------------------------------------------------------------------
+
+#   # autodeploy dev if it hits the branch
+#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (auto)":
+#     <<: *K8S_DEPLOY_SETTINGS
+#     namespace: ${K8S_DEPLOY_NS_DEV}
+#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_DEV}/app.deployment.yaml
+#     when:
+#       event: *BUILD_EVENTS
+#       branch: [dev]
+
+#   # promote dev through "drone deploy <repo> <build> dev"
+#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (promote)":
+#     <<: *K8S_DEPLOY_SETTINGS
+#     namespace: ${K8S_DEPLOY_NS_DEV}
+#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_DEV}/app.deployment.yaml
+#     when:
+#       environment: dev
+#       event: deployment
+
+#   # autodeploy staging if it hits the branch
+#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_STAGING} (auto)":
+#     <<: *K8S_DEPLOY_SETTINGS
+#     namespace: ${K8S_DEPLOY_NS_STAGING}
+#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_STAGING}/app.deployment.yaml
+#     when:
+#       event: *BUILD_EVENTS
+#       branch: [staging]
+
+#   # promote staging through "drone deploy <repo> <build> staging"
+#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_STAGING} (promote)":
+#     <<: *K8S_DEPLOY_SETTINGS
+#     namespace: ${K8S_DEPLOY_NS_STAGING}
+#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_STAGING}/app.deployment.yaml
+#     when:
+#       environment: staging
+#       event: deployment
+
+#   # promote production through "drone deploy <repo> <build> production"
+#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_PRODUCTION} (promote)":
+#     <<: *K8S_DEPLOY_SETTINGS
+#     namespace: ${K8S_DEPLOY_NS_PRODUCTION}
+#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_PRODUCTION}/app.deployment.yaml
+#     when:
+#       environment: production
+#       event: deployment
+
+# Long living services where the startup order does not matter (otherwise use detach: true)
+services:
+  # ---------------------------------------------------------------------------
+  # SERVICES
+  # ---------------------------------------------------------------------------
+
+  "env":
+    image: alpine
+    commands:
+      - "env | sort"
+
+  "postgres":
+    image: postgres:12.2-alpine
+    environment:
+      POSTGRES_DB: *PSQL_DBNAME
+      POSTGRES_USER: *PSQL_USER
+      POSTGRES_PASSWORD: *PSQL_PASS
+    # Apply some performance improvements to pg as these guarantees are not needed while running integration tests
+    command: "-c 'shared_buffers=128MB' -c 'fsync=off' -c 'synchronous_commit=off' -c 'full_page_writes=off' -c 'max_connections=100' -c 'client_min_messages=warning'"
+    <<: *WHEN_BUILD_EVENT

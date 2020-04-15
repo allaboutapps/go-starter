@@ -23,6 +23,7 @@ lint:
 # w/o cache - see "go help testflag"
 # use https://github.com/kyoh86/richgo to color
 # note that these tests should not run verbose by default (e.g. use your IDE for this)
+# TODO: add test shuffling/seeding when landed in go v1.15 (https://github.com/golang/go/issues/28592)
 test:
 	richgo test -cover -race -count=1 ./...
 
