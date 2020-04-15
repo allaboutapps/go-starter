@@ -137,6 +137,7 @@ pipeline:
       - cd /app
       - make build-pgserve
       - "pgserve > /dev/null 2>&1 &"
+      - sql-migrate up
       - make test
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
