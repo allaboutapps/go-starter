@@ -85,7 +85,7 @@
           "x-go-name": "MoreData"
         }
       },
-      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/models"
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/swaggertest"
     }
   },
   "securityDefinitions": {

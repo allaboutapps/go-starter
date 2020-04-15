@@ -9,9 +9,11 @@ require (
 	github.com/ericlagergren/decimal v0.0.0-20191206042408-88212e6cfca9 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/friendsofgo/errors v0.9.2
+	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/runtime v0.19.15 // indirect
-	github.com/go-openapi/swag v0.19.9 // indirect
-	github.com/go-openapi/validate v0.19.8 // indirect
+	github.com/go-openapi/strfmt v0.19.5
+	github.com/go-openapi/swag v0.19.9
+	github.com/go-openapi/validate v0.19.8
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/godror/godror v0.14.0 // indirect

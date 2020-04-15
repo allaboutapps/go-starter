@@ -56,7 +56,8 @@ reset-database:
 .PHONY: test
 
 swagger:
-	swagger generate spec -o ./swagger.json --scan-models
+	swagger generate spec -o swaggertest/swagger.json --scan-models
+	swagger generate model --spec=swaggertest/swagger.json --existing-models=allaboutapps.at/aw/go-mranftl-sample/swaggertest --model-package=swaggertest
 
 serve-swagger:
 	swagger serve -F=swagger swagger.json
