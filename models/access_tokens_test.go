@@ -362,7 +362,7 @@ func testAccessTokenToOneUserUsingUser(t *testing.T) {
 	var foreign User
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, accessTokenDBTypes, true, accessTokenColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, accessTokenDBTypes, false, accessTokenColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize AccessToken struct: %s", err)
 	}
 	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
@@ -373,7 +373,7 @@ func testAccessTokenToOneUserUsingUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.UserID, foreign.ID)
+	local.UserID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -383,7 +383,7 @@ func testAccessTokenToOneUserUsingUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
@@ -445,7 +445,7 @@ func testAccessTokenToOneSetOpUserUsingUser(t *testing.T) {
 		if x.R.AccessTokens[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.UserID, x.ID) {
+		if a.UserID != x.ID {
 			t.Error("foreign key was wrong value", a.UserID)
 		}
 
@@ -456,60 +456,9 @@ func testAccessTokenToOneSetOpUserUsingUser(t *testing.T) {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.UserID, x.ID) {
+		if a.UserID != x.ID {
 			t.Error("foreign key was wrong value", a.UserID, x.ID)
 		}
-	}
-}
-
-func testAccessTokenToOneRemoveOpUserUsingUser(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a AccessToken
-	var b User
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, accessTokenDBTypes, false, strmangle.SetComplement(accessTokenPrimaryKeyColumns, accessTokenColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetUser(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveUser(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.User().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.User != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.UserID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.AccessTokens) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 

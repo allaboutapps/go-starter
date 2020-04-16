@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -24,11 +23,11 @@ import (
 
 // PasswordResetToken is an object representing the database table.
 type PasswordResetToken struct {
-	Token      string      `boil:"token" json:"token" toml:"token" yaml:"token"`
-	ValidUntil time.Time   `boil:"valid_until" json:"valid_until" toml:"valid_until" yaml:"valid_until"`
-	UserID     null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt  time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	Token      string    `boil:"token" json:"token" toml:"token" yaml:"token"`
+	ValidUntil time.Time `boil:"valid_until" json:"valid_until" toml:"valid_until" yaml:"valid_until"`
+	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt  time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *passwordResetTokenR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L passwordResetTokenL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -53,13 +52,13 @@ var PasswordResetTokenColumns = struct {
 var PasswordResetTokenWhere = struct {
 	Token      whereHelperstring
 	ValidUntil whereHelpertime_Time
-	UserID     whereHelpernull_String
+	UserID     whereHelperstring
 	CreatedAt  whereHelpertime_Time
 	UpdatedAt  whereHelpertime_Time
 }{
 	Token:      whereHelperstring{field: "\"password_reset_tokens\".\"token\""},
 	ValidUntil: whereHelpertime_Time{field: "\"password_reset_tokens\".\"valid_until\""},
-	UserID:     whereHelpernull_String{field: "\"password_reset_tokens\".\"user_id\""},
+	UserID:     whereHelperstring{field: "\"password_reset_tokens\".\"user_id\""},
 	CreatedAt:  whereHelpertime_Time{field: "\"password_reset_tokens\".\"created_at\""},
 	UpdatedAt:  whereHelpertime_Time{field: "\"password_reset_tokens\".\"updated_at\""},
 }
@@ -213,9 +212,7 @@ func (passwordResetTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor,
 		if object.R == nil {
 			object.R = &passwordResetTokenR{}
 		}
-		if !queries.IsNil(object.UserID) {
-			args = append(args, object.UserID)
-		}
+		args = append(args, object.UserID)
 
 	} else {
 	Outer:
@@ -225,14 +222,12 @@ func (passwordResetTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor,
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.UserID) {
+				if a == obj.UserID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.UserID) {
-				args = append(args, obj.UserID)
-			}
+			args = append(args, obj.UserID)
 
 		}
 	}
@@ -279,7 +274,7 @@ func (passwordResetTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor,
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.UserID, foreign.ID) {
+			if local.UserID == foreign.ID {
 				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -320,7 +315,7 @@ func (o *PasswordResetToken) SetUser(ctx context.Context, exec boil.ContextExecu
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.UserID, related.ID)
+	o.UserID = related.ID
 	if o.R == nil {
 		o.R = &passwordResetTokenR{
 			User: related,
@@ -337,39 +332,6 @@ func (o *PasswordResetToken) SetUser(ctx context.Context, exec boil.ContextExecu
 		related.R.PasswordResetTokens = append(related.R.PasswordResetTokens, o)
 	}
 
-	return nil
-}
-
-// RemoveUser relationship.
-// Sets o.R.User to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-func (o *PasswordResetToken) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.UserID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.User = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.PasswordResetTokens {
-		if queries.Equal(o.UserID, ri.UserID) {
-			continue
-		}
-
-		ln := len(related.R.PasswordResetTokens)
-		if ln > 1 && i < ln-1 {
-			related.R.PasswordResetTokens[i] = related.R.PasswordResetTokens[ln-1]
-		}
-		related.R.PasswordResetTokens = related.R.PasswordResetTokens[:ln-1]
-		break
-	}
 	return nil
 }
 

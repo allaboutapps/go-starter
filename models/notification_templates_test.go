@@ -581,7 +581,7 @@ func testNotificationTemplatesSelect(t *testing.T) {
 }
 
 var (
-	notificationTemplateDBTypes = map[string]string{`ID`: `uuid`, `Text`: `timestamp with time zone`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`}
+	notificationTemplateDBTypes = map[string]string{`ID`: `uuid`, `Text`: `text`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`}
 	_                           = bytes.MinRead
 )
 

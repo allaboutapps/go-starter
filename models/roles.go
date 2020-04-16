@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // Role is an object representing the database table.
 type Role struct {
-	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Role      null.String `boil:"role" json:"role,omitempty" toml:"role" yaml:"role,omitempty"`
-	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Role      string    `boil:"role" json:"role" toml:"role" yaml:"role"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *roleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L roleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -49,12 +48,12 @@ var RoleColumns = struct {
 
 var RoleWhere = struct {
 	ID        whereHelperstring
-	Role      whereHelpernull_String
+	Role      whereHelperstring
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperstring{field: "\"roles\".\"id\""},
-	Role:      whereHelpernull_String{field: "\"roles\".\"role\""},
+	Role:      whereHelperstring{field: "\"roles\".\"role\""},
 	CreatedAt: whereHelpertime_Time{field: "\"roles\".\"created_at\""},
 	UpdatedAt: whereHelpertime_Time{field: "\"roles\".\"updated_at\""},
 }

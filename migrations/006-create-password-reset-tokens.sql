@@ -2,7 +2,7 @@
 CREATE TABLE password_reset_tokens (
     token uuid NOT NULL DEFAULT uuid_generate_v4 (),
     valid_until timestamptz NOT NULL,
-    user_id uuid NULL,
+    user_id uuid NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
     CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (token)

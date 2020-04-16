@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // RefreshToken is an object representing the database table.
 type RefreshToken struct {
-	Token     string      `boil:"token" json:"token" toml:"token" yaml:"token"`
-	UserID    null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	Token     string    `boil:"token" json:"token" toml:"token" yaml:"token"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *refreshTokenR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L refreshTokenL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -49,12 +48,12 @@ var RefreshTokenColumns = struct {
 
 var RefreshTokenWhere = struct {
 	Token     whereHelperstring
-	UserID    whereHelpernull_String
+	UserID    whereHelperstring
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
 	Token:     whereHelperstring{field: "\"refresh_tokens\".\"token\""},
-	UserID:    whereHelpernull_String{field: "\"refresh_tokens\".\"user_id\""},
+	UserID:    whereHelperstring{field: "\"refresh_tokens\".\"user_id\""},
 	CreatedAt: whereHelpertime_Time{field: "\"refresh_tokens\".\"created_at\""},
 	UpdatedAt: whereHelpertime_Time{field: "\"refresh_tokens\".\"updated_at\""},
 }
@@ -208,9 +207,7 @@ func (refreshTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 		if object.R == nil {
 			object.R = &refreshTokenR{}
 		}
-		if !queries.IsNil(object.UserID) {
-			args = append(args, object.UserID)
-		}
+		args = append(args, object.UserID)
 
 	} else {
 	Outer:
@@ -220,14 +217,12 @@ func (refreshTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.UserID) {
+				if a == obj.UserID {
 					continue Outer
 				}
 			}
 
-			if !queries.IsNil(obj.UserID) {
-				args = append(args, obj.UserID)
-			}
+			args = append(args, obj.UserID)
 
 		}
 	}
@@ -274,7 +269,7 @@ func (refreshTokenL) LoadUser(ctx context.Context, e boil.ContextExecutor, singu
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.UserID, foreign.ID) {
+			if local.UserID == foreign.ID {
 				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -315,7 +310,7 @@ func (o *RefreshToken) SetUser(ctx context.Context, exec boil.ContextExecutor, i
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.UserID, related.ID)
+	o.UserID = related.ID
 	if o.R == nil {
 		o.R = &refreshTokenR{
 			User: related,
@@ -332,39 +327,6 @@ func (o *RefreshToken) SetUser(ctx context.Context, exec boil.ContextExecutor, i
 		related.R.RefreshTokens = append(related.R.RefreshTokens, o)
 	}
 
-	return nil
-}
-
-// RemoveUser relationship.
-// Sets o.R.User to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-func (o *RefreshToken) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.UserID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.User = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.RefreshTokens {
-		if queries.Equal(o.UserID, ri.UserID) {
-			continue
-		}
-
-		ln := len(related.R.RefreshTokens)
-		if ln > 1 && i < ln-1 {
-			related.R.RefreshTokens[i] = related.R.RefreshTokens[ln-1]
-		}
-		related.R.RefreshTokens = related.R.RefreshTokens[:ln-1]
-		break
-	}
 	return nil
 }
 

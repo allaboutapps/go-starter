@@ -1,5 +1,5 @@
 # first is default task when running "make" without args
-build: sql-format sql-lint generate format gobuild lint
+build: sql generate format gobuild lint
 
 build-pgserve: format gobuild-pgserve lint
 
@@ -45,6 +45,8 @@ tidy:
 clean:
 	rm -rf bin
 
+sql: sql-format sql-lint sql-check-migrations
+
 sql-format:
 	@echo "make sql-format"
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
@@ -58,7 +60,11 @@ sql-lint:
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
 		| psql --quiet -v ON_ERROR_STOP=1
 
-database-reset:
+sql-check-migrations:
+	@echo "make sql-check-migrations"
+	@(grep -R " NULL" ./migrations/ | grep --invert "DEFAULT NULL" | grep --invert "NOT") && (echo "Unnecessary use of NULL keyword" && exit 1) || exit 0
+
+reset:
 	@echo "DROP & CREATE database:"
 	@echo "  PGHOST=${PGHOST} PGDATABASE=${PGDATABASE}" PGUSER=${PGUSER}
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]

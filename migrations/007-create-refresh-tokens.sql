@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE refresh_tokens (
     token uuid NOT NULL DEFAULT uuid_generate_v4 (),
-    user_id uuid NULL,
+    user_id uuid NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
     CONSTRAINT refresh_tokens_pkey PRIMARY KEY (token)

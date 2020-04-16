@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // Tag is an object representing the database table.
 type Tag struct {
-	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Tag       null.String `boil:"tag" json:"tag,omitempty" toml:"tag" yaml:"tag,omitempty"`
-	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Tag       string    `boil:"tag" json:"tag" toml:"tag" yaml:"tag"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *tagR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -49,12 +48,12 @@ var TagColumns = struct {
 
 var TagWhere = struct {
 	ID        whereHelperstring
-	Tag       whereHelpernull_String
+	Tag       whereHelperstring
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperstring{field: "\"tags\".\"id\""},
-	Tag:       whereHelpernull_String{field: "\"tags\".\"tag\""},
+	Tag:       whereHelperstring{field: "\"tags\".\"tag\""},
 	CreatedAt: whereHelpertime_Time{field: "\"tags\".\"created_at\""},
 	UpdatedAt: whereHelpertime_Time{field: "\"tags\".\"updated_at\""},
 }

@@ -1,8 +1,8 @@
 -- +migrate Up
 CREATE TABLE access_tokens (
     token uuid NOT NULL DEFAULT uuid_generate_v4 (),
-    valid_until timestamptz NULL,
-    user_id uuid NULL,
+    valid_until timestamptz NOT NULL,
+    user_id uuid NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
     CONSTRAINT access_tokens_pkey PRIMARY KEY (token)

@@ -324,11 +324,7 @@ func TestToOneSet(t *testing.T) {
 
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToOneRemove(t *testing.T) {
-	t.Run("AccessTokenToUserUsingAccessTokens", testAccessTokenToOneRemoveOpUserUsingUser)
-	t.Run("PasswordResetTokenToUserUsingPasswordResetTokens", testPasswordResetTokenToOneRemoveOpUserUsingUser)
-	t.Run("RefreshTokenToUserUsingRefreshTokens", testRefreshTokenToOneRemoveOpUserUsingUser)
-}
+func TestToOneRemove(t *testing.T) {}
 
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
@@ -364,19 +360,11 @@ func TestToManyAdd(t *testing.T) {
 
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToManySet(t *testing.T) {
-	t.Run("UserToAccessTokens", testUserToManySetOpAccessTokens)
-	t.Run("UserToPasswordResetTokens", testUserToManySetOpPasswordResetTokens)
-	t.Run("UserToRefreshTokens", testUserToManySetOpRefreshTokens)
-}
+func TestToManySet(t *testing.T) {}
 
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToManyRemove(t *testing.T) {
-	t.Run("UserToAccessTokens", testUserToManyRemoveOpAccessTokens)
-	t.Run("UserToPasswordResetTokens", testUserToManyRemoveOpPasswordResetTokens)
-	t.Run("UserToRefreshTokens", testUserToManyRemoveOpRefreshTokens)
-}
+func TestToManyRemove(t *testing.T) {}
 
 func TestReload(t *testing.T) {
 	t.Run("AccessTokens", testAccessTokensReload)

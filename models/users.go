@@ -32,7 +32,7 @@ type User struct {
 	GoogleInfo   null.String `boil:"google_info" json:"google_info,omitempty" toml:"google_info" yaml:"google_info,omitempty"`
 	FacebookID   null.String `boil:"facebook_id" json:"facebook_id,omitempty" toml:"facebook_id" yaml:"facebook_id,omitempty"`
 	FacebookInfo null.String `boil:"facebook_info" json:"facebook_info,omitempty" toml:"facebook_info" yaml:"facebook_info,omitempty"`
-	IsActive     null.Bool   `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
+	IsActive     bool        `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
@@ -68,29 +68,6 @@ var UserColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Bool struct{ field string }
-
-func (w whereHelpernull_Bool) EQ(x null.Bool) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Bool) NEQ(x null.Bool) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Bool) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Bool) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-func (w whereHelpernull_Bool) LT(x null.Bool) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Bool) LTE(x null.Bool) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Bool) GT(x null.Bool) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Bool) GTE(x null.Bool) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var UserWhere = struct {
 	ID           whereHelperstring
 	Username     whereHelpernull_String
@@ -100,7 +77,7 @@ var UserWhere = struct {
 	GoogleInfo   whereHelpernull_String
 	FacebookID   whereHelpernull_String
 	FacebookInfo whereHelpernull_String
-	IsActive     whereHelpernull_Bool
+	IsActive     whereHelperbool
 	CreatedAt    whereHelpertime_Time
 	UpdatedAt    whereHelpertime_Time
 }{
@@ -112,7 +89,7 @@ var UserWhere = struct {
 	GoogleInfo:   whereHelpernull_String{field: "\"users\".\"google_info\""},
 	FacebookID:   whereHelpernull_String{field: "\"users\".\"facebook_id\""},
 	FacebookInfo: whereHelpernull_String{field: "\"users\".\"facebook_info\""},
-	IsActive:     whereHelpernull_Bool{field: "\"users\".\"is_active\""},
+	IsActive:     whereHelperbool{field: "\"users\".\"is_active\""},
 	CreatedAt:    whereHelpertime_Time{field: "\"users\".\"created_at\""},
 	UpdatedAt:    whereHelpertime_Time{field: "\"users\".\"updated_at\""},
 }
@@ -485,7 +462,7 @@ func (userL) LoadAccessTokens(ctx context.Context, e boil.ContextExecutor, singu
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -533,7 +510,7 @@ func (userL) LoadAccessTokens(ctx context.Context, e boil.ContextExecutor, singu
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.UserID) {
+			if local.ID == foreign.UserID {
 				local.R.AccessTokens = append(local.R.AccessTokens, foreign)
 				if foreign.R == nil {
 					foreign.R = &accessTokenR{}
@@ -573,7 +550,7 @@ func (userL) LoadPasswordResetTokens(ctx context.Context, e boil.ContextExecutor
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -621,7 +598,7 @@ func (userL) LoadPasswordResetTokens(ctx context.Context, e boil.ContextExecutor
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.UserID) {
+			if local.ID == foreign.UserID {
 				local.R.PasswordResetTokens = append(local.R.PasswordResetTokens, foreign)
 				if foreign.R == nil {
 					foreign.R = &passwordResetTokenR{}
@@ -661,7 +638,7 @@ func (userL) LoadRefreshTokens(ctx context.Context, e boil.ContextExecutor, sing
 			}
 
 			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
+				if a == obj.ID {
 					continue Outer
 				}
 			}
@@ -709,7 +686,7 @@ func (userL) LoadRefreshTokens(ctx context.Context, e boil.ContextExecutor, sing
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.UserID) {
+			if local.ID == foreign.UserID {
 				local.R.RefreshTokens = append(local.R.RefreshTokens, foreign)
 				if foreign.R == nil {
 					foreign.R = &refreshTokenR{}
@@ -958,7 +935,7 @@ func (o *User) AddAccessTokens(ctx context.Context, exec boil.ContextExecutor, i
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -979,7 +956,7 @@ func (o *User) AddAccessTokens(ctx context.Context, exec boil.ContextExecutor, i
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 		}
 	}
 
@@ -1003,76 +980,6 @@ func (o *User) AddAccessTokens(ctx context.Context, exec boil.ContextExecutor, i
 	return nil
 }
 
-// SetAccessTokens removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.User's AccessTokens accordingly.
-// Replaces o.R.AccessTokens with related.
-// Sets related.R.User's AccessTokens accordingly.
-func (o *User) SetAccessTokens(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*AccessToken) error {
-	query := "update \"access_tokens\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.AccessTokens {
-			queries.SetScanner(&rel.UserID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.User = nil
-		}
-
-		o.R.AccessTokens = nil
-	}
-	return o.AddAccessTokens(ctx, exec, insert, related...)
-}
-
-// RemoveAccessTokens relationships from objects passed in.
-// Removes related items from R.AccessTokens (uses pointer comparison, removal does not keep order)
-// Sets related.R.User.
-func (o *User) RemoveAccessTokens(ctx context.Context, exec boil.ContextExecutor, related ...*AccessToken) error {
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.UserID, nil)
-		if rel.R != nil {
-			rel.R.User = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.AccessTokens {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.AccessTokens)
-			if ln > 1 && i < ln-1 {
-				o.R.AccessTokens[i] = o.R.AccessTokens[ln-1]
-			}
-			o.R.AccessTokens = o.R.AccessTokens[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddPasswordResetTokens adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.PasswordResetTokens.
@@ -1081,7 +988,7 @@ func (o *User) AddPasswordResetTokens(ctx context.Context, exec boil.ContextExec
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1102,7 +1009,7 @@ func (o *User) AddPasswordResetTokens(ctx context.Context, exec boil.ContextExec
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 		}
 	}
 
@@ -1126,76 +1033,6 @@ func (o *User) AddPasswordResetTokens(ctx context.Context, exec boil.ContextExec
 	return nil
 }
 
-// SetPasswordResetTokens removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.User's PasswordResetTokens accordingly.
-// Replaces o.R.PasswordResetTokens with related.
-// Sets related.R.User's PasswordResetTokens accordingly.
-func (o *User) SetPasswordResetTokens(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PasswordResetToken) error {
-	query := "update \"password_reset_tokens\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.PasswordResetTokens {
-			queries.SetScanner(&rel.UserID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.User = nil
-		}
-
-		o.R.PasswordResetTokens = nil
-	}
-	return o.AddPasswordResetTokens(ctx, exec, insert, related...)
-}
-
-// RemovePasswordResetTokens relationships from objects passed in.
-// Removes related items from R.PasswordResetTokens (uses pointer comparison, removal does not keep order)
-// Sets related.R.User.
-func (o *User) RemovePasswordResetTokens(ctx context.Context, exec boil.ContextExecutor, related ...*PasswordResetToken) error {
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.UserID, nil)
-		if rel.R != nil {
-			rel.R.User = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.PasswordResetTokens {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.PasswordResetTokens)
-			if ln > 1 && i < ln-1 {
-				o.R.PasswordResetTokens[i] = o.R.PasswordResetTokens[ln-1]
-			}
-			o.R.PasswordResetTokens = o.R.PasswordResetTokens[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // AddRefreshTokens adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.RefreshTokens.
@@ -1204,7 +1041,7 @@ func (o *User) AddRefreshTokens(ctx context.Context, exec boil.ContextExecutor, 
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -1225,7 +1062,7 @@ func (o *User) AddRefreshTokens(ctx context.Context, exec boil.ContextExecutor, 
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 		}
 	}
 
@@ -1246,76 +1083,6 @@ func (o *User) AddRefreshTokens(ctx context.Context, exec boil.ContextExecutor, 
 			rel.R.User = o
 		}
 	}
-	return nil
-}
-
-// SetRefreshTokens removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.User's RefreshTokens accordingly.
-// Replaces o.R.RefreshTokens with related.
-// Sets related.R.User's RefreshTokens accordingly.
-func (o *User) SetRefreshTokens(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*RefreshToken) error {
-	query := "update \"refresh_tokens\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.RefreshTokens {
-			queries.SetScanner(&rel.UserID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.User = nil
-		}
-
-		o.R.RefreshTokens = nil
-	}
-	return o.AddRefreshTokens(ctx, exec, insert, related...)
-}
-
-// RemoveRefreshTokens relationships from objects passed in.
-// Removes related items from R.RefreshTokens (uses pointer comparison, removal does not keep order)
-// Sets related.R.User.
-func (o *User) RemoveRefreshTokens(ctx context.Context, exec boil.ContextExecutor, related ...*RefreshToken) error {
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.UserID, nil)
-		if rel.R != nil {
-			rel.R.User = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.RefreshTokens {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.RefreshTokens)
-			if ln > 1 && i < ln-1 {
-				o.R.RefreshTokens[i] = o.R.RefreshTokens[ln-1]
-			}
-			o.R.RefreshTokens = o.R.RefreshTokens[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 

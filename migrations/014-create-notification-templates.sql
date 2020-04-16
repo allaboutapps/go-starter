@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE notification_templates (
     id uuid NOT NULL DEFAULT uuid_generate_v4 (),
-    text timestamptz NULL,
+    text text NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
     CONSTRAINT notification_templates_pkey PRIMARY KEY (id)

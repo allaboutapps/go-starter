@@ -490,8 +490,9 @@ func testUserToManyAccessTokens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.UserID, a.ID)
-	queries.Assign(&c.UserID, a.ID)
+	b.UserID = a.ID
+	c.UserID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -506,10 +507,10 @@ func testUserToManyAccessTokens(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.UserID, b.UserID) {
+		if v.UserID == b.UserID {
 			bFound = true
 		}
-		if queries.Equal(v.UserID, c.UserID) {
+		if v.UserID == c.UserID {
 			cFound = true
 		}
 	}
@@ -567,8 +568,9 @@ func testUserToManyPasswordResetTokens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.UserID, a.ID)
-	queries.Assign(&c.UserID, a.ID)
+	b.UserID = a.ID
+	c.UserID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -583,10 +585,10 @@ func testUserToManyPasswordResetTokens(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.UserID, b.UserID) {
+		if v.UserID == b.UserID {
 			bFound = true
 		}
-		if queries.Equal(v.UserID, c.UserID) {
+		if v.UserID == c.UserID {
 			cFound = true
 		}
 	}
@@ -644,8 +646,9 @@ func testUserToManyRefreshTokens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.UserID, a.ID)
-	queries.Assign(&c.UserID, a.ID)
+	b.UserID = a.ID
+	c.UserID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -660,10 +663,10 @@ func testUserToManyRefreshTokens(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.UserID, b.UserID) {
+		if v.UserID == b.UserID {
 			bFound = true
 		}
-		if queries.Equal(v.UserID, c.UserID) {
+		if v.UserID == c.UserID {
 			cFound = true
 		}
 	}
@@ -897,10 +900,10 @@ func testUserToManyAddOpAccessTokens(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.UserID) {
+		if a.ID != first.UserID {
 			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.UserID) {
+		if a.ID != second.UserID {
 			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
@@ -927,182 +930,6 @@ func testUserToManyAddOpAccessTokens(t *testing.T) {
 		}
 	}
 }
-
-func testUserToManySetOpAccessTokens(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e AccessToken
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AccessToken{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, accessTokenDBTypes, false, strmangle.SetComplement(accessTokenPrimaryKeyColumns, accessTokenColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetAccessTokens(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.AccessTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetAccessTokens(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AccessTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.UserID) {
-		t.Error("foreign key was wrong value", a.ID, d.UserID)
-	}
-	if !queries.Equal(a.ID, e.UserID) {
-		t.Error("foreign key was wrong value", a.ID, e.UserID)
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.AccessTokens[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.AccessTokens[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testUserToManyRemoveOpAccessTokens(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e AccessToken
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*AccessToken{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, accessTokenDBTypes, false, strmangle.SetComplement(accessTokenPrimaryKeyColumns, accessTokenColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddAccessTokens(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.AccessTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveAccessTokens(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.AccessTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.AccessTokens) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.AccessTokens[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.AccessTokens[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testUserToManyAddOpPasswordResetTokens(t *testing.T) {
 	var err error
 
@@ -1148,10 +975,10 @@ func testUserToManyAddOpPasswordResetTokens(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.UserID) {
+		if a.ID != first.UserID {
 			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.UserID) {
+		if a.ID != second.UserID {
 			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
@@ -1178,182 +1005,6 @@ func testUserToManyAddOpPasswordResetTokens(t *testing.T) {
 		}
 	}
 }
-
-func testUserToManySetOpPasswordResetTokens(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e PasswordResetToken
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*PasswordResetToken{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, passwordResetTokenDBTypes, false, strmangle.SetComplement(passwordResetTokenPrimaryKeyColumns, passwordResetTokenColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetPasswordResetTokens(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.PasswordResetTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetPasswordResetTokens(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.PasswordResetTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.UserID) {
-		t.Error("foreign key was wrong value", a.ID, d.UserID)
-	}
-	if !queries.Equal(a.ID, e.UserID) {
-		t.Error("foreign key was wrong value", a.ID, e.UserID)
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.PasswordResetTokens[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.PasswordResetTokens[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testUserToManyRemoveOpPasswordResetTokens(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e PasswordResetToken
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*PasswordResetToken{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, passwordResetTokenDBTypes, false, strmangle.SetComplement(passwordResetTokenPrimaryKeyColumns, passwordResetTokenColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddPasswordResetTokens(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.PasswordResetTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemovePasswordResetTokens(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.PasswordResetTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.PasswordResetTokens) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.PasswordResetTokens[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.PasswordResetTokens[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testUserToManyAddOpRefreshTokens(t *testing.T) {
 	var err error
 
@@ -1399,10 +1050,10 @@ func testUserToManyAddOpRefreshTokens(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.UserID) {
+		if a.ID != first.UserID {
 			t.Error("foreign key was wrong value", a.ID, first.UserID)
 		}
-		if !queries.Equal(a.ID, second.UserID) {
+		if a.ID != second.UserID {
 			t.Error("foreign key was wrong value", a.ID, second.UserID)
 		}
 
@@ -1429,182 +1080,6 @@ func testUserToManyAddOpRefreshTokens(t *testing.T) {
 		}
 	}
 }
-
-func testUserToManySetOpRefreshTokens(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e RefreshToken
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*RefreshToken{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, refreshTokenDBTypes, false, strmangle.SetComplement(refreshTokenPrimaryKeyColumns, refreshTokenColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetRefreshTokens(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.RefreshTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetRefreshTokens(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.RefreshTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.UserID) {
-		t.Error("foreign key was wrong value", a.ID, d.UserID)
-	}
-	if !queries.Equal(a.ID, e.UserID) {
-		t.Error("foreign key was wrong value", a.ID, e.UserID)
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.User != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.RefreshTokens[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.RefreshTokens[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testUserToManyRemoveOpRefreshTokens(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a User
-	var b, c, d, e RefreshToken
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*RefreshToken{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, refreshTokenDBTypes, false, strmangle.SetComplement(refreshTokenPrimaryKeyColumns, refreshTokenColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddRefreshTokens(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.RefreshTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveRefreshTokens(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.RefreshTokens().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.UserID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.UserID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.User != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.User != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.RefreshTokens) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.RefreshTokens[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.RefreshTokens[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testUserToManyAddOpUserPermissions(t *testing.T) {
 	var err error
 

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -25,7 +24,7 @@ import (
 // NotificationTemplate is an object representing the database table.
 type NotificationTemplate struct {
 	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Text      null.Time `boil:"text" json:"text,omitempty" toml:"text" yaml:"text,omitempty"`
+	Text      string    `boil:"text" json:"text" toml:"text" yaml:"text"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
@@ -49,12 +48,12 @@ var NotificationTemplateColumns = struct {
 
 var NotificationTemplateWhere = struct {
 	ID        whereHelperstring
-	Text      whereHelpernull_Time
+	Text      whereHelperstring
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperstring{field: "\"notification_templates\".\"id\""},
-	Text:      whereHelpernull_Time{field: "\"notification_templates\".\"text\""},
+	Text:      whereHelperstring{field: "\"notification_templates\".\"text\""},
 	CreatedAt: whereHelpertime_Time{field: "\"notification_templates\".\"created_at\""},
 	UpdatedAt: whereHelpertime_Time{field: "\"notification_templates\".\"updated_at\""},
 }
