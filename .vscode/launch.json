@@ -5,6 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch apiserver",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/api",
+            "env": {},
+            "args": []
+        },
+        {
             "name": "Launch pgserve",
             "type": "go",
             "request": "launch",

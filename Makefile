@@ -3,6 +3,8 @@ build: sql generate format gobuild lint
 
 build-pgserve: format gobuild-pgserve lint
 
+build-apiserver: format gobuild-apiserver lint
+
 generate: sqlboiler pgserve-swagger
 
 format:
@@ -13,6 +15,9 @@ gobuild:
 
 gobuild-pgserve:
 	go build -o bin/pgserve ./pgserve
+
+gobuild-apiserver:
+	go build -o bin/apiserver ./cmd/api
 
 lint:
 	golangci-lint run --fast

@@ -5,8 +5,8 @@ services:
     build:
       context: .
       target: development
-    # ports:
-    #   - "8080:8080"
+    ports:
+      - "8080:8080"
     working_dir: /app
     volumes:
       - .:/app #:delegated
