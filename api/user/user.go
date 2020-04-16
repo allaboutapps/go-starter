@@ -5,15 +5,16 @@ import (
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/models"
+	"allaboutapps.at/aw/go-mranftl-sample/util"
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog/log"
 )
 
 func getUsersHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ctx := log.Logger.WithContext(c.Request().Context())
+		log := util.LogFromContext(c)
+		log.Trace().Msg("Loading all users")
 
-		users, err := models.Users().All(ctx, s.DB)
+		users, err := models.Users().All(c.Request().Context(), s.DB)
 		if err != nil {
 			return err
 		}
