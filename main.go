@@ -1,5 +1,3 @@
-//go:generate sqlboiler --wipe --no-hooks psql
-
 package main
 
 import (

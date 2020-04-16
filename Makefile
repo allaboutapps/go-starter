@@ -3,8 +3,7 @@ build: sql-format sql-lint generate format gobuild lint
 
 build-pgserve: format gobuild-pgserve lint
 
-generate:
-	go generate
+generate: sqlboiler pgserve-swagger
 
 format:
 	go fmt
@@ -17,6 +16,9 @@ gobuild-pgserve:
 
 lint:
 	golangci-lint run --fast
+
+sqlboiler:
+	sqlboiler --wipe --no-hooks psql
 
 # https://github.com/golang/go/issues/24573
 # w/o cache - see "go help testflag"
@@ -44,12 +46,17 @@ clean:
 	rm -rf bin
 
 sql-format:
-	find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print | xargs -i pg_format {} -o {}
+	@echo "make sql-format"
+	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
+		| xargs -i pg_format {} -o {}
 
 # check syntax via the real database
 # https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
 sql-lint:
-	find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print | xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} | psql --quiet
+	@echo "make sql-lint"
+	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
+		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
+		| psql --quiet -v ON_ERROR_STOP=1
 
 database-reset:
 	@echo "DROP & CREATE database:"
@@ -63,6 +70,7 @@ database-reset:
 .PHONY: test
 
 pgserve-swagger-spec: 
+	@echo "make pgserve-swagger-spec"
 	@swagger generate spec \
 		-i pgservetypes/swagger/swagger.yml \
 		--include=allaboutapps.at/aw/go-mranftl-sample/pgservetypes \
@@ -71,6 +79,7 @@ pgserve-swagger-spec:
 		-q
 
 pgserve-swagger-models:
+	@echo "make pgserve-swagger-models"
 	@swagger generate model \
 		--allow-template-override \
 		--template-dir=pgservetypes/swagger \
@@ -81,6 +90,7 @@ pgserve-swagger-models:
 		-q
 
 pgserve-swagger-validate:
+	@echo "make pgserve-swagger-validate"
 	@swagger validate pgservetypes/swagger/swagger.json \
 		--stop-on-error \
 		-q
