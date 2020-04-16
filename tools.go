@@ -6,8 +6,11 @@ package tools
 // https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
 // https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md
 
+// This file may incorporate tools that may be *both* used as CLI and as lib
+// Keep in mind that these global tools change the go.mod/go.sum dependency tree
+// Other tooling may be installed as *static binary* directly within the Dockerfile
+
 import (
-	_ "github.com/kyoh86/richgo"
 	_ "github.com/rubenv/sql-migrate/sql-migrate"
 	_ "github.com/volatiletech/sqlboiler"
 	_ "github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql"

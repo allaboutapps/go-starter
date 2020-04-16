@@ -38,6 +38,12 @@ RUN wget https://github.com/darold/pgFormatter/archive/v4.2.tar.gz \
     && perl Makefile.PL \
     && make && make install
 
+# go richgo: (this package should NOT be installed via go get)
+# https://github.com/kyoh86/richgo/releases
+RUN wget https://github.com/kyoh86/richgo/releases/download/v0.3.3/richgo_0.3.3_linux_amd64.tar.gz \
+    && tar xzf richgo_0.3.3_linux_amd64.tar.gz \
+    && cp richgo /usr/local/bin/richgo
+
 # go linting: (this package should NOT be installed via go get)
 # https://github.com/golangci/golangci-lint#binary
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \

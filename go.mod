@@ -24,8 +24,6 @@ require (
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/kyoh86/richgo v0.3.3
-	github.com/kyoh86/xdg v1.2.0 // indirect
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-oci8 v0.0.8 // indirect
@@ -33,7 +31,6 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/mitchellh/cli v1.1.1 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
-	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
@@ -47,7 +44,6 @@ require (
 	github.com/volatiletech/inflect v0.0.0-20170731032912-e7201282ae8d // indirect
 	github.com/volatiletech/null v8.0.0+incompatible
 	github.com/volatiletech/sqlboiler v3.7.0+incompatible
-	github.com/wacul/ptr v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.2 // indirect
 	golang.org/x/crypto v0.0.0-20200414173820-0848c9571904 // indirect
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
