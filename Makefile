@@ -3,6 +3,8 @@ build: generate format gobuild lint
 
 build-pgserve: format gobuild-pgserve lint
 
+build-apiserver: format gobuild-apiserver lint
+
 generate:
 	go generate
 
@@ -15,6 +17,9 @@ gobuild:
 
 gobuild-pgserve:
 	go build -o bin/pgserve ./pgserve
+
+gobuild-apiserver:
+	go build -o bin/apiserver ./cmd/api
 
 lint:
 	golangci-lint run --fast
