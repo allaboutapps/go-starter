@@ -1,5 +1,5 @@
 # first is default task when running "make" without args
-build: generate format gobuild lint
+build: sql-format sql-lint generate format gobuild lint
 
 build-pgserve: format gobuild-pgserve lint
 
@@ -8,7 +8,6 @@ generate:
 
 format:
 	go fmt
-	find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print | xargs -i pg_format {} -o {}
 
 gobuild: 
 	go build -o bin/app
@@ -44,6 +43,14 @@ tidy:
 clean:
 	rm -rf bin
 
+sql-format:
+	find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print | xargs -i pg_format {} -o {}
+
+# check syntax via the real database
+# https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
+sql-lint:
+	find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print | xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} | psql --quiet
+
 database-reset:
 	@echo "DROP & CREATE database:"
 	@echo "  PGHOST=${PGHOST} PGDATABASE=${PGDATABASE}" PGUSER=${PGUSER}
@@ -56,7 +63,7 @@ database-reset:
 .PHONY: test
 
 pgserve-swagger-spec: 
-	swagger generate spec \
+	@swagger generate spec \
 		-i pgservetypes/swagger/swagger.yml \
 		--include=allaboutapps.at/aw/go-mranftl-sample/pgservetypes \
 		-o pgservetypes/swagger/swagger.json \
@@ -64,7 +71,7 @@ pgserve-swagger-spec:
 		-q
 
 pgserve-swagger-models:
-	swagger generate model \
+	@swagger generate model \
 		--allow-template-override \
 		--template-dir=pgservetypes/swagger \
 		--spec=pgservetypes/swagger/swagger.json \
@@ -73,7 +80,9 @@ pgserve-swagger-models:
 		--all-definitions \
 		-q
 
-pgserve-swagger: pgserve-swagger-spec pgserve-swagger-models
+pgserve-swagger-validate:
+	@swagger validate pgservetypes/swagger/swagger.json \
+		--stop-on-error \
+		-q
 
-# serve-swagger:
-# 	swagger serve -F=swagger pgservetypes/swagger.json --no-open
+pgserve-swagger: pgserve-swagger-spec pgserve-swagger-validate pgserve-swagger-models
