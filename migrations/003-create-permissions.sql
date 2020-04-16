@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE permissions (
-    id uuid NOT NULL,
+    id uuid NOT NULL DEFAULT uuid_generate_v4 (),
     scope varchar(255) NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,

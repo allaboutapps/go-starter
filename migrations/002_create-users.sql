@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE users (
-    id uuid NOT NULL,
+    id uuid NOT NULL DEFAULT uuid_generate_v4 (),
     username varchar(255) NULL,
     password varchar(2048) NULL,
     salt varchar(2048) NULL,
