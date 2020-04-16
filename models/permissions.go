@@ -80,8 +80,8 @@ type permissionL struct{}
 
 var (
 	permissionAllColumns            = []string{"id", "scope", "created_at", "updated_at"}
-	permissionColumnsWithoutDefault = []string{"id", "scope", "created_at", "updated_at"}
-	permissionColumnsWithDefault    = []string{}
+	permissionColumnsWithoutDefault = []string{"scope", "created_at", "updated_at"}
+	permissionColumnsWithDefault    = []string{"id"}
 	permissionPrimaryKeyColumns     = []string{"id"}
 )
 

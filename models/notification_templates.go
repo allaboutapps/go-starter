@@ -81,8 +81,8 @@ type notificationTemplateL struct{}
 
 var (
 	notificationTemplateAllColumns            = []string{"id", "text", "created_at", "updated_at"}
-	notificationTemplateColumnsWithoutDefault = []string{"id", "text", "created_at", "updated_at"}
-	notificationTemplateColumnsWithDefault    = []string{}
+	notificationTemplateColumnsWithoutDefault = []string{"text", "created_at", "updated_at"}
+	notificationTemplateColumnsWithDefault    = []string{"id"}
 	notificationTemplatePrimaryKeyColumns     = []string{"id"}
 )
 

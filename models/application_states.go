@@ -89,8 +89,8 @@ type applicationStateL struct{}
 
 var (
 	applicationStateAllColumns            = []string{"id", "state", "created_at", "updated_at"}
-	applicationStateColumnsWithoutDefault = []string{"id", "state", "created_at", "updated_at"}
-	applicationStateColumnsWithDefault    = []string{}
+	applicationStateColumnsWithoutDefault = []string{"state", "created_at", "updated_at"}
+	applicationStateColumnsWithDefault    = []string{"id"}
 	applicationStatePrimaryKeyColumns     = []string{"id"}
 )
 

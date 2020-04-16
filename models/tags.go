@@ -81,8 +81,8 @@ type tagL struct{}
 
 var (
 	tagAllColumns            = []string{"id", "tag", "created_at", "updated_at"}
-	tagColumnsWithoutDefault = []string{"id", "tag", "created_at", "updated_at"}
-	tagColumnsWithDefault    = []string{}
+	tagColumnsWithoutDefault = []string{"tag", "created_at", "updated_at"}
+	tagColumnsWithDefault    = []string{"id"}
 	tagPrimaryKeyColumns     = []string{"id"}
 )
 

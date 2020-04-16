@@ -220,8 +220,8 @@ type applicantL struct{}
 
 var (
 	applicantAllColumns            = []string{"id", "application_state_id", "name", "email", "job_category", "previous_projects", "start_date", "work_hours", "salary", "device", "discovery", "resume_url", "optional_files", "gdpr_accepted", "last_change", "seniority", "first_interview", "second_interview", "notes", "created_at", "updated_at"}
-	applicantColumnsWithoutDefault = []string{"id", "application_state_id", "name", "email", "job_category", "previous_projects", "start_date", "work_hours", "salary", "device", "discovery", "resume_url", "optional_files", "gdpr_accepted", "last_change", "seniority", "first_interview", "second_interview", "notes", "created_at", "updated_at"}
-	applicantColumnsWithDefault    = []string{}
+	applicantColumnsWithoutDefault = []string{"application_state_id", "name", "email", "job_category", "previous_projects", "start_date", "work_hours", "salary", "device", "discovery", "resume_url", "optional_files", "gdpr_accepted", "last_change", "seniority", "first_interview", "second_interview", "notes", "created_at", "updated_at"}
+	applicantColumnsWithDefault    = []string{"id"}
 	applicantPrimaryKeyColumns     = []string{"id"}
 )
 

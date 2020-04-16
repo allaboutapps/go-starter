@@ -44,7 +44,7 @@ tidy:
 clean:
 	rm -rf bin
 
-reset-database:
+database-reset:
 	@echo "DROP & CREATE database:"
 	@echo "  PGHOST=${PGHOST} PGDATABASE=${PGDATABASE}" PGUSER=${PGUSER}
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]

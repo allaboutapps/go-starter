@@ -86,8 +86,8 @@ type passwordResetTokenL struct{}
 
 var (
 	passwordResetTokenAllColumns            = []string{"token", "valid_until", "user_id", "created_at", "updated_at"}
-	passwordResetTokenColumnsWithoutDefault = []string{"token", "valid_until", "user_id", "created_at", "updated_at"}
-	passwordResetTokenColumnsWithDefault    = []string{}
+	passwordResetTokenColumnsWithoutDefault = []string{"valid_until", "user_id", "created_at", "updated_at"}
+	passwordResetTokenColumnsWithDefault    = []string{"token"}
 	passwordResetTokenPrimaryKeyColumns     = []string{"token"}
 )
 
