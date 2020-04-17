@@ -1,4 +1,4 @@
-package pgservetypes
+package types
 
 import "github.com/go-openapi/strfmt"
 

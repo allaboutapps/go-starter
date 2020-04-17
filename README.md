@@ -20,7 +20,4 @@ make
 # Execute tests
 make test
 
-# Run the service
-app
-
 ```

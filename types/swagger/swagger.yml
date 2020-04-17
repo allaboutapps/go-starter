@@ -3,7 +3,7 @@
 consumes:
 - application/json
 info:
-  title: pgservetypes
+  title: types
   version: 0.1.0
 paths: {}
 produces:

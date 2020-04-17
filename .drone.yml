@@ -130,26 +130,22 @@ pipeline:
   # CHECK
   # ---------------------------------------------------------------------------
 
-  "test":
-    group: check
+  "build vs. git diff":
+    group: pre-test
     image: *IMAGE_DEPLOY_ID
     commands:
-      - cd /app
-      - make build-pgserve
-      - "pgserve > /dev/null 2>&1 &"
-      - sql-migrate up
-      - make test
-    environment: *TEST_ENV
-    <<: *WHEN_BUILD_EVENT
-
-  "init/build vs git diff":
-    group: post-check
-    image: *IMAGE_DEPLOY_ID
-    commands:
-      - make init
+      - make tidy
       - sql-migrate up
       - make build
       - git diff --exit-code
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  "test":
+    group: test
+    image: *IMAGE_DEPLOY_ID
+    commands:
+      - make test
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
@@ -254,4 +250,12 @@ services:
       POSTGRES_PASSWORD: *PSQL_PASS
     # Apply some performance improvements to pg as these guarantees are not needed while running integration tests
     command: "-c 'shared_buffers=128MB' -c 'fsync=off' -c 'synchronous_commit=off' -c 'full_page_writes=off' -c 'max_connections=100' -c 'client_min_messages=warning'"
+    <<: *WHEN_BUILD_EVENT
+
+  "integresql":
+    image: allaboutapps/integresql:latest
+    environment:
+      PGHOST: *PSQL_HOST
+      PGUSER: *PSQL_USER
+      PGPASSWORD: *PSQL_PASS
     <<: *WHEN_BUILD_EVENT

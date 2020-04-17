@@ -64,25 +64,7 @@ WORKDIR /app
 COPY Makefile /app/Makefile
 COPY go.mod /app/go.mod
 COPY go.sum /app/go.sum
+RUN make modules
 COPY tools.go /app/tools.go
-RUN make modules && make tools
+RUN make tools
 COPY . /app/
-
-### -----------------------
-# --- Stage: builder-integresql
-### -----------------------
-
-FROM builder as builder-integresql
-RUN make build-pgserve
-
-### -----------------------
-# --- Stage: integresql
-### -----------------------
-
-# https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/base as integresql
-COPY --from=builder-integresql /app/bin/integresql /
-# Note that cmd is not supported with these kind of images, no shell included
-# see https://github.com/GoogleContainerTools/distroless/issues/62
-# and https://github.com/GoogleContainerTools/distroless#entrypoints
-ENTRYPOINT [ "/integresql" ]

@@ -1,22 +1,12 @@
 # first is default task when running "make" without args
 build: sql generate format gobuild lint
 
-build-pgserve: format gobuild-pgserve lint
-
-build-apiserver: format gobuild-apiserver lint
-
-generate: sqlboiler pgserve-swagger
+generate: sqlboiler swagger
 
 format:
 	go fmt
 
 gobuild: 
-	go build -o bin/app
-
-gobuild-pgserve:
-	go build -o bin/integresql ./pgserve
-
-gobuild-apiserver:
 	go build -o bin/apiserver ./cmd/api
 
 lint:
@@ -80,30 +70,30 @@ reset:
 # ignore matching file/make rule combinations in working-dir
 .PHONY: test
 
-pgserve-swagger-spec: 
-	@echo "make pgserve-swagger-spec"
+swagger-spec: 
+	@echo "make swagger-spec"
 	@swagger generate spec \
-		-i pgservetypes/swagger/swagger.yml \
-		--include=allaboutapps.at/aw/go-mranftl-sample/pgservetypes \
-		-o pgservetypes/swagger/swagger.json \
+		-i types/swagger/swagger.yml \
+		--include=allaboutapps.at/aw/go-mranftl-sample/types \
+		-o types/swagger/swagger.json \
 		--scan-models \
 		-q
 
-pgserve-swagger-models:
-	@echo "make pgserve-swagger-models"
+swagger-models:
+	@echo "make swagger-models"
 	@swagger generate model \
 		--allow-template-override \
-		--template-dir=pgservetypes/swagger \
-		--spec=pgservetypes/swagger/swagger.json \
-		--existing-models=allaboutapps.at/aw/go-mranftl-sample/pgservetypes \
-		--model-package=pgservetypes \
+		--template-dir=types/swagger \
+		--spec=types/swagger/swagger.json \
+		--existing-models=allaboutapps.at/aw/go-mranftl-sample/types \
+		--model-package=types \
 		--all-definitions \
 		-q
 
-pgserve-swagger-validate:
-	@echo "make pgserve-swagger-validate"
-	@swagger validate pgservetypes/swagger/swagger.json \
+swagger-validate:
+	@echo "make swagger-validate"
+	@swagger validate types/swagger/swagger.json \
 		--stop-on-error \
 		-q
 
-pgserve-swagger: pgserve-swagger-spec pgserve-swagger-validate pgserve-swagger-models
+swagger: swagger-spec swagger-validate swagger-models

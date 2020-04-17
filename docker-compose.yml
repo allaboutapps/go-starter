@@ -13,7 +13,7 @@ services:
       # - ./.pkg:/go/pkg # enable this to reuse the pkg cache
     depends_on:
       - postgres
-      - pgserve
+      - integresql
     environment: &SERVICE_ENV
       
       # required: env for sqlboiler and sql-migrate
@@ -25,7 +25,7 @@ services:
       PSQL_SSLMODE: &PSQL_SSLMODE "disable"
       PSQL_SCHEMA: &PSQL_SCHEMA "public"
 
-      # INTEGRESQL_CLIENT_BASE_URL: "http://pgserve:5000/api"
+      # INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
       
       # optional: env for postgresql-client apt-get package (psql)
       PGDATABASE: *PSQL_DBNAME
@@ -45,9 +45,7 @@ services:
     command: /bin/sh -c "while sleep 1000; do :; done"
 
   integresql:
-    build:
-      context: .
-      target: integresql
+    image: allaboutapps/integresql:latest
     ports:
       - "5000:5000"
     depends_on:
