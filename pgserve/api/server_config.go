@@ -11,7 +11,7 @@ type ServerConfig struct {
 
 func DefaultServerConfigFromEnv() ServerConfig {
 	return ServerConfig{
-		Port: getEnvAsInt("PG_SERVE_PORT", 5000),
+		Port: getEnvAsInt("INTEGRESQL_PORT", 5000),
 	}
 }
 

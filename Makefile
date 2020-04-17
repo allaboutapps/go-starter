@@ -14,7 +14,7 @@ gobuild:
 	go build -o bin/app
 
 gobuild-pgserve:
-	go build -o bin/pgserve ./pgserve
+	go build -o bin/integresql ./pgserve
 
 gobuild-apiserver:
 	go build -o bin/apiserver ./cmd/api

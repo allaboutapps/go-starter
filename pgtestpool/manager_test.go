@@ -239,12 +239,12 @@ func TestManagerFinalizeUntrackedTemplateDatabase(t *testing.T) {
 	}
 
 	hash := "hashinghash"
-	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
+	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, m.config.TemplateDatabasePrefix, hash)
 
 	if _, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
 		t.Fatalf("failed to manually drop template database %q: %v", dbName, err)
 	}
-	if _, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s OWNER %s TEMPLATE %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(m.config.ManagerDatabaseConfig.Username), pq.QuoteIdentifier(templateDatabaseTemplate))); err != nil {
+	if _, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s OWNER %s TEMPLATE %s", pq.QuoteIdentifier(dbName), pq.QuoteIdentifier(m.config.ManagerDatabaseConfig.Username), pq.QuoteIdentifier(m.config.TemplateDatabaseTemplate))); err != nil {
 		t.Fatalf("failed to manually create template database %q: %v", dbName, err)
 	}
 
@@ -614,7 +614,7 @@ func TestManagerReturnUntrackedTemplateDatabase(t *testing.T) {
 	}
 
 	id := 321
-	dbName := fmt.Sprintf("%s_%s_%s_%d", m.config.DatabasePrefix, prefixTestDatabase, hash, id)
+	dbName := fmt.Sprintf("%s_%s_%s_%d", m.config.DatabasePrefix, m.config.TestDatabasePrefix, hash, id)
 
 	if _, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", pq.QuoteIdentifier(dbName))); err != nil {
 		t.Fatalf("failed to manually drop template database %q: %v", dbName, err)

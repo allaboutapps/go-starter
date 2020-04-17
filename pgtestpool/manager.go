@@ -19,12 +19,6 @@ var (
 	ErrTestNotFound               = errors.New("test database not found")
 )
 
-const (
-	prefixTemplateDatabase   = "template"
-	prefixTestDatabase       = "test"
-	templateDatabaseTemplate = "template0"
-)
-
 type Manager struct {
 	config        ManagerConfig
 	db            *sql.DB
@@ -123,7 +117,7 @@ func (m *Manager) Initialize(ctx context.Context) error {
 		}
 	}
 
-	rows, err := m.db.QueryContext(ctx, "SELECT datname FROM pg_database WHERE datname LIKE $1", fmt.Sprintf("%s_%s_%%", m.config.DatabasePrefix, prefixTestDatabase))
+	rows, err := m.db.QueryContext(ctx, "SELECT datname FROM pg_database WHERE datname LIKE $1", fmt.Sprintf("%s_%s_%%", m.config.DatabasePrefix, m.config.TestDatabasePrefix))
 	if err != nil {
 		return err
 	}
@@ -160,7 +154,7 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 
 	// fmt.Println("initializing...", ok)
 
-	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
+	dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, m.config.TemplateDatabasePrefix, hash)
 	template := &TemplateDatabase{
 		Database: Database{
 			TemplateHash: hash,
@@ -180,7 +174,7 @@ func (m *Manager) InitializeTemplateDatabase(ctx context.Context, hash string) (
 
 	m.templates[hash] = template
 
-	if err := m.dropAndCreateDatabase(ctx, dbName, m.config.ManagerDatabaseConfig.Username, templateDatabaseTemplate); err != nil {
+	if err := m.dropAndCreateDatabase(ctx, dbName, m.config.ManagerDatabaseConfig.Username, m.config.TemplateDatabaseTemplate); err != nil {
 		m.templates[hash] = nil
 
 		return nil, err
@@ -199,7 +193,7 @@ func (m *Manager) FinalizeTemplateDatabase(ctx context.Context, hash string) (*T
 
 	template, ok := m.templates[hash]
 	if !ok {
-		dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, prefixTemplateDatabase, hash)
+		dbName := fmt.Sprintf("%s_%s_%s", m.config.DatabasePrefix, m.config.TemplateDatabasePrefix, hash)
 		exists, err := m.checkDatabaseExists(ctx, dbName)
 		if err != nil {
 			return nil, err
@@ -311,7 +305,7 @@ func (m *Manager) ReturnTestDatabase(ctx context.Context, hash string, id int) e
 	}
 
 	if !found {
-		dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, hash, id)
+		dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, m.config.TestDatabasePrefix, hash, id)
 		exists, err := m.checkDatabaseExists(ctx, dbName)
 		if err != nil {
 			return err
@@ -457,7 +451,7 @@ func (m *Manager) dropAndCreateDatabase(ctx context.Context, dbName string, owne
 // ! ATTENTION: this function assumes `template` has already been LOCKED by its caller and will NOT synchronize access again !
 // The newly created database object is returned as well as added to the template's DB list automatically.
 func (m *Manager) createNextTestDatabase(ctx context.Context, template *TemplateDatabase) (*TestDatabase, error) {
-	dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, prefixTestDatabase, template.TemplateHash, template.nextTestID)
+	dbName := fmt.Sprintf("%s_%s_%s_%03d", m.config.DatabasePrefix, m.config.TestDatabasePrefix, template.TemplateHash, template.nextTestID)
 
 	if err := m.dropAndCreateDatabase(ctx, dbName, m.config.TestDatabaseOwner, template.Config.Database); err != nil {
 		return nil, err

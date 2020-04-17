@@ -9,9 +9,8 @@ type ClientConfig struct {
 
 func DefaultClientConfigFromEnv() ClientConfig {
 	return ClientConfig{
-		// BaseURL: getEnv("PGCONSUMER_BASE_URL", "http://127.0.0.1:5000/api"),
-		BaseURL:    getEnv("PGCONSUMER_BASE_URL", "http://pgserve:5000/api"),
-		APIVersion: getEnv("PGCONSUMER_API_VERSION", "v1"),
+		BaseURL:    getEnv("INTEGRESQL_CLIENT_BASE_URL", "http://integresql:5000/api"),
+		APIVersion: getEnv("INTEGRESQL_CLIENT_API_VERSION", "v1"),
 	}
 }
 

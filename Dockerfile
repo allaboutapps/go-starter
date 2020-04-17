@@ -69,20 +69,20 @@ RUN make modules && make tools
 COPY . /app/
 
 ### -----------------------
-# --- Stage: builder-pgserve
+# --- Stage: builder-integresql
 ### -----------------------
 
-FROM builder as builder-pgserve
+FROM builder as builder-integresql
 RUN make build-pgserve
 
 ### -----------------------
-# --- Stage: pgserve
+# --- Stage: integresql
 ### -----------------------
 
 # https://github.com/GoogleContainerTools/distroless
-FROM gcr.io/distroless/base as pgserve
-COPY --from=builder-pgserve /app/bin/pgserve /
+FROM gcr.io/distroless/base as integresql
+COPY --from=builder-integresql /app/bin/integresql /
 # Note that cmd is not supported with these kind of images, no shell included
 # see https://github.com/GoogleContainerTools/distroless/issues/62
 # and https://github.com/GoogleContainerTools/distroless#entrypoints
-ENTRYPOINT [ "/pgserve" ]
+ENTRYPOINT [ "/integresql" ]
