@@ -11,7 +11,7 @@ import (
 
 func getUsersHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		log := util.LogFromContext(c)
+		log := util.LogFromEchoContext(c)
 		log.Trace().Msg("Loading all users")
 
 		users, err := models.Users().All(c.Request().Context(), s.DB)

@@ -23,7 +23,7 @@ func Init(s *api.Server) {
 	s.Echo.Use(echoMiddleware.Recover())
 	s.Echo.Use(echoMiddleware.RequestID())
 	s.Echo.Use(middleware.Logger())
-	s.Echo.Use(echoMiddleware.Gzip())
+	// s.Echo.Use(echoMiddleware.Gzip()) // LB gzips
 
 	auth.InitRoutes(s)
 	user.InitRoutes(s)
