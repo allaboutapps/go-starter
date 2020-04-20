@@ -6,6 +6,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/test/pgconsumer"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -88,6 +89,7 @@ func InitializeDatabaseTemplate() {
 	}
 }
 
+// Use this utility func to test with an isolated test database
 func WithTestDatabase(closure func(db *sql.DB)) {
 	testDatabase, err := client.GetTestDatabase(context.Background(), hash)
 
@@ -111,4 +113,9 @@ func WithTestDatabase(closure func(db *sql.DB)) {
 	}
 
 	closure(db)
+}
+
+// Use this utility func to test with an full blown server
+func WithTestServer(closure func(server api.Server)) {
+	// TODO
 }
