@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"path/filepath"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/router"
@@ -14,13 +13,17 @@ import (
 )
 
 var (
-	client     *pgconsumer.Client
-	hash       string
-	migDir, _  = filepath.Abs("../migrations")
-	fixFile, _ = filepath.Abs("./fixtures.go")
+	client *pgconsumer.Client
+	hash   string
+	// ! TODO golang does not support relative paths in files properly
+	// It's only possible to supply this by
+	// Use ENV var to specify app-root
+	migDir  = "/app/migrations"
+	fixFile = "/app/test/fixtures.go"
 )
 
 func initIntegres() {
+
 	c, err := pgconsumer.DefaultClientFromEnv()
 	if err != nil {
 		log.Fatalf("Failed to create new pgconsumer client: %v", err)
@@ -73,6 +76,7 @@ func initTemplate(db *sql.DB) error {
 }
 
 func InitializeDatabaseTemplate() {
+
 	initHash()
 
 	initIntegres()
@@ -125,15 +129,18 @@ func WithTestServer(closure func(s *api.Server)) {
 
 		router.Init(s)
 
-		if err := s.Start(); err != nil {
-			log.Fatalf("Failed to start server: %v", err)
-		}
+		// no need to start echo!
+		// see https://github.com/labstack/echo/issues/659
 
-		defer func() {
-			if err := s.Shutdown(context.Background()); err != nil {
-				log.Fatalf("Failed to shutdown server: %v", err)
-			}
-		}()
+		// if err := s.Start(); err != nil {
+		// 	log.Fatalf("Failed to start server: %v", err)
+		// }
+
+		// defer func() {
+		// 	if err := s.Shutdown(context.Background()); err != nil {
+		// 		log.Fatalf("Failed to shutdown server: %v", err)
+		// 	}
+		// }()
 
 		closure(s)
 
