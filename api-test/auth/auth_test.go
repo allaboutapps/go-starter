@@ -33,14 +33,29 @@ func TestSuccessAuth(t *testing.T) {
 
 	})
 
-	// WithTestDatabase(func(db *sql.DB) {
-	// 	err := user1.Reload(context.Background(), db)
+}
 
-	// 	if err != nil {
-	// 		t.Error("failed to reload")
-	// 	}
+func TestInvalidCredentials(t *testing.T) {
 
-	// 	// fmt.Println(user1)
-	// })
+	t.Parallel()
+
+	test.WithTestServer(func(s *api.Server) {
+
+		userJSON := `{
+			"username": "user1@example.com",
+			"password": "not my password"
+		}`
+
+		req := httptest.NewRequest("POST", "/api/v1/auth/login", strings.NewReader(userJSON))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		res := httptest.NewRecorder()
+
+		s.Echo.ServeHTTP(res, req)
+
+		if res.Result().StatusCode != 401 {
+			t.Logf("Did receive unexpected status code: %v", res.Result().StatusCode)
+		}
+
+	})
 
 }
