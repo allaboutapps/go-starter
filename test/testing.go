@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
+	"allaboutapps.at/aw/go-mranftl-sample/router"
 	"allaboutapps.at/aw/go-mranftl-sample/test/pgconsumer"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -29,14 +30,6 @@ func initIntegres() {
 }
 
 func initHash() {
-	// migDir, err := filepath.Abs("../migrations")
-	// if err != nil {
-	// 	log.Fatalf("Failed to get absolute path of migrations directory: %v", err)
-	// }
-	// fixFile, err := filepath.Abs("./fixtures.go")
-	// if err != nil {
-	// 	log.Fatalf("Failed to get absolut path of fixtures file: %v", err)
-	// }
 
 	h, err := pgconsumer.GetTemplateHash(migDir, fixFile)
 	if err != nil {
@@ -116,6 +109,33 @@ func WithTestDatabase(closure func(db *sql.DB)) {
 }
 
 // Use this utility func to test with an full blown server
-func WithTestServer(closure func(server api.Server)) {
-	// TODO
+func WithTestServer(closure func(s *api.Server)) {
+	WithTestDatabase(func(db *sql.DB) {
+
+		defaultConfig := api.DefaultServiceConfigFromEnv()
+
+		// https://stackoverflow.com/questions/43424787/how-to-use-next-available-port-in-http-listenandserve
+		// You may use port 0 to indicate you're not specifying an exact port but you want a free, available port selected by the system
+		defaultConfig.Echo.ListenAddress = ":0"
+
+		s := api.NewServer(defaultConfig)
+
+		// attach the already initalized db
+		s.DB = db
+
+		router.Init(s)
+
+		if err := s.Start(); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+
+		defer func() {
+			if err := s.Shutdown(context.Background()); err != nil {
+				log.Fatalf("Failed to shutdown server: %v", err)
+			}
+		}()
+
+		closure(s)
+
+	})
 }
