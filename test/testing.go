@@ -173,7 +173,9 @@ func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
 		return err
 	}
 
-	for _, fixture := range fixtures {
+	inserts := Inserts()
+
+	for _, fixture := range inserts {
 		if err := fixture.Insert(ctx, db, boil.Infer()); err != nil {
 			if err := tx.Rollback(); err != nil {
 				return err
@@ -187,7 +189,7 @@ func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
 		return err
 	}
 
-	t.Logf("Inserted %d fixtures for hash %q", len(fixtures), hash)
+	t.Logf("Inserted %d fixtures for hash %q", len(inserts), hash)
 
 	return nil
 }
