@@ -7,13 +7,14 @@ import (
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/router"
-	"allaboutapps.at/aw/go-mranftl-sample/test/pgconsumer"
+	"github.com/allaboutapps/integresql-client-go"
+	"github.com/allaboutapps/integresql-client-go/pkg/util"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/volatiletech/sqlboiler/boil"
 )
 
 var (
-	client *pgconsumer.Client
+	client *integresql.Client
 	hash   string
 	// ! TODO golang does not support relative paths in files properly
 	// It's only possible to supply this by
@@ -24,7 +25,7 @@ var (
 
 func initIntegres() {
 
-	c, err := pgconsumer.DefaultClientFromEnv()
+	c, err := integresql.DefaultClientFromEnv()
 	if err != nil {
 		log.Fatalf("Failed to create new pgconsumer client: %v", err)
 	}
@@ -34,7 +35,7 @@ func initIntegres() {
 
 func initHash() {
 
-	h, err := pgconsumer.GetTemplateHash(migDir, fixFile)
+	h, err := util.GetTemplateHash(migDir, fixFile)
 	if err != nil {
 		log.Fatalf("Failed to get template hash: %#v", err)
 	}

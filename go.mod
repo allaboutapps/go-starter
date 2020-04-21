@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1 // indirect
+	github.com/allaboutapps/integresql-client-go v0.0.0-20200421074527-f36f41b759b4
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
 	github.com/ericlagergren/decimal v0.0.0-20191206042408-88212e6cfca9 // indirect
