@@ -26,4 +26,4 @@ make test
 
 Same requirements as above, always develop *inside* the running `development` docker container. 
 
-Run CMD+SHIFT+P `Go: Install/Update Tools` after starting vscode to autoinstall all golang vscode dependencies.
+Run CMD+SHIFT+P `Go: Install/Update Tools` after starting vscode to autoinstall all golang vscode dependencies, then **reload your window**.

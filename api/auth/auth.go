@@ -17,6 +17,10 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
+var (
+	SAMPLE_EXPORTED_PGK_CONST = "test"
+)
+
 func postLoginHandler(s *api.Server) echo.HandlerFunc {
 	type payload struct {
 		Username string `json:"username"`

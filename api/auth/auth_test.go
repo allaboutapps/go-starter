@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"net/http/httptest"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
+	"allaboutapps.at/aw/go-mranftl-sample/api/auth"
 	"allaboutapps.at/aw/go-mranftl-sample/test"
 	"github.com/labstack/echo/v4"
 )
@@ -15,6 +16,9 @@ func TestSuccessAuth(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(func(s *api.Server) {
+
+		// cyclic import mini-test
+		t.Log(auth.SAMPLE_EXPORTED_PGK_CONST)
 
 		userJSON := `{
 			"username": "user1@example.com",
