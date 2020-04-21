@@ -15,7 +15,7 @@ func TestFixturesReload(t *testing.T) {
 
 	t.Parallel()
 
-	WithTestDatabase(func(db *sql.DB) {
+	WithTestDatabase(t, func(db *sql.DB) {
 		err := user1.Reload(context.Background(), db)
 
 		if err != nil {
@@ -31,7 +31,7 @@ func TestInsert(t *testing.T) {
 
 	t.Parallel()
 
-	WithTestDatabase(func(db *sql.DB) {
+	WithTestDatabase(t, func(db *sql.DB) {
 
 		user2 := User{
 			ID:       "6d00d09b-fab3-43d8-a163-279fe7ba533e",
@@ -56,7 +56,7 @@ func TestUpdate(t *testing.T) {
 
 	t.Parallel()
 
-	WithTestDatabase(func(db *sql.DB) {
+	WithTestDatabase(t, func(db *sql.DB) {
 
 		userUpdated := User(user1)
 

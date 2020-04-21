@@ -15,7 +15,7 @@ func TestSuccessAuth(t *testing.T) {
 
 	t.Parallel()
 
-	test.WithTestServer(func(s *api.Server) {
+	test.WithTestServer(t, func(s *api.Server) {
 
 		// cyclic import mini-test
 		t.Log(auth.SAMPLE_EXPORTED_PGK_CONST)
@@ -43,7 +43,7 @@ func TestInvalidCredentials(t *testing.T) {
 
 	t.Parallel()
 
-	test.WithTestServer(func(s *api.Server) {
+	test.WithTestServer(t, func(s *api.Server) {
 
 		userJSON := `{
 			"username": "user1@example.com",
