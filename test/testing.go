@@ -31,20 +31,21 @@ var (
 // Use this utility func to test with an isolated test database
 func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 
-	// mark as helper
 	t.Helper()
 
 	// new context derived from background
 	ctx := context.Background()
 
 	doOnce.Do(func() {
+
+		t.Helper()
 		initializeTestDatabaseTemplate(ctx, t)
 	})
 
 	testDatabase, err := client.GetTestDatabase(ctx, hash)
 
 	if err != nil {
-		t.Fatalf("Failed to obtain TestDatabase: %v", err)
+		t.Fatalf("Failed to obtain test database: %v", err)
 	}
 
 	connectionString := testDatabase.Config.ConnectionString()
@@ -52,15 +53,17 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	db, err := sql.Open("postgres", connectionString)
 
 	if err != nil {
-		t.Fatalf("Failed to setup testdatabase for connectionString %q: %v", connectionString, err)
+		t.Fatalf("Failed to setup test database for connectionString %q: %v", connectionString, err)
 	}
 
 	// this database object is managed and should close automatically after running the test
 	defer db.Close()
 
 	if err := db.PingContext(ctx); err != nil {
-		t.Fatalf("Failed to ping testdatabase for connectionString %q: %v", connectionString, err)
+		t.Fatalf("Failed to ping test database for connectionString %q: %v", connectionString, err)
 	}
+
+	t.Logf("WithTestDatabase: %q", testDatabase.Config.Database)
 
 	closure(db)
 }
@@ -68,10 +71,11 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 // Use this utility func to test with an full blown server
 func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 
-	// mark as helper
 	t.Helper()
 
 	WithTestDatabase(t, func(db *sql.DB) {
+
+		t.Helper()
 
 		defaultConfig := api.DefaultServiceConfigFromEnv()
 
@@ -97,7 +101,6 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 // ensure it is called once once per pkg scope.
 func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 
-	// mark as helper
 	t.Helper()
 
 	initTestDatabaseHash(t)
@@ -105,6 +108,8 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 	initIntegresClient(t)
 
 	if err := client.SetupTemplateWithDBClient(ctx, hash, func(db *sql.DB) error {
+
+		t.Helper()
 
 		err := applyMigrations(t, db)
 
@@ -122,7 +127,6 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 
 func initIntegresClient(t *testing.T) {
 
-	// mark as helper
 	t.Helper()
 
 	c, err := integresql.DefaultClientFromEnv()
@@ -135,7 +139,6 @@ func initIntegresClient(t *testing.T) {
 
 func initTestDatabaseHash(t *testing.T) {
 
-	// mark as helper
 	t.Helper()
 
 	h, err := util.GetTemplateHash(migDir, fixFile)
@@ -148,7 +151,6 @@ func initTestDatabaseHash(t *testing.T) {
 
 func applyMigrations(t *testing.T, db *sql.DB) error {
 
-	// mark as helper
 	t.Helper()
 
 	migrations := &migrate.FileMigrationSource{Dir: migDir}
@@ -164,7 +166,6 @@ func applyMigrations(t *testing.T, db *sql.DB) error {
 
 func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
 
-	// mark as helper
 	t.Helper()
 
 	tx, err := db.BeginTx(ctx, nil)

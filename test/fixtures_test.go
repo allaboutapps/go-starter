@@ -72,6 +72,7 @@ func TestUpdate(t *testing.T) {
 			t.Error("failed to update")
 		}
 
+		// Attention, this actually mutates our user1 fixture!!!
 		err = user1.Reload(context.Background(), db)
 
 		if err != nil {
