@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"database/sql"
-	"log"
 	"sync"
 	"testing"
 
@@ -35,12 +34,17 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	// mark as helper
 	t.Helper()
 
-	doOnce.Do(initializeTestDatabaseTemplate)
+	// new context derived from background
+	ctx := context.Background()
 
-	testDatabase, err := client.GetTestDatabase(context.Background(), hash)
+	doOnce.Do(func() {
+		initializeTestDatabaseTemplate(ctx, t)
+	})
+
+	testDatabase, err := client.GetTestDatabase(ctx, hash)
 
 	if err != nil {
-		log.Fatalf("Failed to obtain TestDatabase: %v", err)
+		t.Fatalf("Failed to obtain TestDatabase: %v", err)
 	}
 
 	connectionString := testDatabase.Config.ConnectionString()
@@ -48,14 +52,14 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	db, err := sql.Open("postgres", connectionString)
 
 	if err != nil {
-		log.Fatalf("Failed to setup testdatabase for connectionString %q: %v", connectionString, err)
+		t.Fatalf("Failed to setup testdatabase for connectionString %q: %v", connectionString, err)
 	}
 
 	// this database object is managed and should close automatically after running the test
 	defer db.Close()
 
-	if err := db.PingContext(context.Background()); err != nil {
-		log.Fatalf("Failed to ping testdatabase for connectionString %q: %v", connectionString, err)
+	if err := db.PingContext(ctx); err != nil {
+		t.Fatalf("Failed to ping testdatabase for connectionString %q: %v", connectionString, err)
 	}
 
 	closure(db)
@@ -82,75 +86,96 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 
 		router.Init(s)
 
-		// no need to start echo!
+		// no need to actually start echo!
 		// see https://github.com/labstack/echo/issues/659
 
-		// if err := s.Start(); err != nil {
-		// 	log.Fatalf("Failed to start server: %v", err)
-		// }
-
-		// defer func() {
-		// 	if err := s.Shutdown(context.Background()); err != nil {
-		// 		log.Fatalf("Failed to shutdown server: %v", err)
-		// 	}
-		// }()
-
 		closure(s)
-
 	})
 }
 
 // main private function to properly build up the template database
 // ensure it is called once once per pkg scope.
-func initializeTestDatabaseTemplate() {
+func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 
-	initHash()
+	// mark as helper
+	t.Helper()
 
-	initIntegres()
+	initTestDatabaseHash(t)
 
-	if err := client.SetupTemplateWithDBClient(context.Background(), hash, initTemplate); err != nil {
-		log.Fatalf("Failed to setup template database for hash %q: %v", hash, err)
+	initIntegresClient(t)
+
+	if err := client.SetupTemplateWithDBClient(ctx, hash, func(db *sql.DB) error {
+
+		err := applyMigrations(t, db)
+
+		if err != nil {
+			return err
+		}
+
+		err = insertFixtures(ctx, t, db)
+
+		return err
+	}); err != nil {
+		t.Fatalf("Failed to setup template database for hash %q: %v", hash, err)
 	}
 }
 
-func initIntegres() {
+func initIntegresClient(t *testing.T) {
+
+	// mark as helper
+	t.Helper()
 
 	c, err := integresql.DefaultClientFromEnv()
 	if err != nil {
-		log.Fatalf("Failed to create new integresql-client: %v", err)
+		t.Fatalf("Failed to create new integresql-client: %v", err)
 	}
 
 	client = c
 }
 
-func initHash() {
+func initTestDatabaseHash(t *testing.T) {
+
+	// mark as helper
+	t.Helper()
 
 	h, err := util.GetTemplateHash(migDir, fixFile)
 	if err != nil {
-		log.Fatalf("Failed to get template hash: %#v", err)
+		t.Fatalf("Failed to get template hash: %#v", err)
 	}
 
 	hash = h
 }
 
-func initTemplate(db *sql.DB) error {
+func applyMigrations(t *testing.T, db *sql.DB) error {
+
+	// mark as helper
+	t.Helper()
+
 	migrations := &migrate.FileMigrationSource{Dir: migDir}
 	n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Applied %d migrations for hash %q", n, hash)
+	t.Logf("Applied %d migrations for hash %q", n, hash)
 
-	tx, err := db.BeginTx(context.Background(), nil)
+	return nil
+}
+
+func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
+
+	// mark as helper
+	t.Helper()
+
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
 	for _, fixture := range fixtures {
-		if err := fixture.Insert(context.Background(), db, boil.Infer()); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
+		if err := fixture.Insert(ctx, db, boil.Infer()); err != nil {
+			if err := tx.Rollback(); err != nil {
+				return err
 			}
 
 			return err
@@ -161,7 +186,7 @@ func initTemplate(db *sql.DB) error {
 		return err
 	}
 
-	log.Printf("Inserted %d fixtures for hash %q", len(fixtures), hash)
+	t.Logf("Inserted %d fixtures for hash %q", len(fixtures), hash)
 
 	return nil
 }
