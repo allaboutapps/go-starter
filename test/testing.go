@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
-	"allaboutapps.at/aw/go-mranftl-sample/router"
+	"allaboutapps.at/aw/go-mranftl-sample/api/router"
 	"github.com/allaboutapps/integresql-client-go"
 	"github.com/allaboutapps/integresql-client-go/pkg/util"
 	migrate "github.com/rubenv/sql-migrate"

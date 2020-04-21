@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
-	"allaboutapps.at/aw/go-mranftl-sample/router"
+	"allaboutapps.at/aw/go-mranftl-sample/api/router"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
