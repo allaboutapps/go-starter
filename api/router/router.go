@@ -2,9 +2,8 @@ package router
 
 import (
 	"allaboutapps.at/aw/go-mranftl-sample/api"
-	"allaboutapps.at/aw/go-mranftl-sample/api/auth"
+	"allaboutapps.at/aw/go-mranftl-sample/api/handlers"
 	"allaboutapps.at/aw/go-mranftl-sample/api/middleware"
-	"allaboutapps.at/aw/go-mranftl-sample/api/user"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
@@ -25,6 +24,5 @@ func Init(s *api.Server) {
 	s.Echo.Use(middleware.Logger())
 	// s.Echo.Use(echoMiddleware.Gzip()) // LB gzips
 
-	auth.InitRoutes(s)
-	user.InitRoutes(s)
+	handlers.InitRoutes(s)
 }

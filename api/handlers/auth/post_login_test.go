@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
-	"allaboutapps.at/aw/go-mranftl-sample/api/auth"
+	"allaboutapps.at/aw/go-mranftl-sample/api/handlers/auth"
 	"allaboutapps.at/aw/go-mranftl-sample/test"
 	"github.com/labstack/echo/v4"
 )

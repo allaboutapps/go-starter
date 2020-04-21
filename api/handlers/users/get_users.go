@@ -1,4 +1,4 @@
-package user
+package users
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func getUsersHandler(s *api.Server) echo.HandlerFunc {
+func GetUsersHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		log := util.LogFromEchoContext(c)
 		log.Trace().Msg("Loading all users")
