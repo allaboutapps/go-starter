@@ -14,15 +14,6 @@
             "args": []
         },
         {
-            "name": "Launch pgserve",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/pgserve",
-            "env": {},
-            "args": []
-        },
-        {
             "name": "Launch",
             "type": "go",
             "request": "launch",
