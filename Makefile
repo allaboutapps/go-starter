@@ -4,10 +4,10 @@
 
 # first is default task when running "make" without args
 build:
-	@$(MAKE) --no-print-directory build-pre
-	@$(MAKE) --no-print-directory go-format
-	@$(MAKE) --no-print-directory go-build
-	@$(MAKE) --no-print-directory go-lint
+	@$(MAKE) build-pre
+	@$(MAKE) go-format
+	@$(MAKE) go-build
+	@$(MAKE) go-lint
 
 # these recipies may execute in parallel
 build-pre: sql-generate-go-models swagger go-generate 
@@ -34,9 +34,9 @@ test:
 ### -----------------------
 
 init:
-	@$(MAKE) --no-print-directory modules
-	@$(MAKE) --no-print-directory tools
-	@$(MAKE) --no-print-directory tidy
+	@$(MAKE) modules
+	@$(MAKE) tools
+	@$(MAKE) tidy
 	@go version
 
 # cache go modules (locally into .pkg)
@@ -62,13 +62,13 @@ sql-reset:
 	psql -d postgres -c 'CREATE DATABASE "${PGDATABASE}" WITH OWNER ${PGUSER} TEMPLATE "template0";'
 
 # This step is only required to be executed when the "migrations" folder has changed!
-MIGRATION_FILES = $(find ./migrations/ -type f -iname '*.sql')
-sql-generate-go-models: ./migrations $(MIGRATION_FILES)
-	@$(MAKE) --no-print-directory sql-format
-	@$(MAKE) --no-print-directory sql-lint
-	@$(MAKE) --no-print-directory sql-spec-reset
-	@$(MAKE) --no-print-directory sql-spec-migrate
-	PSQL_DB="spec" sqlboiler --wipe --no-hooks psql
+# MIGRATION_FILES = $(find ./migrations/ -type f -iname '*.sql')
+sql-generate-go-models: # ./migrations $(MIGRATION_FILES)
+	@$(MAKE) sql-format
+	@$(MAKE) sql-lint
+	@$(MAKE) sql-spec-reset
+	@$(MAKE) sql-spec-migrate
+	sqlboiler --wipe --no-hooks psql
 
 go-generate:
 	go generate ./...
@@ -94,8 +94,8 @@ sql-check-migrations:
 
 sql-spec-reset:
 	@echo "make sql-spec-reset"
-	@psql --quiet -d postgres -c 'DROP DATABASE IF EXISTS "spec";'
-	@psql --quiet -d postgres -c 'CREATE DATABASE "spec" WITH OWNER ${PGUSER} TEMPLATE "template0";'
+	@psql --quiet -d postgres -c 'DROP DATABASE IF EXISTS "${PSQL_DBNAME}";'
+	@psql --quiet -d postgres -c 'CREATE DATABASE "${PSQL_DBNAME}" WITH OWNER ${PSQL_USER} TEMPLATE "template0";'
 
 sql-spec-migrate:
 	@echo "make sql-spec-migrate"
@@ -133,8 +133,8 @@ swagger-validate:
 swagger-gen-server: swagger-validate swagger-models
 
 swagger: 
-	@$(MAKE) --no-print-directory swagger-gen-spec
-	@$(MAKE) --no-print-directory swagger-gen-server
+	@$(MAKE) swagger-gen-spec
+	@$(MAKE) swagger-gen-server
 
 ### -----------------------
 # --- Helpers

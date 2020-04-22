@@ -55,13 +55,13 @@ type ServerConfig struct {
 func DefaultServiceConfigFromEnv() ServerConfig {
 	return ServerConfig{
 		Database: DatabaseConfig{
-			Host:     util.GetEnv("PSQL_HOST", "postgres"),
-			Port:     util.GetEnvAsInt("PSQL_PORT", 5432),
-			Database: util.GetEnv("PSQL_DBNAME", "api"),
-			Username: util.GetEnv("PSQL_USER", "dbuser"),
-			Password: util.GetEnv("PSQL_PASS", ""),
+			Host:     util.GetEnv("PGHOST", "postgres"),
+			Port:     util.GetEnvAsInt("PGPORT", 5432),
+			Database: util.GetEnv("PGDATABASE", "development"),
+			Username: util.GetEnv("PGUSER", "dbuser"),
+			Password: util.GetEnv("PGPASSWORD", ""),
 			AdditionalParams: map[string]string{
-				"sslmode": util.GetEnv("PSQL_SSLMODE", "disable"),
+				"sslmode": util.GetEnv("PGSSLMODE", "disable"),
 			},
 		},
 		Echo: EchoServerConfig{

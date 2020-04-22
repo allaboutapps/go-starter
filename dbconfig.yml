@@ -1,12 +1,15 @@
+# Uses PG* env vars
+# the live database
 development:
     dialect: postgres
-    datasource: host=${PSQL_HOST} dbname=${PSQL_DBNAME} user=${PSQL_USER} password=${PSQL_PASS} port=${PSQL_PORT} sslmode=${PSQL_SSLMODE}
+    datasource: host=${PGHOST} dbname=${PGDATABASE} user=${PGUSER} password=${PGPASSWORD} port=${PGPORT} sslmode=${PGSSLMODE}
     dir: migrations
     table: migrations
 
-# the spec db is used for introspection purposes to generate the sqlboiler models
+# Uses PSQL_* env vars
+# the spec database (used for introspection purposes e.g. generate the sqlboiler models)
 spec:
     dialect: postgres
-    datasource: host=${PSQL_HOST} dbname=spec user=${PSQL_USER} password=${PSQL_PASS} port=${PSQL_PORT} sslmode=${PSQL_SSLMODE}
+    datasource: host=${PSQL_HOST} dbname=${PSQL_DBNAME} user=${PSQL_USER} password=${PSQL_PASS} port=${PSQL_PORT} sslmode=${PSQL_SSLMODE}
     dir: migrations
     table: migrations
