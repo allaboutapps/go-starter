@@ -4,6 +4,9 @@ FROM golang:1.14.2 AS development
 ENV GOBIN /app/bin
 ENV PATH $GOBIN:$PATH
 
+# Our Makefile / env fully supports parallel job execution
+ENV MAKEFLAGS "-j 8"
+
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
 # see https://wiki.postgresql.org/wiki/Apt
 # run lsb_release -c inside the container to pick the proper repository flavor
@@ -29,12 +32,12 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 
 ENV LANG en_US.UTF-8
 
-# sql-formatting: Install the same version of pg_formatter as used in your editors, as of 2020-03 thats v4.2
-# https://github.com/darold/pgFormatter/releases
+# sql-formatting: Install the same version of pg_formatter as used in your editors, as of 2020-04 thats v4.3
 # https://github.com/bradymholt/vscode-pgFormatter/commits/master
-RUN wget https://github.com/darold/pgFormatter/archive/v4.2.tar.gz \
-    && tar xzf v4.2.tar.gz \
-    && cd pgFormatter-4.2 \
+# https://github.com/darold/pgFormatter/releases
+RUN wget https://github.com/darold/pgFormatter/archive/v4.3.tar.gz \
+    && tar xzf v4.3.tar.gz \
+    && cd pgFormatter-4.3 \
     && perl Makefile.PL \
     && make && make install
 
@@ -46,6 +49,7 @@ RUN wget https://github.com/kyoh86/richgo/releases/download/v0.3.3/richgo_0.3.3_
 
 # go linting: (this package should NOT be installed via go get)
 # https://github.com/golangci/golangci-lint#binary
+# https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
     | sh -s -- -b $(go env GOPATH)/bin v1.24.0
 
