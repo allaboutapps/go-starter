@@ -130,12 +130,11 @@ pipeline:
   # CHECK
   # ---------------------------------------------------------------------------
 
-  "build vs. git diff":
+  "build & diff":
     group: pre-test
     image: *IMAGE_DEPLOY_ID
     commands:
       - make tidy
-      - sql-migrate up
       - make build
       - git diff --exit-code
     environment: *TEST_ENV

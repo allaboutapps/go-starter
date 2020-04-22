@@ -2,7 +2,7 @@
     # Connection params are injected via env vars (PSQL_*)
     # see https://github.com/volatiletech/sqlboiler/issues/678
     # see https://github.com/volatiletech/sqlboiler/pull/615
-    # dbname = PSQL_DBNAME
+    dbname = "spec" # force sql-boiler to always use the spec db to generate its code
     # user = PSQL_USER
     # pass = PSQL_PASS
     # host = PSQL_HOST

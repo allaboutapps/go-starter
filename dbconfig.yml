@@ -3,3 +3,10 @@ development:
     datasource: host=${PSQL_HOST} dbname=${PSQL_DBNAME} user=${PSQL_USER} password=${PSQL_PASS} port=${PSQL_PORT} sslmode=${PSQL_SSLMODE}
     dir: migrations
     table: migrations
+
+# the spec db is used for introspection purposes to generate the sqlboiler models
+spec:
+    dialect: postgres
+    datasource: host=${PSQL_HOST} dbname=spec user=${PSQL_USER} password=${PSQL_PASS} port=${PSQL_PORT} sslmode=${PSQL_SSLMODE}
+    dir: migrations
+    table: migrations

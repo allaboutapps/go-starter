@@ -11,14 +11,17 @@
 # Init install/cache dependencies and install tools to bin
 make init
 
-# Migrate up your local database
-sql-migrate up
-
 # Building (generate, format, build, vet)
 make
 
 # Execute tests
 make test
+
+# Migrate up your local database
+sql-migrate up
+
+# Start the local built server
+apiserver
 
 ```
 
