@@ -2,8 +2,7 @@
 CREATE TABLE users (
     id uuid NOT NULL DEFAULT uuid_generate_v4 (),
     username varchar(255),
-    password varchar(2048),
-    salt varchar(2048),
+    password text,
     google_id varchar(255) DEFAULT NULL::character varying,
     google_info text,
     facebook_id varchar(255) DEFAULT NULL::character varying,

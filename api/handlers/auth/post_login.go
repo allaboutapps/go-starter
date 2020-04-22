@@ -1,20 +1,17 @@
 package auth
 
 import (
-	"crypto/sha512"
-	"crypto/subtle"
 	"database/sql"
-	"fmt"
 	"net/http"
 	"time"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/models"
+	"allaboutapps.at/aw/go-mranftl-sample/pkg/auth/hashing"
 	"allaboutapps.at/aw/go-mranftl-sample/util"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
-	"golang.org/x/crypto/pbkdf2"
 )
 
 var (
@@ -60,17 +57,21 @@ func PostLoginHandler(s *api.Server) echo.HandlerFunc {
 			return echo.ErrUnauthorized
 		}
 
-		if !user.Password.Valid || !user.Salt.Valid {
-			log.Debug().Bool("passwordValid", user.Password.Valid).Bool("saltValid", user.Salt.Valid).Msg("User is missing password or salt")
+		if !user.Password.Valid {
+			log.Debug().Msg("User is missing password")
 			return echo.ErrForbidden
 		}
 
 		log.Debug().Str("userID", user.ID).Msg("Found user")
 
-		hash := pbkdf2.Key([]byte(body.Password), []byte(user.Salt.String), 12000, 512, sha512.New)
+		match, err := hashing.ComparePasswordAndHash(body.Password, user.Password.String)
+		if err != nil {
+			log.Debug().Err(err).Msg("Failed to compare password with stored hash")
+			return echo.ErrUnauthorized
+		}
 
-		if subtle.ConstantTimeCompare([]byte(fmt.Sprintf("%x", hash)), []byte(user.Password.String)) == 0 {
-			log.Debug().Msg("Invalid password")
+		if !match {
+			log.Debug().Msg("Provided password does not match stored hash")
 			return echo.ErrUnauthorized
 		}
 
