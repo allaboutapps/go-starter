@@ -11,13 +11,15 @@ import (
 
 var (
 	// TODO: env: how to get to the project root?
-	subPackages = []string{
+	handlersPackages = []string{
 		"/app/api/handlers/auth",
 		"/app/api/handlers/users",
 	}
 
 	// https://developer.mozilla.org/de/docs/Web/HTTP/Methods
-	prefixes = []string{
+	// any func that start with this name are considered
+	// TODO: also check fn signature
+	methodPrefixes = []string{
 		"Get", "Head", "Patch", "Post", "Put", "Delete",
 	}
 )
@@ -27,7 +29,7 @@ var (
 func main() {
 	set := token.NewFileSet()
 
-	for _, subPackage := range subPackages {
+	for _, subPackage := range handlersPackages {
 
 		packs, err := parser.ParseDir(set, subPackage, nil, 0)
 
@@ -44,7 +46,7 @@ func main() {
 
 						fnName := fn.Name.String()
 
-						for _, prefix := range prefixes {
+						for _, prefix := range methodPrefixes {
 							if strings.HasPrefix(fnName, prefix) {
 								funcs = append(funcs, fn)
 							}
