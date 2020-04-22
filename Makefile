@@ -68,7 +68,7 @@ sql-generate-go-models: ./migrations $(MIGRATION_FILES)
 	@$(MAKE) --no-print-directory sql-lint
 	@$(MAKE) --no-print-directory sql-spec-reset
 	@$(MAKE) --no-print-directory sql-spec-migrate
-	sqlboiler --wipe --no-hooks psql -c ./sqlboiler.toml
+	PSQL_DB="spec" sqlboiler --wipe --no-hooks psql
 
 go-generate:
 	go generate ./...
