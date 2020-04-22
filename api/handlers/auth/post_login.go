@@ -10,7 +10,9 @@ import (
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/models"
+	. "allaboutapps.at/aw/go-mranftl-sample/types"
 	"allaboutapps.at/aw/go-mranftl-sample/util"
+	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"
@@ -21,26 +23,32 @@ var (
 	SAMPLE_EXPORTED_PGK_CONST = "test"
 )
 
+// swagger:route GET /auth/login postLogin
+//
+// Login with local user
+//
+// Returns AccessToken for the user if correct credentials are provided
+//
+// ---
+// produces:
+// - application/json
+// parameters: PostLoginPayload
+// responses:
+//   '200': PostLoginResponse
 func PostLoginHandler(s *api.Server) echo.HandlerFunc {
-	type payload struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
-	type response struct {
-		AccessToken  string `json:"access_token"`
-		TokenType    string `json:"token_type"`
-		ExpiresIn    int    `json:"expires_in"`
-		RefreshToken string `json:"refresh_token"`
-	}
 
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
-		var body payload
+		var body PostLoginPayload
 		if err := c.Bind(&body); err != nil {
 			log.Debug().Err(err).Msg("Failed to bind payload")
+			return err
+		}
+
+		if err := body.Validate(strfmt.Default); err != nil {
+			log.Debug().Err(err).Msg("Failed to validate payload")
 			return err
 		}
 
@@ -108,11 +116,18 @@ func PostLoginHandler(s *api.Server) echo.HandlerFunc {
 			return echo.ErrUnauthorized
 		}
 
-		return c.JSON(http.StatusOK, response{
+		response := PostLoginResponse{
 			AccessToken:  accessToken.Token,
 			TokenType:    "bearer",
 			ExpiresIn:    int((time.Hour * 24).Seconds()),
 			RefreshToken: refreshToken.Token,
-		})
+		}
+
+		if err := response.Validate(strfmt.Default); err != nil {
+			log.Debug().Err(err).Msg("Failed to validate response")
+			return err
+		}
+
+		return c.JSON(http.StatusOK, &response)
 	}
 }

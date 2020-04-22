@@ -34,3 +34,27 @@ type HelloWorld struct {
 	// Required: true
 	Hello string `json:"hello"`
 }
+
+// swagger:model
+// in: body
+type PostLoginPayload struct {
+	// required: true
+	// swagger:strfmt email
+	Username string `json:"username"`
+	// required: true
+	Password string `json:"password"`
+}
+
+// swagger:model
+type PostLoginResponse struct {
+	// required: true
+	// swagger:strfmt uuid4
+	AccessToken string `json:"access_token"`
+	// required: true
+	TokenType string `json:"token_type"`
+	// required: true
+	ExpiresIn int `json:"expires_in"`
+	// required: true
+	// swagger:strfmt uuid4
+	RefreshToken string `json:"refresh_token"`
+}

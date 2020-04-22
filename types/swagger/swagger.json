@@ -29,6 +29,56 @@
       },
       "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/types"
     },
+    "PostLoginPayload": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "username": {
+          "type": "string",
+          "format": "email",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/types"
+    },
+    "PostLoginResponse": {
+      "type": "object",
+      "required": [
+        "access_token",
+        "token_type",
+        "expires_in",
+        "refresh_token"
+      ],
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "format": "uuid4",
+          "x-go-name": "AccessToken"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ExpiresIn"
+        },
+        "refresh_token": {
+          "type": "string",
+          "format": "uuid4",
+          "x-go-name": "RefreshToken"
+        },
+        "token_type": {
+          "type": "string",
+          "x-go-name": "TokenType"
+        }
+      },
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/types"
+    },
     "SampleEntry": {
       "type": "object",
       "required": [
