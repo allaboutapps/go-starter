@@ -4,13 +4,14 @@
 
 # first is default task when running "make" without args
 build: 
+	@$(MAKE) --no-print-directory sql-format
 	@$(MAKE) --no-print-directory build-pre
 	@$(MAKE) --no-print-directory go-format
-	@$(MAKE) --no-print-directory build-post
+	@$(MAKE) --no-print-directory go-build
+	@$(MAKE) --no-print-directory go-lint
 
 # these recipies may execute in parallel
-build-pre: sql-format sql-lint sql-check-migrations sqlboiler swagger go-generate 
-build-post: go-build go-lint
+build-pre: sql-lint sql-check-migrations sqlboiler swagger go-generate 
 
 go-format:
 	go fmt
