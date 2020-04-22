@@ -11,13 +11,13 @@
 # Init install/cache dependencies and install tools to bin
 make init
 
-# Building (generate, format, build, vet)
+# Full rebuild (generate, format, build, vet)
 make
 
 # Execute tests
 make test
 
-# Migrate up your local database
+# Migrate up the development database
 sql-migrate up
 
 # Start the local built server
