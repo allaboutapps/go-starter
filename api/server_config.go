@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"allaboutapps.at/aw/go-mranftl-sample/util"
+	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
 )
 
 type DatabaseConfig struct {

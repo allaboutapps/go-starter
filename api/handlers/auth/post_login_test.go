@@ -2,7 +2,6 @@ package auth_test
 
 import (
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
@@ -20,12 +19,13 @@ func TestSuccessAuth(t *testing.T) {
 		// cyclic import mini-test
 		t.Log(auth.SAMPLE_EXPORTED_PGK_CONST)
 
-		userJSON := `{
-			"username": "user1@example.com",
-			"password": "password"
-		}`
+		fixtures := test.Fixtures()
+		payload := test.GenericPayload{
+			"username": fixtures.User1.Username,
+			"password": "password",
+		}
 
-		req := httptest.NewRequest("POST", "/api/v1/auth/login", strings.NewReader(userJSON))
+		req := httptest.NewRequest("POST", "/api/v1/auth/login", payload.Reader(t))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		res := httptest.NewRecorder()
 
@@ -45,12 +45,13 @@ func TestInvalidCredentials(t *testing.T) {
 
 	test.WithTestServer(t, func(s *api.Server) {
 
-		userJSON := `{
-			"username": "user1@example.com",
-			"password": "not my password"
-		}`
+		fixtures := test.Fixtures()
+		payload := test.GenericPayload{
+			"username": fixtures.User1.Username,
+			"password": "not my password",
+		}
 
-		req := httptest.NewRequest("POST", "/api/v1/auth/login", strings.NewReader(userJSON))
+		req := httptest.NewRequest("POST", "/api/v1/auth/login", payload.Reader(t))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		res := httptest.NewRecorder()
 

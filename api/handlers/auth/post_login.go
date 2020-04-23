@@ -8,7 +8,7 @@ import (
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/models"
 	"allaboutapps.at/aw/go-mranftl-sample/pkg/auth/hashing"
-	"allaboutapps.at/aw/go-mranftl-sample/util"
+	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/boil"
 	"github.com/volatiletech/sqlboiler/queries/qm"

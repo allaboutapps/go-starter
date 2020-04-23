@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"time"
 
 	. "allaboutapps.at/aw/go-mranftl-sample/models"
 	"github.com/volatiletech/null"
@@ -15,8 +16,9 @@ type Insertable interface {
 
 // The main definition which fixtures are available though Fixtures()
 type FixtureMap struct {
-	user1 *User
-	user2 *User
+	User1             *User
+	User1AccessToken1 *AccessToken
+	User2             *User
 }
 
 // We return a function wrapping our fixtures, tests are allowed to manipulate those
@@ -30,6 +32,12 @@ func Fixtures() FixtureMap {
 		Password: null.StringFrom("$argon2id$v=19$m=65536,t=1,p=4$RFO8ulg2c2zloG0029pAUQ$2Po6NUIhVCMm9vivVDuzo7k5KVWfZzJJfeXzC+n+row"),
 	}
 
+	user1AccessToken1 := AccessToken{
+		Token:      "1cfc27d7-a178-4051-802b-f3ff3967c95c",
+		ValidUntil: time.Now().Add(10 * 365 * 24 * time.Hour),
+		UserID:     user1.ID,
+	}
+
 	user2 := User{
 		ID:       "76a79a2b-fbd8-45a0-b35b-671a28a87acf",
 		IsActive: user1.IsActive,
@@ -39,6 +47,7 @@ func Fixtures() FixtureMap {
 
 	return FixtureMap{
 		&user1,
+		&user1AccessToken1,
 		&user2,
 	}
 }
@@ -49,7 +58,8 @@ func Inserts() []Insertable {
 	fixtures := Fixtures()
 
 	return []Insertable{
-		fixtures.user1,
-		fixtures.user2,
+		fixtures.User1,
+		fixtures.User1AccessToken1,
+		fixtures.User2,
 	}
 }
