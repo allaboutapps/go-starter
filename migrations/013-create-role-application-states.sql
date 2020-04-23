@@ -14,5 +14,5 @@ ALTER TABLE role_application_states
     ADD CONSTRAINT role_application_states_application_state_id_fkey FOREIGN KEY (application_state_id) REFERENCES application_states (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE application_states;
+DROP TABLE role_application_states;
 

@@ -95,7 +95,7 @@
 		"eamodio.gitlens",
 		"casualjim.gotemplate"
 		// "mtxr.sqltools",
-	]
+	],
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],
 	// Uncomment the next line if you want to keep your containers running after VS Code shuts down.
@@ -103,5 +103,5 @@
 	// Uncomment the next line to run commands after the container is created - for example installing git.
 	// "postCreateCommand": "apt-get update && apt-get install -y git",
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-	// "remoteUser": "vscode"
+	"remoteUser": "vscode"
 }
