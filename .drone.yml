@@ -69,24 +69,26 @@ alias:
   - &TEST_ENV
     CI: ${CI}
 
-    # required: env for sqlboiler and sql-migrate
-    PSQL_DBNAME: &PSQL_DBNAME "sample"
-    PSQL_USER: &PSQL_USER "dbuser"
-    PSQL_PASS: &PSQL_PASS "9bed16f749d74a3c8bfbced18a7647f5"
-    PSQL_HOST: &PSQL_HOST "postgres"
-    PSQL_PORT: &PSQL_PORT "5432"
-    PSQL_SSLMODE: &PSQL_SSLMODE "disable"
-    PSQL_SCHEMA: &PSQL_SCHEMA "public"
+    # required: env for main working database, service
+    # default for sql-migrate (target development) and psql cli tool
+    PGDATABASE: &PGDATABASE "development"
+    PGUSER: &PGUSER "dbuser"
+    PGPASSWORD: &PGPASSWORD "9bed16f749d74a3c8bfbced18a7647f5"
+    PGHOST: &PGHOST "postgres"
+    PGPORT: &PGPORT "5432"
+    PGSSLMODE: &PGSSLMODE "disable"
 
-    INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
+    # optional: env for sql-boiler (ability to generate models out of a "spec" database)
+    # sql-boiler should operate on a "spec" database only
+    PSQL_DBNAME: "spec"
+    PSQL_USER: *PGUSER
+    PSQL_PASS: *PGPASSWORD
+    PSQL_HOST: *PGHOST
+    PSQL_PORT: *PGPORT
+    PSQL_SSLMODE: *PGSSLMODE
 
-    # optional: env for postgresql-client apt-get package (psql)
-    PGDATABASE: *PSQL_DBNAME
-    PGUSER: *PSQL_USER
-    PGPASSWORD: *PSQL_PASS
-    PGHOST: *PSQL_HOST
-    PGPORT: *PSQL_PORT
-    PGSSLMODE: *PSQL_SSLMODE
+    # optional: env for integresql client testing
+    # INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
 
   # Which build events should trigger the main pipeline (defaults to all)
   - &BUILD_EVENTS [push, pull_request, tag]
@@ -130,12 +132,11 @@ pipeline:
   # CHECK
   # ---------------------------------------------------------------------------
 
-  "build vs. git diff":
+  "build & diff":
     group: pre-test
     image: *IMAGE_DEPLOY_ID
     commands:
       - make tidy
-      - sql-migrate up
       - make build
       - git diff --exit-code
     environment: *TEST_ENV
@@ -245,9 +246,9 @@ services:
   "postgres":
     image: postgres:12.2-alpine
     environment:
-      POSTGRES_DB: *PSQL_DBNAME
-      POSTGRES_USER: *PSQL_USER
-      POSTGRES_PASSWORD: *PSQL_PASS
+      POSTGRES_DB: *PGDATABASE
+      POSTGRES_USER: *PGUSER
+      POSTGRES_PASSWORD: *PGPASSWORD
     # Apply some performance improvements to pg as these guarantees are not needed while running integration tests
     command: "-c 'shared_buffers=128MB' -c 'fsync=off' -c 'synchronous_commit=off' -c 'full_page_writes=off' -c 'max_connections=100' -c 'client_min_messages=warning'"
     <<: *WHEN_BUILD_EVENT
@@ -255,7 +256,7 @@ services:
   "integresql":
     image: allaboutapps/integresql:latest
     environment:
-      PGHOST: *PSQL_HOST
-      PGUSER: *PSQL_USER
-      PGPASSWORD: *PSQL_PASS
+      PGHOST: *PGHOST
+      PGUSER: *PGUSER
+      PGPASSWORD: *PGPASSWORD
     <<: *WHEN_BUILD_EVENT

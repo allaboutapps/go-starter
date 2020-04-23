@@ -1,12 +1,6 @@
 [psql]
     # Connection params are injected via env vars (PSQL_*)
+    # As those are supplied via the env, you cannot overwrite the here!
     # see https://github.com/volatiletech/sqlboiler/issues/678
     # see https://github.com/volatiletech/sqlboiler/pull/615
-    # dbname = PSQL_DBNAME
-    # user = PSQL_USER
-    # pass = PSQL_PASS
-    # host = PSQL_HOST
-    # port = PSQL_PORT
-    # sslmode = PSQL_SSLMODE
-    # schema = PSQL_SCHEMA
     blacklist = ["migrations"]

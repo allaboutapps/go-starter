@@ -5,7 +5,7 @@ ENV GOBIN /app/bin
 ENV PATH $GOBIN:$PATH
 
 # Our Makefile / env fully supports parallel job execution
-ENV MAKEFLAGS "-j 8"
+ENV MAKEFLAGS "-j 8 --no-print-directory"
 
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
 # see https://wiki.postgresql.org/wiki/Apt
