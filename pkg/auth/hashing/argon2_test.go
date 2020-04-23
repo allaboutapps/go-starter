@@ -37,6 +37,15 @@ func TestHashPassword(t *testing.T) {
 	}
 }
 
+func BenchmarkHashPassword(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, err := HashPassword("t3stp4ssw0rd", DefaultArgon2Params)
+		if err != nil {
+			b.Errorf("failed to hash password #%d: %v", i, err)
+		}
+	}
+}
+
 func TestComparePasswordAndHash(t *testing.T) {
 	t.Parallel()
 
@@ -58,6 +67,28 @@ func TestComparePasswordAndHash(t *testing.T) {
 
 	if match {
 		t.Error("wrong password and hash match")
+	}
+}
+
+func BenchmarkComparePasswordAndHash(b *testing.B) {
+	hash := "$argon2id$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk"
+
+	for i := 0; i < b.N; i++ {
+		_, err := ComparePasswordAndHash("t3stp4ssw0rd", hash)
+		if err != nil {
+			b.Errorf("failed to compare password and hash #%d: %v", i, err)
+		}
+	}
+}
+
+func BenchmarkCompareWrongPasswordAndHash(b *testing.B) {
+	hash := "$argon2id$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk"
+
+	for i := 0; i < b.N; i++ {
+		_, err := ComparePasswordAndHash("wr0ngt3stp4ssw0rd", hash)
+		if err != nil {
+			b.Errorf("failed to compare wrong password and hash #%d: %v", i, err)
+		}
 	}
 }
 
