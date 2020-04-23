@@ -32,6 +32,16 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 
 ENV LANG en_US.UTF-8
 
+# vscode support: https://code.visualstudio.com/docs/remote/containers-advanced#_avoiding-extension-reinstalls-on-container-rebuild
+
+# ARG USERNAME=user-name-goes-here
+
+# RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
+#     /home/$USERNAME/.vscode-server-insiders/extensions \
+#     && chown -R $USERNAME \
+#     /home/$USERNAME/.vscode-server \
+#     /home/$USERNAME/.vscode-server-insiders
+
 # sql-formatting: Install the same version of pg_formatter as used in your editors, as of 2020-04 thats v4.3
 # https://github.com/bradymholt/vscode-pgFormatter/commits/master
 # https://github.com/darold/pgFormatter/releases
