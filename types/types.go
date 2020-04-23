@@ -39,7 +39,6 @@ type HelloWorld struct {
 // in: body
 type PostLoginPayload struct {
 	// required: true
-	// swagger:strfmt email
 	Username string `json:"username"`
 	// required: true
 	Password string `json:"password"`
@@ -48,13 +47,11 @@ type PostLoginPayload struct {
 // swagger:model
 type PostLoginResponse struct {
 	// required: true
-	// swagger:strfmt uuid4
 	AccessToken string `json:"access_token"`
 	// required: true
 	TokenType string `json:"token_type"`
 	// required: true
 	ExpiresIn int `json:"expires_in"`
 	// required: true
-	// swagger:strfmt uuid4
 	RefreshToken string `json:"refresh_token"`
 }

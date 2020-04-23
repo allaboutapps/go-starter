@@ -44,10 +44,6 @@ func (m *PostLoginResponse) validateAccessToken(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.FormatOf("access_token", "body", "uuid4", m.AccessToken.String(), formats); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -63,10 +59,6 @@ func (m *PostLoginResponse) validateExpiresIn(formats strfmt.Registry) error {
 func (m *PostLoginResponse) validateRefreshToken(formats strfmt.Registry) error {
 
 	if err := validate.Required("refresh_token", "body", m.RefreshToken); err != nil {
-		return err
-	}
-
-	if err := validate.FormatOf("refresh_token", "body", "uuid4", m.RefreshToken.String(), formats); err != nil {
 		return err
 	}
 

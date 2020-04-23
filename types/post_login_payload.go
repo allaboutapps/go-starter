@@ -45,10 +45,6 @@ func (m *PostLoginPayload) validateUsername(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.FormatOf("username", "body", "email", m.Username.String(), formats); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -31,7 +31,7 @@ var (
 // - application/json
 // parameters: PostLoginPayload
 // responses:
-//   '200': PostLoginResponse
+//   200: PostLoginResponse
 func PostLoginHandler(s *api.Server) echo.HandlerFunc {
 
 	return func(c echo.Context) error {

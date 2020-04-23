@@ -22,7 +22,14 @@
         ],
         "summary": "Login with local user",
         "operationId": "postLogin",
-        "responses": {}
+        "responses": {
+          "200": {
+            "description": "PostLoginResponse",
+            "schema": {
+              "$ref": "#/definitions/PostLoginResponse"
+            }
+          }
+        }
       }
     }
   },
@@ -54,7 +61,6 @@
         },
         "username": {
           "type": "string",
-          "format": "email",
           "x-go-name": "Username"
         }
       },
@@ -71,7 +77,6 @@
       "properties": {
         "access_token": {
           "type": "string",
-          "format": "uuid4",
           "x-go-name": "AccessToken"
         },
         "expires_in": {
@@ -81,7 +86,6 @@
         },
         "refresh_token": {
           "type": "string",
-          "format": "uuid4",
           "x-go-name": "RefreshToken"
         },
         "token_type": {
