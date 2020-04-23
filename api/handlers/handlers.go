@@ -8,6 +8,7 @@ import (
 
 func InitRoutes(s *api.Server) {
 	authGroup := s.Echo.Group("/api/v1/auth")
+	authGroup.GET("/hash/benchmark", auth.GetHashBenchmarkHandler(s))
 	authGroup.POST("/login", auth.PostLoginHandler(s))
 
 	usersGroup := s.Echo.Group("/api/v1/users")
