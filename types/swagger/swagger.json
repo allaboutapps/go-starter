@@ -13,7 +13,19 @@
     "title": "types",
     "version": "0.1.0"
   },
-  "paths": {},
+  "paths": {
+    "/auth/login": {
+      "get": {
+        "description": "Returns AccessToken for the user if correct credentials are provided",
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Login with local user",
+        "operationId": "postLogin",
+        "responses": {}
+      }
+    }
+  },
   "definitions": {
     "HelloWorld": {
       "type": "object",

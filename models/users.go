@@ -27,7 +27,6 @@ type User struct {
 	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Username     null.String `boil:"username" json:"username,omitempty" toml:"username" yaml:"username,omitempty"`
 	Password     null.String `boil:"password" json:"password,omitempty" toml:"password" yaml:"password,omitempty"`
-	Salt         null.String `boil:"salt" json:"salt,omitempty" toml:"salt" yaml:"salt,omitempty"`
 	GoogleID     null.String `boil:"google_id" json:"google_id,omitempty" toml:"google_id" yaml:"google_id,omitempty"`
 	GoogleInfo   null.String `boil:"google_info" json:"google_info,omitempty" toml:"google_info" yaml:"google_info,omitempty"`
 	FacebookID   null.String `boil:"facebook_id" json:"facebook_id,omitempty" toml:"facebook_id" yaml:"facebook_id,omitempty"`
@@ -44,7 +43,6 @@ var UserColumns = struct {
 	ID           string
 	Username     string
 	Password     string
-	Salt         string
 	GoogleID     string
 	GoogleInfo   string
 	FacebookID   string
@@ -56,7 +54,6 @@ var UserColumns = struct {
 	ID:           "id",
 	Username:     "username",
 	Password:     "password",
-	Salt:         "salt",
 	GoogleID:     "google_id",
 	GoogleInfo:   "google_info",
 	FacebookID:   "facebook_id",
@@ -72,7 +69,6 @@ var UserWhere = struct {
 	ID           whereHelperstring
 	Username     whereHelpernull_String
 	Password     whereHelpernull_String
-	Salt         whereHelpernull_String
 	GoogleID     whereHelpernull_String
 	GoogleInfo   whereHelpernull_String
 	FacebookID   whereHelpernull_String
@@ -84,7 +80,6 @@ var UserWhere = struct {
 	ID:           whereHelperstring{field: "\"users\".\"id\""},
 	Username:     whereHelpernull_String{field: "\"users\".\"username\""},
 	Password:     whereHelpernull_String{field: "\"users\".\"password\""},
-	Salt:         whereHelpernull_String{field: "\"users\".\"salt\""},
 	GoogleID:     whereHelpernull_String{field: "\"users\".\"google_id\""},
 	GoogleInfo:   whereHelpernull_String{field: "\"users\".\"google_info\""},
 	FacebookID:   whereHelpernull_String{field: "\"users\".\"facebook_id\""},
@@ -130,8 +125,8 @@ func (*userR) NewStruct() *userR {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "username", "password", "salt", "google_id", "google_info", "facebook_id", "facebook_info", "is_active", "created_at", "updated_at"}
-	userColumnsWithoutDefault = []string{"username", "password", "salt", "google_info", "facebook_info", "created_at", "updated_at"}
+	userAllColumns            = []string{"id", "username", "password", "google_id", "google_info", "facebook_id", "facebook_info", "is_active", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"username", "password", "google_info", "facebook_info", "created_at", "updated_at"}
 	userColumnsWithDefault    = []string{"id", "google_id", "facebook_id", "is_active"}
 	userPrimaryKeyColumns     = []string{"id"}
 )
