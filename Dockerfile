@@ -21,8 +21,27 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     locales \
     postgresql-client-12 \
+    sudo \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Add user to avoid linux file permission issues
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# ********************************************************
+# * Anything else you want to do like clean up goes here *
+# ********************************************************
+
+# [Optional] Set the default user. Omit if you want to keep the default as root.
+#USER $USERNAME
 
 # vscode support: LANG must be supported, requires installing the locale package first
 # see https://github.com/Microsoft/vscode/issues/58015
