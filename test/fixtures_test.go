@@ -16,7 +16,7 @@ func TestFixturesReload(t *testing.T) {
 	t.Parallel()
 
 	WithTestDatabase(t, func(db *sql.DB) {
-		err := Fixtures().user1.Reload(context.Background(), db)
+		err := Fixtures().User1.Reload(context.Background(), db)
 
 		if err != nil {
 			t.Error("failed to reload")
@@ -57,7 +57,7 @@ func TestUpdate(t *testing.T) {
 
 	WithTestDatabase(t, func(db *sql.DB) {
 
-		originalUser1 := Fixtures().user1
+		originalUser1 := Fixtures().User1
 
 		updatedUser1 := User(*originalUser1)
 
@@ -89,7 +89,7 @@ func TestUpdate(t *testing.T) {
 	// with another testdatabase:
 	WithTestDatabase(t, func(db *sql.DB) {
 
-		originalUser1 := Fixtures().user1
+		originalUser1 := Fixtures().User1
 
 		// ensure our fixture is the same again!
 		if originalUser1.Username != null.StringFrom("user1@example.com") {

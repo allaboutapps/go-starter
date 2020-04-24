@@ -3,10 +3,24 @@ package middleware
 import (
 	"time"
 
+	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+var (
+	DefaultLoggerConfig = LoggerConfig{
+		Skipper: middleware.DefaultSkipper,
+		Level:   zerolog.DebugLevel,
+	}
+)
+
+type LoggerConfig struct {
+	Skipper middleware.Skipper
+	Level   zerolog.Level
+}
 
 func Logger() echo.MiddlewareFunc {
 	return LoggerWithConfig(DefaultLoggerConfig)
@@ -55,7 +69,9 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 			}
 			stop := time.Now()
 
-			l.WithLevel(config.Level).
+			// Retrieve logger from context again since other middlewares might have enhanced it
+			ll := util.LogFromEchoContext(c)
+			ll.WithLevel(config.Level).
 				Dict("res", zerolog.Dict().
 					Int("status", res.Status).
 					Int64("bytes_out", res.Size).

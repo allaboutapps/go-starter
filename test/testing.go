@@ -1,8 +1,10 @@
 package test
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"sync"
 	"testing"
 
@@ -95,6 +97,17 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 
 		closure(s)
 	})
+}
+
+type GenericPayload map[string]interface{}
+
+func (g GenericPayload) Reader(t *testing.T) *bytes.Reader {
+	b, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("failed to serialize payload: %v", err)
+	}
+
+	return bytes.NewReader(b)
 }
 
 // main private function to properly build up the template database
