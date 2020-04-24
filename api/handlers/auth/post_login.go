@@ -32,9 +32,9 @@ var (
 // parameters: PostLoginPayload
 // responses:
 //   200: PostLoginResponse
-func PostLoginHandler(s *api.Server) echo.HandlerFunc {
+func PostLoginHandler(s *api.Server) *echo.Route {
 
-	return func(c echo.Context) error {
+	return s.Router.ApiV1Auth.POST("/login", func(c echo.Context) error {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
@@ -130,5 +130,5 @@ func PostLoginHandler(s *api.Server) echo.HandlerFunc {
 		}
 
 		return c.JSON(http.StatusOK, &response)
-	}
+	})
 }
