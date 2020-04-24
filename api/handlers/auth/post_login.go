@@ -20,7 +20,7 @@ var (
 	SAMPLE_EXPORTED_PGK_CONST = "test"
 )
 
-// swagger:route GET /auth/login postLogin
+// swagger:route POST /api/v1/auth/login PostLoginHandler
 //
 // Login with local user
 //

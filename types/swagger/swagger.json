@@ -14,14 +14,14 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/auth/login": {
-      "get": {
+    "/api/v1/auth/login": {
+      "post": {
         "description": "Returns AccessToken for the user if correct credentials are provided",
         "produces": [
           "application/json"
         ],
         "summary": "Login with local user",
-        "operationId": "postLogin",
+        "operationId": "PostLoginHandler",
         "responses": {
           "200": {
             "description": "PostLoginResponse",
