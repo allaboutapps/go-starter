@@ -1,6 +1,6 @@
 package hashing
 
-import "allaboutapps.at/aw/go-mranftl-sample/util"
+import "allaboutapps.at/aw/go-mranftl-sample/pkg/util"
 
 var (
 	// Recommendations in accordance to: https://pkg.go.dev/golang.org/x/crypto@v0.0.0-20200420201142-3c4aac89819a/argon2?tab=doc#IDKey @ 2020-04-22T11:23:38Z

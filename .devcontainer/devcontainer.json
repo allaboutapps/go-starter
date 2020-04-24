@@ -58,30 +58,6 @@
 			"-count=1",
 			"-v"
 		],
-		// "go.lintOnSave": "workspace"
-		// general build settings in sync with our makefile
-		// "go.buildFlags": [
-		// 	"-o",
-		// 	"bin/app"
-		// ]
-		// "sqltools.connections": [
-		// 	{
-		// 		"database": "sample",
-		// 		"dialect": "PostgreSQL",
-		// 		"name": "postgres",
-		// 		"password": "9bed16f749d74a3c8bfbced18a7647f5",
-		// 		"port": 5432,
-		// 		"server": "postgres",
-		// 		"username": "dbuser"
-		// 	}
-		// ],
-		// "sqltools.autoConnectTo": [
-		// 	"postgres"
-		// ],
-		// // only use pg_format to actually format!
-		// "sqltools.formatLanguages": [],
-		// "sqltools.telemetry": false,
-		// "sqltools.autoOpenSessionFiles": false
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
@@ -89,19 +65,18 @@
 		"ms-vscode.go",
 		"bradymholt.pgformatter",
 		// optional:
-		// "766b.go-outliner",
 		"heaths.vscode-guid",
 		"bungcip.better-toml",
 		"eamodio.gitlens",
 		"casualjim.gotemplate"
-		// "mtxr.sqltools",
-	]
+	],
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],
 	// Uncomment the next line if you want to keep your containers running after VS Code shuts down.
 	// "shutdownAction": "none",
 	// Uncomment the next line to run commands after the container is created - for example installing git.
+	"postCreateCommand": "go version",
 	// "postCreateCommand": "apt-get update && apt-get install -y git",
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-	// "remoteUser": "vscode"
+	// "remoteUser": ""
 }

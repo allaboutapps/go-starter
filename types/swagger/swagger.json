@@ -13,7 +13,26 @@
     "title": "types",
     "version": "0.1.0"
   },
-  "paths": {},
+  "paths": {
+    "/auth/login": {
+      "get": {
+        "description": "Returns AccessToken for the user if correct credentials are provided",
+        "produces": [
+          "application/json"
+        ],
+        "summary": "Login with local user",
+        "operationId": "postLogin",
+        "responses": {
+          "200": {
+            "description": "PostLoginResponse",
+            "schema": {
+              "$ref": "#/definitions/PostLoginResponse"
+            }
+          }
+        }
+      }
+    }
+  },
   "definitions": {
     "HelloWorld": {
       "type": "object",
@@ -25,6 +44,53 @@
           "description": "Allow: \"World\"",
           "type": "string",
           "x-go-name": "Hello"
+        }
+      },
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/types"
+    },
+    "PostLoginPayload": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
+      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/types"
+    },
+    "PostLoginResponse": {
+      "type": "object",
+      "required": [
+        "access_token",
+        "token_type",
+        "expires_in",
+        "refresh_token"
+      ],
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ExpiresIn"
+        },
+        "refresh_token": {
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        },
+        "token_type": {
+          "type": "string",
+          "x-go-name": "TokenType"
         }
       },
       "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/types"

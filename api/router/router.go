@@ -1,6 +1,8 @@
 package router
 
 import (
+	"strings"
+
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/api/handlers"
 	"allaboutapps.at/aw/go-mranftl-sample/api/middleware"
@@ -22,7 +24,9 @@ func Init(s *api.Server) {
 	s.Echo.Use(echoMiddleware.Recover())
 	s.Echo.Use(echoMiddleware.RequestID())
 	s.Echo.Use(middleware.Logger())
-	// s.Echo.Use(echoMiddleware.Gzip()) // LB gzips
+	s.Echo.Use(middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeRequired, Skipper: func(c echo.Context) bool {
+		return strings.HasPrefix(c.Path(), "/api/v1/auth")
+	}}))
 
 	handlers.InitRoutes(s)
 }
