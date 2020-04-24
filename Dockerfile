@@ -8,7 +8,7 @@ ENV PATH $GOBIN:$PATH
 ENV MAKEFLAGS "-j 8 --no-print-directory"
 
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
-# see https://wiki.postgresql.org/wiki/Apt
+# https://wiki.postgresql.org/wiki/Apt
 # run lsb_release -c inside the container to pick the proper repository flavor
 # e.g. stretch=>stretch-pgdg, buster=>buster-pgdg
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" \
@@ -25,43 +25,17 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Add user to avoid linux file permission issues
-ARG USERNAME=vscode
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-
-# Create the user
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
-
-# ********************************************************
-# * Anything else you want to do like clean up goes here *
-# ********************************************************
-
-# [Optional] Set the default user. Omit if you want to keep the default as root.
-#USER $USERNAME
-
-# vscode support: LANG must be supported, requires installing the locale package first
-# see https://github.com/Microsoft/vscode/issues/58015
+# env/vscode support: LANG must be supported, requires installing the locale package first
+# https://github.com/Microsoft/vscode/issues/58015
+# https://stackoverflow.com/questions/28405902/how-to-set-the-locale-inside-a-debian-ubuntu-docker-container
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
 
 ENV LANG en_US.UTF-8
 
-# vscode support: https://code.visualstudio.com/docs/remote/containers-advanced#_avoiding-extension-reinstalls-on-container-rebuild
-
-# ARG USERNAME=user-name-goes-here
-
-# RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
-#     /home/$USERNAME/.vscode-server-insiders/extensions \
-#     && chown -R $USERNAME \
-#     /home/$USERNAME/.vscode-server \
-#     /home/$USERNAME/.vscode-server-insiders
-
-# sql-formatting: Install the same version of pg_formatter as used in your editors, as of 2020-04 thats v4.3
+# sql pgFormatter: Install the same version of pg_formatter as used in your editors, as of 2020-04 thats v4.3
+# requires perl to be installed
 # https://github.com/bradymholt/vscode-pgFormatter/commits/master
 # https://github.com/darold/pgFormatter/releases
 RUN wget https://github.com/darold/pgFormatter/archive/v4.3.tar.gz \
@@ -69,6 +43,30 @@ RUN wget https://github.com/darold/pgFormatter/archive/v4.3.tar.gz \
     && cd pgFormatter-4.3 \
     && perl Makefile.PL \
     && make && make install
+
+# vscode support: Add user to avoid linux file permission issues
+# note for local use that these build args SHOULD be overwritten with your respective local user uids
+# https://code.visualstudio.com/docs/remote/containers-advanced#_creating-a-nonroot-user
+ARG USERNAME=development
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    && mkdir /home/$USERNAME/bin
+
+# And nope, we cannot set this user as the main user of this image, really!!!
+# USER $USERNAME
+
+# vscode support: cached extensions install directory
+# https://code.visualstudio.com/docs/remote/containers-advanced#_avoiding-extension-reinstalls-on-container-rebuild
+RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
+    /home/$USERNAME/.vscode-server-insiders/extensions \
+    && chown -R $USERNAME \
+    /home/$USERNAME/.vscode-server \
+    /home/$USERNAME/.vscode-server-insiders
 
 # go richgo: (this package should NOT be installed via go get)
 # https://github.com/kyoh86/richgo/releases

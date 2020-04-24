@@ -21,8 +21,8 @@ services:
 
       # mount cached vscode container extensions
       # https://code.visualstudio.com/docs/remote/containers-advanced#_avoiding-extension-reinstalls-on-container-rebuild
-      - vscode-extensions:/root/.vscode-server/extensions
-      - vscode-extensions-insiders:/root/.vscode-server-insiders/extensions
+      - vscode-extensions:/home/development/.vscode-server/extensions
+      - vscode-extensions-insiders:/home/development/.vscode-server-insiders/extensions
 
     depends_on:
       - postgres
