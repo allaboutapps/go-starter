@@ -86,7 +86,7 @@ sql-live-lint:
 	@echo "make sql-live-lint"
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
-		| psql --quiet -v ON_ERROR_STOP=1
+		| psql -d postgres --quiet -v ON_ERROR_STOP=1
 
 sql-check-migrations:
 	@echo "make sql-check-migrations"
