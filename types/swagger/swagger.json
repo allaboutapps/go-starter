@@ -21,7 +21,7 @@
           "application/json"
         ],
         "summary": "Login with local user",
-        "operationId": "PostLoginHandler",
+        "operationId": "PostLoginRoute",
         "responses": {
           "200": {
             "description": "PostLoginResponse",

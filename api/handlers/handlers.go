@@ -6,10 +6,10 @@ import (
 	"allaboutapps.at/aw/go-mranftl-sample/api/handlers/users"
 )
 
-func AttachHandlers(s *api.Server) {
-	// attach our handlers
+func AttachAllRoutes(s *api.Server) {
+	// attach our routes
 	// TODO: auto-generate those attaches via go generate
-	auth.PostLoginHandler(s)
-	auth.GetHashBenchmarkHandler(s)
-	users.GetUsersHandler(s)
+	auth.PostLoginRoute(s)
+	auth.GetHashBenchmarkRoute(s)
+	users.GetUsersRoute(s)
 }

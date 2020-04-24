@@ -41,5 +41,5 @@ func Init(s *api.Server) {
 
 	// ---
 	// Finally attach our handlers
-	handlers.AttachHandlers(s)
+	handlers.AttachAllRoutes(s)
 }

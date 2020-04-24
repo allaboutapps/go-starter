@@ -20,7 +20,7 @@ var (
 	SAMPLE_EXPORTED_PGK_CONST = "test"
 )
 
-// swagger:route POST /api/v1/auth/login PostLoginHandler
+// swagger:route POST /api/v1/auth/login PostLoginRoute
 //
 // Login with local user
 //
@@ -32,9 +32,12 @@ var (
 // parameters: PostLoginPayload
 // responses:
 //   200: PostLoginResponse
-func PostLoginHandler(s *api.Server) *echo.Route {
+func PostLoginRoute(s *api.Server) *echo.Route {
+	return s.Router.ApiV1Auth.POST("/login", postLoginHandler(s))
+}
 
-	return s.Router.ApiV1Auth.POST("/login", func(c echo.Context) error {
+func postLoginHandler(s *api.Server) echo.HandlerFunc {
+	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
@@ -130,5 +133,5 @@ func PostLoginHandler(s *api.Server) *echo.Route {
 		}
 
 		return c.JSON(http.StatusOK, &response)
-	})
+	}
 }
