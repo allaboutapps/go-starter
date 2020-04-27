@@ -231,6 +231,8 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 				return echo.ErrInternalServerError
 			}
 
+			// TODO scopes enum array on user model
+
 			if time.Now().After(accessToken.ValidUntil) {
 				if config.Mode == AuthModeTry {
 					log.Trace().

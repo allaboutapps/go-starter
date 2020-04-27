@@ -31,9 +31,11 @@ var (
 // - application/json
 // parameters: PostLoginPayload
 // responses:
+//   default: HTTPError
 //   200: PostLoginResponse
+//   401: HTTPError
 func PostLoginRoute(s *api.Server) *echo.Route {
-	return s.Router.ApiV1Auth.POST("/login", postLoginHandler(s))
+	return s.Router.APIV1Auth.POST("/login", postLoginHandler(s))
 }
 
 func postLoginHandler(s *api.Server) echo.HandlerFunc {

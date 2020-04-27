@@ -11,7 +11,7 @@ import (
 )
 
 func GetUsersRoute(s *api.Server) *echo.Route {
-	return s.Router.ApiV1Users.GET("", getUsersHandler(s))
+	return s.Router.APIV1Users.GET("", getUsersHandler(s))
 }
 
 func getUsersHandler(s *api.Server) echo.HandlerFunc {
