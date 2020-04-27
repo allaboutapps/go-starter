@@ -10,10 +10,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type Router struct {
+	Root       *echo.Group
+	ApiV1Auth  *echo.Group
+	ApiV1Users *echo.Group
+}
+
 type Server struct {
 	Config ServerConfig
 	DB     *sql.DB
 	Echo   *echo.Echo
+	Router *Router
 }
 
 func NewServer(config ServerConfig) *Server {
@@ -21,6 +28,7 @@ func NewServer(config ServerConfig) *Server {
 		Config: config,
 		DB:     nil,
 		Echo:   nil,
+		Router: nil,
 	}
 
 	return s

@@ -11,7 +11,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetHashBenchmarkHandler(s *api.Server) echo.HandlerFunc {
+func GetHashBenchmarkRoute(s *api.Server) *echo.Route {
+	return s.Router.ApiV1Auth.GET("/hash/benchmark", getHashBenchmarkHandler(s))
+}
+
+func getHashBenchmarkHandler(s *api.Server) echo.HandlerFunc {
+
 	return func(c echo.Context) error {
 		count, err := strconv.Atoi(c.QueryParam("count"))
 		if err != nil {

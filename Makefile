@@ -136,6 +136,11 @@ swagger:
 	@$(MAKE) swagger-gen-spec
 	@$(MAKE) swagger-gen-server
 
+# accessable from outside via:
+# mac: http://docker.for.mac.localhost:8080/docs
+swagger-serve:
+	swagger serve --no-open -p 8080 types/swagger/swagger.json
+
 ### -----------------------
 # --- Helpers
 ### -----------------------

@@ -10,7 +10,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetUsersHandler(s *api.Server) echo.HandlerFunc {
+func GetUsersRoute(s *api.Server) *echo.Route {
+	return s.Router.ApiV1Users.GET("", getUsersHandler(s))
+}
+
+func getUsersHandler(s *api.Server) echo.HandlerFunc {
+
 	return func(c echo.Context) error {
 		log := util.LogFromEchoContext(c)
 		user := auth.UserFromEchoContext(c)
@@ -25,4 +30,5 @@ func GetUsersHandler(s *api.Server) echo.HandlerFunc {
 
 		return c.JSON(http.StatusOK, users)
 	}
+
 }
