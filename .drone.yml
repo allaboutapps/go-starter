@@ -87,6 +87,9 @@ alias:
     PSQL_PORT: *PGPORT
     PSQL_SSLMODE: *PGSSLMODE
 
+    # optional: project root directory, used for relative path resolution (e.g. fixtures)
+    PROJECT_ROOT_DIR: /app
+
     # optional: env for integresql client testing
     # INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
 
