@@ -2,6 +2,12 @@
 # --- Building
 ### -----------------------
 
+# sets Makefile var and caches the projects module name (as in go.mod)
+PROJECT_MODULE_NAME := $(shell \
+	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
+	|| (go run scripts/modulename/modulename.go | tee tmp/.modulename) \
+)
+
 # first is default task when running "make" without args
 build:
 	@$(MAKE) build-pre
@@ -126,7 +132,7 @@ swagger-models:
 		--allow-template-override \
 		--template-dir=types/swagger \
 		--spec=types/swagger/swagger.json \
-		--existing-models=allaboutapps.at/aw/go-mranftl-sample/types \
+		--existing-models=${PROJECT_MODULE_NAME}/types \
 		--model-package=tmp/swaggermodels \
 		--all-definitions \
 		-q
@@ -155,6 +161,7 @@ swagger-serve:
 ### -----------------------
 
 clean:
+	rm -rf tmp
 	rm -rf bin
 
 ### -----------------------
