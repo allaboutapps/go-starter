@@ -1,6 +1,7 @@
 // +build ignore
 
 // This program generates handlers.go. It can be invoked by running go generate ./...
+// or via go run scripts/handlers/gen_handlers.go
 package main
 
 import (
@@ -15,15 +16,16 @@ import (
 	"text/template"
 
 	"allaboutapps.at/aw/go-mranftl-sample/internal/util"
-	. "github.com/rogpeppe/go-internal/modfile"
+	"allaboutapps.at/aw/go-mranftl-sample/scripts/scriptsutil"
 )
 
 // https://blog.carlmjohnson.net/post/2016-11-27-how-to-use-go-generate/
 
 var (
+	HANDLERS_PACKAGE = "/internal/api/handlers"
+
 	PROJECT_ROOT       = util.GetProjectRootDir()
 	PATH_MOD_FILE      = PROJECT_ROOT + "/go.mod"
-	HANDLERS_PACKAGE   = "/api/handlers"
 	PATH_HANDLERS_FILE = PROJECT_ROOT + HANDLERS_PACKAGE + "/handlers.go"
 
 	// <METHOD_PREFIXES>*<METHOD_SUFFIX> must look like this
@@ -62,7 +64,7 @@ type ResolvedFunction struct {
 // that match Get*, Put*, Post*, Patch*, Delete*
 func main() {
 
-	baseModuleName, err := scriptsutil.getModuleName(PATH_MOD_FILE)
+	baseModuleName, err := scriptsutil.GetModuleName(PATH_MOD_FILE)
 
 	if err != nil {
 		log.Fatal(err)
