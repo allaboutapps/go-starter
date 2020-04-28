@@ -1,12 +1,12 @@
 -- +migrate Up
-CREATE TABLE notification_templates (
+CREATE TABLE tags (
     id uuid NOT NULL DEFAULT uuid_generate_v4 (),
-    text text NOT NULL,
+    tag text NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
-    CONSTRAINT notification_templates_pkey PRIMARY KEY (id)
+    CONSTRAINT tags_pkey PRIMARY KEY (id)
 );
 
 -- +migrate Down
-DROP TABLE notification_templates;
+DROP TABLE IF EXISTS tags;
 

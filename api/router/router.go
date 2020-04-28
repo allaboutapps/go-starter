@@ -19,6 +19,8 @@ func Init(s *api.Server) {
 	// TODO write proper wrapper for echo logger and zerolog/use library for proper logging support including levels and paylods
 	s.Echo.Logger.SetOutput(log.With().Str("component", "echo").Str("level", "debug").Logger())
 
+	s.Echo.HTTPErrorHandler = HTTPErrorHandler
+
 	// ---
 	// General middleware
 	s.Echo.Pre(echoMiddleware.RemoveTrailingSlash())
@@ -34,9 +36,9 @@ func Init(s *api.Server) {
 	// Initialize our general groups and set middleware to use above them
 	s.Router = &api.Router{
 		Root:      s.Echo.Group("/"),
-		ApiV1Auth: s.Echo.Group("/api/v1/auth"),
-		ApiV1Users: s.Echo.Group("/api/v1/users",
-			middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeSecure})),
+		APIV1Auth: s.Echo.Group("/api/v1/auth"),
+		APIV1Users: s.Echo.Group("/api/v1/users",
+			middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeSecure, Scopes: []string{"cms"}})),
 	}
 
 	// ---

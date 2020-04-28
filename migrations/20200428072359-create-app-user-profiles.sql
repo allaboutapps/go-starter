@@ -12,5 +12,5 @@ ALTER TABLE app_user_profiles
     ADD CONSTRAINT app_user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE app_user_profiles;
+DROP TABLE IF EXISTS app_user_profiles;
 

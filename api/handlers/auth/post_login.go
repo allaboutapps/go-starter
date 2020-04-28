@@ -12,8 +12,9 @@ import (
 	. "allaboutapps.at/aw/go-mranftl-sample/types"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 var (
@@ -31,9 +32,11 @@ var (
 // - application/json
 // parameters: PostLoginPayload
 // responses:
+//   default: HTTPError
 //   200: PostLoginResponse
+//   401: HTTPError
 func PostLoginRoute(s *api.Server) *echo.Route {
-	return s.Router.ApiV1Auth.POST("/login", postLoginHandler(s))
+	return s.Router.APIV1Auth.POST("/login", postLoginHandler(s))
 }
 
 func postLoginHandler(s *api.Server) echo.HandlerFunc {
@@ -114,6 +117,14 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 		}
 
 		log.Debug().Str("token", refreshToken.Token).Msg("Inserted refresh token")
+
+		user.LastAuthenticatedAt = null.TimeFrom(time.Now())
+		if _, err := user.Update(ctx, tx, boil.Infer()); err != nil {
+			log.Debug().Err(err).Msg("Failed to update user's last authenticated at timestamp")
+			return echo.ErrUnauthorized
+		}
+
+		log.Debug().Time("lastAuthenticatedAt", user.LastAuthenticatedAt.Time).Msg("Updated user's last authenticated at timestamp")
 
 		if err := tx.Commit(); err != nil {
 			log.Debug().Err(err).Msg("Failed to commit transaction")

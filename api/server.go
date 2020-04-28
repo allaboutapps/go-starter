@@ -12,8 +12,8 @@ import (
 
 type Router struct {
 	Root       *echo.Group
-	ApiV1Auth  *echo.Group
-	ApiV1Users *echo.Group
+	APIV1Auth  *echo.Group
+	APIV1Users *echo.Group
 }
 
 type Server struct {
@@ -50,7 +50,7 @@ func (s *Server) InitDB(ctx context.Context) error {
 }
 
 func (s *Server) Ready() bool {
-	return s.DB != nil && s.Echo != nil
+	return s.DB != nil && s.Echo != nil && s.Router != nil
 }
 
 func (s *Server) Start() error {

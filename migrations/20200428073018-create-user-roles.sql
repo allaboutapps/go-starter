@@ -14,5 +14,5 @@ ALTER TABLE user_roles
     ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE user_roles;
+DROP TABLE IF EXISTS user_roles;
 

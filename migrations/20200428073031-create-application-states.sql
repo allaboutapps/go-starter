@@ -1,12 +1,12 @@
 -- +migrate Up
-CREATE TABLE tags (
+CREATE TABLE application_states (
     id uuid NOT NULL DEFAULT uuid_generate_v4 (),
-    tag text NOT NULL,
+    state text NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
-    CONSTRAINT tags_pkey PRIMARY KEY (id)
+    CONSTRAINT application_states_pkey PRIMARY KEY (id)
 );
 
 -- +migrate Down
-DROP TABLE tags;
+DROP TABLE IF EXISTS application_states;
 

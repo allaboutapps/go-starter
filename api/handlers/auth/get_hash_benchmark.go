@@ -12,7 +12,7 @@ import (
 )
 
 func GetHashBenchmarkRoute(s *api.Server) *echo.Route {
-	return s.Router.ApiV1Auth.GET("/hash/benchmark", getHashBenchmarkHandler(s))
+	return s.Router.APIV1Auth.GET("/hash/benchmark", getHashBenchmarkHandler(s))
 }
 
 func getHashBenchmarkHandler(s *api.Server) echo.HandlerFunc {

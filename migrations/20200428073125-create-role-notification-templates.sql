@@ -14,5 +14,5 @@ ALTER TABLE role_notification_templates
     ADD CONSTRAINT role_notification_templates_notification_template_id_fkey FOREIGN KEY (notification_template_id) REFERENCES notification_templates (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE role_notification_templates;
+DROP TABLE IF EXISTS role_notification_templates;
 
