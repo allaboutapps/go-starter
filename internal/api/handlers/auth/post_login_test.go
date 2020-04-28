@@ -32,7 +32,7 @@ func TestSuccessAuth(t *testing.T) {
 
 		s.Echo.ServeHTTP(res, req)
 
-		assert.Equal(t, http.StatusAccepted, res.Result().StatusCode)
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 	})
 
 }
