@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -8,6 +9,7 @@ import (
 	"allaboutapps.at/aw/go-mranftl-sample/internal/api/handlers/auth"
 	"allaboutapps.at/aw/go-mranftl-sample/internal/test"
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSuccessAuth(t *testing.T) {
@@ -15,7 +17,6 @@ func TestSuccessAuth(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
-
 		// cyclic import mini-test
 		t.Log(auth.SAMPLE_EXPORTED_PGK_CONST)
 
@@ -31,10 +32,7 @@ func TestSuccessAuth(t *testing.T) {
 
 		s.Echo.ServeHTTP(res, req)
 
-		if res.Result().StatusCode != 200 {
-			t.Logf("Did receive unexpected status code: %v", res.Result().StatusCode)
-		}
-
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 	})
 
 }
