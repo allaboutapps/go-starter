@@ -38,7 +38,7 @@ func Init(s *api.Server) {
 		Root:      s.Echo.Group("/"),
 		APIV1Auth: s.Echo.Group("/api/v1/auth"),
 		APIV1Users: s.Echo.Group("/api/v1/users",
-			middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeSecure})),
+			middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeSecure, Scopes: []string{"cms"}})),
 	}
 
 	// ---

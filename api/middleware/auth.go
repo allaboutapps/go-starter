@@ -3,15 +3,22 @@ package middleware
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"time"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/models"
 	"allaboutapps.at/aw/go-mranftl-sample/pkg/auth"
 	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
+	"allaboutapps.at/aw/go-mranftl-sample/types"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+)
+
+var (
+	ErrUnauthorizedLastAuthenticatedAtExceeded = types.NewHTTPError(http.StatusUnauthorized, "LAST_AUTHENTICATED_AT_EXCEEDED", "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
+	ErrForbiddenMissingScopes                  = types.NewHTTPError(http.StatusForbidden, "MISSING_SCOPES", "User is missing required scopes")
 )
 
 // Controls the type of authentication check performed for a specific route or group
@@ -155,6 +162,39 @@ type AuthConfig struct {
 	TokenSourceKey string             // Sets key for auth token source lookup (default: "Authorization")
 	Scheme         string             // Sets required token scheme (default: "Bearer")
 	Skipper        middleware.Skipper // Controls skipping of certain routes (default: no skipped routes)
+	Scopes         []string           // List of scopes required to access endpoint (default: none required)
+}
+
+func (c AuthConfig) CheckLastAuthenticatedAt(user *models.User) bool {
+	if c.Mode != AuthModeSecure {
+		return true
+	}
+
+	if !user.LastAuthenticatedAt.Valid {
+		return false
+	}
+
+	return time.Since(user.LastAuthenticatedAt.Time).Seconds() <= float64(c.S.Config.Auth.LastAuthenticatedAtThreshold)
+}
+
+func (c AuthConfig) CheckScopes(user *models.User) bool {
+	if len(c.Scopes) == 0 {
+		return true
+	}
+
+	if len(user.Scopes) == 0 {
+		return false
+	}
+
+	for _, scope := range c.Scopes {
+		for _, userScope := range user.Scopes {
+			if scope == userScope {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func Auth(s *api.Server) echo.MiddlewareFunc {
@@ -182,99 +222,107 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			log := util.LogFromEchoContext(c)
+			log := util.LogFromEchoContext(c).With().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Logger()
 
 			if config.Mode == AuthModeNone {
-				log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Msg("No authentication required, allowing request")
+				log.Trace().Msg("No authentication required, allowing request")
 				return next(c)
 			}
 
 			if config.Skipper(c) {
-				log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Msg("Skipping auth middleware, allowing request")
+				log.Trace().Msg("Skipping auth middleware, allowing request")
 				return next(c)
 			}
 
 			user := auth.UserFromEchoContext(c)
 			if user != nil {
-				// TODO perform additional validation for AuthModeSecure
-				log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Msg("Authentication already performed, allowing request")
+				if !config.CheckLastAuthenticatedAt(user) {
+					log.Trace().
+						Time("last_authenticated_at", user.LastAuthenticatedAt.Time).
+						Int("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
+						Msg("Authentication already performed, but last authenticated at time exceeds threshold, rejecting request")
+					return ErrUnauthorizedLastAuthenticatedAtExceeded
+				}
+
+				if !config.CheckScopes(user) {
+					log.Trace().
+						Strs("scopes", config.Scopes).
+						Strs("user_scopes", user.Scopes).
+						Msg("Authentication already performed, but user does not have required scopes, rejecting request")
+					return ErrForbiddenMissingScopes
+				}
+
+				log.Trace().Msg("Authentication already performed, allowing request")
 				return next(c)
 			}
 
 			token, exists := config.TokenSource.Extract(c, config.TokenSourceKey, config.Scheme)
 			if len(token) == 0 {
 				if config.Mode == AuthModeRequired || config.Mode == AuthModeSecure || (exists && config.Mode == AuthModeOptional) {
-					log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Bool("token_exists", exists).Msg("Request has missing or malformed token, rejecting")
+					log.Trace().Bool("token_exists", exists).Msg("Request has missing or malformed token, rejecting")
 					return config.FailureMode.Error()
 				}
 
-				log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Bool("token_exists", exists).Msg("Request does not have valid token, but auth mode permits access, allowing request")
+				log.Trace().Bool("token_exists", exists).Msg("Request does not have valid token, but auth mode permits access, allowing request")
 				return next(c)
 			}
 
 			accessToken, err := models.AccessTokens(
 				qm.Load(models.AccessTokenRels.User),
-				qm.Where("token = ?", token),
+				models.AccessTokenWhere.Token.EQ(token),
 			).One(c.Request().Context(), config.S.DB)
 			if err != nil {
 				if err == sql.ErrNoRows {
 					if config.Mode == AuthModeTry {
-						log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Msg("Access token not found in database, but auth mode permits access, allowing request")
+						log.Trace().Msg("Access token not found in database, but auth mode permits access, allowing request")
 						return next(c)
 					}
 
-					log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Msg("Access token not found in database, rejecting request")
+					log.Trace().Msg("Access token not found in database, rejecting request")
 					return config.FailureMode.Error()
 				}
 
-				log.Trace().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Err(err).Msg("Failed to query for access token in database, aborting request")
+				log.Trace().Err(err).Msg("Failed to query for access token in database, aborting request")
 				return echo.ErrInternalServerError
 			}
 
-			// TODO scopes enum array on user model
+			user = accessToken.R.User
 
 			if time.Now().After(accessToken.ValidUntil) {
 				if config.Mode == AuthModeTry {
-					log.Trace().
-						Str("middleware", "auth").
-						Str("auth_mode", config.Mode.String()).
-						Time("valid_until", accessToken.ValidUntil).
-						Str("user_id", accessToken.R.User.ID).
-						Msg("Access token is expired, but auth mode permits access, allowing request")
+					log.Trace().Time("valid_until", accessToken.ValidUntil).Str("user_id", user.ID).Msg("Access token is expired, but auth mode permits access, allowing request")
 					return next(c)
 				}
 
-				log.Trace().
-					Str("middleware", "auth").
-					Str("auth_mode", config.Mode.String()).
-					Time("valid_until", accessToken.ValidUntil).
-					Str("user_id", accessToken.R.User.ID).
-					Msg("Access token is expired, rejecting request")
+				log.Trace().Time("valid_until", accessToken.ValidUntil).Str("user_id", user.ID).Msg("Access token is expired, rejecting request")
 				return echo.ErrUnauthorized
 			}
 
 			// ! User has been explicitly deactivated - we do not allow access here, even with AuthModeTry
-			if !accessToken.R.User.IsActive {
-				log.Trace().
-					Str("middleware", "auth").
-					Str("auth_mode", config.Mode.String()).
-					Time("valid_until", accessToken.ValidUntil).
-					Str("user_id", accessToken.R.User.ID).
-					Msg("User is deactivated, rejecting request")
+			if !user.IsActive {
+				log.Trace().Str("user_id", user.ID).Msg("User is deactivated, rejecting request")
 				return echo.ErrUnauthorized
 			}
 
-			// TODO perform additional validation for AuthModeSecure
-			// TODO ACL check
+			if !config.CheckLastAuthenticatedAt(user) {
+				log.Trace().
+					Time("last_authenticated_at", user.LastAuthenticatedAt.Time).
+					Int("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
+					Msg("Authentication already performed, but last authenticated at time exceeds threshold, rejecting request")
+				return ErrUnauthorizedLastAuthenticatedAtExceeded
+			}
 
-			auth.EnrichEchoContextWithCredentials(c, accessToken.R.User, accessToken)
+			if !config.CheckScopes(user) {
+				log.Trace().
+					Time("last_authenticated_at", user.LastAuthenticatedAt.Time).
+					Int("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
+					Msg("Authentication already performed, but last authenticated at time exceeds threshold, rejecting request")
+				return ErrForbiddenMissingScopes
+			}
 
-			log.Trace().
-				Str("middleware", "auth").
-				Str("auth_mode", config.Mode.String()).
-				Time("valid_until", accessToken.ValidUntil).
-				Str("user_id", accessToken.R.User.ID).
-				Msg("Access token is valid, allowing request")
+			auth.EnrichEchoContextWithCredentials(c, user, accessToken)
+
+			log.Trace().Str("user_id", user.ID).Msg("Access token is valid, allowing request")
 
 			return next(c)
 		}

@@ -9,6 +9,7 @@ CREATE TABLE users (
     facebook_info text,
     is_active bool NOT NULL DEFAULT TRUE,
     scopes text[] NOT NULL,
+    last_authenticated_at timestamptz,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
     CONSTRAINT users_facebook_id_key UNIQUE (facebook_id),

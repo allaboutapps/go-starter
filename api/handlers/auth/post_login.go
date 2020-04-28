@@ -12,6 +12,7 @@ import (
 	. "allaboutapps.at/aw/go-mranftl-sample/types"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -116,6 +117,14 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 		}
 
 		log.Debug().Str("token", refreshToken.Token).Msg("Inserted refresh token")
+
+		user.LastAuthenticatedAt = null.TimeFrom(time.Now())
+		if _, err := user.Update(ctx, tx, boil.Infer()); err != nil {
+			log.Debug().Err(err).Msg("Failed to update user's last authenticated at timestamp")
+			return echo.ErrUnauthorized
+		}
+
+		log.Debug().Time("lastAuthenticatedAt", user.LastAuthenticatedAt.Time).Msg("Updated user's last authenticated at timestamp")
 
 		if err := tx.Commit(); err != nil {
 			log.Debug().Err(err).Msg("Failed to commit transaction")

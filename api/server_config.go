@@ -47,9 +47,14 @@ type EchoServerConfig struct {
 	ListenAddress string
 }
 
+type AuthServerConfig struct {
+	LastAuthenticatedAtThreshold int
+}
+
 type ServerConfig struct {
 	Database DatabaseConfig
 	Echo     EchoServerConfig
+	Auth     AuthServerConfig
 }
 
 func DefaultServiceConfigFromEnv() ServerConfig {
@@ -67,6 +72,9 @@ func DefaultServiceConfigFromEnv() ServerConfig {
 		Echo: EchoServerConfig{
 			Debug:         util.GetEnvAsBool("SERVER_ECHO_DEBUG", false),
 			ListenAddress: util.GetEnv("SERVER_ECHO_LISTEN_ADDRESS", ":8080"),
+		},
+		Auth: AuthServerConfig{
+			LastAuthenticatedAtThreshold: util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900),
 		},
 	}
 }
