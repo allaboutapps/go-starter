@@ -121,10 +121,10 @@ func main() {
 		}
 	}
 
-	// print out
-	for _, function := range funcs {
-		fmt.Println(function.PackageName, function.FunctionName)
-	}
+	// debug print out
+	// for _, function := range funcs {
+	// 	fmt.Println(function.PackageName, function.FunctionName)
+	// }
 
 	f, err := os.Create(PATH_HANDLERS_FILE)
 

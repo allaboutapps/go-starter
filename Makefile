@@ -84,7 +84,7 @@ sql-generate-go-models: # ./migrations $(MIGRATION_FILES)
 	sqlboiler psql
 
 go-generate:
-	go generate ./...
+	go run scripts/handlers/gen_handlers.go
 
 sql-format:
 	@echo "make sql-format"
