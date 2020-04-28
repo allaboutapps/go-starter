@@ -9,6 +9,13 @@ build:
 	@$(MAKE) go-build
 	@$(MAKE) go-lint
 
+# useful to ensure that everything gets resetuped from scratch
+all:
+	@$(MAKE) clean
+	@$(MAKE) init
+	@$(MAKE) build
+	@$(MAKE) test
+
 # these recipies may execute in parallel
 build-pre: sql-generate-go-models swagger go-generate 
 
