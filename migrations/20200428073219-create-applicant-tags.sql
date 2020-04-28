@@ -14,5 +14,5 @@ ALTER TABLE applicant_tags
     ADD CONSTRAINT applicant_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES tags (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE applicant_tags;
+DROP TABLE IF EXISTS applicant_tags;
 

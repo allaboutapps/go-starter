@@ -7,8 +7,8 @@ import (
 
 	. "allaboutapps.at/aw/go-mranftl-sample/models"
 	_ "github.com/lib/pq"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestFixturesReload(t *testing.T) {
@@ -38,6 +38,7 @@ func TestInsert(t *testing.T) {
 			IsActive: true,
 			Username: null.StringFrom("userNew@example.com"),
 			Password: null.StringFrom("$argon2id$v=19$m=65536,t=1,p=4$RFO8ulg2c2zloG0029pAUQ$2Po6NUIhVCMm9vivVDuzo7k5KVWfZzJJfeXzC+n+row"),
+			Scopes:   []string{"app"},
 		}
 
 		err := userNew.Insert(context.Background(), db, boil.Infer())

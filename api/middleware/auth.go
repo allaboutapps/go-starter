@@ -11,7 +11,7 @@ import (
 	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Controls the type of authentication check performed for a specific route or group

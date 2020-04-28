@@ -8,5 +8,5 @@ CREATE TABLE roles (
 );
 
 -- +migrate Down
-DROP TABLE roles;
+DROP TABLE IF EXISTS roles;
 

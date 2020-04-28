@@ -14,5 +14,5 @@ ALTER TABLE password_reset_tokens
     ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE password_reset_tokens;
+DROP TABLE IF EXISTS password_reset_tokens;
 

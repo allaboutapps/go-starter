@@ -12,8 +12,8 @@ import (
 	. "allaboutapps.at/aw/go-mranftl-sample/types"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 var (

@@ -29,5 +29,5 @@ ALTER TABLE applicants
     ADD CONSTRAINT applicants_application_state_id_fkey FOREIGN KEY (application_state_id) REFERENCES application_states (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE applicants;
+DROP TABLE IF EXISTS applicants;
 

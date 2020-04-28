@@ -14,5 +14,5 @@ ALTER TABLE access_tokens
     ADD CONSTRAINT access_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE access_tokens;
+DROP TABLE IF EXISTS access_tokens;
 

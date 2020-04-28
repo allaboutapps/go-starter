@@ -2,12 +2,13 @@
 CREATE TABLE users (
     id uuid NOT NULL DEFAULT uuid_generate_v4 (),
     username varchar(255),
-    password text,
+    "password" text,
     google_id varchar(255) DEFAULT NULL::character varying,
     google_info text,
     facebook_id varchar(255) DEFAULT NULL::character varying,
     facebook_info text,
     is_active bool NOT NULL DEFAULT TRUE,
+    scopes text[] NOT NULL,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
     CONSTRAINT users_facebook_id_key UNIQUE (facebook_id),
@@ -17,5 +18,5 @@ CREATE TABLE users (
 );
 
 -- +migrate Down
-DROP TABLE users;
+DROP TABLE IF EXISTS users;
 

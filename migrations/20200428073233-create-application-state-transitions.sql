@@ -18,5 +18,5 @@ ALTER TABLE application_state_transitions
     ADD CONSTRAINT application_state_transitions_to_application_state_id_fkey FOREIGN KEY (to_application_state_id) REFERENCES application_states (id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 -- +migrate Down
-DROP TABLE application_state_transitions;
+DROP TABLE IF EXISTS application_state_transitions;
 

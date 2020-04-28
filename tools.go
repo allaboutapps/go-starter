@@ -12,6 +12,6 @@ package tools
 
 import (
 	_ "github.com/rubenv/sql-migrate/sql-migrate"
-	_ "github.com/volatiletech/sqlboiler"
-	_ "github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql"
+	_ "github.com/volatiletech/sqlboiler/v4"
+	_ "github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql"
 )

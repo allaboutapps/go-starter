@@ -5,8 +5,8 @@ import (
 	"time"
 
 	. "allaboutapps.at/aw/go-mranftl-sample/models"
-	"github.com/volatiletech/null"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // A common interface for all model instances so they may be inserted via the Inserts() func
@@ -30,6 +30,7 @@ func Fixtures() FixtureMap {
 		IsActive: true,
 		Username: null.StringFrom("user1@example.com"),
 		Password: null.StringFrom("$argon2id$v=19$m=65536,t=1,p=4$RFO8ulg2c2zloG0029pAUQ$2Po6NUIhVCMm9vivVDuzo7k5KVWfZzJJfeXzC+n+row"),
+		Scopes:   []string{"app"},
 	}
 
 	user1AccessToken1 := AccessToken{
@@ -43,6 +44,7 @@ func Fixtures() FixtureMap {
 		IsActive: user1.IsActive,
 		Username: null.StringFrom("user2@example.com"),
 		Password: null.StringFrom("$argon2id$v=19$m=65536,t=1,p=4$RFO8ulg2c2zloG0029pAUQ$2Po6NUIhVCMm9vivVDuzo7k5KVWfZzJJfeXzC+n+row"),
+		Scopes:   []string{"app"},
 	}
 
 	return FixtureMap{
