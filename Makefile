@@ -163,7 +163,6 @@ swagger-serve:
 
 clean:
 	rm -rf tmp
-	rm -rf bin
 
 ### -----------------------
 # --- Special targets
