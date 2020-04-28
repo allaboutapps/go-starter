@@ -25,8 +25,8 @@ var (
 	// tracks template testDatabase initialization
 	doOnce sync.Once
 
-	migDir  = filepath.Join(pUtil.ProjectRootDir, "/migrations")
-	fixFile = filepath.Join(pUtil.ProjectRootDir, "/test/fixtures.go")
+	migDir  = filepath.Join(pUtil.GetProjectRootDir(), "/migrations")
+	fixFile = filepath.Join(pUtil.GetProjectRootDir(), "/test/fixtures.go")
 )
 
 // Use this utility func to test with an isolated test database

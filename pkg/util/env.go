@@ -2,11 +2,16 @@ package util
 
 import (
 	"os"
+	"path/filepath"
 	"strconv"
+	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
-	ProjectRootDir = GetEnv("PROJECT_ROOT_DIR", "/app")
+	projectRootDir string
+	dirOnce        sync.Once
 )
 
 func GetEnv(key string, defaultVal string) string {
@@ -55,4 +60,17 @@ func GetEnvAsBool(key string, defaultVal bool) bool {
 	}
 
 	return defaultVal
+}
+
+func GetProjectRootDir() string {
+	dirOnce.Do(func() {
+		ex, err := os.Executable()
+		if err != nil {
+			log.Panic().Err(err).Msg("Failed to get executable path while retrieving project root directory")
+		}
+
+		projectRootDir = GetEnv("PROJECT_ROOT_DIR", filepath.Dir(ex))
+	})
+
+	return projectRootDir
 }

@@ -21,7 +21,7 @@ import (
 // https://blog.carlmjohnson.net/post/2016-11-27-how-to-use-go-generate/
 
 var (
-	PROJECT_ROOT       = util.ProjectRootDir
+	PROJECT_ROOT       = util.GetProjectRootDir()
 	PATH_MOD_FILE      = PROJECT_ROOT + "/go.mod"
 	HANDLERS_PACKAGE   = "/api/handlers"
 	PATH_HANDLERS_FILE = PROJECT_ROOT + HANDLERS_PACKAGE + "/handlers.go"
