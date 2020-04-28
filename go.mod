@@ -31,6 +31,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
+	github.com/rogpeppe/go-internal v1.4.0
 	github.com/rs/zerolog v1.18.0
 	github.com/rubenv/sql-migrate v0.0.0-20200423171638-eef9d3b68125
 	github.com/spf13/afero v1.2.2 // indirect

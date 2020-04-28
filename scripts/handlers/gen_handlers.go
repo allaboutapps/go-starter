@@ -62,7 +62,7 @@ type ResolvedFunction struct {
 // that match Get*, Put*, Post*, Patch*, Delete*
 func main() {
 
-	baseModuleName, err := getModuleName(PATH_MOD_FILE)
+	baseModuleName, err := scriptsutil.getModuleName(PATH_MOD_FILE)
 
 	if err != nil {
 		log.Fatal(err)
@@ -100,6 +100,7 @@ func main() {
 		for _, pack := range packs {
 			for _, f := range pack.Files {
 				for _, d := range f.Decls {
+
 					if fn, isFn := d.(*ast.FuncDecl); isFn {
 
 						fnName := fn.Name.String()
@@ -141,19 +142,4 @@ func main() {
 		Funcs:   funcs,
 	})
 
-}
-
-// https://stackoverflow.com/questions/53183356/api-to-get-the-module-name
-// https://github.com/rogpeppe/go-internal
-func getModuleName(absolutePathToGoMod string) (string, error) {
-	dat, err := ioutil.ReadFile(absolutePathToGoMod)
-
-	if err != nil {
-		log.Fatal(err)
-		return "", err
-	}
-
-	mod := ModulePath(dat)
-
-	return mod, nil
 }

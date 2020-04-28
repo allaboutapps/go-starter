@@ -127,9 +127,11 @@ swagger-models:
 		--template-dir=types/swagger \
 		--spec=types/swagger/swagger.json \
 		--existing-models=allaboutapps.at/aw/go-mranftl-sample/types \
-		--model-package=types \
+		--model-package=tmp/swaggermodels \
 		--all-definitions \
 		-q
+	go run scripts/gocat/gocat.go -p types tmp/swaggermodels/* > types/validations.go
+	@rm -rf tmp/swaggermodels
 
 swagger-validate:
 	@echo "make swagger-validate"
