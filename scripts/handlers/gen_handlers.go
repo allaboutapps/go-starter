@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -120,6 +121,12 @@ func main() {
 			}
 		}
 	}
+
+	// stable sort the functions
+	// first PackageName then FunctionName
+	sort.Slice(funcs[:], func(i, j int) bool {
+		return funcs[i].PackageName+funcs[i].FunctionName < funcs[j].PackageName+funcs[j].FunctionName
+	})
 
 	// debug print out
 	// for _, function := range funcs {

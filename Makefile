@@ -2,11 +2,13 @@
 # --- Building
 ### -----------------------
 
-# sets Makefile var and caches the projects module name (as in go.mod)
-PROJECT_MODULE_NAME := $(shell \
+# projects module name (as in go.mod)
+# only evaluated if required by a recipe
+# http://make.mad-scientist.net/deferred-simple-variable-expansion/
+PROJECT_MODULE_NAME = $(eval PROJECT_MODULE_NAME := $$(shell \
 	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
 	|| (go run scripts/modulename/modulename.go | tee tmp/.modulename) \
-)
+))$(PROJECT_MODULE_NAME)
 
 # first is default task when running "make" without args
 build:
