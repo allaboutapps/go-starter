@@ -1,3 +1,7 @@
+wipe = true
+no-hooks = true
+output = "internal/models"
+
 [psql]
     # Connection params are injected via env vars (PSQL_*)
     # As those are supplied via the env, you cannot overwrite the here!

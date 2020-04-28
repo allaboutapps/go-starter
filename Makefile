@@ -81,7 +81,7 @@ sql-generate-go-models: # ./migrations $(MIGRATION_FILES)
 	@$(MAKE) sql-lint
 	@$(MAKE) sql-spec-reset
 	@$(MAKE) sql-spec-migrate
-	sqlboiler --wipe --no-hooks psql
+	sqlboiler psql
 
 go-generate:
 	go generate ./...
@@ -121,27 +121,28 @@ sql-spec-migrate:
 swagger-gen-spec: 
 	@echo "make swagger-gen-spec"
 	@swagger generate spec \
-		-i types/swagger/swagger.yml \
-		-o types/swagger/swagger.json \
+		-i api/swagger.yml \
+		-o api/swagger.json \
 		--scan-models \
 		-q
 
 swagger-models:
 	@echo "make swagger-models"
+	@rm -rf tmp/types 2> /dev/null
 	@swagger generate model \
 		--allow-template-override \
-		--template-dir=types/swagger \
-		--spec=types/swagger/swagger.json \
-		--existing-models=${PROJECT_MODULE_NAME}/types \
-		--model-package=tmp/swaggermodels \
+		--template-dir=internal/types/swagger \
+		--spec=api/swagger.json \
+		--existing-models=${PROJECT_MODULE_NAME}/internal/types \
+		--model-package=tmp/types \
 		--all-definitions \
 		-q
-	go run scripts/gocat/gocat.go -p types tmp/swaggermodels/* > types/validations.go
-	@rm -rf tmp/swaggermodels
+	go run scripts/gocat/gocat.go -p types tmp/types/* > internal/types/validations.go
+	@rm -rf tmp/types
 
 swagger-validate:
 	@echo "make swagger-validate"
-	@swagger validate types/swagger/swagger.json \
+	@swagger validate api/swagger.json \
 		--stop-on-error \
 		-q
 
@@ -154,7 +155,7 @@ swagger:
 # accessable from outside via:
 # mac: http://docker.for.mac.localhost:8080/docs
 swagger-serve:
-	swagger serve --no-open -p 8080 types/swagger/swagger.json
+	swagger serve --no-open -p 8080 api/swagger.json
 
 ### -----------------------
 # --- Helpers

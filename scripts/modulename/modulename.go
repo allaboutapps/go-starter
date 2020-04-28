@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
+	"allaboutapps.at/aw/go-mranftl-sample/internal/util"
 	"allaboutapps.at/aw/go-mranftl-sample/scripts/scriptsutil"
 )
 

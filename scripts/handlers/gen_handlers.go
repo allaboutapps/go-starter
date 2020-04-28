@@ -14,7 +14,7 @@ import (
 	"strings"
 	"text/template"
 
-	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
+	"allaboutapps.at/aw/go-mranftl-sample/internal/util"
 	. "github.com/rogpeppe/go-internal/modfile"
 )
 
@@ -38,7 +38,7 @@ var (
 package handlers
 
 import (
-	"allaboutapps.at/aw/go-mranftl-sample/api"
+	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
 	{{- range .SubPkgs }}
 	"{{ $.BasePkg }}{{ . }}"
 	{{- end }}
