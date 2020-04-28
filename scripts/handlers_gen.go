@@ -14,18 +14,19 @@ import (
 	"strings"
 	"text/template"
 
+	"allaboutapps.at/aw/go-mranftl-sample/pkg/util"
 	. "github.com/rogpeppe/go-internal/modfile"
 )
 
 // https://blog.carlmjohnson.net/post/2016-11-27-how-to-use-go-generate/
 
 var (
-	// TODO: env: how to get to the project root?
-	PROJECT_ROOT       = "/app"
+	PROJECT_ROOT       = util.ProjectRootDir
 	PATH_MOD_FILE      = PROJECT_ROOT + "/go.mod"
 	HANDLERS_PACKAGE   = "/api/handlers"
 	PATH_HANDLERS_FILE = PROJECT_ROOT + HANDLERS_PACKAGE + "/handlers.go"
 
+	// <METHOD_PREFIXES>*<METHOD_SUFFIX> must look like this
 	// TODO: also check fn signature
 	METHOD_PREFIXES = []string{
 		"Get", "Head", "Patch", "Post", "Put", "Delete",
