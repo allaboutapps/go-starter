@@ -5,11 +5,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"path/filepath"
 	"sync"
 	"testing"
 
 	"allaboutapps.at/aw/go-mranftl-sample/api"
 	"allaboutapps.at/aw/go-mranftl-sample/api/router"
+	pUtil "allaboutapps.at/aw/go-mranftl-sample/pkg/util"
 	"github.com/allaboutapps/integresql-client-go"
 	"github.com/allaboutapps/integresql-client-go/pkg/util"
 	migrate "github.com/rubenv/sql-migrate"
@@ -23,11 +25,8 @@ var (
 	// tracks template testDatabase initialization
 	doOnce sync.Once
 
-	// ! TODO golang does not support relative paths in files properly
-	// It's only possible to supply this by
-	// Use ENV var to specify app-root
-	migDir  = "/app/migrations"
-	fixFile = "/app/test/fixtures.go"
+	migDir  = filepath.Join(pUtil.ProjectRootDir, "/migrations")
+	fixFile = filepath.Join(pUtil.ProjectRootDir, "/test/fixtures.go")
 )
 
 // Use this utility func to test with an isolated test database
