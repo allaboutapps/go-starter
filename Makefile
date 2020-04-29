@@ -116,6 +116,9 @@ sql-spec-migrate:
 	@echo "make sql-spec-migrate"
 	@sql-migrate up -env spec
 
+sql-spec-lint:
+	@cat scripts/sqllint/default-zero-values.sql | psql -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+
 ### -----------------------
 # --- Swagger
 ### -----------------------
