@@ -4,35 +4,15 @@
 package models
 
 var TableNames = struct {
-	AccessTokens                string
-	AppUserProfiles             string
-	ApplicantTags               string
-	Applicants                  string
-	ApplicationStateTransitions string
-	ApplicationStates           string
-	NotificationTemplates       string
-	PasswordResetTokens         string
-	RefreshTokens               string
-	RoleApplicationStates       string
-	RoleNotificationTemplates   string
-	Roles                       string
-	Tags                        string
-	UserRoles                   string
-	Users                       string
+	AccessTokens        string
+	AppUserProfiles     string
+	PasswordResetTokens string
+	RefreshTokens       string
+	Users               string
 }{
-	AccessTokens:                "access_tokens",
-	AppUserProfiles:             "app_user_profiles",
-	ApplicantTags:               "applicant_tags",
-	Applicants:                  "applicants",
-	ApplicationStateTransitions: "application_state_transitions",
-	ApplicationStates:           "application_states",
-	NotificationTemplates:       "notification_templates",
-	PasswordResetTokens:         "password_reset_tokens",
-	RefreshTokens:               "refresh_tokens",
-	RoleApplicationStates:       "role_application_states",
-	RoleNotificationTemplates:   "role_notification_templates",
-	Roles:                       "roles",
-	Tags:                        "tags",
-	UserRoles:                   "user_roles",
-	Users:                       "users",
+	AccessTokens:        "access_tokens",
+	AppUserProfiles:     "app_user_profiles",
+	PasswordResetTokens: "password_reset_tokens",
+	RefreshTokens:       "refresh_tokens",
+	Users:               "users",
 }

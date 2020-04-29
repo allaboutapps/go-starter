@@ -17,10 +17,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-var (
-	SAMPLE_EXPORTED_PGK_CONST = "test"
-)
-
 // swagger:route POST /api/v1/auth/login PostLoginRoute
 //
 // Login with local user

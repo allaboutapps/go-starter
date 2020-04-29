@@ -10,7 +10,6 @@ import (
 
 func AttachAllRoutes(s *api.Server) {
 	// attach our routes
-	auth.GetHashBenchmarkRoute(s)
 	auth.PostLoginRoute(s)
 	users.GetUsersRoute(s)
 }

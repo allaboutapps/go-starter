@@ -10,29 +10,9 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("AppUserProfiles", testAppUserProfilesUpsert)
 
-	t.Run("ApplicantTags", testApplicantTagsUpsert)
-
-	t.Run("Applicants", testApplicantsUpsert)
-
-	t.Run("ApplicationStateTransitions", testApplicationStateTransitionsUpsert)
-
-	t.Run("ApplicationStates", testApplicationStatesUpsert)
-
-	t.Run("NotificationTemplates", testNotificationTemplatesUpsert)
-
 	t.Run("PasswordResetTokens", testPasswordResetTokensUpsert)
 
 	t.Run("RefreshTokens", testRefreshTokensUpsert)
-
-	t.Run("RoleApplicationStates", testRoleApplicationStatesUpsert)
-
-	t.Run("RoleNotificationTemplates", testRoleNotificationTemplatesUpsert)
-
-	t.Run("Roles", testRolesUpsert)
-
-	t.Run("Tags", testTagsUpsert)
-
-	t.Run("UserRoles", testUserRolesUpsert)
 
 	t.Run("Users", testUsersUpsert)
 }

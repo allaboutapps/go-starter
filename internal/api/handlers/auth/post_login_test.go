@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api/handlers/auth"
 	"allaboutapps.at/aw/go-mranftl-sample/internal/test"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -17,9 +16,6 @@ func TestSuccessAuth(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
-		// cyclic import mini-test
-		t.Log(auth.SAMPLE_EXPORTED_PGK_CONST)
-
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
 			"username": fixtures.User1.Username,
