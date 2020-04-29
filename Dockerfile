@@ -128,3 +128,31 @@ RUN make modules
 COPY tools.go /app/tools.go
 RUN make tools
 COPY . /app/
+
+### -----------------------
+# --- Stage: builder-apiserver
+### -----------------------
+
+FROM builder as builder-apiserver
+RUN make go-build
+
+### -----------------------
+# --- Stage: apiserver
+### -----------------------
+
+FROM debian:stretch-slim as apiserver
+
+RUN apt-get update \
+    && apt-get install -y \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder-apiserver /app/bin/apiserver /app/bin/sql-migrate /app/
+COPY --from=builder-apiserver /app/api/swagger.json /app/api/
+COPY --from=builder-apiserver /app/assets /app/assets/
+COPY --from=builder-apiserver /app/migrations /app/migrations/
+
+WORKDIR /app
+
+CMD [ "/app/apiserver" ]
