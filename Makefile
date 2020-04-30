@@ -25,7 +25,7 @@ all:
 	@$(MAKE) test
 
 # these recipies may execute in parallel
-build-pre: sql-generate-go-models swagger go-generate 
+build-pre: sql-generate swagger go-generate 
 
 go-format:
 	go fmt
@@ -35,6 +35,9 @@ go-build:
 
 go-lint:
 	golangci-lint run --fast
+
+go-generate:
+	go run scripts/handlers/gen_handlers.go
 
 # https://github.com/golang/go/issues/24573
 # w/o cache - see "go help testflag"
@@ -78,15 +81,13 @@ sql-reset:
 
 # This step is only required to be executed when the "migrations" folder has changed!
 # MIGRATION_FILES = $(find ./migrations/ -type f -iname '*.sql')
-sql-generate-go-models: # ./migrations $(MIGRATION_FILES)
+sql-generate: # ./migrations $(MIGRATION_FILES)
 	@$(MAKE) sql-format
 	@$(MAKE) sql-lint
 	@$(MAKE) sql-spec-reset
 	@$(MAKE) sql-spec-migrate
+	@$(MAKE) sql-spec-lint
 	sqlboiler psql
-
-go-generate:
-	go run scripts/handlers/gen_handlers.go
 
 sql-format:
 	@echo "make sql-format"
@@ -116,8 +117,17 @@ sql-spec-migrate:
 	@echo "make sql-spec-migrate"
 	@sql-migrate up -env spec
 
-sql-spec-lint:
-	@cat scripts/sqllint/default-zero-values.sql | psql -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+sql-spec-lint: 
+	@$(MAKE) sql-spec-lint-fk-missing-index
+	@$(MAKE) sql-spec-lint-default-zero-values
+
+sql-spec-lint-fk-missing-index:
+	@echo "make sql-spec-lint-fk-missing-index"
+	@cat scripts/sqllint/fk_missing_index.sql | psql -qtz0 --no-align -d  "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+
+sql-spec-lint-default-zero-values:
+	@echo "make sql-spec-lint-default-zero-values"
+	@cat scripts/sqllint/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
 
 ### -----------------------
 # --- Swagger

@@ -7,7 +7,7 @@ CREATE TABLE users (
     google_info text,
     facebook_id varchar(255) DEFAULT NULL::character varying,
     facebook_info text,
-    is_active bool NOT NULL DEFAULT TRUE,
+    is_active bool NOT NULL DEFAULT FALSE,
     scopes text[] NOT NULL,
     last_authenticated_at timestamptz,
     created_at timestamptz NOT NULL,
