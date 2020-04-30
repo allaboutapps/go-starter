@@ -22,7 +22,16 @@ all:
 	@$(MAKE) clean
 	@$(MAKE) init
 	@$(MAKE) build
+	@$(MAKE) info
 	@$(MAKE) test
+
+info:
+	@echo "database:"
+	@cat scripts/sql/info.sql | psql -q -d "${PSQL_DBNAME}"
+	@echo "handlers:"
+	@go run scripts/handlers/gen_handlers.go --print-only
+	@echo "project module name: ${PROJECT_MODULE_NAME}"
+	@go version
 
 # these recipies may execute in parallel
 build-pre: sql-generate swagger go-generate 

@@ -2,9 +2,14 @@
 
 // This program generates handlers.go. It can be invoked by running go generate ./...
 // or via go run scripts/handlers/gen_handlers.go
+
+// Supported args:
+// --print-only
+
 package main
 
 import (
+	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -64,6 +69,9 @@ type ResolvedFunction struct {
 // get all functions in above handler packages
 // that match Get*, Put*, Post*, Patch*, Delete*
 func main() {
+
+	printOnly := flag.Bool("print-only", false, "If specified, will only print our handlers without doing anything.")
+	flag.Parse()
 
 	baseModuleName, err := scriptsutil.GetModuleName(PATH_MOD_FILE)
 
@@ -128,10 +136,14 @@ func main() {
 		return funcs[i].PackageName+funcs[i].FunctionName < funcs[j].PackageName+funcs[j].FunctionName
 	})
 
-	// debug print out
-	// for _, function := range funcs {
-	// 	fmt.Println(function.PackageName, function.FunctionName)
-	// }
+	if *printOnly == true {
+		for _, function := range funcs {
+			fmt.Println(function.PackageName, function.FunctionName)
+		}
+
+		// bailout
+		return
+	}
 
 	f, err := os.Create(PATH_HANDLERS_FILE)
 
