@@ -83,10 +83,10 @@ sql-reset:
 # MIGRATION_FILES = $(find ./migrations/ -type f -iname '*.sql')
 sql-generate: # ./migrations $(MIGRATION_FILES)
 	@$(MAKE) sql-format
-	@$(MAKE) sql-lint
+	@$(MAKE) sql-check-files
 	@$(MAKE) sql-spec-reset
 	@$(MAKE) sql-spec-migrate
-	@$(MAKE) sql-spec-lint
+	@$(MAKE) sql-check-structure
 	sqlboiler psql
 
 sql-format:
@@ -94,12 +94,12 @@ sql-format:
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| xargs -i pg_format {} -o {}
 
-sql-lint: sql-live-lint sql-check-migrations
+sql-check-files: sql-check-syntax sql-check-migrations
 
 # check syntax via the real database
 # https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
-sql-live-lint:
-	@echo "make sql-live-lint"
+sql-check-syntax:
+	@echo "make sql-check-syntax"
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
 		| psql -d postgres --quiet -v ON_ERROR_STOP=1
@@ -117,17 +117,17 @@ sql-spec-migrate:
 	@echo "make sql-spec-migrate"
 	@sql-migrate up -env spec
 
-sql-spec-lint: 
-	@$(MAKE) sql-spec-lint-fk-missing-index
-	@$(MAKE) sql-spec-lint-default-zero-values
+sql-check-structure: 
+	@$(MAKE) sql-check-structure-fk-missing-index
+	@$(MAKE) sql-check-structure-default-zero-values
 
-sql-spec-lint-fk-missing-index:
-	@echo "make sql-spec-lint-fk-missing-index"
-	@cat scripts/sqllint/fk_missing_index.sql | psql -qtz0 --no-align -d  "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+sql-check-structure-fk-missing-index:
+	@echo "make sql-check-structure-fk-missing-index"
+	@cat scripts/sql/fk_missing_index.sql | psql -qtz0 --no-align -d  "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
 
-sql-spec-lint-default-zero-values:
-	@echo "make sql-spec-lint-default-zero-values"
-	@cat scripts/sqllint/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+sql-check-structure-default-zero-values:
+	@echo "make sql-check-structure-default-zero-values"
+	@cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
 
 ### -----------------------
 # --- Swagger

@@ -1,4 +1,6 @@
--- https://stackoverflow.com/questions/8146448/get-the-default-values-of-table-columns-in-postgres
+-- Errors if DEFAULT values for certain column data_types
+-- is NOT set to the golang zero value
+--
 -- https://github.com/volatiletech/sqlboiler/issues/409
 -- https://github.com/volatiletech/sqlboiler/issues/237
 -- https://golang.org/ref/spec#The_zero_value
@@ -25,6 +27,8 @@
 -- false for booleans
 -- "" for strings
 -- nil for pointers
+--
+-- https://stackoverflow.com/questions/8146448/get-the-default-values-of-table-columns-in-postgres
 
 CREATE OR REPLACE FUNCTION check_default_go_sql_zero_values ()
     RETURNS SETOF information_schema.columns

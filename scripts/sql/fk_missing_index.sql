@@ -1,3 +1,4 @@
+-- Errors if FKs do not have an index
 CREATE OR REPLACE FUNCTION fk_missing_index ()
     RETURNS void
     AS $$
@@ -39,10 +40,11 @@ WHERE
         c.confrelid
     ORDER BY
         pg_catalog.pg_relation_size(c.conrelid) DESC LOOP
-            RAISE WARNING 'Missing foreign key index: %', to_json(item);
+            RAISE WARNING 'CREATE INDEX "idx_%_fk_%" ON "%" ("%");', item.table, item.columns, item.table, item.columns
+            USING HINT = to_json(item);
         END LOOP;
     IF FOUND THEN
-        RAISE EXCEPTION 'We require all foreign keys to have an index defined.';
+        RAISE EXCEPTION ' We require ALL FOREIGN keys TO have an INDEX defined. ';
     END IF;
 END;
 $$
