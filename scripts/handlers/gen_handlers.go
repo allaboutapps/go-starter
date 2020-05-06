@@ -81,7 +81,7 @@ func main() {
 
 	handlersBasePackage := baseModuleName + HANDLERS_PACKAGE + "/"
 
-	subPkgs := []string{}
+	subDirs := []string{}
 
 	files, err := ioutil.ReadDir(PROJECT_ROOT + HANDLERS_PACKAGE + "/")
 	if err != nil {
@@ -92,13 +92,13 @@ func main() {
 		// fmt.Println(f.Name())
 
 		if f.IsDir() {
-			subPkgs = append(subPkgs, f.Name())
+			subDirs = append(subDirs, f.Name())
 		}
 	}
 
 	funcs := []ResolvedFunction{}
 
-	for _, subPackageName := range subPkgs {
+	for _, subPackageName := range subDirs {
 
 		set := token.NewFileSet()
 		packs, err := parser.ParseDir(set, PROJECT_ROOT+HANDLERS_PACKAGE+"/"+subPackageName, nil, 0)
@@ -135,6 +135,23 @@ func main() {
 	sort.Slice(funcs[:], func(i, j int) bool {
 		return funcs[i].PackageName+funcs[i].FunctionName < funcs[j].PackageName+funcs[j].FunctionName
 	})
+
+	// only add subPkg if there was actually a route within it found
+	subPkgs := []string{}
+	for _, fun := range funcs {
+
+		mustAppend := true
+
+		for _, a := range subPkgs {
+			if a == fun.PackageName {
+				mustAppend = false
+			}
+		}
+
+		if mustAppend == true {
+			subPkgs = append(subPkgs, fun.PackageName)
+		}
+	}
 
 	if *printOnly == true {
 		for _, function := range funcs {
