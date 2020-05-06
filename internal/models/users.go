@@ -28,10 +28,6 @@ type User struct {
 	ID                  string            `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Username            null.String       `boil:"username" json:"username,omitempty" toml:"username" yaml:"username,omitempty"`
 	Password            null.String       `boil:"password" json:"password,omitempty" toml:"password" yaml:"password,omitempty"`
-	GoogleID            null.String       `boil:"google_id" json:"google_id,omitempty" toml:"google_id" yaml:"google_id,omitempty"`
-	GoogleInfo          null.String       `boil:"google_info" json:"google_info,omitempty" toml:"google_info" yaml:"google_info,omitempty"`
-	FacebookID          null.String       `boil:"facebook_id" json:"facebook_id,omitempty" toml:"facebook_id" yaml:"facebook_id,omitempty"`
-	FacebookInfo        null.String       `boil:"facebook_info" json:"facebook_info,omitempty" toml:"facebook_info" yaml:"facebook_info,omitempty"`
 	IsActive            bool              `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
 	Scopes              types.StringArray `boil:"scopes" json:"scopes" toml:"scopes" yaml:"scopes"`
 	LastAuthenticatedAt null.Time         `boil:"last_authenticated_at" json:"last_authenticated_at,omitempty" toml:"last_authenticated_at" yaml:"last_authenticated_at,omitempty"`
@@ -46,10 +42,6 @@ var UserColumns = struct {
 	ID                  string
 	Username            string
 	Password            string
-	GoogleID            string
-	GoogleInfo          string
-	FacebookID          string
-	FacebookInfo        string
 	IsActive            string
 	Scopes              string
 	LastAuthenticatedAt string
@@ -59,10 +51,6 @@ var UserColumns = struct {
 	ID:                  "id",
 	Username:            "username",
 	Password:            "password",
-	GoogleID:            "google_id",
-	GoogleInfo:          "google_info",
-	FacebookID:          "facebook_id",
-	FacebookInfo:        "facebook_info",
 	IsActive:            "is_active",
 	Scopes:              "scopes",
 	LastAuthenticatedAt: "last_authenticated_at",
@@ -120,10 +108,6 @@ var UserWhere = struct {
 	ID                  whereHelperstring
 	Username            whereHelpernull_String
 	Password            whereHelpernull_String
-	GoogleID            whereHelpernull_String
-	GoogleInfo          whereHelpernull_String
-	FacebookID          whereHelpernull_String
-	FacebookInfo        whereHelpernull_String
 	IsActive            whereHelperbool
 	Scopes              whereHelpertypes_StringArray
 	LastAuthenticatedAt whereHelpernull_Time
@@ -133,10 +117,6 @@ var UserWhere = struct {
 	ID:                  whereHelperstring{field: "\"users\".\"id\""},
 	Username:            whereHelpernull_String{field: "\"users\".\"username\""},
 	Password:            whereHelpernull_String{field: "\"users\".\"password\""},
-	GoogleID:            whereHelpernull_String{field: "\"users\".\"google_id\""},
-	GoogleInfo:          whereHelpernull_String{field: "\"users\".\"google_info\""},
-	FacebookID:          whereHelpernull_String{field: "\"users\".\"facebook_id\""},
-	FacebookInfo:        whereHelpernull_String{field: "\"users\".\"facebook_info\""},
 	IsActive:            whereHelperbool{field: "\"users\".\"is_active\""},
 	Scopes:              whereHelpertypes_StringArray{field: "\"users\".\"scopes\""},
 	LastAuthenticatedAt: whereHelpernull_Time{field: "\"users\".\"last_authenticated_at\""},
@@ -174,9 +154,9 @@ func (*userR) NewStruct() *userR {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "username", "password", "google_id", "google_info", "facebook_id", "facebook_info", "is_active", "scopes", "last_authenticated_at", "created_at", "updated_at"}
-	userColumnsWithoutDefault = []string{"username", "password", "google_info", "facebook_info", "scopes", "last_authenticated_at", "created_at", "updated_at"}
-	userColumnsWithDefault    = []string{"id", "google_id", "facebook_id", "is_active"}
+	userAllColumns            = []string{"id", "username", "password", "is_active", "scopes", "last_authenticated_at", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"username", "password", "scopes", "last_authenticated_at", "created_at", "updated_at"}
+	userColumnsWithDefault    = []string{"id", "is_active"}
 	userPrimaryKeyColumns     = []string{"id"}
 )
 
