@@ -103,7 +103,7 @@ sql-format:
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| xargs -i pg_format {} -o {}
 
-sql-check-files: sql-check-syntax sql-check-migrations
+sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null
 
 # check syntax via the real database
 # https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
@@ -113,9 +113,10 @@ sql-check-syntax:
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
 		| psql -d postgres --quiet -v ON_ERROR_STOP=1
 
-sql-check-migrations:
-	@echo "make sql-check-migrations"
-	@(grep -R " NULL" ./migrations/ | grep --invert "DEFAULT NULL" | grep --invert "NOT") && (echo "Unnecessary use of NULL keyword" && exit 1) || exit 0
+sql-check-migrations-unnecessary-null:
+	@echo "make sql-check-migrations-unnecessary-null"
+	@(grep -R "NULL" ./migrations/ | grep --invert "DEFAULT NULL" | grep --invert "NOT NULL" | grep --invert "WITH NULL" | grep --invert "NULL, " | grep --invert ", NULL") \
+		&& exit 1 || exit 0
 
 sql-spec-reset:
 	@echo "make sql-spec-reset"
@@ -208,3 +209,10 @@ set-module-name:
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 # ignore matching file/make rule combinations in working-dir
 .PHONY: test
+
+# https://unix.stackexchange.com/questions/153763/dont-stop-makeing-if-a-command-fails-but-check-exit-status
+# https://www.gnu.org/software/make/manual/html_node/One-Shell.html
+# required to ensure make fails if one recipe fails (even on parallel jobs)
+.ONESHELL:
+SHELL = /bin/bash
+.SHELLFLAGS = -ec
