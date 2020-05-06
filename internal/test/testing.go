@@ -38,7 +38,6 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	ctx := context.Background()
 
 	doOnce.Do(func() {
-
 		t.Helper()
 		initializeTestDatabaseTemplate(ctx, t)
 	})
@@ -133,6 +132,13 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 
 		return err
 	}); err != nil {
+
+		// This error is exceptionally fatal as it hinders ANY future other
+		// test execution with this hash as the template was *never* properly
+		// setuped successfully. All GetTestDatabase will timeout.
+		// TODO: Allow us to fail way faster here by telling the server that
+		// this very template database is broken and cannot be used.
+
 		t.Fatalf("Failed to setup template database for hash %q: %v", hash, err)
 	}
 }

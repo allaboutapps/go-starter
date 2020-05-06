@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"testing"
 
 	. "allaboutapps.dev/aw/go-starter/internal/models"
@@ -47,7 +48,7 @@ func TestInsert(t *testing.T) {
 			t.Error("failed to insert")
 		}
 
-		// fmt.Println(userNew)
+		fmt.Println(userNew)
 	})
 
 }
