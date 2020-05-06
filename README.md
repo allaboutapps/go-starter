@@ -13,11 +13,14 @@ The project makes use of the [devcontainer functionality](https://code.visualstu
 
 ### Development quickstart
 
-> Requires docker and docker-compose installed locally
+> Typically you will need to **fork this repo** and create your own project.
+
+After your `git clone` you may do the following:
 
 ```bash
 
 # $local
+# Easily start the docker-compose dev environment through our helper
 ./docker-helper.sh --up
 
 # ---
@@ -29,6 +32,7 @@ The project makes use of the [devcontainer functionality](https://code.visualstu
 # change the go project module name and create a new README
 # module allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO>
 make set-module-name
+# e.g. allaboutapps.dev/aw/go-starter
 mv README.md README-go-starter.md
 make get-module-name > README.md
 
@@ -49,6 +53,19 @@ sql-migrate up
 
 # Start the local-built server
 apiserver
+
+# ---
+
+# $local
+
+# you may attach to the development container through multiple shells, it's always the same command
+./docker-helper.sh --up
+
+# if you ever need to halt the docker-compose env (without deleting your projects' images & volumes)
+./docker-helper.sh --halt
+
+# if you ever need to wipe ALL traces (will delete your projects' images & volumes)
+./docker-helper.sh --destroy
 
 ```
 
