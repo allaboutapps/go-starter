@@ -30,7 +30,7 @@ info:
 	@cat scripts/sql/info.sql | psql -q -d "${PSQL_DBNAME}"
 	@echo "handlers:"
 	@go run scripts/handlers/gen_handlers.go --print-only
-	@$(MAKE) echo-module-name
+	@$(MAKE) info-module-name
 	@go version
 
 # these recipies may execute in parallel
@@ -189,12 +189,15 @@ swagger-serve:
 clean:
 	rm -rf tmp
 
-echo-module-name:
+get-module-name:
+	@echo "${GO_MODULE_NAME}"
+
+info-module-name:
 	@echo "current go module-name: ${GO_MODULE_NAME}"
 
 set-module-name:
 	@rm -f tmp/.modulename
-	@$(MAKE) echo-module-name
+	@$(MAKE) info-module-name
 	@echo "Enter new go module-name:" \
 		&& read ans \
 		&& find . -not -path '*/\.*' -type f -exec sed -i "s|${GO_MODULE_NAME}|$${ans}|g" {} \; \

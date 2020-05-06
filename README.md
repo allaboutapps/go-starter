@@ -20,12 +20,17 @@ The project makes use of the [devcontainer functionality](https://code.visualstu
 # $local
 ./docker-helper.sh --up
 
-# You should now have a docker shell...
-# development@XXXXXXXXX:/app$
+# ---
 
-# If you have forked this project, easily change the go project module name
-# allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO>
+# development@XXXXXXXXX:/app$
+# You should now have a docker shell...
+
+# If you have forked this project:
+# change the go project module name and create a new README
+# module allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO>
 make set-module-name
+mv README.md README-go-starter.md
+make get-module-name > README.md
 
 # Shortcut for make init, make build, make info and make test
 make all
