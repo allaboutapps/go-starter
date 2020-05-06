@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"allaboutapps.at/aw/go-mranftl-sample/internal/util"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/labstack/echo/v4"
 )
 

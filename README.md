@@ -18,9 +18,14 @@ The project makes use of the [devcontainer functionality](https://code.visualstu
 
 ```bash
 
+# $local
 ./docker-helper.sh --up
 
 # You should now have a docker shell...
+# development@XXXXXXXXX:/app$
+
+# If you have forked this project, easily change the go project module name:
+make set-module-name
 
 # Init install/cache dependencies and install tools to bin
 make init

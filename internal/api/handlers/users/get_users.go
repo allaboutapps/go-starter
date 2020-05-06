@@ -3,10 +3,10 @@ package users
 import (
 	"net/http"
 
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api/auth"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/models"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/auth"
+	"allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/labstack/echo/v4"
 )
 

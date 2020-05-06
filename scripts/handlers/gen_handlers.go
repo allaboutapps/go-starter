@@ -21,8 +21,8 @@ import (
 	"strings"
 	"text/template"
 
-	"allaboutapps.at/aw/go-mranftl-sample/internal/util"
-	"allaboutapps.at/aw/go-mranftl-sample/scripts/scriptsutil"
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/scripts/scriptsutil"
 )
 
 // https://blog.carlmjohnson.net/post/2016-11-27-how-to-use-go-generate/
@@ -46,7 +46,7 @@ var (
 package handlers
 
 import (
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	{{- range .SubPkgs }}
 	"{{ $.BasePkg }}{{ . }}"
 	{{- end }}

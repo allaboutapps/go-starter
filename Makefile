@@ -2,13 +2,13 @@
 # --- Building
 ### -----------------------
 
-# projects module name (as in go.mod)
+# go module name (as in go.mod)
 # only evaluated if required by a recipe
 # http://make.mad-scientist.net/deferred-simple-variable-expansion/
-PROJECT_MODULE_NAME = $(eval PROJECT_MODULE_NAME := $$(shell \
+GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
 	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
 	|| (go run scripts/modulename/modulename.go | tee tmp/.modulename) \
-))$(PROJECT_MODULE_NAME)
+))$(GO_MODULE_NAME)
 
 # first is default task when running "make" without args
 build:
@@ -30,7 +30,7 @@ info:
 	@cat scripts/sql/info.sql | psql -q -d "${PSQL_DBNAME}"
 	@echo "handlers:"
 	@go run scripts/handlers/gen_handlers.go --print-only
-	@echo "project module name: ${PROJECT_MODULE_NAME}"
+	@$(MAKE) echo-module-name
 	@go version
 
 # these recipies may execute in parallel
@@ -157,7 +157,7 @@ swagger-models:
 		--allow-template-override \
 		--template-dir=internal/types/swagger \
 		--spec=api/swagger.json \
-		--existing-models=${PROJECT_MODULE_NAME}/internal/types \
+		--existing-models=${GO_MODULE_NAME}/internal/types \
 		--model-package=tmp/types \
 		--all-definitions \
 		-q
@@ -187,6 +187,18 @@ swagger-serve:
 
 clean:
 	rm -rf tmp
+
+echo-module-name:
+	@echo "current go module-name: ${GO_MODULE_NAME}"
+
+set-module-name:
+	@rm -f tmp/.modulename
+	@$(MAKE) echo-module-name
+	@echo "Enter new go module-name:" \
+		&& read ans \
+		&& find . -not -path '*/\.*' -type f -exec sed -i "s|${GO_MODULE_NAME}|$${ans}|g" {} \; \
+		&& echo "new go module-name: $${ans}"
+	@rm -f tmp/.modulename
 
 ### -----------------------
 # --- Special targets

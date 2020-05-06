@@ -3,9 +3,9 @@
 package handlers
 
 import (
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api/handlers/auth"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api/handlers/users"
+	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
+	"allaboutapps.dev/aw/go-starter/internal/api/handlers/users"
 )
 
 func AttachAllRoutes(s *api.Server) {

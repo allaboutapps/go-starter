@@ -1,4 +1,4 @@
-module allaboutapps.at/aw/go-mranftl-sample
+module allaboutapps.dev/aw/go-starter
 
 go 1.14
 

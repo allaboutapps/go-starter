@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"testing"
 
-	. "allaboutapps.at/aw/go-mranftl-sample/internal/models"
+	. "allaboutapps.dev/aw/go-starter/internal/models"
 	_ "github.com/lib/pq"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"

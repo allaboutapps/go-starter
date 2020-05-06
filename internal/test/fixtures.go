@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	. "allaboutapps.at/aw/go-mranftl-sample/internal/models"
+	. "allaboutapps.dev/aw/go-starter/internal/models"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )

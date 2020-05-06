@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api/router"
+	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )

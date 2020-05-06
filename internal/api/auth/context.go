@@ -3,8 +3,8 @@ package auth
 import (
 	"context"
 
-	"allaboutapps.at/aw/go-mranftl-sample/internal/models"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/labstack/echo/v4"
 )
 

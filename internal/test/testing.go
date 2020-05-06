@@ -9,9 +9,9 @@ import (
 	"sync"
 	"testing"
 
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api/router"
-	pUtil "allaboutapps.at/aw/go-mranftl-sample/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/router"
+	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/allaboutapps/integresql-client-go"
 	"github.com/allaboutapps/integresql-client-go/pkg/util"
 	migrate "github.com/rubenv/sql-migrate"

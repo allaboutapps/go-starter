@@ -81,7 +81,7 @@
           "example": "generic"
         }
       },
-      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/internal/types"
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
     },
     "HelloWorld": {
       "type": "object",
@@ -95,7 +95,7 @@
           "x-go-name": "Hello"
         }
       },
-      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/internal/types"
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
     },
     "PostLoginPayload": {
       "type": "object",
@@ -113,7 +113,7 @@
           "x-go-name": "Username"
         }
       },
-      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/internal/types"
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
     },
     "PostLoginResponse": {
       "type": "object",
@@ -142,7 +142,7 @@
           "x-go-name": "TokenType"
         }
       },
-      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/internal/types"
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
     },
     "SampleEntry": {
       "type": "object",
@@ -183,7 +183,7 @@
           "x-go-name": "Num"
         }
       },
-      "x-go-package": "allaboutapps.at/aw/go-mranftl-sample/internal/types"
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
     }
   }
 }

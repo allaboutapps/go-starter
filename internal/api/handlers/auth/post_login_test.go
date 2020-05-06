@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"allaboutapps.at/aw/go-mranftl-sample/internal/api"
-	"allaboutapps.at/aw/go-mranftl-sample/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/test"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
