@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 )
@@ -48,6 +49,8 @@ type EchoServerConfig struct {
 }
 
 type AuthServerConfig struct {
+	AccessTokenValidity          time.Duration
+	DefaultUserScopes            []string
 	LastAuthenticatedAtThreshold int
 }
 
@@ -74,6 +77,8 @@ func DefaultServiceConfigFromEnv() ServerConfig {
 			ListenAddress: util.GetEnv("SERVER_ECHO_LISTEN_ADDRESS", ":8080"),
 		},
 		Auth: AuthServerConfig{
+			AccessTokenValidity:          time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_ACCESS_TOKEN_VALIDITY", 86400)),
+			DefaultUserScopes:            util.GetEnvAsStringArr("SERVER_AUTH_DEFAULT_USER_SCOPES", []string{"app"}),
 			LastAuthenticatedAtThreshold: util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900),
 		},
 	}

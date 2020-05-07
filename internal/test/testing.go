@@ -5,6 +5,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -14,6 +17,9 @@ import (
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/allaboutapps/integresql-client-go"
 	"github.com/allaboutapps/integresql-client-go/pkg/util"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/labstack/echo/v4"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -38,6 +44,7 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	ctx := context.Background()
 
 	doOnce.Do(func() {
+
 		t.Helper()
 		initializeTestDatabaseTemplate(ctx, t)
 	})
@@ -100,12 +107,70 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 type GenericPayload map[string]interface{}
 
 func (g GenericPayload) Reader(t *testing.T) *bytes.Reader {
+	t.Helper()
+
 	b, err := json.Marshal(g)
 	if err != nil {
 		t.Fatalf("failed to serialize payload: %v", err)
 	}
 
 	return bytes.NewReader(b)
+}
+
+func PerformRequest(t *testing.T, s *api.Server, method string, path string, body GenericPayload, headers http.Header) *httptest.ResponseRecorder {
+	t.Helper()
+
+	var req *http.Request
+	if body == nil {
+		req = httptest.NewRequest(method, path, nil)
+	} else {
+		req = httptest.NewRequest(method, path, body.Reader(t))
+	}
+
+	if headers != nil {
+		req.Header = headers
+	}
+	if len(req.Header.Get(echo.HeaderContentType)) == 0 {
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	}
+
+	res := httptest.NewRecorder()
+
+	s.Echo.ServeHTTP(res, req)
+
+	return res
+}
+
+func ParseResponseBody(t *testing.T, res *httptest.ResponseRecorder, v interface{}) {
+	t.Helper()
+
+	if err := json.NewDecoder(res.Result().Body).Decode(&v); err != nil {
+		t.Fatalf("Failed to parse response body: %v", err)
+	}
+}
+
+func ParseResponseAndValidate(t *testing.T, res *httptest.ResponseRecorder, v interface{}) {
+	t.Helper()
+
+	ParseResponseBody(t, res, &v)
+
+	val, ok := v.(runtime.Validatable)
+	if !ok {
+		t.Fatalf("Cannot parse response and validate, v (type %T) does not implement interface `runtime.Validatable`", v)
+	}
+
+	if err := val.Validate(strfmt.Default); err != nil {
+		t.Fatalf("Failed to validate response: %v", err)
+	}
+}
+
+func HeadersWithAuth(t *testing.T, token string) http.Header {
+	t.Helper()
+
+	headers := http.Header{}
+	headers.Set(echo.HeaderAuthorization, fmt.Sprintf("Bearer %s", token))
+
+	return headers
 }
 
 // main private function to properly build up the template database
@@ -132,13 +197,6 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 
 		return err
 	}); err != nil {
-
-		// This error is exceptionally fatal as it hinders ANY future other
-		// test execution with this hash as the template was *never* properly
-		// setuped successfully. All GetTestDatabase will timeout.
-		// TODO: Allow us to fail way faster here by telling the server that
-		// this very template database is broken and cannot be used.
-
 		t.Fatalf("Failed to setup template database for hash %q: %v", hash, err)
 	}
 }

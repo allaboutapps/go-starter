@@ -2,6 +2,7 @@ package auth_test
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"testing"
 
@@ -16,17 +17,20 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func TestPostLoginSuccess(t *testing.T) {
+func TestPostChangePasswordSuccess(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
 		fixtures := test.Fixtures()
+
+		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
-			"password": test.PlainTestUserPassword,
+			"currentPassword": test.PlainTestUserPassword,
+			"newPassword":     newPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 
@@ -39,20 +43,40 @@ func TestPostLoginSuccess(t *testing.T) {
 		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, response.RefreshToken)
 		assert.Equal(t, int(s.Config.Auth.AccessTokenValidity.Seconds()), response.ExpiresIn)
 		assert.Equal(t, auth.TokenTypeBearer, response.TokenType)
+
+		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.Equal(t, sql.ErrNoRows, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.Equal(t, sql.ErrNoRows, err)
+
+		cnt, err := fixtures.User1.AccessTokens().Count(ctx, s.DB)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(1), cnt)
+
+		cnt, err = fixtures.User1.RefreshTokens().Count(ctx, s.DB)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(1), cnt)
+
+		err = fixtures.User1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		assert.NotEqual(t, test.HashedTestUserPassword, fixtures.User1.Password.String)
 	})
 }
 
-func TestPostLoginInvalidCredentials(t *testing.T) {
+func TestPostChangePasswordInvalidPassword(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
 		fixtures := test.Fixtures()
+
+		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
-			"password": "not my password",
+			"currentPassword": "not my password",
+			"newPassword":     newPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
 
 		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
 
@@ -65,45 +89,28 @@ func TestPostLoginInvalidCredentials(t *testing.T) {
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
+
+		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
 	})
 }
 
-func TestPostLoginUnknownUser(t *testing.T) {
+func TestPostChangePasswordDeactivatedUser(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{
-			"username": "definitelydoesnotexist@example.com",
-			"password": test.PlainTestUserPassword,
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
-
-		var response HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, http.StatusUnauthorized, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-	})
-}
-
-func TestPostLoginDeactivatedUser(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
 		fixtures := test.Fixtures()
+
+		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
-			"username": fixtures.UserDeactivated.Username,
-			"password": test.PlainTestUserPassword,
+			"currentPassword": test.PlainTestUserPassword,
+			"newPassword":     newPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.UserDeactivatedAccessToken1.Token))
 
 		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
 
@@ -116,17 +123,25 @@ func TestPostLoginDeactivatedUser(t *testing.T) {
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
+
+		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
 	})
 }
 
-func TestPostLoginUserWithoutPassword(t *testing.T) {
+func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
 		fixtures := test.Fixtures()
+
+		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
-			"username": fixtures.User2.Username,
-			"password": test.PlainTestUserPassword,
+			"currentPassword": test.PlainTestUserPassword,
+			"newPassword":     newPassword,
 		}
 
 		fixtures.User2.Password = null.NewString("", false)
@@ -134,7 +149,7 @@ func TestPostLoginUserWithoutPassword(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User2AccessToken1.Token))
 
 		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
 
@@ -147,76 +162,27 @@ func TestPostLoginUserWithoutPassword(t *testing.T) {
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
+
+		err = fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
 	})
 }
 
-func TestPostLoginInvalidUsername(t *testing.T) {
+func TestPostChangePasswordMissingCurrentPassword(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{
-			"username": "definitely not an email",
-			"password": test.PlainTestUserPassword,
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-
-		var response HTTPValidationError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "username", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "username in body must be of type email: \"definitely not an email\"", response.ValidationErrors[0].Error)
-	})
-}
-
-func TestPostLoginMissingUsername(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{
-			"password": test.PlainTestUserPassword,
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-
-		var response HTTPValidationError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "username", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "username in body is required", response.ValidationErrors[0].Error)
-	})
-}
-
-func TestPostLoginMissingPassword(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
 		fixtures := test.Fixtures()
+
+		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
+			"newPassword": newPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
@@ -230,52 +196,29 @@ func TestPostLoginMissingPassword(t *testing.T) {
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
 		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "password", response.ValidationErrors[0].Key)
+		assert.Equal(t, "currentPassword", response.ValidationErrors[0].Key)
 		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "password in body is required", response.ValidationErrors[0].Error)
+		assert.Equal(t, "currentPassword in body is required", response.ValidationErrors[0].Error)
+
+		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
 	})
 }
 
-func TestPostLoginEmptyUsername(t *testing.T) {
+func TestPostChangePasswordMissingNewPassword(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{
-			"username": "",
-			"password": test.PlainTestUserPassword,
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-
-		var response HTTPValidationError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "username", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "username in body should be at least 1 chars long", response.ValidationErrors[0].Error)
-	})
-}
-
-func TestPostLoginEmptyPassword(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
 		fixtures := test.Fixtures()
+
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
-			"password": "",
+			"currentPassword": test.PlainTestUserPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
@@ -289,8 +232,88 @@ func TestPostLoginEmptyPassword(t *testing.T) {
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
 		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "password", response.ValidationErrors[0].Key)
+		assert.Equal(t, "newPassword", response.ValidationErrors[0].Key)
 		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "password in body should be at least 1 chars long", response.ValidationErrors[0].Error)
+		assert.Equal(t, "newPassword in body is required", response.ValidationErrors[0].Error)
+
+		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+	})
+}
+
+func TestPostChangePasswordEmptyCurrentPassword(t *testing.T) {
+	t.Parallel()
+
+	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
+		fixtures := test.Fixtures()
+
+		newPassword := "correct horse battery staple"
+		payload := test.GenericPayload{
+			"currentPassword": "",
+			"newPassword":     newPassword,
+		}
+
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+
+		var response HTTPValidationError
+		test.ParseResponseAndValidate(t, res, &response)
+
+		assert.Equal(t, http.StatusBadRequest, *response.Code)
+		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Empty(t, response.Detail)
+		assert.Nil(t, response.Internal)
+		assert.Nil(t, response.AdditionalData)
+		assert.NotEmpty(t, response.ValidationErrors)
+		assert.Equal(t, "currentPassword", response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", response.ValidationErrors[0].In)
+		assert.Equal(t, "currentPassword in body should be at least 1 chars long", response.ValidationErrors[0].Error)
+
+		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+	})
+}
+
+func TestPostChangePasswordEmptyNewPassword(t *testing.T) {
+	t.Parallel()
+
+	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
+		fixtures := test.Fixtures()
+
+		payload := test.GenericPayload{
+			"currentPassword": test.PlainTestUserPassword,
+			"newPassword":     "",
+		}
+
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+
+		var response HTTPValidationError
+		test.ParseResponseAndValidate(t, res, &response)
+
+		assert.Equal(t, http.StatusBadRequest, *response.Code)
+		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Empty(t, response.Detail)
+		assert.Nil(t, response.Internal)
+		assert.Nil(t, response.AdditionalData)
+		assert.NotEmpty(t, response.ValidationErrors)
+		assert.Equal(t, "newPassword", response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", response.ValidationErrors[0].In)
+		assert.Equal(t, "newPassword in body should be at least 1 chars long", response.ValidationErrors[0].Error)
+
+		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
+		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		assert.NoError(t, err)
 	})
 }

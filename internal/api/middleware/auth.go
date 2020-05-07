@@ -11,13 +11,16 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
+	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 var (
+	ErrBadRequestMalformedToken                = types.NewHTTPError(http.StatusBadRequest, "MALFORMED_TOKEN", "Auth token is malformed")
 	ErrUnauthorizedLastAuthenticatedAtExceeded = types.NewHTTPError(http.StatusUnauthorized, "LAST_AUTHENTICATED_AT_EXCEEDED", "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
+	ErrForbiddenUserDeactivated                = types.NewHTTPError(http.StatusForbidden, "USER_DEACTIVATED", "User account is deactivated")
 	ErrForbiddenMissingScopes                  = types.NewHTTPError(http.StatusForbidden, "MISSING_SCOPES", "User is missing required scopes")
 )
 
@@ -143,26 +146,34 @@ func (s AuthTokenSource) Extract(c echo.Context, key string, scheme string) (tok
 	return t[lenScheme+1:], true
 }
 
+type AuthTokenFormatValidator func(string) bool
+
+func DefaultAuthTokenFormatValidator(token string) bool {
+	return strfmt.IsUUID4(token)
+}
+
 var (
 	DefaultAuthConfig = AuthConfig{
-		Mode:           AuthModeRequired,
-		FailureMode:    AuthFailureModeUnauthorized,
-		TokenSource:    AuthTokenSourceHeader,
-		TokenSourceKey: echo.HeaderAuthorization,
-		Scheme:         "Bearer",
-		Skipper:        middleware.DefaultSkipper,
+		Mode:            AuthModeRequired,
+		FailureMode:     AuthFailureModeUnauthorized,
+		TokenSource:     AuthTokenSourceHeader,
+		TokenSourceKey:  echo.HeaderAuthorization,
+		Scheme:          "Bearer",
+		Skipper:         middleware.DefaultSkipper,
+		FormatValidator: DefaultAuthTokenFormatValidator,
 	}
 )
 
 type AuthConfig struct {
-	S              *api.Server        // API server used for database and service access
-	Mode           AuthMode           // Controls type of authentication required (default: AuthModeRequired)
-	FailureMode    AuthFailureMode    // Controls response on auth failure (default: AuthFailureModeUnauthorized)
-	TokenSource    AuthTokenSource    // Sets source of auth token (default: AuthTokenSourceHeader)
-	TokenSourceKey string             // Sets key for auth token source lookup (default: "Authorization")
-	Scheme         string             // Sets required token scheme (default: "Bearer")
-	Skipper        middleware.Skipper // Controls skipping of certain routes (default: no skipped routes)
-	Scopes         []string           // List of scopes required to access endpoint (default: none required)
+	S               *api.Server              // API server used for database and service access
+	Mode            AuthMode                 // Controls type of authentication required (default: AuthModeRequired)
+	FailureMode     AuthFailureMode          // Controls response on auth failure (default: AuthFailureModeUnauthorized)
+	TokenSource     AuthTokenSource          // Sets source of auth token (default: AuthTokenSourceHeader)
+	TokenSourceKey  string                   // Sets key for auth token source lookup (default: "Authorization")
+	Scheme          string                   // Sets required token scheme (default: "Bearer")
+	Skipper         middleware.Skipper       // Controls skipping of certain routes (default: no skipped routes)
+	FormatValidator AuthTokenFormatValidator // Validates the format of the token retrieved
+	Scopes          []string                 // List of scopes required to access endpoint (default: none required)
 }
 
 func (c AuthConfig) CheckLastAuthenticatedAt(user *models.User) bool {
@@ -220,6 +231,10 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 		config.Skipper = DefaultAuthConfig.Skipper
 	}
 
+	if config.FormatValidator == nil {
+		config.FormatValidator = DefaultAuthConfig.FormatValidator
+	}
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			log := util.LogFromEchoContext(c).With().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Logger()
@@ -267,6 +282,16 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 				return next(c)
 			}
 
+			if !config.FormatValidator(token) {
+				if config.Mode == AuthModeRequired || config.Mode == AuthModeSecure || config.Mode == AuthModeOptional {
+					log.Trace().Msg("Request has malformed token, rejecting")
+					return ErrBadRequestMalformedToken
+				}
+
+				log.Trace().Msg("Request have malformed token, but auth mode permits access, allowing request")
+				return next(c)
+			}
+
 			accessToken, err := models.AccessTokens(
 				qm.Load(models.AccessTokenRels.User),
 				models.AccessTokenWhere.Token.EQ(token),
@@ -295,13 +320,13 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 				}
 
 				log.Trace().Time("valid_until", accessToken.ValidUntil).Str("user_id", user.ID).Msg("Access token is expired, rejecting request")
-				return echo.ErrUnauthorized
+				return config.FailureMode.Error()
 			}
 
 			// ! User has been explicitly deactivated - we do not allow access here, even with AuthModeTry
 			if !user.IsActive {
 				log.Trace().Str("user_id", user.ID).Msg("User is deactivated, rejecting request")
-				return echo.ErrUnauthorized
+				return ErrForbiddenUserDeactivated
 			}
 
 			if !config.CheckLastAuthenticatedAt(user) {

@@ -16,10 +16,11 @@ const (
 // swagger:model
 type HTTPError struct {
 	// HTTP status code returned for the error
+	// required: true
 	// min: 100
 	// max: 599
 	// example: 403
-	Code int `json:"status"`
+	Code *int `json:"status"`
 	// Type of error returned, should be used for client-side error handling
 	// required: true
 	// example: generic
@@ -28,7 +29,7 @@ type HTTPError struct {
 	// required: true
 	// example: Forbidden
 	Title string `json:"title"`
-	// More detailed, human-readable optional explanation of the error
+	// More detailed, human-readable, optional explanation of the error
 	// example: User is lacking permission to access this resource
 	Detail         string                 `json:"detail,omitempty"`
 	Internal       error                  `json:"-"`
@@ -37,7 +38,7 @@ type HTTPError struct {
 
 func NewHTTPError(code int, errorType string, title string) *HTTPError {
 	return &HTTPError{
-		Code:  code,
+		Code:  &code,
 		Type:  errorType,
 		Title: title,
 	}
@@ -45,7 +46,7 @@ func NewHTTPError(code int, errorType string, title string) *HTTPError {
 
 func NewHTTPErrorWithDetail(code int, errorType string, title string, detail string) *HTTPError {
 	return &HTTPError{
-		Code:   code,
+		Code:   &code,
 		Type:   errorType,
 		Title:  title,
 		Detail: detail,
@@ -55,7 +56,7 @@ func NewHTTPErrorWithDetail(code int, errorType string, title string, detail str
 func (e *HTTPError) Error() string {
 	var b strings.Builder
 
-	fmt.Fprintf(&b, "HTTPError %d (%s): %s", e.Code, e.Type, e.Title)
+	fmt.Fprintf(&b, "HTTPError %d (%s): %s", *e.Code, e.Type, e.Title)
 
 	if len(e.Detail) > 0 {
 		fmt.Fprintf(&b, " - %s", e.Detail)
@@ -80,4 +81,24 @@ func (e *HTTPError) Error() string {
 	}
 
 	return b.String()
+}
+
+type HTTPValidationErrorDetail struct {
+	// Key of field failing validation
+	// required: true
+	Key string `json:"key"`
+	// Indicates how the invalid field was provided
+	// required: true
+	In string `json:"in"`
+	// Error describing field validation failure
+	// required: true
+	Error string `json:"error"`
+}
+
+// swagger:model
+type HTTPValidationError struct {
+	HTTPError
+	// List of errors received while validating payload against schema
+	// required: true
+	ValidationErrors []*HTTPValidationErrorDetail `json:"validationErrors"`
 }

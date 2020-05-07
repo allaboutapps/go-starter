@@ -4,29 +4,32 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
-	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
+	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	. "allaboutapps.dev/aw/go-starter/internal/types"
+	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-func TestPostLoginSuccess(t *testing.T) {
+func TestPostRegisterSuccess(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		ctx := context.Background()
+
+		username := "usernew@example.com"
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
+			"username": username,
 			"password": test.PlainTestUserPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 
@@ -34,152 +37,89 @@ func TestPostLoginSuccess(t *testing.T) {
 		test.ParseResponseAndValidate(t, res, &response)
 
 		assert.NotEmpty(t, response.AccessToken)
-		assert.NotEqual(t, fixtures.User1AccessToken1.Token, response.AccessToken)
 		assert.NotEmpty(t, response.RefreshToken)
-		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, response.RefreshToken)
 		assert.Equal(t, int(s.Config.Auth.AccessTokenValidity.Seconds()), response.ExpiresIn)
 		assert.Equal(t, auth.TokenTypeBearer, response.TokenType)
+
+		user, err := models.Users(
+			models.UserWhere.Username.EQ(null.StringFrom(username)),
+			qm.Load(models.UserRels.AppUserProfile),
+			qm.Load(models.UserRels.AccessTokens),
+			qm.Load(models.UserRels.RefreshTokens),
+		).One(ctx, s.DB)
+		assert.NoError(t, err)
+		assert.Equal(t, null.StringFrom(username), user.Username)
+		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
+		assert.WithinDuration(t, time.Now(), user.LastAuthenticatedAt.Time, time.Second*1)
+		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
+
+		assert.NotNil(t, user.R.AppUserProfile)
+		assert.Equal(t, false, user.R.AppUserProfile.HasGDPROptOut)
+		assert.Equal(t, false, user.R.AppUserProfile.LegalAcceptedAt.Valid)
+
+		assert.Len(t, user.R.AccessTokens, 1)
+		assert.Equal(t, strfmt.UUID4(user.R.AccessTokens[0].Token), response.AccessToken)
+		assert.Len(t, user.R.RefreshTokens, 1)
+		assert.Equal(t, strfmt.UUID4(user.R.RefreshTokens[0].Token), response.RefreshToken)
+
+		res2 := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+
+		assert.Equal(t, http.StatusOK, res2.Result().StatusCode)
+
+		var response2 PostLoginResponse
+		test.ParseResponseAndValidate(t, res2, &response2)
+
+		assert.NotEmpty(t, response2.AccessToken)
+		assert.NotEqual(t, response.AccessToken, response2.AccessToken)
+		assert.NotEmpty(t, response2.RefreshToken)
+		assert.NotEqual(t, response.RefreshToken, response2.RefreshToken)
+		assert.Equal(t, int(s.Config.Auth.AccessTokenValidity.Seconds()), response2.ExpiresIn)
+		assert.Equal(t, auth.TokenTypeBearer, response2.TokenType)
 	})
 }
 
-func TestPostLoginInvalidCredentials(t *testing.T) {
+func TestPostRegisterAlreadyExists(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
+
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
 			"username": fixtures.User1.Username,
-			"password": "not my password",
+			"password": test.PlainTestUserPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 
-		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
+		assert.Equal(t, http.StatusConflict, res.Result().StatusCode)
 
 		var response HTTPError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusUnauthorized, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), response.Title)
+		assert.Equal(t, *auth.ErrConflictUserAlreadyExists.Code, *response.Code)
+		assert.Equal(t, auth.ErrConflictUserAlreadyExists.Type, response.Type)
+		assert.Equal(t, auth.ErrConflictUserAlreadyExists.Title, response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
+
+		user, err := models.Users(
+			models.UserWhere.Username.EQ(fixtures.User1.Username),
+			qm.Load(models.UserRels.AppUserProfile),
+			qm.Load(models.UserRels.AccessTokens),
+			qm.Load(models.UserRels.RefreshTokens),
+		).One(ctx, s.DB)
+		assert.NoError(t, err)
+		assert.Equal(t, user.ID, fixtures.User1.ID)
+
+		assert.NotNil(t, user.R.AppUserProfile)
+		assert.Len(t, user.R.AccessTokens, 1)
+		assert.Len(t, user.R.RefreshTokens, 1)
 	})
 }
 
-func TestPostLoginUnknownUser(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{
-			"username": "definitelydoesnotexist@example.com",
-			"password": test.PlainTestUserPassword,
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
-
-		var response HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, http.StatusUnauthorized, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-	})
-}
-
-func TestPostLoginDeactivatedUser(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
-		payload := test.GenericPayload{
-			"username": fixtures.UserDeactivated.Username,
-			"password": test.PlainTestUserPassword,
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
-
-		var response HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *middleware.ErrForbiddenUserDeactivated.Code, *response.Code)
-		assert.Equal(t, middleware.ErrForbiddenUserDeactivated.Type, response.Type)
-		assert.Equal(t, middleware.ErrForbiddenUserDeactivated.Title, response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-	})
-}
-
-func TestPostLoginUserWithoutPassword(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
-		payload := test.GenericPayload{
-			"username": fixtures.User2.Username,
-			"password": test.PlainTestUserPassword,
-		}
-
-		fixtures.User2.Password = null.NewString("", false)
-		rowsAff, err := fixtures.User2.Update(context.Background(), s.DB, boil.Infer())
-		require.NoError(t, err)
-		require.Equal(t, int64(1), rowsAff)
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
-
-		var response HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *auth.ErrForbiddenNotLocalUser.Code, *response.Code)
-		assert.Equal(t, auth.ErrForbiddenNotLocalUser.Type, response.Type)
-		assert.Equal(t, auth.ErrForbiddenNotLocalUser.Title, response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-	})
-}
-
-func TestPostLoginInvalidUsername(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{
-			"username": "definitely not an email",
-			"password": test.PlainTestUserPassword,
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-
-		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-
-		var response HTTPValidationError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "username", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "username in body must be of type email: \"definitely not an email\"", response.ValidationErrors[0].Error)
-	})
-}
-
-func TestPostLoginMissingUsername(t *testing.T) {
+func TestPostRegisterMissingUsername(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
@@ -187,7 +127,7 @@ func TestPostLoginMissingUsername(t *testing.T) {
 			"password": test.PlainTestUserPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
@@ -207,7 +147,7 @@ func TestPostLoginMissingUsername(t *testing.T) {
 	})
 }
 
-func TestPostLoginMissingPassword(t *testing.T) {
+func TestPostRegisterMissingPassword(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
@@ -216,7 +156,7 @@ func TestPostLoginMissingPassword(t *testing.T) {
 			"username": fixtures.User1.Username,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
@@ -236,7 +176,36 @@ func TestPostLoginMissingPassword(t *testing.T) {
 	})
 }
 
-func TestPostLoginEmptyUsername(t *testing.T) {
+func TestPostRegisterInvalidUsername(t *testing.T) {
+	t.Parallel()
+
+	test.WithTestServer(t, func(s *api.Server) {
+		payload := test.GenericPayload{
+			"username": "definitely not an email",
+			"password": test.PlainTestUserPassword,
+		}
+
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+
+		var response HTTPValidationError
+		test.ParseResponseAndValidate(t, res, &response)
+
+		assert.Equal(t, http.StatusBadRequest, *response.Code)
+		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Empty(t, response.Detail)
+		assert.Nil(t, response.Internal)
+		assert.Nil(t, response.AdditionalData)
+		assert.NotEmpty(t, response.ValidationErrors)
+		assert.Equal(t, "username", response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", response.ValidationErrors[0].In)
+		assert.Equal(t, "username in body must be of type email: \"definitely not an email\"", response.ValidationErrors[0].Error)
+	})
+}
+
+func TestPostRegisterEmptyUsername(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
@@ -245,7 +214,7 @@ func TestPostLoginEmptyUsername(t *testing.T) {
 			"password": test.PlainTestUserPassword,
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
@@ -265,17 +234,16 @@ func TestPostLoginEmptyUsername(t *testing.T) {
 	})
 }
 
-func TestPostLoginEmptyPassword(t *testing.T) {
+func TestPostRegisterEmptyPassword(t *testing.T) {
 	t.Parallel()
 
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
+			"username": "usernew@example.com",
 			"password": "",
 		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 

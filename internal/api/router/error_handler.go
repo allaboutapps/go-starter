@@ -5,48 +5,58 @@ import (
 	"fmt"
 	"net/http"
 
-	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/util/ref"
 	"github.com/labstack/echo/v4"
 )
 
 func HTTPErrorHandler(err error, c echo.Context) {
-	he, ok := err.(*types.HTTPError)
-	if !ok {
-		if hee, ok := err.(*echo.HTTPError); ok {
-			msg, ok := hee.Message.(string)
-			if !ok {
-				if m, errr := json.Marshal(msg); err == nil {
-					msg = string(m)
-				} else {
-					msg = fmt.Sprintf("failed to marshal HTTP error message: %v", errr)
-				}
-			}
+	var code int
+	var he error
 
-			he = &types.HTTPError{
-				Code:     hee.Code,
-				Title:    msg,
-				Type:     types.HTTPErrorTypeGeneric,
-				Internal: hee.Internal,
+	switch e := err.(type) {
+	case *types.HTTPError:
+		code = *e.Code
+		he = e
+	case *types.HTTPValidationError:
+		code = *e.Code
+		he = e
+	case *echo.HTTPError:
+		msg, ok := e.Message.(string)
+		if !ok {
+			if m, errr := json.Marshal(msg); err == nil {
+				msg = string(m)
+			} else {
+				msg = fmt.Sprintf("failed to marshal HTTP error message: %v", errr)
 			}
-		} else {
-			he = &types.HTTPError{
-				Code:  http.StatusInternalServerError,
-				Title: err.Error(),
-				Type:  types.HTTPErrorTypeGeneric,
-			}
+		}
+
+		code = e.Code
+		he = &types.HTTPError{
+			Code:     &e.Code,
+			Title:    msg,
+			Type:     types.HTTPErrorTypeGeneric,
+			Internal: e.Internal,
+		}
+	default:
+		code = http.StatusInternalServerError
+		he = &types.HTTPError{
+			Code:  ref.Int(http.StatusInternalServerError),
+			Title: err.Error(),
+			Type:  types.HTTPErrorTypeGeneric,
 		}
 	}
 
 	if !c.Response().Committed {
 		if c.Request().Method == http.MethodHead {
-			err = c.NoContent(he.Code)
+			err = c.NoContent(code)
 		} else {
-			err = c.JSON(he.Code, he)
+			err = c.JSON(code, he)
 		}
 
 		if err != nil {
-			util.LogFromEchoContext(c).Warn().Err(err).Msg("Failed to handle HTTP error")
+			util.LogFromEchoContext(c).Warn().Err(err).AnErr("http_err", err).Msg("Failed to handle HTTP error")
 		}
 	}
 }

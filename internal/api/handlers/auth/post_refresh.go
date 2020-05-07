@@ -11,76 +11,57 @@ import (
 	. "allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
-	"allaboutapps.dev/aw/go-starter/internal/util/hashing"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-var (
-	ErrForbiddenNotLocalUser = NewHTTPError(http.StatusForbidden, "NOT_LOCAL_USER", "User account is not valid for local authentication")
-)
-
-const (
-	TokenTypeBearer = "bearer"
-)
-
-// swagger:route POST /api/v1/auth/login auth PostLoginRoute
+// swagger:route POST /api/v1/auth/refresh auth PostRefreshRoute
 //
-// Login with local user
+// Refresh tokens
 //
-// Returns an access and refresh token on successful authentication
+// Return a fresh set of access and refresh tokens if a valid refresh token was provided.
+// The old refresh token used to authenticate the request will be invalidated.
 //
 // Responses:
 //   200: PostLoginResponse
 //   400: body:HTTPValidationError
 //   401: body:HTTPError
-//   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
-func PostLoginRoute(s *api.Server) *echo.Route {
-	return s.Router.APIV1Auth.POST("/login", postLoginHandler(s))
+//   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`
+func PostRefreshRoute(s *api.Server) *echo.Route {
+	return s.Router.APIV1Auth.POST("/refresh", postRefreshHandler(s))
 }
 
-func postLoginHandler(s *api.Server) echo.HandlerFunc {
+func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
-		var body PostLoginPayload
+		var body PostRefreshPayload
 		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
 
-		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(body.Username.String()))).One(ctx, s.DB)
+		oldRefreshToken, err := models.RefreshTokens(
+			models.RefreshTokenWhere.Token.EQ(body.RefreshToken.String()),
+			qm.Load(models.RefreshTokenRels.User),
+		).One(ctx, s.DB)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				log.Debug().Err(err).Msg("User not found")
+				log.Debug().Err(err).Msg("Refresh token not found")
 			} else {
-				log.Debug().Err(err).Msg("Failed to load user")
+				log.Debug().Err(err).Msg("Failed to load refresh token")
 			}
 
 			return echo.ErrUnauthorized
 		}
 
+		user := oldRefreshToken.R.User
+
 		if !user.IsActive {
-			log.Debug().Msg("User is deactivated, rejecting authentication")
+			log.Debug().Msg("User is deactivated, rejecting token refresh")
 			return middleware.ErrForbiddenUserDeactivated
-		}
-
-		if !user.Password.Valid {
-			log.Debug().Msg("User is missing password, forbidding authentication")
-			return ErrForbiddenNotLocalUser
-		}
-
-		match, err := hashing.ComparePasswordAndHash(*body.Password, user.Password.String)
-		if err != nil {
-			log.Debug().Err(err).Msg("Failed to compare password with stored hash")
-			return echo.ErrUnauthorized
-		}
-
-		if !match {
-			log.Debug().Msg("Provided password does not match stored hash")
-			return echo.ErrUnauthorized
 		}
 
 		response := &PostLoginResponse{
@@ -108,9 +89,8 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 				return echo.ErrUnauthorized
 			}
 
-			user.LastAuthenticatedAt = null.TimeFrom(time.Now())
-			if _, err := user.Update(ctx, tx, boil.Infer()); err != nil {
-				log.Debug().Err(err).Msg("Failed to update user's last authenticated at timestamp")
+			if _, err := oldRefreshToken.Delete(ctx, tx); err != nil {
+				log.Debug().Err(err).Msg("Failed to delete old refresh token")
 				return echo.ErrUnauthorized
 			}
 
@@ -119,11 +99,11 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 
 			return nil
 		}); err != nil {
-			log.Debug().Err(err).Msg("Failed to authenticate user")
+			log.Debug().Err(err).Msg("Failed to refresh tokens")
 			return err
 		}
 
-		log.Debug().Msg("Successfully authenticated user, returning new set of access and refresh tokens")
+		log.Debug().Msg("Successfully refreshed tokens, returning new set of access and refresh tokens")
 
 		return util.ValidateAndReturn(c, http.StatusOK, response)
 	}
