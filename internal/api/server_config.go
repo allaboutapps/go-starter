@@ -57,7 +57,7 @@ type AuthServerConfig struct {
 	LastAuthenticatedAtThreshold int
 }
 
-type FrontendServerConfig struct {	
+type FrontendServerConfig struct {
 	BaseURL               string
 	PasswordResetEndpoint string
 }
@@ -94,7 +94,7 @@ func DefaultServiceConfigFromEnv() ServerConfig {
 			LastAuthenticatedAtThreshold: util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900),
 		},
 		Mailer: mailer.MailerConfig{
-			DefaultSender: util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "operations+go-starter-local@allaboutapps.at"),
+			DefaultSender: util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "operations+allaboutapps.dev/aw/go-starter@allaboutapps.at"),
 			Send:          util.GetEnvAsBool("SERVER_MAILER_SEND", true),
 		},
 		SMTP: transport.SMTPMailTransportConfig{
