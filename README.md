@@ -8,8 +8,8 @@
 
 - [Features](#features)
 - [Usage](#usage)
-    - [Requirements](#requirements)
-    - [Quickstart](#quickstart)
+  - [Requirements](#requirements)
+  - [Quickstart](#quickstart)
 - [Contributing](#contributing)
 - [Maintainers](#maintainers)
 - [License](#license)
