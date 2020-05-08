@@ -93,6 +93,9 @@ apiserver
 # if you ever need to halt the docker-compose env (without deleting your projects' images & volumes)
 ./docker-helper.sh --halt
 
+# if you ever change something in the Dockerfile and require a rebuild of the service image only
+./docker-helper.sh --rebuild
+
 # if you ever need to wipe ALL traces (will delete your projects' images & volumes)
 ./docker-helper.sh --destroy
 

@@ -1,5 +1,6 @@
 ### -----------------------
 # --- Stage: development
+# --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
 FROM golang:1.14.2 AS development
@@ -77,7 +78,7 @@ RUN mkdir -p /tmp/richgo \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.24.0
+    | sh -s -- -b $(go env GOPATH)/bin v1.26.0
 
 # go swagger: (this package should NOT be installed via go get) 
 # https://github.com/go-swagger/go-swagger/releases
