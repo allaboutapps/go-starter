@@ -17,16 +17,16 @@
 ## Features
 
 - Full local golang service development environment using [Docker Compose](https://docs.docker.com/compose/install/) and [VSCode devcontainers](https://code.visualstudio.com/docs/remote/containers) that just works with Linux, MacOS and Windows.
-- Provides database migration ([sql-migrate](https://github.com/rubenv/sql-migrate)) and models generation ([SQLboiler](https://github.com/volatiletech/sqlboiler)) workflows for PostgreSQL databases
+- Adheres to the project layout defined in [golang-standard/project-layout](https://github.com/golang-standards/project-layout)
+- Provides database migration ([sql-migrate](https://github.com/rubenv/sql-migrate)) and models generation ([SQLboiler](https://github.com/volatiletech/sqlboiler)) workflows for [PostgreSQL](https://www.postgresql.org/) databases
 - Integrates [IntegreSQL](https://github.com/allaboutapps/integresql) for fast, concurrent and isolated integration testing with real PostgreSQL databases
 - Autoinstalls our recommended VSCode extensions for golang development
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Integrates [go-swagger](https://github.com/go-swagger/go-swagger) for compile-time autogeneration of `swagger.json` and request/response validation functions
-- Integrates [Mailhog](https://github.com/mailhog/MailHog) for easy email testing
+- Integrates [MailHog](https://github.com/mailhog/MailHog) for easy SMTP-based email testing
+- Integrates [pgFormatter](https://github.com/darold/pgFormatter) and [vscode-pgFormatter](https://marketplace.visualstudio.com/items?itemName=bradymholt.pgformatter) for SQL formatting
 - Parallel jobs optimized `Makefile` and various convenience scripts, a full rebuild via `make build` only takes seconds
 - Multi-staged `Dockerfile` (`development` -> `builder` -> `builder-apiserver` -> `apiserver`)
-- SQL formatting provided by [pgFormatter](https://github.com/darold/pgFormatter) and [vscode-pgFormatter](https://marketplace.visualstudio.com/items?itemName=bradymholt.pgformatter)
-- Adheres to the project layout defined in [golang-standard/project-layout](https://github.com/golang-standards/project-layout)
 
 
 ## Usage
