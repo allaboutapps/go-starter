@@ -16,6 +16,11 @@
   "paths": {
     "/api/v1/auth/change-password": {
       "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "description": "After successful password change, all current access and refresh tokens are\ninvalidated and a new set of auth tokens is returned",
         "tags": [
           "auth"
@@ -52,6 +57,87 @@
           },
           "403": {
             "description": "HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "description": "Initiates a password reset for a local user, sending an email with a password\nreset link to the provided email address if a user account exists. Will always\nsucceed, even if no user was found in order to prevent user enumeration",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Initiate password reset for local user",
+        "operationId": "PostForgotPasswordRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostForgotPasswordPayload"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "HTTPValidationError",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password/complete": {
+      "post": {
+        "description": "Completes a password reset for a local user, using the password reset token sent via email\nto confirm user access, setting the new password if successful. All current access and refresh\ntokens are invalidated and a new set of auth tokens is returned",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Completes password reset for local user",
+        "operationId": "PostForgotPasswordCompleteRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostForgotPasswordCompletePayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PostLoginResponse",
+            "schema": {
+              "$ref": "#/definitions/PostLoginResponse"
+            }
+          },
+          "400": {
+            "description": "HTTPValidationError, type `INVALID_PASSWORD`",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          },
+          "403": {
+            "description": "HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          },
+          "404": {
+            "description": "HTTPError, type `TOKEN_NOT_FOUND`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          },
+          "409": {
+            "description": "HTTPError, type `TOKEN_EXPIRED`",
             "schema": {
               "$ref": "#/definitions/HTTPError"
             }
@@ -362,6 +448,48 @@
           "minLength": 1,
           "x-go-name": "NewPassword",
           "example": "correct horse battery staple"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "PostForgotPasswordCompletePayload": {
+      "type": "object",
+      "required": [
+        "token",
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "description": "New password to set for user",
+          "type": "string",
+          "minLength": 1,
+          "x-go-name": "Password",
+          "example": "correct horse battery staple"
+        },
+        "token": {
+          "description": "Password reset token sent via email",
+          "type": "string",
+          "format": "uuid4",
+          "x-go-name": "Token",
+          "example": "ec16f032-3c44-4148-bbcc-45557466fa74"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "PostForgotPasswordPayload": {
+      "type": "object",
+      "required": [
+        "username"
+      ],
+      "properties": {
+        "username": {
+          "description": "Username to initiate password reset for",
+          "type": "string",
+          "format": "email",
+          "maxLength": 255,
+          "minLength": 1,
+          "x-go-name": "Username",
+          "example": "user@example.com"
         }
       },
       "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"

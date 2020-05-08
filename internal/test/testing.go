@@ -95,6 +95,10 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 		// attach the already initalized db
 		s.DB = db
 
+		if err := s.InitMailer(true); err != nil {
+			t.Fatalf("failed to initialize mailer: %v", err)
+		}
+		
 		router.Init(s)
 
 		// no need to actually start echo!

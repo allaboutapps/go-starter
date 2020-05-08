@@ -30,6 +30,8 @@ import (
 //   400: body:HTTPValidationError HTTPValidationError, type `INVALID_PASSWORD`
 //   401: body:HTTPError
 //   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
+// Security:
+//   Bearer:
 func PostChangePasswordRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/change-password", postChangePasswordHandler(s))
 }

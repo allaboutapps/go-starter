@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
+	"allaboutapps.dev/aw/go-starter/internal/mailer"
+	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
@@ -21,6 +23,7 @@ type Server struct {
 	DB     *sql.DB
 	Echo   *echo.Echo
 	Router *Router
+	Mailer *mailer.Mailer
 }
 
 func NewServer(config ServerConfig) *Server {
@@ -29,6 +32,7 @@ func NewServer(config ServerConfig) *Server {
 		DB:     nil,
 		Echo:   nil,
 		Router: nil,
+		Mailer: nil,
 	}
 
 	return s
@@ -49,8 +53,19 @@ func (s *Server) InitDB(ctx context.Context) error {
 	return nil
 }
 
+func (s *Server) InitMailer(mock ...bool) error {
+	if len(mock) > 0 && mock[0] {
+		log.Warn().Msg("Initializing mock mailer")
+		s.Mailer = mailer.New(s.Config.Mailer, transport.NewMock())
+	} else {
+		s.Mailer = mailer.New(s.Config.Mailer, transport.NewSMTP(s.Config.SMTP))
+	}
+
+	return s.Mailer.ParseTemplates()
+}
+
 func (s *Server) Ready() bool {
-	return s.DB != nil && s.Echo != nil && s.Router != nil
+	return s.DB != nil && s.Echo != nil && s.Router != nil && s.Mailer != nil
 }
 
 func (s *Server) Start() error {

@@ -113,3 +113,38 @@ type PostChangePasswordPayload struct {
 	// example: correct horse battery staple
 	NewPassword *string `json:"newPassword"`
 }
+
+// swagger:parameters PostForgotPasswordRoute
+type PostForgotPasswordPayloadParam struct {
+	// in:body
+	Payload PostForgotPasswordPayload
+}
+
+// swagger:model
+type PostForgotPasswordPayload struct {
+	// Username to initiate password reset for
+	// required: true
+	// min length: 1
+	// max length: 255
+	// example: user@example.com
+	Username *strfmt.Email `json:"username"`
+}
+
+// swagger:parameters PostForgotPasswordCompleteRoute
+type PostForgotPasswordCompletePayloadParam struct {
+	// in:body
+	Payload PostForgotPasswordCompletePayload
+}
+
+// swagger:model
+type PostForgotPasswordCompletePayload struct {
+	// Password reset token sent via email
+	// required: true
+	// example: ec16f032-3c44-4148-bbcc-45557466fa74
+	Token strfmt.UUID4 `json:"token"`
+	// New password to set for user
+	// required: true
+	// min length: 1
+	// example: correct horse battery staple
+	Password *string `json:"password"`
+}

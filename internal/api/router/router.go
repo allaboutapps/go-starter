@@ -28,10 +28,12 @@ func Init(s *api.Server) {
 	s.Echo.Use(middleware.Logger())
 	s.Echo.Use(middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeRequired, Skipper: func(c echo.Context) bool {
 		switch c.Path() {
-		case "/api/v1/auth/login",
-			"/api/v1/auth/refresh",
-			"/api/v1/auth/register":
-			return true
+			case "/api/v1/auth/forgot-password",
+				"/api/v1/auth/forgot-password/complete",
+				"/api/v1/auth/login",
+				"/api/v1/auth/refresh",
+				"/api/v1/auth/register":
+				return true
 		}
 
 		return false

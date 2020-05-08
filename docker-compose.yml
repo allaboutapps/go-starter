@@ -89,6 +89,13 @@ services:
       PGUSER: *PGUSER
       PGPASSWORD: *PGPASSWORD
 
+  mailhog:
+    image: mailhog/mailhog
+    expose:
+      - "1025"
+    ports:
+      - "8025:8025"
+
 volumes:
   # postgresql: declare a named volume to persist DB data
   pgvolume: 

@@ -10,6 +10,7 @@ require (
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9
 	github.com/go-openapi/validate v0.19.8
+	github.com/jordan-wright/email v0.0.0-20200322182553-8eef2508c362
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/lib/pq v1.5.1
