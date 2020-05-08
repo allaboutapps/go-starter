@@ -50,7 +50,7 @@ func TestPostRegisterSuccess(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, null.StringFrom(username), user.Username)
 		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
-		assert.WithinDuration(t, time.Now(), user.LastAuthenticatedAt.Time, time.Second*1)
+		assert.WithinDuration(t, time.Now(), user.LastAuthenticatedAt.Time, time.Second*10)
 		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
 
 		assert.NotNil(t, user.R.AppUserProfile)
