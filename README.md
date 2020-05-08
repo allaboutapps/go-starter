@@ -21,13 +21,13 @@
 - Provides database migration ([sql-migrate](https://github.com/rubenv/sql-migrate)) and models generation ([SQLboiler](https://github.com/volatiletech/sqlboiler)) workflows for [PostgreSQL](https://www.postgresql.org/) databases
 - Integrates [IntegreSQL](https://github.com/allaboutapps/integresql) for fast, concurrent and isolated integration testing with real PostgreSQL databases
 - Autoinstalls our recommended VSCode extensions for golang development
-- Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
-- Integrates [go-swagger](https://github.com/go-swagger/go-swagger) for compile-time autogeneration of `swagger.json` and request/response validation functions
+- Integrates [go-swagger](https://github.com/go-swagger/go-swagger) for compile-time autogeneration of `swagger.json` and request/response validation functions.
 - Integrates [MailHog](https://github.com/mailhog/MailHog) for easy SMTP-based email testing
 - Integrates [pgFormatter](https://github.com/darold/pgFormatter) and [vscode-pgFormatter](https://marketplace.visualstudio.com/items?itemName=bradymholt.pgformatter) for SQL formatting
+- Comes with fully implemented `auth` package, an OAuth2 RESTful JSON API ready to be extended according to your requirements. [The latest `swagger.json` at ReDoc](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/allaboutapps/go-starter/master/api/swagger.json).
+- Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Parallel jobs optimized `Makefile` and various convenience scripts, a full rebuild via `make build` only takes seconds
 - Multi-staged `Dockerfile` (`development` -> `builder` -> `builder-apiserver` -> `apiserver`)
-
 
 ## Usage
 

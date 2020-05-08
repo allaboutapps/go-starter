@@ -3,8 +3,8 @@
 consumes:
 - application/json
 info:
-  title: types
-  version: 0.1.0
+  title: allaboutapps.dev/aw/go-starter
+  version: 1.0.0
 paths: {}
 produces:
 - application/json
