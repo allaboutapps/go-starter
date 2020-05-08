@@ -42,7 +42,8 @@ The project makes use of the [VSCode devcontainers functionality](https://code.v
 
 ### Quickstart
 
-> Typically you will need to **fork this repo** and create your own project.
+> GitHub: Click on **[Use this template](https://github.com/allaboutapps/go-starter/generate)** to create your own project.
+> Contributions and others: You will need to fork this repository.
 
 After your `git clone` you may do the following:
 
