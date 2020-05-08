@@ -263,3 +263,7 @@ services:
       PGUSER: *PGUSER
       PGPASSWORD: *PGPASSWORD
     <<: *WHEN_BUILD_EVENT
+
+  "mailhog":
+    image: mailhog/mailhog
+    <<: *WHEN_BUILD_EVENT

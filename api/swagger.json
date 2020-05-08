@@ -14,19 +14,39 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/api/v1/auth/login": {
+    "/api/v1/auth/change-password": {
       "post": {
-        "description": "Returns AccessToken for the user if correct credentials are provided",
-        "produces": [
-          "application/json"
+        "security": [
+          {
+            "Bearer": []
+          }
         ],
-        "summary": "Login with local user",
-        "operationId": "PostLoginRoute",
+        "description": "After successful password change, all current access and refresh tokens are\ninvalidated and a new set of auth tokens is returned",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Change local user's password",
+        "operationId": "PostChangePasswordRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostChangePasswordPayload"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "PostLoginResponse",
             "schema": {
               "$ref": "#/definitions/PostLoginResponse"
+            }
+          },
+          "400": {
+            "description": "HTTPValidationError, type `INVALID_PASSWORD`",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
             }
           },
           "401": {
@@ -35,8 +55,259 @@
               "$ref": "#/definitions/HTTPError"
             }
           },
-          "default": {
+          "403": {
+            "description": "HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "description": "Initiates a password reset for a local user, sending an email with a password\nreset link to the provided email address if a user account exists. Will always\nsucceed, even if no user was found in order to prevent user enumeration",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Initiate password reset for local user",
+        "operationId": "PostForgotPasswordRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostForgotPasswordPayload"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "HTTPValidationError",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password/complete": {
+      "post": {
+        "description": "Completes a password reset for a local user, using the password reset token sent via email\nto confirm user access, setting the new password if successful. All current access and refresh\ntokens are invalidated and a new set of auth tokens is returned",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Completes password reset for local user",
+        "operationId": "PostForgotPasswordCompleteRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostForgotPasswordCompletePayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PostLoginResponse",
+            "schema": {
+              "$ref": "#/definitions/PostLoginResponse"
+            }
+          },
+          "400": {
+            "description": "HTTPValidationError, type `INVALID_PASSWORD`",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          },
+          "403": {
+            "description": "HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          },
+          "404": {
+            "description": "HTTPError, type `TOKEN_NOT_FOUND`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          },
+          "409": {
+            "description": "HTTPError, type `TOKEN_EXPIRED`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "Returns an access and refresh token on successful authentication",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login with local user",
+        "operationId": "PostLoginRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostLoginPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PostLoginResponse",
+            "schema": {
+              "$ref": "#/definitions/PostLoginResponse"
+            }
+          },
+          "400": {
+            "description": "HTTPValidationError",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          },
+          "401": {
             "description": "HTTPError",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          },
+          "403": {
+            "description": "HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Logs the local user out, destroying the provided access token.\nA refresh token can optionally be provided, destroying it as well if found.",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Log out local user",
+        "operationId": "PostLogoutRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostLogoutPayload"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "HTTPValidationError",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          },
+          "401": {
+            "description": "HTTPError",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "description": "Return a fresh set of access and refresh tokens if a valid refresh token was provided.\nThe old refresh token used to authenticate the request will be invalidated.",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Refresh tokens",
+        "operationId": "PostRefreshRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostRefreshPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PostLoginResponse",
+            "schema": {
+              "$ref": "#/definitions/PostLoginResponse"
+            }
+          },
+          "400": {
+            "description": "HTTPValidationError",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          },
+          "401": {
+            "description": "HTTPError",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          },
+          "403": {
+            "description": "HTTPError, type `USER_DEACTIVATED`",
+            "schema": {
+              "$ref": "#/definitions/HTTPError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "description": "Returns an access and refresh token on successful registration",
+        "tags": [
+          "auth"
+        ],
+        "summary": "Registers a local user",
+        "operationId": "PostRegisterRoute",
+        "parameters": [
+          {
+            "name": "Payload",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PostRegisterPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PostLoginResponse",
+            "schema": {
+              "$ref": "#/definitions/PostLoginResponse"
+            }
+          },
+          "400": {
+            "description": "HTTPValidationError, type `INVALID_PASSWORD`",
+            "schema": {
+              "$ref": "#/definitions/HTTPValidationError"
+            }
+          },
+          "409": {
+            "description": "HTTPError, type `USER_ALREADY_EXISTS`",
             "schema": {
               "$ref": "#/definitions/HTTPError"
             }
@@ -49,12 +320,13 @@
     "HTTPError": {
       "type": "object",
       "required": [
+        "status",
         "type",
         "title"
       ],
       "properties": {
         "detail": {
-          "description": "More detailed, human-readable optional explanation of the error",
+          "description": "More detailed, human-readable, optional explanation of the error",
           "type": "string",
           "x-go-name": "Detail",
           "example": "User is lacking permission to access this resource"
@@ -83,16 +355,141 @@
       },
       "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
     },
-    "HelloWorld": {
+    "HTTPValidationError": {
       "type": "object",
       "required": [
-        "hello"
+        "status",
+        "type",
+        "title",
+        "validationErrors"
       ],
       "properties": {
-        "hello": {
-          "description": "Allow: \"World\"",
+        "detail": {
+          "description": "More detailed, human-readable, optional explanation of the error",
           "type": "string",
-          "x-go-name": "Hello"
+          "x-go-name": "Detail",
+          "example": "User is lacking permission to access this resource"
+        },
+        "status": {
+          "description": "HTTP status code returned for the error",
+          "type": "integer",
+          "format": "int64",
+          "maximum": 599,
+          "minimum": 100,
+          "x-go-name": "Code",
+          "example": 403
+        },
+        "title": {
+          "description": "Short, human-readable description of the error",
+          "type": "string",
+          "x-go-name": "Title",
+          "example": "Forbidden"
+        },
+        "type": {
+          "description": "Type of error returned, should be used for client-side error handling",
+          "type": "string",
+          "x-go-name": "Type",
+          "example": "generic"
+        },
+        "validationErrors": {
+          "description": "List of errors received while validating payload against schema",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HTTPValidationErrorDetail"
+          },
+          "x-go-name": "ValidationErrors"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "HTTPValidationErrorDetail": {
+      "type": "object",
+      "required": [
+        "key",
+        "in",
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "description": "Error describing field validation failure",
+          "type": "string",
+          "x-go-name": "Error"
+        },
+        "in": {
+          "description": "Indicates how the invalid field was provided",
+          "type": "string",
+          "x-go-name": "In"
+        },
+        "key": {
+          "description": "Key of field failing validation",
+          "type": "string",
+          "x-go-name": "Key"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "PostChangePasswordPayload": {
+      "type": "object",
+      "required": [
+        "currentPassword",
+        "newPassword"
+      ],
+      "properties": {
+        "currentPassword": {
+          "description": "Current password of user",
+          "type": "string",
+          "minLength": 1,
+          "x-go-name": "CurrentPassword",
+          "example": "correct horse battery staple"
+        },
+        "newPassword": {
+          "description": "New password to set for user",
+          "type": "string",
+          "minLength": 1,
+          "x-go-name": "NewPassword",
+          "example": "correct horse battery staple"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "PostForgotPasswordCompletePayload": {
+      "type": "object",
+      "required": [
+        "token",
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "description": "New password to set for user",
+          "type": "string",
+          "minLength": 1,
+          "x-go-name": "Password",
+          "example": "correct horse battery staple"
+        },
+        "token": {
+          "description": "Password reset token sent via email",
+          "type": "string",
+          "format": "uuid4",
+          "x-go-name": "Token",
+          "example": "ec16f032-3c44-4148-bbcc-45557466fa74"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "PostForgotPasswordPayload": {
+      "type": "object",
+      "required": [
+        "username"
+      ],
+      "properties": {
+        "username": {
+          "description": "Username to initiate password reset for",
+          "type": "string",
+          "format": "email",
+          "maxLength": 255,
+          "minLength": 1,
+          "x-go-name": "Username",
+          "example": "user@example.com"
         }
       },
       "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
@@ -105,12 +502,20 @@
       ],
       "properties": {
         "password": {
+          "description": "Password of user to authenticate as",
           "type": "string",
-          "x-go-name": "Password"
+          "minLength": 1,
+          "x-go-name": "Password",
+          "example": "correct horse battery staple"
         },
         "username": {
+          "description": "Username of user to authenticate as",
           "type": "string",
-          "x-go-name": "Username"
+          "format": "email",
+          "maxLength": 255,
+          "minLength": 1,
+          "x-go-name": "Username",
+          "example": "user@example.com"
         }
       },
       "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
@@ -125,62 +530,86 @@
       ],
       "properties": {
         "access_token": {
+          "description": "Access token required for accessing protected API endpoints",
           "type": "string",
-          "x-go-name": "AccessToken"
+          "format": "uuid4",
+          "x-go-name": "AccessToken",
+          "example": "c1247d8d-0d65-41c4-bc86-ec041d2ac437"
         },
         "expires_in": {
+          "description": "Access token expiry in seconds",
           "type": "integer",
           "format": "int64",
-          "x-go-name": "ExpiresIn"
+          "x-go-name": "ExpiresIn",
+          "example": 86400
         },
         "refresh_token": {
+          "description": "Refresh token for refreshing the access token once it expires",
           "type": "string",
-          "x-go-name": "RefreshToken"
+          "format": "uuid4",
+          "x-go-name": "RefreshToken",
+          "example": "1dadb3bd-50d8-485d-83a3-6111392568f0"
         },
         "token_type": {
+          "description": "Type of access token, will always be `bearer`",
           "type": "string",
-          "x-go-name": "TokenType"
+          "x-go-name": "TokenType",
+          "example": "bearer"
         }
       },
       "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
     },
-    "SampleEntry": {
+    "PostLogoutPayload": {
+      "type": "object",
+      "properties": {
+        "refresh_token": {
+          "description": "Optional refresh token to delete while logging out",
+          "type": "string",
+          "format": "uuid4",
+          "x-go-name": "RefreshToken",
+          "example": "700ebed3-40f7-4211-bc83-a89b22b9875e"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "PostRefreshPayload": {
       "type": "object",
       "required": [
-        "isActive"
+        "refresh_token"
       ],
       "properties": {
-        "data": {
+        "refresh_token": {
+          "description": "Refresh token to use for retrieving new token set",
           "type": "string",
-          "maxLength": 10,
-          "minLength": 5,
-          "x-go-name": "Data"
-        },
-        "id": {
+          "format": "uuid4",
+          "x-go-name": "RefreshToken",
+          "example": "7503cd8a-c921-4368-a32d-6c1d01d86da9"
+        }
+      },
+      "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"
+    },
+    "PostRegisterPayload": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "description": "Password to register with",
           "type": "string",
-          "format": "uuid",
-          "x-go-name": "ID"
+          "minLength": 1,
+          "x-go-name": "Password",
+          "example": "correct horse battery staple"
         },
-        "isActive": {
-          "type": "boolean",
-          "default": false,
-          "x-go-name": "IsActive"
-        },
-        "mail": {
+        "username": {
+          "description": "Username to register with",
           "type": "string",
           "format": "email",
-          "x-go-name": "Mail"
-        },
-        "moreData": {
-          "type": "string",
-          "x-go-name": "MoreData"
-        },
-        "num": {
-          "type": "integer",
-          "format": "int64",
-          "maximum": 100,
-          "minimum": 1,
-          "x-go-name": "Num"
+          "maxLength": 255,
+          "minLength": 1,
+          "x-go-name": "Username",
+          "example": "user@example.com"
         }
       },
       "x-go-package": "allaboutapps.dev/aw/go-starter/internal/types"

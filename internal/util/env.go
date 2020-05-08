@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/rs/zerolog/log"
@@ -60,6 +61,21 @@ func GetEnvAsBool(key string, defaultVal bool) bool {
 	}
 
 	return defaultVal
+}
+
+func GetEnvAsStringArr(key string, defaultVal []string, separator ...string) []string {
+	strVal := GetEnv(key, "")
+
+	if len(strVal) == 0 {
+		return defaultVal
+	}
+
+	sep := ","
+	if len(separator) >= 1 {
+		sep = separator[0]
+	}
+
+	return strings.Split(strVal, sep)
 }
 
 func GetProjectRootDir() string {

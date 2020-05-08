@@ -10,6 +10,12 @@ import (
 
 func AttachAllRoutes(s *api.Server) {
 	// attach our routes
+	auth.PostChangePasswordRoute(s)
+	auth.PostForgotPasswordCompleteRoute(s)
+	auth.PostForgotPasswordRoute(s)
 	auth.PostLoginRoute(s)
+	auth.PostLogoutRoute(s)
+	auth.PostRefreshRoute(s)
+	auth.PostRegisterRoute(s)
 	users.GetUsersRoute(s)
 }

@@ -140,7 +140,7 @@ RUN make go-build
 # --- Stage: apiserver
 ### -----------------------
 
-FROM debian:stretch-slim as apiserver
+FROM debian:buster-slim as apiserver
 
 RUN apt-get update \
     && apt-get install -y \
@@ -149,9 +149,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder-apiserver /app/bin/apiserver /app/bin/sql-migrate /app/
+COPY --from=builder-apiserver /app/dbconfig.yml /app/
 COPY --from=builder-apiserver /app/api/swagger.json /app/api/
 COPY --from=builder-apiserver /app/assets /app/assets/
 COPY --from=builder-apiserver /app/migrations /app/migrations/
+COPY --from=builder-apiserver /app/web /app/web/
 
 WORKDIR /app
 

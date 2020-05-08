@@ -1,8 +1,6 @@
 package router
 
 import (
-	"strings"
-
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
@@ -29,7 +27,16 @@ func Init(s *api.Server) {
 	s.Echo.Use(echoMiddleware.RequestID())
 	s.Echo.Use(middleware.Logger())
 	s.Echo.Use(middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeRequired, Skipper: func(c echo.Context) bool {
-		return strings.HasPrefix(c.Path(), "/api/v1/auth")
+		switch c.Path() {
+			case "/api/v1/auth/forgot-password",
+				"/api/v1/auth/forgot-password/complete",
+				"/api/v1/auth/login",
+				"/api/v1/auth/refresh",
+				"/api/v1/auth/register":
+				return true
+		}
+
+		return false
 	}}))
 
 	// ---

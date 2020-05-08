@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
+	"allaboutapps.dev/aw/go-starter/internal/mailer"
+	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 )
 
@@ -48,13 +51,24 @@ type EchoServerConfig struct {
 }
 
 type AuthServerConfig struct {
+	AccessTokenValidity          time.Duration
+	PasswordResetTokenValidity   time.Duration
+	DefaultUserScopes            []string
 	LastAuthenticatedAtThreshold int
+}
+
+type FrontendServerConfig struct {	
+	BaseURL               string
+	PasswordResetEndpoint string
 }
 
 type ServerConfig struct {
 	Database DatabaseConfig
 	Echo     EchoServerConfig
 	Auth     AuthServerConfig
+	Mailer   mailer.MailerConfig
+	SMTP     transport.SMTPMailTransportConfig
+	Frontend FrontendServerConfig
 }
 
 func DefaultServiceConfigFromEnv() ServerConfig {
@@ -74,7 +88,27 @@ func DefaultServiceConfigFromEnv() ServerConfig {
 			ListenAddress: util.GetEnv("SERVER_ECHO_LISTEN_ADDRESS", ":8080"),
 		},
 		Auth: AuthServerConfig{
+			AccessTokenValidity:          time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_ACCESS_TOKEN_VALIDITY", 86400)),
+			PasswordResetTokenValidity:   time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_PASSWORD_RESET_TOKEN_VALIDITY", 900)),
+			DefaultUserScopes:            util.GetEnvAsStringArr("SERVER_AUTH_DEFAULT_USER_SCOPES", []string{"app"}),
 			LastAuthenticatedAtThreshold: util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900),
+		},
+		Mailer: mailer.MailerConfig{
+			DefaultSender: util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "operations+go-starter-local@allaboutapps.at"),
+			Send:          util.GetEnvAsBool("SERVER_MAILER_SEND", true),
+		},
+		SMTP: transport.SMTPMailTransportConfig{
+			Host:      util.GetEnv("SERVER_SMTP_HOST", "mailhog"),
+			Port:      util.GetEnvAsInt("SERVER_SMTP_PORT", 1025),
+			Username:  util.GetEnv("SERVER_SMTP_USERNAME", ""),
+			Password:  util.GetEnv("SERVER_SMTP_PASSWORD", ""),
+			AuthType:  transport.SMTPAuthTypeFromString(util.GetEnv("SERVER_SMTP_AUTH_TYPE", transport.SMTPAuthTypeNone.String())),
+			UseTLS:    util.GetEnvAsBool("SERVER_SMTP_USE_TLS", false),
+			TLSConfig: nil,
+		},
+		Frontend: FrontendServerConfig{
+			BaseURL:               util.GetEnv("SERVER_FRONTEND_BASE_URL", "http://localhost:3000"),
+			PasswordResetEndpoint: util.GetEnv("SERVER_FRONTEND_PASSWORD_RESET_ENDPOINT", "/set-new-password"),
 		},
 	}
 }

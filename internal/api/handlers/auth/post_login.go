@@ -6,31 +6,37 @@ import (
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	. "allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"allaboutapps.dev/aw/go-starter/internal/util/hashing"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// swagger:route POST /api/v1/auth/login PostLoginRoute
+var (
+	ErrForbiddenNotLocalUser = NewHTTPError(http.StatusForbidden, "NOT_LOCAL_USER", "User account is not valid for local authentication")
+)
+
+const (
+	TokenTypeBearer = "bearer"
+)
+
+// swagger:route POST /api/v1/auth/login auth PostLoginRoute
 //
 // Login with local user
 //
-// Returns AccessToken for the user if correct credentials are provided
+// Returns an access and refresh token on successful authentication
 //
-// ---
-// produces:
-// - application/json
-// parameters: PostLoginPayload
-// responses:
-//   default: HTTPError
+// Responses:
 //   200: PostLoginResponse
-//   401: HTTPError
+//   400: body:HTTPValidationError
+//   401: body:HTTPError
+//   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
 func PostLoginRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/login", postLoginHandler(s))
 }
@@ -41,22 +47,11 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 		log := util.LogFromContext(ctx)
 
 		var body PostLoginPayload
-		if err := c.Bind(&body); err != nil {
-			log.Debug().Err(err).Msg("Failed to bind payload")
+		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
 
-		if err := body.Validate(strfmt.Default); err != nil {
-			log.Debug().Err(err).Msg("Failed to validate payload")
-			return err
-		}
-
-		if len(body.Username) == 0 || len(body.Password) == 0 {
-			log.Debug().Str("username", body.Username).Str("password", body.Password).Msg("Missing username or password")
-			return echo.ErrBadRequest
-		}
-
-		user, err := models.Users(qm.Where("username = ?", body.Username)).One(ctx, s.DB)
+		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(body.Username.String()))).One(ctx, s.DB)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Debug().Err(err).Msg("User not found")
@@ -67,14 +62,17 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 			return echo.ErrUnauthorized
 		}
 
-		if !user.Password.Valid {
-			log.Debug().Msg("User is missing password")
-			return echo.ErrForbidden
+		if !user.IsActive {
+			log.Debug().Msg("User is deactivated, rejecting authentication")
+			return middleware.ErrForbiddenUserDeactivated
 		}
 
-		log.Debug().Str("userID", user.ID).Msg("Found user")
+		if !user.Password.Valid {
+			log.Debug().Msg("User is missing password, forbidding authentication")
+			return ErrForbiddenNotLocalUser
+		}
 
-		match, err := hashing.ComparePasswordAndHash(body.Password, user.Password.String)
+		match, err := hashing.ComparePasswordAndHash(*body.Password, user.Password.String)
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to compare password with stored hash")
 			return echo.ErrUnauthorized
@@ -85,60 +83,48 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 			return echo.ErrUnauthorized
 		}
 
-		tx, err := s.DB.BeginTx(ctx, nil)
-		if err != nil {
-			log.Debug().Err(err).Msg("Failed to start transaction")
-			return echo.ErrUnauthorized
+		response := &PostLoginResponse{
+			TokenType: TokenTypeBearer,
+			ExpiresIn: int(s.Config.Auth.AccessTokenValidity.Seconds()),
 		}
 
-		accessToken := models.AccessToken{
-			ValidUntil: time.Now().Add(24 * time.Hour),
-			UserID:     user.ID,
-		}
+		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
+			accessToken := models.AccessToken{
+				ValidUntil: time.Now().Add(s.Config.Auth.AccessTokenValidity),
+				UserID:     user.ID,
+			}
 
-		if err := accessToken.Insert(ctx, tx, boil.Infer()); err != nil {
-			log.Debug().Err(err).Msg("Failed to insert access token")
-			return echo.ErrUnauthorized
-		}
+			if err := accessToken.Insert(ctx, tx, boil.Infer()); err != nil {
+				log.Debug().Err(err).Msg("Failed to insert access token")
+				return echo.ErrUnauthorized
+			}
 
-		log.Debug().Str("token", accessToken.Token).Msg("Inserted access token")
+			refreshToken := models.RefreshToken{
+				UserID: user.ID,
+			}
 
-		refreshToken := models.RefreshToken{
-			UserID: user.ID,
-		}
+			if err := refreshToken.Insert(ctx, tx, boil.Infer()); err != nil {
+				log.Debug().Err(err).Msg("Failed to insert refresh token")
+				return echo.ErrUnauthorized
+			}
 
-		if err := refreshToken.Insert(ctx, tx, boil.Infer()); err != nil {
-			log.Debug().Err(err).Msg("Failed to insert refresh token")
-			return echo.ErrUnauthorized
-		}
+			user.LastAuthenticatedAt = null.TimeFrom(time.Now())
+			if _, err := user.Update(ctx, tx, boil.Infer()); err != nil {
+				log.Debug().Err(err).Msg("Failed to update user's last authenticated at timestamp")
+				return echo.ErrUnauthorized
+			}
 
-		log.Debug().Str("token", refreshToken.Token).Msg("Inserted refresh token")
+			response.AccessToken = strfmt.UUID4(accessToken.Token)
+			response.RefreshToken = strfmt.UUID4(refreshToken.Token)
 
-		user.LastAuthenticatedAt = null.TimeFrom(time.Now())
-		if _, err := user.Update(ctx, tx, boil.Infer()); err != nil {
-			log.Debug().Err(err).Msg("Failed to update user's last authenticated at timestamp")
-			return echo.ErrUnauthorized
-		}
-
-		log.Debug().Time("lastAuthenticatedAt", user.LastAuthenticatedAt.Time).Msg("Updated user's last authenticated at timestamp")
-
-		if err := tx.Commit(); err != nil {
-			log.Debug().Err(err).Msg("Failed to commit transaction")
-			return echo.ErrUnauthorized
-		}
-
-		response := PostLoginResponse{
-			AccessToken:  accessToken.Token,
-			TokenType:    "bearer",
-			ExpiresIn:    int((time.Hour * 24).Seconds()),
-			RefreshToken: refreshToken.Token,
-		}
-
-		if err := response.Validate(strfmt.Default); err != nil {
-			log.Debug().Err(err).Msg("Failed to validate response")
+			return nil
+		}); err != nil {
+			log.Debug().Err(err).Msg("Failed to authenticate user")
 			return err
 		}
 
-		return c.JSON(http.StatusOK, &response)
+		log.Debug().Msg("Successfully authenticated user, returning new set of access and refresh tokens")
+
+		return util.ValidateAndReturn(c, http.StatusOK, response)
 	}
 }
