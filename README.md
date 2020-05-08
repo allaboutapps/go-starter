@@ -114,7 +114,7 @@ Please make sure to update tests as appropriate.
 
 ## Maintainers
 
-- [Michael Farkas -- @farkmi](https://github.com/farkmi)
+- [Michael Farkas - @farkmi](https://github.com/farkmi)
 - [Nick Müller - @MorpheusXAUT](https://github.com/MorpheusXAUT)
 - [Mario Ranftl - @majodev](https://github.com/majodev)
 
