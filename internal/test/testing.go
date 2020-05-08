@@ -98,7 +98,7 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 		if err := s.InitMailer(true); err != nil {
 			t.Fatalf("failed to initialize mailer: %v", err)
 		}
-		
+
 		router.Init(s)
 
 		// no need to actually start echo!

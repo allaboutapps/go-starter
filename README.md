@@ -107,7 +107,7 @@ Run CMD+SHIFT+P `Go: Install/Update Tools` after starting vscode to autoinstall 
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please [open an issue](https://github.com/allaboutapps/integresql/issues/new) first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please [open an issue](https://github.com/allaboutapps/go-starter/issues/new) first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 

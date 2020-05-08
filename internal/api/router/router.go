@@ -26,14 +26,18 @@ func Init(s *api.Server) {
 	s.Echo.Use(echoMiddleware.Recover())
 	s.Echo.Use(echoMiddleware.RequestID())
 	s.Echo.Use(middleware.Logger())
+
+	// TODO: fully remove this, no auth-required middleware should be applied by default!
+	// We will fully let the groups / handlers decided which middlewares to use
 	s.Echo.Use(middleware.AuthWithConfig(middleware.AuthConfig{S: s, Mode: middleware.AuthModeRequired, Skipper: func(c echo.Context) bool {
 		switch c.Path() {
-			case "/api/v1/auth/forgot-password",
-				"/api/v1/auth/forgot-password/complete",
-				"/api/v1/auth/login",
-				"/api/v1/auth/refresh",
-				"/api/v1/auth/register":
-				return true
+		case "/api/v1/auth/forgot-password",
+			"/api/v1/auth/forgot-password/complete",
+			"/api/v1/auth/login",
+			"/api/v1/auth/refresh",
+			"/api/v1/auth/register",
+			"/testing-f679dbac-62bb-445d-b7e8-9f2c71ca382c":
+			return true
 		}
 
 		return false
