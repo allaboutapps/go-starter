@@ -16,7 +16,7 @@
 
 ## Features
 
-- Full local golang service development environment using [Docker Compose](https://docs.docker.com/compose/install/) and [VSCode devcontainers](https://code.visualstudio.com/docs/remote/containers) that just works with Linux, MacOS and Windows hosts.
+- Full local golang service development environment using [Docker Compose](https://docs.docker.com/compose/install/) and [VSCode devcontainers](https://code.visualstudio.com/docs/remote/containers) that just works with Linux, MacOS and Windows.
 - Provides database migration ([sql-migrate](https://github.com/rubenv/sql-migrate)) and models generation ([SQLboiler](https://github.com/volatiletech/sqlboiler)) workflows for PostgreSQL databases
 - Integrates [IntegreSQL](https://github.com/allaboutapps/integresql) for fast, concurrent and isolated integration testing with real PostgreSQL databases
 - Autoinstalls our recommended VSCode extensions for golang development
