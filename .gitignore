@@ -24,3 +24,6 @@ bin
 
 # temporary files
 tmp
+
+# mac specific
+.DS_Store
