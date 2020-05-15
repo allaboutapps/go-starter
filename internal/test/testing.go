@@ -204,11 +204,16 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 
 		// This error is exceptionally fatal as it hinders ANY future other
 		// test execution with this hash as the template was *never* properly
-		// setuped successfully. All GetTestDatabase will timeout.
-		// TODO: Allow us to fail way faster here by telling the server that
-		// this very template database is broken and cannot be used.
+		// setuped successfully. All GetTestDatabase will wait unti timeout
+		// unless we interrupt them by discarding the base template...
+		discardError := client.DiscardTemplate(ctx, hash)
 
-		t.Fatalf("Failed to setup template database for hash %q: %v", hash, err)
+		if discardError != nil {
+			t.Fatalf("Failed to setup template database, also discarding failed for hash %q: %v, %v", hash, err, discardError)
+		}
+
+		t.Fatalf("Failed to setup template database (discarded) for hash %q: %v", hash, err)
+
 	}
 }
 
