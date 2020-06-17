@@ -37,8 +37,9 @@ Requires the following local setup for development:
 
 - [Docker CE](https://docs.docker.com/install/) (19.03 or above)
 - [Docker Compose](https://docs.docker.com/compose/install/) (1.25 or above)
+- [VSCode Extension: Remote - Containers](https://code.visualstudio.com/docs/remote/containers) (`ms-vscode-remote.remote-containers`)
 
-The project makes use of the [VSCode devcontainers functionality](https://code.visualstudio.com/docs/remote/containers) provided by [Visual Studio Code](https://code.visualstudio.com/), thus a local installation of a Go compiler is *no longer* required when using this IDE.
+The project makes use of the [Remote - Containers extension](https://code.visualstudio.com/docs/remote/containers) provided by [Visual Studio Code](https://code.visualstudio.com/). A local installation of the Go toolchain is *no longer* required when using this setup. Please refer to the above official installation guide how this works for your host OS.
 
 ### Quickstart
 
@@ -57,6 +58,7 @@ After your `git clone` you may do the following:
 
 # development@XXXXXXXXX:/app$
 # You should now have a docker shell...
+# You may also work directly in the shell VSCode provides after connecting via CMD+SHIFT+P "Remote-Containers: Reopen in Container"
 
 # If you have forked this project:
 # change the go project module name and create a new README

@@ -62,7 +62,7 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		// required:
-		"ms-vscode.go",
+		"golang.go",
 		"bradymholt.pgformatter",
 		// optional:
 		"heaths.vscode-guid",
