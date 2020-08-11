@@ -32,7 +32,7 @@
 - Integrates [MailHog](https://github.com/mailhog/MailHog) for easy SMTP-based email testing
 - Integrates [SwaggerUI](https://github.com/swagger-api/swagger-ui) for live-previewing your Swagger v2 schema.
 - Integrates [pgFormatter](https://github.com/darold/pgFormatter) and [vscode-pgFormatter](https://marketplace.visualstudio.com/items?itemName=bradymholt.pgformatter) for SQL formatting
-- Comes with fully implemented `auth` package, an OAuth2 RESTful JSON API ready to be extended according to your requirements. [The latest `swagger.json` at ReDoc](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/allaboutapps/go-starter/master/api/swagger.json).
+- Comes with fully implemented `auth` package, an OAuth2 RESTful JSON API ready to be extended according to your requirements.
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
 - Parallel jobs optimized `Makefile` and various convenience scripts, a full rebuild via `make build` only takes seconds
