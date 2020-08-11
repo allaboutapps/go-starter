@@ -1,6 +1,7 @@
 package util
 
 import (
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -76,6 +77,26 @@ func GetEnvAsStringArr(key string, defaultVal []string, separator ...string) []s
 	}
 
 	return strings.Split(strVal, sep)
+}
+
+func GetEnvAsURL(key string, defaultVal string) *url.URL {
+	strVal := GetEnv(key, "")
+
+	if len(strVal) == 0 {
+		u, err := url.Parse(defaultVal)
+		if err != nil {
+			log.Panic().Err(err).Msg("Failed to parse default value for env variable as URL")
+		}
+
+		return u
+	}
+
+	u, err := url.Parse(strVal)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to parse env variable as URL")
+	}
+
+	return u
 }
 
 func GetProjectRootDir() string {

@@ -10,132 +10,183 @@ GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
 	|| (go run scripts/modulename/modulename.go | tee tmp/.modulename) \
 ))$(GO_MODULE_NAME)
 
-# first is default task when running "make" without args
-build:
+# first is default target when running "make" without args
+build: ##- Default make target: make build-pre, go-format, go-build and lint.
 	@$(MAKE) build-pre
 	@$(MAKE) go-format
 	@$(MAKE) go-build
-	@$(MAKE) go-lint
+	@$(MAKE) lint
 
 # useful to ensure that everything gets resetuped from scratch
-all:
+all: ##- Runs (pretty much) all targets: make clean, init, build, info and test.
 	@$(MAKE) clean
 	@$(MAKE) init
 	@$(MAKE) build
 	@$(MAKE) info
 	@$(MAKE) test
 
-info:
+info: ##- Prints database spec, implemented vs. speced handlers, go module-name and current go version.
 	@echo "database:"
 	@cat scripts/sql/info.sql | psql -q -d "${PSQL_DBNAME}"
 	@echo "handlers:"
-	@go run scripts/handlers/gen_handlers.go --print-only
+	@go run scripts/handlers/check_handlers.go --print-all
+	@echo ""
 	@$(MAKE) info-module-name
 	@go version
 
+lint: check-gen-dirs check-handlers go-lint  ##- (opt) Lints and checks handler paths match swagger spec.
+
 # these recipies may execute in parallel
-build-pre: sql-generate swagger go-generate 
+build-pre: sql-generate swagger ##- (opt) Runs prebuild related targets (sql, swagger, go-generate).
+	@$(MAKE) go-generate
 
-go-format:
-	go fmt
+go-format: ##- (opt) Runs go format.
+	go fmt ./...
 
-go-build: 
-	go build -o bin/apiserver ./cmd/api
+go-build: ##- (opt) Runs go build.
+	go build -o bin/app
 
-go-lint:
-	golangci-lint run --fast
+go-lint: ##- (opt) Runs golangci-lint.
+	golangci-lint run --fast --timeout 5m
 
-go-generate:
+go-generate: ##- (opt) Generates the internal/api/handlers/handlers.go binding.
 	go run scripts/handlers/gen_handlers.go
 
-# https://github.com/golang/go/issues/24573
-# w/o cache - see "go help testflag"
-# use https://github.com/kyoh86/richgo to color
+check-handlers: ##- (opt) Checks if implemented handlers match their spec (path).
+	go run scripts/handlers/check_handlers.go
+
+# https://golang.org/pkg/cmd/go/internal/generate/
+# To convey to humans and machine tools that code is generated,
+# generated source should have a line that matches the following
+# regular expression (in Go syntax):
+#    ^// Code generated .* DO NOT EDIT\.$
+check-gen-dirs: ##- (opt) Ensures internal/models|types only hold generated files.
+	@echo "make check-gen-dirs"
+	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' ./internal/types/ && exit 1 || exit 0
+	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' ./internal/models/ && exit 1 || exit 0
+
+# https://github.com/gotestyourself/gotestsum#format 
+# w/o cache https://github.com/golang/go/issues/24573 - see "go help testflag"
 # note that these tests should not run verbose by default (e.g. use your IDE for this)
 # TODO: add test shuffling/seeding when landed in go v1.15 (https://github.com/golang/go/issues/28592)
-test:
-	richgo test -cover -race -count=1 ./...
+# tests by pkgname
+test: ##- Run tests, output by package, print coverage.
+	@$(MAKE) go-test-by-pkg
+	@$(MAKE) go-test-print-coverage
+
+# tests by testname
+test-by-name: ##- Run tests, output by testname, print coverage.
+	@$(MAKE) go-test-by-name
+	@$(MAKE) go-test-print-coverage
+
+# note that we explicitly don't want to use a -coverpkg=./... option, per pkg coverage take precedence
+go-test-by-pkg: ##- (opt) Run tests, output by package.
+	gotestsum --format pkgname-and-test-fails --jsonfile /tmp/test.log -- -race -cover -count=1 -coverprofile=/tmp/coverage.out ./...
+
+go-test-by-name: ##- (opt) Run tests, output by testname.
+	gotestsum --format testname --jsonfile /tmp/test.log -- -race -cover -count=1 -coverprofile=/tmp/coverage.out ./...
+
+go-test-print-coverage: ##- (opt) Print overall test coverage (must be done after running tests).
+	@printf "coverage "
+	@go tool cover -func=/tmp/coverage.out | tail -n 1 | awk '{$$1=$$1;print}'
+
+go-test-print-slowest: ##- (opt) Print slowest running tests (must be done after running tests).
+	gotestsum tool slowest --jsonfile /tmp/test.log --threshold 2s
 
 ### -----------------------
 # --- Initializing
 ### -----------------------
 
-init:
+init: ##-  Runs make modules, tools and tidy.
 	@$(MAKE) modules
 	@$(MAKE) tools
 	@$(MAKE) tidy
 	@go version
 
 # cache go modules (locally into .pkg)
-modules:
+modules: ##- (opt) Cache packages as specified in go.mod.
 	go mod download
 
 # https://marcofranssen.nl/manage-go-tools-via-go-modules/
-tools:
+tools: ##- (opt) Install packages as specified in tools.go.
 	cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
 
-tidy:
+tidy: ##- (opt) Tidy our go.sum file.
 	go mod tidy
 
 ### -----------------------
 # --- SQL
 ### -----------------------
 
-sql-reset:
+sql-reset: ##- Wizard to drop and create our development database.
 	@echo "DROP & CREATE database:"
 	@echo "  PGHOST=${PGHOST} PGDATABASE=${PGDATABASE}" PGUSER=${PGUSER}
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 	psql -d postgres -c 'DROP DATABASE IF EXISTS "${PGDATABASE}";'
 	psql -d postgres -c 'CREATE DATABASE "${PGDATABASE}" WITH OWNER ${PGUSER} TEMPLATE "template0";'
 
+sql-drop-all: ##- Wizard to drop ALL databases: spec, development and tracked by integresql.
+	@echo "DROP ALL:"
+	TO_DROP=$$(psql -qtz0 -d postgres -c "SELECT 'DROP DATABASE \"' || datname || '\";' FROM pg_database WHERE datistemplate = FALSE AND datname != 'postgres';")
+	@echo "$$TO_DROP"
+	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo "Resetting integresql..."
+	curl --fail -X DELETE http://integresql:5000/api/v1/admin/templates
+	@echo "Drop databases..."
+	echo $$TO_DROP | psql -tz0 -d postgres
+	@echo "Done. Please run 'make sql-reset && make sql-spec-reset && make sql-spec-migrate' to reinitialize."
+
 # This step is only required to be executed when the "migrations" folder has changed!
 # MIGRATION_FILES = $(find ./migrations/ -type f -iname '*.sql')
-sql-generate: # ./migrations $(MIGRATION_FILES)
+sql-generate: ##- (opt) Runs all sql related formats/checks and finally generates internal/models/*.go.
 	@$(MAKE) sql-format
 	@$(MAKE) sql-check-files
 	@$(MAKE) sql-spec-reset
 	@$(MAKE) sql-spec-migrate
-	@$(MAKE) sql-check-structure
+	@$(MAKE) sql-check-and-generate
+
+sql-check-and-generate: sql-check-structure sql-boiler ##- (opt) Runs make sql-check-structure and sql-boiler.
+
+sql-boiler: ##- (opt) Runs sql-boiler introspects the spec db to generate internal/models/*.go.
+	@echo "make sql-boiler"
 	sqlboiler psql
 
-sql-format:
+sql-format: ##- (opt) Formats all *.sql files.
 	@echo "make sql-format"
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| xargs -i pg_format {} -o {}
 
-sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null
+sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt) Check syntax and unneccessary use of NULL keyword.
 
 # check syntax via the real database
 # https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
-sql-check-syntax:
+sql-check-syntax: ##- (opt) Checks syntax of all *.sql files.
 	@echo "make sql-check-syntax"
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
 		| psql -d postgres --quiet -v ON_ERROR_STOP=1
 
-sql-check-migrations-unnecessary-null:
+sql-check-migrations-unnecessary-null: ##- (opt) Checks migrations/*.sql for unneccessary use of NULL keywords.
 	@echo "make sql-check-migrations-unnecessary-null"
-	@(grep -R "NULL" ./migrations/ | grep --invert "DEFAULT NULL" | grep --invert "NOT NULL" | grep --invert "WITH NULL" | grep --invert "NULL, " | grep --invert ", NULL") \
+	@(grep -R "NULL" ./migrations/ | grep --invert "DEFAULT NULL" | grep --invert "NOT NULL" | grep --invert "WITH NULL" | grep --invert "NULL, " | grep --invert ", NULL" | grep --invert "RETURN NULL" | grep --invert "SET NULL") \
 		&& exit 1 || exit 0
 
-sql-spec-reset:
+sql-spec-reset: ##- (opt) Drop and creates our spec database.
 	@echo "make sql-spec-reset"
 	@psql --quiet -d postgres -c 'DROP DATABASE IF EXISTS "${PSQL_DBNAME}";'
 	@psql --quiet -d postgres -c 'CREATE DATABASE "${PSQL_DBNAME}" WITH OWNER ${PSQL_USER} TEMPLATE "template0";'
 
-sql-spec-migrate:
+sql-spec-migrate: ##- (opt) Applies migrations/*.sql to our spec database.
 	@echo "make sql-spec-migrate"
 	@sql-migrate up -env spec
 
-sql-check-structure: 
-	@$(MAKE) sql-check-structure-fk-missing-index
-	@$(MAKE) sql-check-structure-default-zero-values
+sql-check-structure: sql-check-structure-fk-missing-index sql-check-structure-default-zero-values ##- (opt) Runs make sql-check-structure-*.
 
-sql-check-structure-fk-missing-index:
+sql-check-structure-fk-missing-index: ##- (opt) Ensures spec database objects have FK-indices set.
 	@echo "make sql-check-structure-fk-missing-index"
 	@cat scripts/sql/fk_missing_index.sql | psql -qtz0 --no-align -d  "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
 
-sql-check-structure-default-zero-values:
+sql-check-structure-default-zero-values: ##- (opt) Ensures spec database objects default values match go zero values.
 	@echo "make sql-check-structure-default-zero-values"
 	@cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
 
@@ -143,66 +194,80 @@ sql-check-structure-default-zero-values:
 # --- Swagger
 ### -----------------------
 
-swagger-gen-spec: 
-	@echo "make swagger-gen-spec"
-	@swagger generate spec \
-		-i api/swagger.yml \
-		-o api/swagger.json \
-		--scan-models \
-		-q
+swagger: ##- (opt) Runs make swagger-concat and swagger-server.
+	@$(MAKE) swagger-concat
+	@$(MAKE) swagger-server
 
-swagger-models:
-	@echo "make swagger-models"
-	@rm -rf tmp/types 2> /dev/null
-	@swagger generate model \
+# https://goswagger.io/usage/mixin.html
+# https://goswagger.io/usage/flatten.html
+swagger-concat: ##- (opt) Regenerates api/swagger.yml based on api/paths/*.
+	@echo "make swagger-concat"
+	@rm -rf api/tmp
+	@mkdir -p api/tmp
+	@swagger mixin \
+		--output=api/tmp/tmp.yml \
+		--format=yaml \
+		--keep-spec-order \
+		api/main.yml api/paths/* \
+		-q
+	@swagger flatten api/tmp/tmp.yml \
+		--output=api/swagger.yml \
+		--format=yaml \
+		-q
+	@sed -i '1s@^@# // Code generated by "make swagger"; DO NOT EDIT.\n@' api/swagger.yml
+
+# https://goswagger.io/generate/server.html
+# Note that we first flag all files to delete (as previously generated), regenerate, then delete all still flagged files
+# This allows us to ensure that any filewatchers (VScode) don't panic as these files are removed.
+swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
+	@echo "make swagger-server"
+	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$$$' ./internal/types \
+		| xargs sed -i '1s#^#// DELETE ME; DO NOT EDIT.\n#'
+	@swagger generate server \
 		--allow-template-override \
-		--template-dir=internal/types/swagger \
-		--spec=api/swagger.json \
-		--existing-models=${GO_MODULE_NAME}/internal/types \
-		--model-package=tmp/types \
-		--all-definitions \
+		--template-dir=api/templates \
+		--spec=api/swagger.yml \
+		--server-package=internal/types \
+		--model-package=internal/types \
+		--exclude-main \
+		--config-file=api/config/go-swagger-config.yml \
+		--keep-spec-order \
 		-q
-	go run scripts/gocat/gocat.go -p types tmp/types/* > internal/types/validations.go
-	@rm -rf tmp/types
-
-swagger-validate:
-	@echo "make swagger-validate"
-	@swagger validate api/swagger.json \
-		--stop-on-error \
-		-q
-
-swagger-gen-server: swagger-validate swagger-models
-
-swagger: 
-	@$(MAKE) swagger-gen-spec
-	@$(MAKE) swagger-gen-server
-
-# accessable from outside via:
-# mac: http://docker.for.mac.localhost:8080/docs
-swagger-serve:
-	swagger serve --no-open -p 8080 api/swagger.json
+	@find internal/types -type f -exec grep -q '^// DELETE ME; DO NOT EDIT\.$$' {} \; -delete
 
 ### -----------------------
 # --- Helpers
 ### -----------------------
 
-clean:
+clean: ##- (opt) Cleans tmp and api/tmp folder.
 	rm -rf tmp
+	rm -rf api/tmp
 
-get-module-name:
+get-module-name: ##- (opt) Prints current go module-name (pipeable).
 	@echo "${GO_MODULE_NAME}"
 
-info-module-name:
-	@echo "current go module-name: ${GO_MODULE_NAME}"
+info-module-name: ##- (opt) Prints current go module-name.
+	@echo "go module-name: '${GO_MODULE_NAME}'"
 
-set-module-name:
+set-module-name: ##- Wizard to set a new go module-name.
 	@rm -f tmp/.modulename
 	@$(MAKE) info-module-name
 	@echo "Enter new go module-name:" \
-		&& read ans \
-		&& find . -not -path '*/\.*' -type f -exec sed -i "s|${GO_MODULE_NAME}|$${ans}|g" {} \; \
-		&& echo "new go module-name: $${ans}"
+		&& read new_module_name \
+		&& echo "new go module-name: '$${new_module_name}'" \
+		&& echo -n "Are you sure? [y/N]" \
+		&& read ans && [ $${ans:-N} = y ] \
+		&& echo -n "Please wait..." \
+		&& find . -not -path '*/\.*' -type f -exec sed -i "s|${GO_MODULE_NAME}|$${new_module_name}|g" {} \; \
+		&& echo "new go module-name: '$${new_module_name}'!"
 	@rm -f tmp/.modulename
+
+# https://gist.github.com/prwhite/8168133 - based on comment from @m000
+help: ##- Show this help.
+	@echo "usage: make <target>"
+	@echo "note: targets flagged with '(opt)' are *internal* and executed as part of another target."
+	@echo ""
+	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | sort | column -t -s '@'
 
 ### -----------------------
 # --- Special targets
@@ -211,7 +276,7 @@ set-module-name:
 # https://www.gnu.org/software/make/manual/html_node/Special-Targets.html
 # https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 # ignore matching file/make rule combinations in working-dir
-.PHONY: test
+.PHONY: test help
 
 # https://unix.stackexchange.com/questions/153763/dont-stop-makeing-if-a-command-fails-but-check-exit-status
 # https://www.gnu.org/software/make/manual/html_node/One-Shell.html

@@ -3,7 +3,8 @@ package hashing
 import "allaboutapps.dev/aw/go-starter/internal/util"
 
 var (
-	// Recommendations in accordance to: https://pkg.go.dev/golang.org/x/crypto@v0.0.0-20200420201142-3c4aac89819a/argon2?tab=doc#IDKey @ 2020-04-22T11:23:38Z
+	// DefaultArgon2Params represents Argon2ID parameter recommendations in accordance with:
+	// https://pkg.go.dev/golang.org/x/crypto@v0.0.0-20200420201142-3c4aac89819a/argon2?tab=doc#IDKey @ 2020-04-22T11:23:38Z
 	DefaultArgon2Params = &Argon2Params{
 		Time:       1,         // 1 second
 		Memory:     64 * 1024, // ~64MB memory costs

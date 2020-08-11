@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/jordan-wright/email"
@@ -16,17 +17,16 @@ import (
 
 var (
 	ErrEmailTemplateNotFound   = errors.New("email template not found")
-	emailTemplatesDir          = filepath.Join(util.GetProjectRootDir(), "web/templates/email")
-	emailTemplatePasswordReset = "password_reset"
+	emailTemplatePasswordReset = "password_reset" // /app/templates/email/password_reset/**.
 )
 
 type Mailer struct {
-	Config    MailerConfig
+	Config    config.Mailer
 	Transport transport.MailTransporter
 	Templates map[string]*template.Template
 }
 
-func New(config MailerConfig, transport transport.MailTransporter) *Mailer {
+func New(config config.Mailer, transport transport.MailTransporter) *Mailer {
 	return &Mailer{
 		Config:    config,
 		Transport: transport,
@@ -35,9 +35,9 @@ func New(config MailerConfig, transport transport.MailTransporter) *Mailer {
 }
 
 func (m *Mailer) ParseTemplates() error {
-	files, err := ioutil.ReadDir(emailTemplatesDir)
+	files, err := ioutil.ReadDir(m.Config.WebTemplatesEmailBaseDirAbs)
 	if err != nil {
-		log.Error().Str("dir", emailTemplatesDir).Err(err).Msg("Failed to read email templates directory while parsing templates")
+		log.Error().Str("dir", m.Config.WebTemplatesEmailBaseDirAbs).Err(err).Msg("Failed to read email templates directory while parsing templates")
 		return err
 	}
 
@@ -46,7 +46,7 @@ func (m *Mailer) ParseTemplates() error {
 			continue
 		}
 
-		t, err := template.ParseGlob(filepath.Join(emailTemplatesDir, file.Name(), "**"))
+		t, err := template.ParseGlob(filepath.Join(m.Config.WebTemplatesEmailBaseDirAbs, file.Name(), "**"))
 		if err != nil {
 			log.Error().Str("template", file.Name()).Err(err).Msg("Failed to parse email template files as glob")
 			return err

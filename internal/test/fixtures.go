@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	. "allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/models"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -21,25 +21,29 @@ type Insertable interface {
 
 // The main definition which fixtures are available though Fixtures()
 type FixtureMap struct {
-	User1                         *User
-	User1AppUserProfile           *AppUserProfile
-	User1AccessToken1             *AccessToken
-	User1RefreshToken1            *RefreshToken
-	User2                         *User
-	User2AppUserProfile           *AppUserProfile
-	User2AccessToken1             *AccessToken
-	User2RefreshToken1            *RefreshToken
-	UserDeactivated               *User
-	UserDeactivatedAppUserProfile *AppUserProfile
-	UserDeactivatedAccessToken1   *AccessToken
-	UserDeactivatedRefreshToken1  *RefreshToken
+	User1                         *models.User
+	User1AppUserProfile           *models.AppUserProfile
+	User1AccessToken1             *models.AccessToken
+	User1RefreshToken1            *models.RefreshToken
+	User2                         *models.User
+	User2AppUserProfile           *models.AppUserProfile
+	User2AccessToken1             *models.AccessToken
+	User2RefreshToken1            *models.RefreshToken
+	UserDeactivated               *models.User
+	UserDeactivatedAppUserProfile *models.AppUserProfile
+	UserDeactivatedAccessToken1   *models.AccessToken
+	UserDeactivatedRefreshToken1  *models.RefreshToken
+	User1PushToken                *models.PushToken
+	User1PushTokenAPN             *models.PushToken
 }
 
 // We return a function wrapping our fixtures, tests are allowed to manipulate those
 // each test (which may run concurrently) can use a fresh copy
 func Fixtures() FixtureMap {
+	now := time.Now()
+	f := FixtureMap{}
 
-	user1 := User{
+	f.User1 = &models.User{
 		ID:       "f6ede5d8-e22a-4ca5-aa12-67821865a3e5",
 		IsActive: true,
 		Username: null.StringFrom("user1@example.com"),
@@ -47,24 +51,23 @@ func Fixtures() FixtureMap {
 		Scopes:   []string{"app"},
 	}
 
-	user1AppUserProfile := AppUserProfile{
-		UserID:          user1.ID,
-		LegalAcceptedAt: null.TimeFrom(time.Now().Add(time.Minute * -10)),
-		HasGDPROptOut:   false,
+	f.User1AppUserProfile = &models.AppUserProfile{
+		UserID:          f.User1.ID,
+		LegalAcceptedAt: null.TimeFrom(now.Add(time.Minute * -10)),
 	}
 
-	user1AccessToken1 := AccessToken{
+	f.User1AccessToken1 = &models.AccessToken{
 		Token:      "1cfc27d7-a178-4051-802b-f3ff3967c95c",
-		ValidUntil: time.Now().Add(10 * 365 * 24 * time.Hour),
-		UserID:     user1.ID,
+		ValidUntil: now.Add(10 * 365 * 24 * time.Hour),
+		UserID:     f.User1.ID,
 	}
 
-	user1RefreshToken1 := RefreshToken{
+	f.User1RefreshToken1 = &models.RefreshToken{
 		Token:  "66412eaf-2b89-404d-bbb5-46c3b8bf1a53",
-		UserID: user1.ID,
+		UserID: f.User1.ID,
 	}
 
-	user2 := User{
+	f.User2 = &models.User{
 		ID:       "76a79a2b-fbd8-45a0-b35b-671a28a87acf",
 		IsActive: true,
 		Username: null.StringFrom("user2@example.com"),
@@ -72,24 +75,23 @@ func Fixtures() FixtureMap {
 		Scopes:   []string{"app"},
 	}
 
-	user2AppUserProfile := AppUserProfile{
-		UserID:          user2.ID,
-		LegalAcceptedAt: null.TimeFrom(time.Now().Add(time.Minute * -10)),
-		HasGDPROptOut:   true,
+	f.User2AppUserProfile = &models.AppUserProfile{
+		UserID:          f.User2.ID,
+		LegalAcceptedAt: null.TimeFrom(now.Add(time.Minute * -10)),
 	}
 
-	user2AccessToken1 := AccessToken{
+	f.User2AccessToken1 = &models.AccessToken{
 		Token:      "115d28c5-f585-4fb5-9656-fb321739fee5",
-		ValidUntil: time.Now().Add(10 * 365 * 24 * time.Hour),
-		UserID:     user2.ID,
+		ValidUntil: now.Add(10 * 365 * 24 * time.Hour),
+		UserID:     f.User2.ID,
 	}
 
-	user2RefreshToken1 := RefreshToken{
+	f.User2RefreshToken1 = &models.RefreshToken{
 		Token:  "ea909c75-63d1-4348-a63c-4bcf8ab334a2",
-		UserID: user2.ID,
+		UserID: f.User2.ID,
 	}
 
-	userDeactivated := User{
+	f.UserDeactivated = &models.User{
 		ID:       "d9c0dee9-239e-4323-979a-a5354d289627",
 		IsActive: false,
 		Username: null.StringFrom("userdeactivated@example.com"),
@@ -97,37 +99,37 @@ func Fixtures() FixtureMap {
 		Scopes:   []string{"app"},
 	}
 
-	userDeactivatedAppUserProfile := AppUserProfile{
-		UserID:          userDeactivated.ID,
+	f.UserDeactivatedAppUserProfile = &models.AppUserProfile{
+		UserID:          f.UserDeactivated.ID,
 		LegalAcceptedAt: null.Time{},
-		HasGDPROptOut:   false,
 	}
 
-	userDeactivatedAccessToken1 := AccessToken{
+	f.UserDeactivatedAccessToken1 = &models.AccessToken{
 		Token:      "24d0b38d-387c-400c-80fc-a71d85031d4c",
-		ValidUntil: time.Now().Add(10 * 365 * 24 * time.Hour),
-		UserID:     userDeactivated.ID,
+		ValidUntil: now.Add(10 * 365 * 24 * time.Hour),
+		UserID:     f.UserDeactivated.ID,
 	}
 
-	userDeactivatedRefreshToken1 := RefreshToken{
+	f.UserDeactivatedRefreshToken1 = &models.RefreshToken{
 		Token:  "b6e13a88-7b18-4f17-b819-71b196be2444",
-		UserID: userDeactivated.ID,
+		UserID: f.UserDeactivated.ID,
 	}
 
-	return FixtureMap{
-		&user1,
-		&user1AppUserProfile,
-		&user1AccessToken1,
-		&user1RefreshToken1,
-		&user2,
-		&user2AppUserProfile,
-		&user2AccessToken1,
-		&user2RefreshToken1,
-		&userDeactivated,
-		&userDeactivatedAppUserProfile,
-		&userDeactivatedAccessToken1,
-		&userDeactivatedRefreshToken1,
+	f.User1PushToken = &models.PushToken{
+		ID:       "98ad176b-af90-44b7-b991-d9ebfc5dd9a0",
+		Token:    "cQ_Qk3ZCCZelUZ_K_Yn2BV:APA91bG4jst5srGYZqBAn_wRfiJUzAOQ4k8tV0sDcV4uas2ln5wNwkE_ebneR5Fqk7GvndZ-h3mWnjWaI8yZ4sVwo8qu_Aztotqup4mlEPNYgFGqTlJ5ltQrJG5oKp4RoYQ_0CeFaymn",
+		UserID:   f.User1.ID,
+		Provider: models.ProviderTypeFCM,
 	}
+
+	f.User1PushTokenAPN = &models.PushToken{
+		ID:       "5909b472-86f8-4d15-bb63-d49f4fad41a3",
+		Token:    "0a863a72-d391-4217-9f26-388801684744",
+		UserID:   f.User1.ID,
+		Provider: models.ProviderTypeApn,
+	}
+
+	return f
 }
 
 // This function defines the order in which the fixtures will be inserted
@@ -148,5 +150,7 @@ func Inserts() []Insertable {
 		fixtures.UserDeactivatedAppUserProfile,
 		fixtures.UserDeactivatedAccessToken1,
 		fixtures.UserDeactivatedRefreshToken1,
+		fixtures.User1PushToken,
+		fixtures.User1PushTokenAPN,
 	}
 }

@@ -5,16 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch apiserver",
+            "name": "Launch app server",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/api",
+            "program": "${workspaceFolder}",
             "env": {},
-            "args": []
+            "args": [
+                "server"
+            ]
         },
         {
-            "name": "Launch",
+            "name": "Launch file",
             "type": "go",
             "request": "launch",
             "mode": "auto",

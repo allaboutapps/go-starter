@@ -8,8 +8,8 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/auth"
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/models"
-	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	ErrBadRequestMalformedToken                = types.NewHTTPError(http.StatusBadRequest, "MALFORMED_TOKEN", "Auth token is malformed")
-	ErrUnauthorizedLastAuthenticatedAtExceeded = types.NewHTTPError(http.StatusUnauthorized, "LAST_AUTHENTICATED_AT_EXCEEDED", "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
-	ErrForbiddenUserDeactivated                = types.NewHTTPError(http.StatusForbidden, "USER_DEACTIVATED", "User account is deactivated")
-	ErrForbiddenMissingScopes                  = types.NewHTTPError(http.StatusForbidden, "MISSING_SCOPES", "User is missing required scopes")
+	ErrBadRequestMalformedToken                = httperrors.NewHTTPError(http.StatusBadRequest, "MALFORMED_TOKEN", "Auth token is malformed")
+	ErrUnauthorizedLastAuthenticatedAtExceeded = httperrors.NewHTTPError(http.StatusUnauthorized, "LAST_AUTHENTICATED_AT_EXCEEDED", "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
+	ErrForbiddenUserDeactivated                = httperrors.NewHTTPError(http.StatusForbidden, "USER_DEACTIVATED", "User account is deactivated")
+	ErrForbiddenMissingScopes                  = httperrors.NewHTTPError(http.StatusForbidden, "MISSING_SCOPES", "User is missing required scopes")
 )
 
 // Controls the type of authentication check performed for a specific route or group
@@ -185,7 +185,7 @@ func (c AuthConfig) CheckLastAuthenticatedAt(user *models.User) bool {
 		return false
 	}
 
-	return time.Since(user.LastAuthenticatedAt.Time).Seconds() <= float64(c.S.Config.Auth.LastAuthenticatedAtThreshold)
+	return time.Since(user.LastAuthenticatedAt.Time).Seconds() <= c.S.Config.Auth.LastAuthenticatedAtThreshold.Seconds()
 }
 
 func (c AuthConfig) CheckScopes(user *models.User) bool {
@@ -254,7 +254,7 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 				if !config.CheckLastAuthenticatedAt(user) {
 					log.Trace().
 						Time("last_authenticated_at", user.LastAuthenticatedAt.Time).
-						Int("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
+						Dur("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
 						Msg("Authentication already performed, but last authenticated at time exceeds threshold, rejecting request")
 					return ErrUnauthorizedLastAuthenticatedAtExceeded
 				}
@@ -332,7 +332,7 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 			if !config.CheckLastAuthenticatedAt(user) {
 				log.Trace().
 					Time("last_authenticated_at", user.LastAuthenticatedAt.Time).
-					Int("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
+					Dur("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
 					Msg("Authentication already performed, but last authenticated at time exceeds threshold, rejecting request")
 				return ErrUnauthorizedLastAuthenticatedAtExceeded
 			}
@@ -340,7 +340,7 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 			if !config.CheckScopes(user) {
 				log.Trace().
 					Time("last_authenticated_at", user.LastAuthenticatedAt.Time).
-					Int("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
+					Dur("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
 					Msg("Authentication already performed, but last authenticated at time exceeds threshold, rejecting request")
 				return ErrForbiddenMissingScopes
 			}

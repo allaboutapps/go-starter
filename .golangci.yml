@@ -1,0 +1,5 @@
+linters:
+  enable:
+    # https://github.com/golangci/golangci-lint#enabled-by-default-linters
+    # additional linter you want to activate may be specified here...
+    - golint # official golang linter

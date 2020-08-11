@@ -8,35 +8,22 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/models"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"allaboutapps.dev/aw/go-starter/internal/util/hashing"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt/conv"
+	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-)
-
-var (
-	ErrForbiddenNotLocalUser = NewHTTPError(http.StatusForbidden, "NOT_LOCAL_USER", "User account is not valid for local authentication")
 )
 
 const (
 	TokenTypeBearer = "bearer"
 )
 
-// swagger:route POST /api/v1/auth/login auth PostLoginRoute
-//
-// Login with local user
-//
-// Returns an access and refresh token on successful authentication
-//
-// Responses:
-//   200: PostLoginResponse
-//   400: body:HTTPValidationError
-//   401: body:HTTPError
-//   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
 func PostLoginRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/login", postLoginHandler(s))
 }
@@ -46,7 +33,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
-		var body PostLoginPayload
+		var body types.PostLoginPayload
 		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
@@ -69,7 +56,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 
 		if !user.Password.Valid {
 			log.Debug().Msg("User is missing password, forbidding authentication")
-			return ErrForbiddenNotLocalUser
+			return echo.ErrUnauthorized
 		}
 
 		match, err := hashing.ComparePasswordAndHash(*body.Password, user.Password.String)
@@ -83,9 +70,9 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 			return echo.ErrUnauthorized
 		}
 
-		response := &PostLoginResponse{
-			TokenType: TokenTypeBearer,
-			ExpiresIn: int(s.Config.Auth.AccessTokenValidity.Seconds()),
+		response := &types.PostLoginResponse{
+			TokenType: swag.String(TokenTypeBearer),
+			ExpiresIn: swag.Int64(int64(s.Config.Auth.AccessTokenValidity.Seconds())),
 		}
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
@@ -96,7 +83,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := accessToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert access token")
-				return echo.ErrUnauthorized
+				return err
 			}
 
 			refreshToken := models.RefreshToken{
@@ -105,17 +92,17 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := refreshToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert refresh token")
-				return echo.ErrUnauthorized
+				return err
 			}
 
 			user.LastAuthenticatedAt = null.TimeFrom(time.Now())
 			if _, err := user.Update(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to update user's last authenticated at timestamp")
-				return echo.ErrUnauthorized
+				return err
 			}
 
-			response.AccessToken = strfmt.UUID4(accessToken.Token)
-			response.RefreshToken = strfmt.UUID4(refreshToken.Token)
+			response.AccessToken = conv.UUID4(strfmt.UUID4(accessToken.Token))
+			response.RefreshToken = conv.UUID4(strfmt.UUID4(refreshToken.Token))
 
 			return nil
 		}); err != nil {

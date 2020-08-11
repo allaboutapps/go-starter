@@ -3,7 +3,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.14.2 AS development
+FROM golang:1.14.7 AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -27,9 +27,22 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" \
 # Install required system dependencies
 RUN apt-get update \
     && apt-get install -y \
-    # project specifics
-    postgresql-client-12 \
-    # https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile#L24
+    #
+    # Mandadory minimal linux packages
+    # Installed at development stage and app stage
+    # Do not forget to add mandadory linux packages to the final app Dockerfile stage below!
+    # 
+    # -- START MANDADORY --
+    ca-certificates \
+    # --- END MANDADORY ---
+    # 
+    # Development specific packages
+    # Only installed at development stage and NOT available in the final Docker stage
+    # based upon
+    # https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
+    # https://raw.githubusercontent.com/microsoft/vscode-dev-containers/master/script-library/common-debian.sh
+    #
+    # -- START DEVELOPMENT --
     apt-utils \
     dialog \
     openssh-client \
@@ -37,9 +50,13 @@ RUN apt-get update \
     iproute2 \
     procps \
     lsb-release \
-    # env specifics
     locales \
     sudo \
+    bash-completion \
+    bsdmainutils \
+    postgresql-client-12 \
+    # --- END DEVELOPMENT ---
+    # 
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -65,25 +82,25 @@ RUN mkdir -p /tmp/pgFormatter \
     && make && make install \
     && rm -rf /tmp/pgFormatter 
 
-# go richgo: (this package should NOT be installed via go get)
-# https://github.com/kyoh86/richgo/releases
-RUN mkdir -p /tmp/richgo \
-    && cd /tmp/richgo \
-    && wget https://github.com/kyoh86/richgo/releases/download/v0.3.3/richgo_0.3.3_linux_amd64.tar.gz \
-    && tar xzf richgo_0.3.3_linux_amd64.tar.gz \
-    && cp richgo /usr/local/bin/richgo \
-    && rm -rf /tmp/richgo 
+# go gotestsum: (this package should NOT be installed via go get)
+# https://github.com/gotestyourself/gotestsum/releases
+RUN mkdir -p /tmp/gotestsum \
+    && cd /tmp/gotestsum \
+    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.5.2/gotestsum_0.5.2_linux_amd64.tar.gz \
+    && tar xzf gotestsum_0.5.2_linux_amd64.tar.gz \
+    && cp gotestsum /usr/local/bin/gotestsum \
+    && rm -rf /tmp/gotestsum 
 
 # go linting: (this package should NOT be installed via go get)
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.26.0
+    | sh -s -- -b $(go env GOPATH)/bin v1.30.0
 
 # go swagger: (this package should NOT be installed via go get) 
 # https://github.com/go-swagger/go-swagger/releases
 RUN curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.23.0/swagger_linux_amd64" \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.25.0/swagger_linux_amd64" \
     && chmod +x /usr/local/bin/swagger
 
 # linux permissions / vscode support: Add user to avoid linux file permission issues
@@ -131,31 +148,39 @@ RUN make tools
 COPY . /app/
 
 ### -----------------------
-# --- Stage: builder-apiserver
+# --- Stage: builder-app
 ### -----------------------
 
-FROM builder as builder-apiserver
+FROM builder as builder-app
 RUN make go-build
 
 ### -----------------------
-# --- Stage: apiserver
+# --- Stage: app
 ### -----------------------
 
-FROM debian:buster-slim as apiserver
+FROM debian:buster-slim as app
 
 RUN apt-get update \
     && apt-get install -y \
+    #
+    # Mandadory minimal linux packages
+    # Installed at development stage and app stage
+    # Do not forget to add mandadory linux packages to the base development Dockerfile stage above!
+    #
+    # -- START MANDADORY --
     ca-certificates \
+    # --- END MANDADORY ---
+    #
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder-apiserver /app/bin/apiserver /app/bin/sql-migrate /app/
-COPY --from=builder-apiserver /app/dbconfig.yml /app/
-COPY --from=builder-apiserver /app/api/swagger.json /app/api/
-COPY --from=builder-apiserver /app/assets /app/assets/
-COPY --from=builder-apiserver /app/migrations /app/migrations/
-COPY --from=builder-apiserver /app/web /app/web/
+COPY --from=builder-app /app/bin/app /app/bin/sql-migrate /app/
+COPY --from=builder-app /app/dbconfig.yml /app/
+COPY --from=builder-app /app/api/swagger.yml /app/api/
+COPY --from=builder-app /app/assets /app/assets/
+COPY --from=builder-app /app/migrations /app/migrations/
+COPY --from=builder-app /app/web /app/web/
 
 WORKDIR /app
 
-CMD [ "/app/apiserver" ]
+CMD [ "/bin/sh", "-c", "/app/sql-migrate up && /app/app server" ]

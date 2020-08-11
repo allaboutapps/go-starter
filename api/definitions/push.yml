@@ -1,0 +1,28 @@
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+paths: {}
+definitions:
+  PostUpdatePushTokenPayload:
+    type: object
+    required:
+      - newToken
+      - provider
+    properties:
+      newToken:
+        description: New push token for given provider.
+        type: string
+        maxLength: 500
+        example: 1c91e550-8167-439c-8021-dee7de2f7e96
+      oldToken:
+        description: Old token that can be deleted if present.
+        type: string
+        maxLength: 500
+        example: 495179de-b771-48f0-aab2-8d23701b0f02
+        x-nullable: true
+      provider:
+        description: Identifier of the provider the token is for (eg. "fcm", "apn"). Currently only "fcm" is supported.
+        type: string
+        maxLength: 500
+        example: fcm

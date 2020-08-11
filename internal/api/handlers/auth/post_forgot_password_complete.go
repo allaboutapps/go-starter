@@ -6,39 +6,22 @@ import (
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/types"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"allaboutapps.dev/aw/go-starter/internal/util/hashing"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt/conv"
+	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-var (
-	ErrNotFoundTokenNotFound = types.NewHTTPError(http.StatusNotFound, "TOKEN_NOT_FOUND", "Provided token was not found")
-	ErrConflictTokenExpired  = types.NewHTTPError(http.StatusConflict, "TOKEN_EXPIRED", "Provided token has expired and is no longer valid")
-)
-
-// swagger:route POST /api/v1/auth/forgot-password/complete auth PostForgotPasswordCompleteRoute
-//
-// Completes password reset for local user
-//
-// Completes a password reset for a local user, using the password reset token sent via email
-// to confirm user access, setting the new password if successful. All current access and refresh
-// tokens are invalidated and a new set of auth tokens is returned
-//
-// Responses:
-//   200: PostLoginResponse
-//   400: body:HTTPValidationError HTTPValidationError, type `INVALID_PASSWORD`
-//   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
-//   404: body:HTTPError HTTPError, type `TOKEN_NOT_FOUND`
-//   409: body:HTTPError HTTPError, type `TOKEN_EXPIRED`
 func PostForgotPasswordCompleteRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/forgot-password/complete", postForgotPasswordCompleteHandler(s))
 }
@@ -48,7 +31,7 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
-		var body PostForgotPasswordCompletePayload
+		var body types.PostForgotPasswordCompletePayload
 		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
@@ -60,7 +43,7 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Debug().Err(err).Msg("Password reset token not found")
-				return ErrNotFoundTokenNotFound
+				return httperrors.ErrNotFoundTokenNotFound
 			}
 
 			log.Debug().Msg("Failed to load password reset token")
@@ -74,7 +57,7 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 				Str("user_id", user.ID).
 				Time("valid_until", passwordResetToken.ValidUntil).
 				Msg("Password reset token is no longer valid, rejecting password reset")
-			return ErrConflictTokenExpired
+			return httperrors.ErrConflictTokenExpired
 		}
 
 		if !user.IsActive {
@@ -84,18 +67,18 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 
 		if !user.Password.Valid {
 			log.Debug().Str("user_id", user.ID).Msg("User is missing password, forbidding password reset")
-			return ErrForbiddenNotLocalUser
+			return httperrors.ErrForbiddenNotLocalUser
 		}
 
 		hash, err := hashing.HashPassword(*body.Password, hashing.DefaultArgon2Params)
 		if err != nil {
 			log.Debug().Str("user_id", user.ID).Err(err).Msg("Failed to hash new password")
-			return ErrBadRequestInvalidPassword
+			return httperrors.ErrBadRequestInvalidPassword
 		}
 
-		response := &PostLoginResponse{
-			TokenType: TokenTypeBearer,
-			ExpiresIn: int(s.Config.Auth.AccessTokenValidity.Seconds()),
+		response := &types.PostLoginResponse{
+			TokenType: swag.String(TokenTypeBearer),
+			ExpiresIn: swag.Int64(int64(s.Config.Auth.AccessTokenValidity.Seconds())),
 		}
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
@@ -140,8 +123,8 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 				return err
 			}
 
-			response.AccessToken = strfmt.UUID4(accessToken.Token)
-			response.RefreshToken = strfmt.UUID4(refreshToken.Token)
+			response.AccessToken = conv.UUID4(strfmt.UUID4(accessToken.Token))
+			response.RefreshToken = conv.UUID4(strfmt.UUID4(refreshToken.Token))
 
 			return nil
 		}); err != nil {

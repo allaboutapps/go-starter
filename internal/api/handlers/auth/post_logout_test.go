@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/test"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -90,12 +90,12 @@ func TestPostLogoutInvalidRefreshToken(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response HTTPError
+		var response httperrors.HTTPError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
@@ -116,12 +116,12 @@ func TestPostLogoutInvalidAuthToken(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response HTTPError
+		var response httperrors.HTTPError
 		test.ParseResponseAndValidate(t, res, &response)
 
 		assert.Equal(t, *middleware.ErrBadRequestMalformedToken.Code, *response.Code)
-		assert.Equal(t, middleware.ErrBadRequestMalformedToken.Type, response.Type)
-		assert.Equal(t, middleware.ErrBadRequestMalformedToken.Title, response.Title)
+		assert.Equal(t, *middleware.ErrBadRequestMalformedToken.Type, *response.Type)
+		assert.Equal(t, *middleware.ErrBadRequestMalformedToken.Title, *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
@@ -136,12 +136,12 @@ func TestPostLogoutUnknownAuthToken(t *testing.T) {
 
 		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
 
-		var response HTTPError
+		var response httperrors.HTTPError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusUnauthorized, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), response.Title)
+		assert.Equal(t, int64(http.StatusUnauthorized), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusUnauthorized), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
@@ -156,12 +156,12 @@ func TestPostLogoutMissingAuthToken(t *testing.T) {
 
 		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
 
-		var response HTTPError
+		var response httperrors.HTTPError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusUnauthorized, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), response.Title)
+		assert.Equal(t, int64(http.StatusUnauthorized), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusUnauthorized), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)

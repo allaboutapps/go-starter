@@ -1,11 +1,10 @@
 -- +migrate Up
 CREATE TABLE app_user_profiles (
     user_id uuid NOT NULL,
-    has_gdpr_opt_out bool NOT NULL DEFAULT FALSE,
     legal_accepted_at timestamptz,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL,
-    CONSTRAINT App_user_profiles_pkey PRIMARY KEY (user_id)
+    CONSTRAINT app_user_profiles_pkey PRIMARY KEY (user_id)
 );
 
 ALTER TABLE app_user_profiles

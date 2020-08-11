@@ -6,32 +6,21 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/auth"
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/models"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"allaboutapps.dev/aw/go-starter/internal/util/hashing"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt/conv"
+	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// swagger:route POST /api/v1/auth/change-password auth PostChangePasswordRoute
-//
-// Change local user's password
-//
-// After successful password change, all current access and refresh tokens are
-// invalidated and a new set of auth tokens is returned
-//
-// Responses:
-//   200: PostLoginResponse
-//   400: body:HTTPValidationError HTTPValidationError, type `INVALID_PASSWORD`
-//   401: body:HTTPError
-//   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
-// Security:
-//   Bearer:
 func PostChangePasswordRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/change-password", postChangePasswordHandler(s))
 }
@@ -41,7 +30,7 @@ func postChangePasswordHandler(s *api.Server) echo.HandlerFunc {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
-		var body PostChangePasswordPayload
+		var body types.PostChangePasswordPayload
 		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
@@ -54,13 +43,13 @@ func postChangePasswordHandler(s *api.Server) echo.HandlerFunc {
 
 		if !user.Password.Valid {
 			log.Debug().Msg("User is missing password, forbidding password change")
-			return ErrForbiddenNotLocalUser
+			return httperrors.ErrForbiddenNotLocalUser
 		}
 
 		match, err := hashing.ComparePasswordAndHash(*body.CurrentPassword, user.Password.String)
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to compare password with stored hash")
-			return echo.ErrUnauthorized
+			return err
 		}
 
 		if !match {
@@ -71,12 +60,12 @@ func postChangePasswordHandler(s *api.Server) echo.HandlerFunc {
 		hash, err := hashing.HashPassword(*body.NewPassword, hashing.DefaultArgon2Params)
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to hash new password")
-			return ErrBadRequestInvalidPassword
+			return httperrors.ErrBadRequestInvalidPassword
 		}
 
-		response := &PostLoginResponse{
-			TokenType: TokenTypeBearer,
-			ExpiresIn: int(s.Config.Auth.AccessTokenValidity.Seconds()),
+		response := &types.PostLoginResponse{
+			TokenType: swag.String(TokenTypeBearer),
+			ExpiresIn: swag.Int64(int64(s.Config.Auth.AccessTokenValidity.Seconds())),
 		}
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
@@ -84,17 +73,17 @@ func postChangePasswordHandler(s *api.Server) echo.HandlerFunc {
 
 			if _, err := user.Update(ctx, tx, boil.Whitelist(models.UserColumns.Password)); err != nil {
 				log.Debug().Err(err).Msg("Failed to update user")
-				return echo.ErrInternalServerError
+				return err
 			}
 
 			if _, err := user.AccessTokens().DeleteAll(ctx, tx); err != nil {
 				log.Debug().Err(err).Msg("Failed to delete existing access tokens")
-				return echo.ErrInternalServerError
+				return err
 			}
 
 			if _, err := user.RefreshTokens().DeleteAll(ctx, tx); err != nil {
 				log.Debug().Err(err).Msg("Failed to delete existing refresh tokens")
-				return echo.ErrInternalServerError
+				return err
 			}
 
 			accessToken := models.AccessToken{
@@ -104,7 +93,7 @@ func postChangePasswordHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := accessToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert access token")
-				return echo.ErrInternalServerError
+				return err
 			}
 
 			refreshToken := models.RefreshToken{
@@ -113,11 +102,11 @@ func postChangePasswordHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := refreshToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert refresh token")
-				return echo.ErrInternalServerError
+				return err
 			}
 
-			response.AccessToken = strfmt.UUID4(accessToken.Token)
-			response.RefreshToken = strfmt.UUID4(refreshToken.Token)
+			response.AccessToken = conv.UUID4(strfmt.UUID4(accessToken.Token))
+			response.RefreshToken = conv.UUID4(strfmt.UUID4(refreshToken.Token))
 
 			return nil
 		}); err != nil {

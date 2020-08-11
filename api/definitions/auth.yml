@@ -1,0 +1,175 @@
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+paths: {}
+definitions:
+  User:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+        format: uuid4
+        description: ID of user
+        example: 891d37d3-c74f-493e-aea8-af73efd92016
+  GetUserInfoResponse:
+    type: object
+    required:
+      - sub
+      - updated_at
+    properties:
+      sub:
+        type: string
+        description: ID of user
+        example: 82ebdfad-c586-4407-a873-4cc1c33d56fc
+      updated_at:
+        type: integer
+        description: Unix timestamp the user's info was last updated at
+        example: 1591960808
+      email:
+        type: string
+        format: email
+        description: Email address of user, if available
+        maxLength: 255
+        example: user@example.com
+      scopes:
+        type: array
+        items:
+          type: string
+          enum:
+            - "app"
+            - "cms"
+        description: Auth-Scopes of the user, if available
+        example: ["app"]
+  PostChangePasswordPayload:
+    type: object
+    required:
+      - currentPassword
+      - newPassword
+    properties:
+      currentPassword:
+        description: Current password of user
+        type: string
+        maxLength: 500
+        minLength: 1
+        example: correct horse battery staple
+      newPassword:
+        description: New password to set for user
+        type: string
+        maxLength: 500
+        minLength: 1
+        example: correct horse battery staple
+  PostForgotPasswordCompletePayload:
+    type: object
+    required:
+      - token
+      - password
+    properties:
+      password:
+        description: New password to set for user
+        type: string
+        maxLength: 500
+        minLength: 1
+        example: correct horse battery staple
+      token:
+        description: Password reset token sent via email
+        type: string
+        format: uuid4
+        example: ec16f032-3c44-4148-bbcc-45557466fa74
+  PostForgotPasswordPayload:
+    type: object
+    required:
+      - username
+    properties:
+      username:
+        description: Username to initiate password reset for
+        type: string
+        format: email
+        maxLength: 255
+        minLength: 1
+        example: user@example.com
+  PostLoginPayload:
+    type: object
+    required:
+      - username
+      - password
+    properties:
+      password:
+        description: Password of user to authenticate as
+        type: string
+        maxLength: 500
+        minLength: 1
+        example: correct horse battery staple
+      username:
+        description: Username of user to authenticate as
+        type: string
+        format: email
+        maxLength: 255
+        minLength: 1
+        example: user@example.com
+  PostLoginResponse:
+    type: object
+    required:
+      - access_token
+      - token_type
+      - expires_in
+      - refresh_token
+    properties:
+      access_token:
+        description: Access token required for accessing protected API endpoints
+        type: string
+        format: uuid4
+        example: c1247d8d-0d65-41c4-bc86-ec041d2ac437
+      expires_in:
+        description: Access token expiry in seconds
+        type: integer
+        format: int64
+        example: 86400
+      refresh_token:
+        description: Refresh token for refreshing the access token once it expires
+        type: string
+        format: uuid4
+        example: 1dadb3bd-50d8-485d-83a3-6111392568f0
+      token_type:
+        description: "Type of access token, will always be `bearer`"
+        type: string
+        example: bearer
+  PostLogoutPayload:
+    type: object
+    properties:
+      refresh_token:
+        description: Optional refresh token to delete while logging out
+        type: string
+        format: uuid4
+        example: 700ebed3-40f7-4211-bc83-a89b22b9875e
+  PostRefreshPayload:
+    type: object
+    required:
+      - refresh_token
+    properties:
+      refresh_token:
+        description: Refresh token to use for retrieving new token set
+        type: string
+        format: uuid4
+        example: 7503cd8a-c921-4368-a32d-6c1d01d86da9
+  PostRegisterPayload:
+    type: object
+    required:
+      - username
+      - password
+    properties:
+      password:
+        description: Password to register with
+        type: string
+        maxLength: 500
+        minLength: 1
+        example: correct horse battery staple
+      username:
+        description: Username to register with
+        type: string
+        format: email
+        maxLength: 255
+        minLength: 1
+        example: user@example.com

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"testing"
 
-	. "allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/models"
 	_ "github.com/lib/pq"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -33,7 +33,7 @@ func TestInsert(t *testing.T) {
 
 	WithTestDatabase(t, func(db *sql.DB) {
 
-		userNew := User{
+		userNew := models.User{
 			ID:       "6d00d09b-fab3-43d8-a163-279fe7ba533e",
 			IsActive: true,
 			Username: null.StringFrom("userNew@example.com"),
@@ -58,7 +58,7 @@ func TestUpdate(t *testing.T) {
 
 		originalUser1 := Fixtures().User1
 
-		updatedUser1 := User(*originalUser1)
+		updatedUser1 := models.User(*originalUser1)
 
 		updatedUser1.Username = null.StringFrom("user_updated@example.com")
 

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -43,4 +44,18 @@ func WithTransaction(ctx context.Context, db *sql.DB, fn TxFn) error {
 	err = fn(tx)
 
 	return err
+}
+
+func NullIntFromInt64Ptr(i *int64) null.Int {
+	if i == nil {
+		return null.NewInt(0, false)
+	}
+	return null.NewInt(int(*i), true)
+}
+
+func NullFloat32FromFloat64Ptr(f *float64) null.Float32 {
+	if f == nil {
+		return null.NewFloat32(0.0, false)
+	}
+	return null.NewFloat32(float32(*f), true)
 }

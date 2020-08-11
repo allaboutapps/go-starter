@@ -1,0 +1,61 @@
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+paths: {}
+definitions:
+  PublicHTTPError:
+    type: object
+    required:
+      - status
+      - type
+      - title
+    properties:
+      detail:
+        description: "More detailed, human-readable, optional explanation of the error"
+        type: string
+        example: User is lacking permission to access this resource
+      status:
+        description: HTTP status code returned for the error
+        type: integer
+        format: int64
+        maximum: 599
+        minimum: 100
+        x-go-name: Code
+        example: 403
+      title:
+        description: "Short, human-readable description of the error"
+        type: string
+        example: Forbidden
+      type:
+        description: "Type of error returned, should be used for client-side error handling"
+        type: string
+        example: generic
+  PublicHTTPValidationError:
+    allOf:
+      - $ref: "#/definitions/PublicHTTPError"
+    type: object
+    required:
+      - validationErrors
+    properties:
+      validationErrors:
+        description: List of errors received while validating payload against schema
+        type: array
+        items:
+          $ref: "#/definitions/HTTPValidationErrorDetail"
+  HTTPValidationErrorDetail:
+    type: object
+    required:
+      - key
+      - in
+      - error
+    properties:
+      error:
+        description: Error describing field validation failure
+        type: string
+      in:
+        description: Indicates how the invalid field was provided
+        type: string
+      key:
+        description: Key of field failing validation
+        type: string

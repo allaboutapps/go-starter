@@ -9,7 +9,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/models"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/labstack/echo/v4"
@@ -17,17 +17,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// swagger:route POST /api/v1/auth/forgot-password auth PostForgotPasswordRoute
-//
-// Initiate password reset for local user
-//
-// Initiates a password reset for a local user, sending an email with a password
-// reset link to the provided email address if a user account exists. Will always
-// succeed, even if no user was found in order to prevent user enumeration
-//
-// Responses:
-//   204: description:Success
-//   400: body:HTTPValidationError
 func PostForgotPasswordRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/forgot-password", postForgotPasswordHandler(s))
 }
@@ -36,7 +25,7 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 
-		var body PostForgotPasswordPayload
+		var body types.PostForgotPasswordPayload
 		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
@@ -47,11 +36,11 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Debug().Str("username", body.Username.String()).Err(err).Msg("User not found")
-			} else {
-				log.Debug().Str("username", body.Username.String()).Err(err).Msg("Failed to load user")
+				return c.NoContent(http.StatusNoContent)
 			}
 
-			return c.NoContent(http.StatusNoContent)
+			log.Debug().Str("username", body.Username.String()).Err(err).Msg("Failed to load user")
+			return err
 		}
 
 		if !user.IsActive {

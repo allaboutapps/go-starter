@@ -1,0 +1,47 @@
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+paths: {}
+definitions:
+  Paginatable:
+    type: object
+    required:
+      - limit
+      - offset
+      - total
+    properties:
+      limit:
+        type: integer
+        description: Actual limit applied to request
+      offset:
+        type: integer
+        description: Actual offset applied to request
+      total:
+        type: integer
+        description: Total number of records available
+parameters:
+  offsetParam:
+    type: integer
+    in: query
+    name: offset
+    description: Offset used for pagination, number of records to skip
+    default: 0
+    minimum: 0
+  limitParam:
+    type: integer
+    in: query
+    name: limit
+    description: Limit used for pagination, number of records to retrieve
+    default: 50
+    minimum: 1
+    maximum: 500
+  orderDirParam:
+    type: string
+    in: query
+    name: orderDir
+    description: Direction of order applied, defaults to `asc` if omitted. `asc` will sort `NULL` values at the end of the list.
+    enum:
+      - asc
+      - desc
+    default: asc

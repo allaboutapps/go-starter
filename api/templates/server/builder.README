@@ -1,0 +1,5 @@
+https://raw.githubusercontent.com/go-swagger/go-swagger/master/generator/templates/server/builder.gotmpl
+Based on commit in 78f49e7e72c09ff0e39251f002bba729b861e756
+Feb 24, 2020
+
+Note that our `builder.gotmpl` is minimal and only used for validating if any routes without a swagger spec exist.

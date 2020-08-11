@@ -5,32 +5,22 @@ import (
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/models"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"allaboutapps.dev/aw/go-starter/internal/util/hashing"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt/conv"
+	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-var (
-	ErrBadRequestInvalidPassword = NewHTTPErrorWithDetail(http.StatusBadRequest, "INVALID_PASSWORD", "The password provided was invalid", "Password was either too weak or did not match other criteria")
-	ErrConflictUserAlreadyExists = NewHTTPError(http.StatusConflict, "USER_ALREADY_EXISTS", "User with given username already exists")
-)
+var ()
 
-// swagger:route POST /api/v1/auth/register auth PostRegisterRoute
-//
-// Registers a local user
-//
-// Returns an access and refresh token on successful registration
-//
-// Responses:
-//   200: PostLoginResponse
-//   400: body:HTTPValidationError HTTPValidationError, type `INVALID_PASSWORD`
-//   409: body:HTTPError HTTPError, type `USER_ALREADY_EXISTS`
 func PostRegisterRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/register", postRegisterHandler(s))
 }
@@ -40,7 +30,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
-		var body PostRegisterPayload
+		var body types.PostRegisterPayload
 		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
@@ -53,22 +43,22 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 
 		if exists {
 			log.Debug().Str("username", body.Username.String()).Msg("User with given username already exists")
-			return ErrConflictUserAlreadyExists
+			return httperrors.ErrConflictUserAlreadyExists
 		}
 
 		hash, err := hashing.HashPassword(*body.Password, hashing.DefaultArgon2Params)
 		if err != nil {
 			log.Debug().Str("username", body.Username.String()).Err(err).Msg("Failed to hash user password")
-			return ErrBadRequestInvalidPassword
+			return httperrors.ErrBadRequestInvalidPassword
 		}
 
-		response := &PostLoginResponse{
-			TokenType: TokenTypeBearer,
-			ExpiresIn: int(s.Config.Auth.AccessTokenValidity.Seconds()),
+		response := &types.PostLoginResponse{
+			TokenType: swag.String(TokenTypeBearer),
+			ExpiresIn: swag.Int64(int64(s.Config.Auth.AccessTokenValidity.Seconds())),
 		}
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
-			user := models.User{
+			user := &models.User{
 				Username:            null.StringFrom(body.Username.String()),
 				Password:            null.StringFrom(hash),
 				LastAuthenticatedAt: null.TimeFrom(time.Now()),
@@ -78,7 +68,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := user.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert user")
-				return echo.ErrInternalServerError
+				return err
 			}
 
 			appUserProfile := models.AppUserProfile{
@@ -87,7 +77,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := appUserProfile.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert app user profile")
-				return echo.ErrInternalServerError
+				return err
 			}
 
 			accessToken := models.AccessToken{
@@ -97,7 +87,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := accessToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert access token")
-				return echo.ErrInternalServerError
+				return err
 			}
 
 			refreshToken := models.RefreshToken{
@@ -106,11 +96,11 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := refreshToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert refresh token")
-				return echo.ErrInternalServerError
+				return err
 			}
 
-			response.AccessToken = strfmt.UUID4(accessToken.Token)
-			response.RefreshToken = strfmt.UUID4(refreshToken.Token)
+			response.AccessToken = conv.UUID4(strfmt.UUID4(accessToken.Token))
+			response.RefreshToken = conv.UUID4(strfmt.UUID4(refreshToken.Token))
 
 			return nil
 		}); err != nil {

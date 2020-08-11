@@ -1,6 +1,5 @@
 version: "3.4"
 services:
-
   service:
     build:
       context: .
@@ -11,13 +10,12 @@ services:
     # linux permissions / vscode support: we must explicitly run as the development user
     user: development
     volumes:
-      
       # mount working directory
       # https://code.visualstudio.com/docs/remote/containers-advanced#_update-the-mount-consistency-to-delegated-for-macos
       # https://docs.docker.com/docker-for-mac/osxfs-caching/#delegated
       # the container’s view is authoritative (permit delays before updates on the container appear in the host)
       - .:/app:delegated
-      
+
       # mount cached go pkg downloads
       - go-pkg:/go/pkg
 
@@ -30,12 +28,11 @@ services:
       - postgres
       - integresql
     environment:
-
       # required: env for main working database, service
       # default for sql-migrate (target development) and psql cli tool
       PGDATABASE: &PGDATABASE "development"
       PGUSER: &PGUSER "dbuser"
-      PGPASSWORD: &PGPASSWORD "9bed16f749d74a3c8bfbced18a7647f5"
+      PGPASSWORD: &PGPASSWORD "dbpass"
       PGHOST: &PGHOST "postgres"
       PGPORT: &PGPORT "5432"
       PGSSLMODE: &PGSSLMODE "disable"
@@ -92,7 +89,7 @@ services:
       - "5000:5000"
     depends_on:
       - postgres
-    environment: 
+    environment:
       PGHOST: *PGHOST
       PGUSER: *PGUSER
       PGPASSWORD: *PGPASSWORD
@@ -104,9 +101,21 @@ services:
     ports:
       - "8025:8025"
 
+  swaggerui:
+    image: swaggerapi/swagger-ui:v3.28.0
+    ports:
+      - "8081:8080"
+    environment:
+      SWAGGER_JSON: "/api/swagger.yml"
+    volumes:
+      # mount our local main swagger.yml file (refresh your browser to see changes)
+      - ./api:/api:ro,consistent
+      # mount overwritten translator.js (intercept requests port 8081 to our local service on port 8080)
+      - ./api/config/swagger-ui-local-translator.js:/usr/share/nginx/configurator/translator.js:ro,delegated
+
 volumes:
   # postgresql: declare a named volume to persist DB data
-  pgvolume: 
+  pgvolume:
 
   # go: go mod cached downloads
   go-pkg:

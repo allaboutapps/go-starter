@@ -8,27 +8,17 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/models"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt/conv"
+	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// swagger:route POST /api/v1/auth/refresh auth PostRefreshRoute
-//
-// Refresh tokens
-//
-// Return a fresh set of access and refresh tokens if a valid refresh token was provided.
-// The old refresh token used to authenticate the request will be invalidated.
-//
-// Responses:
-//   200: PostLoginResponse
-//   400: body:HTTPValidationError
-//   401: body:HTTPError
-//   403: body:HTTPError HTTPError, type `USER_DEACTIVATED`
 func PostRefreshRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/refresh", postRefreshHandler(s))
 }
@@ -38,7 +28,7 @@ func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 		ctx := c.Request().Context()
 		log := util.LogFromContext(ctx)
 
-		var body PostRefreshPayload
+		var body types.PostRefreshPayload
 		if err := util.BindAndValidate(c, &body); err != nil {
 			return err
 		}
@@ -50,11 +40,11 @@ func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 		if err != nil {
 			if err == sql.ErrNoRows {
 				log.Debug().Err(err).Msg("Refresh token not found")
-			} else {
-				log.Debug().Err(err).Msg("Failed to load refresh token")
+				return echo.ErrUnauthorized
 			}
 
-			return echo.ErrUnauthorized
+			log.Debug().Err(err).Msg("Failed to load refresh token")
+			return err
 		}
 
 		user := oldRefreshToken.R.User
@@ -64,9 +54,9 @@ func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 			return middleware.ErrForbiddenUserDeactivated
 		}
 
-		response := &PostLoginResponse{
-			TokenType: TokenTypeBearer,
-			ExpiresIn: int(s.Config.Auth.AccessTokenValidity.Seconds()),
+		response := &types.PostLoginResponse{
+			TokenType: swag.String(TokenTypeBearer),
+			ExpiresIn: swag.Int64(int64(s.Config.Auth.AccessTokenValidity.Seconds())),
 		}
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
@@ -77,7 +67,7 @@ func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := accessToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert access token")
-				return echo.ErrUnauthorized
+				return err
 			}
 
 			refreshToken := models.RefreshToken{
@@ -86,16 +76,16 @@ func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 
 			if err := refreshToken.Insert(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to insert refresh token")
-				return echo.ErrUnauthorized
+				return err
 			}
 
 			if _, err := oldRefreshToken.Delete(ctx, tx); err != nil {
 				log.Debug().Err(err).Msg("Failed to delete old refresh token")
-				return echo.ErrUnauthorized
+				return err
 			}
 
-			response.AccessToken = strfmt.UUID4(accessToken.Token)
-			response.RefreshToken = strfmt.UUID4(refreshToken.Token)
+			response.AccessToken = conv.UUID4(strfmt.UUID4(accessToken.Token))
+			response.RefreshToken = conv.UUID4(strfmt.UUID4(refreshToken.Token))
 
 			return nil
 		}); err != nil {

@@ -8,11 +8,13 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
-	. "allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -31,15 +33,15 @@ func TestPostRegisterSuccess(t *testing.T) {
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 
-		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
-		var response PostLoginResponse
+		var response types.PostLoginResponse
 		test.ParseResponseAndValidate(t, res, &response)
 
 		assert.NotEmpty(t, response.AccessToken)
 		assert.NotEmpty(t, response.RefreshToken)
-		assert.Equal(t, int(s.Config.Auth.AccessTokenValidity.Seconds()), response.ExpiresIn)
-		assert.Equal(t, auth.TokenTypeBearer, response.TokenType)
+		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response.ExpiresIn)
+		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 
 		user, err := models.Users(
 			models.UserWhere.Username.EQ(null.StringFrom(username)),
@@ -54,27 +56,26 @@ func TestPostRegisterSuccess(t *testing.T) {
 		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
 
 		assert.NotNil(t, user.R.AppUserProfile)
-		assert.Equal(t, false, user.R.AppUserProfile.HasGDPROptOut)
 		assert.Equal(t, false, user.R.AppUserProfile.LegalAcceptedAt.Valid)
 
 		assert.Len(t, user.R.AccessTokens, 1)
-		assert.Equal(t, strfmt.UUID4(user.R.AccessTokens[0].Token), response.AccessToken)
+		assert.Equal(t, strfmt.UUID4(user.R.AccessTokens[0].Token), *response.AccessToken)
 		assert.Len(t, user.R.RefreshTokens, 1)
-		assert.Equal(t, strfmt.UUID4(user.R.RefreshTokens[0].Token), response.RefreshToken)
+		assert.Equal(t, strfmt.UUID4(user.R.RefreshTokens[0].Token), *response.RefreshToken)
 
 		res2 := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
 
 		assert.Equal(t, http.StatusOK, res2.Result().StatusCode)
 
-		var response2 PostLoginResponse
+		var response2 types.PostLoginResponse
 		test.ParseResponseAndValidate(t, res2, &response2)
 
 		assert.NotEmpty(t, response2.AccessToken)
-		assert.NotEqual(t, response.AccessToken, response2.AccessToken)
+		assert.NotEqual(t, response.AccessToken, *response2.AccessToken)
 		assert.NotEmpty(t, response2.RefreshToken)
-		assert.NotEqual(t, response.RefreshToken, response2.RefreshToken)
-		assert.Equal(t, int(s.Config.Auth.AccessTokenValidity.Seconds()), response2.ExpiresIn)
-		assert.Equal(t, auth.TokenTypeBearer, response2.TokenType)
+		assert.NotEqual(t, response.RefreshToken, *response2.RefreshToken)
+		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response2.ExpiresIn)
+		assert.Equal(t, auth.TokenTypeBearer, *response2.TokenType)
 	})
 }
 
@@ -94,12 +95,12 @@ func TestPostRegisterAlreadyExists(t *testing.T) {
 
 		assert.Equal(t, http.StatusConflict, res.Result().StatusCode)
 
-		var response HTTPError
+		var response httperrors.HTTPError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, *auth.ErrConflictUserAlreadyExists.Code, *response.Code)
-		assert.Equal(t, auth.ErrConflictUserAlreadyExists.Type, response.Type)
-		assert.Equal(t, auth.ErrConflictUserAlreadyExists.Title, response.Title)
+		assert.Equal(t, *httperrors.ErrConflictUserAlreadyExists.Code, *response.Code)
+		assert.Equal(t, *httperrors.ErrConflictUserAlreadyExists.Type, *response.Type)
+		assert.Equal(t, *httperrors.ErrConflictUserAlreadyExists.Title, *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
@@ -131,19 +132,19 @@ func TestPostRegisterMissingUsername(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response HTTPValidationError
+		var response httperrors.HTTPValidationError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
 		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "username", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "username in body is required", response.ValidationErrors[0].Error)
+		assert.Equal(t, "username", *response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", *response.ValidationErrors[0].In)
+		assert.Equal(t, "username in body is required", *response.ValidationErrors[0].Error)
 	})
 }
 
@@ -160,19 +161,19 @@ func TestPostRegisterMissingPassword(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response HTTPValidationError
+		var response httperrors.HTTPValidationError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
 		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "password", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "password in body is required", response.ValidationErrors[0].Error)
+		assert.Equal(t, "password", *response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", *response.ValidationErrors[0].In)
+		assert.Equal(t, "password in body is required", *response.ValidationErrors[0].Error)
 	})
 }
 
@@ -189,19 +190,19 @@ func TestPostRegisterInvalidUsername(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response HTTPValidationError
+		var response httperrors.HTTPValidationError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
 		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "username", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "username in body must be of type email: \"definitely not an email\"", response.ValidationErrors[0].Error)
+		assert.Equal(t, "username", *response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", *response.ValidationErrors[0].In)
+		assert.Equal(t, "username in body must be of type email: \"definitely not an email\"", *response.ValidationErrors[0].Error)
 	})
 }
 
@@ -218,19 +219,19 @@ func TestPostRegisterEmptyUsername(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response HTTPValidationError
+		var response httperrors.HTTPValidationError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
 		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "username", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "username in body should be at least 1 chars long", response.ValidationErrors[0].Error)
+		assert.Equal(t, "username", *response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", *response.ValidationErrors[0].In)
+		assert.Equal(t, "username in body should be at least 1 chars long", *response.ValidationErrors[0].Error)
 	})
 }
 
@@ -247,18 +248,18 @@ func TestPostRegisterEmptyPassword(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response HTTPValidationError
+		var response httperrors.HTTPValidationError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, http.StatusBadRequest, *response.Code)
-		assert.Equal(t, HTTPErrorTypeGeneric, response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), response.Title)
+		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
+		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
+		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
 		assert.NotEmpty(t, response.ValidationErrors)
-		assert.Equal(t, "password", response.ValidationErrors[0].Key)
-		assert.Equal(t, "body", response.ValidationErrors[0].In)
-		assert.Equal(t, "password in body should be at least 1 chars long", response.ValidationErrors[0].Error)
+		assert.Equal(t, "password", *response.ValidationErrors[0].Key)
+		assert.Equal(t, "body", *response.ValidationErrors[0].In)
+		assert.Equal(t, "password in body should be at least 1 chars long", *response.ValidationErrors[0].Error)
 	})
 }

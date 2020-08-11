@@ -49,7 +49,9 @@
 		// https://github.com/golangci/golangci-lint#editor-integration
 		"go.lintTool": "golangci-lint",
 		"go.lintFlags": [
-			"--fast"
+			"--fast",
+			"--timeout",
+			"5m"
 		],
 		// disable test caching, race and show coverage (in sync with makefile)
 		"go.testFlags": [
@@ -58,6 +60,13 @@
 			"-count=1",
 			"-v"
 		],
+		"go.delveConfig": {
+			"dlvLoadConfig": {
+				// increase max length of strings displayed in debugger
+				"maxStringLen": 2048,
+			},
+			"apiVersion": 2,
+		}
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
@@ -65,10 +74,12 @@
 		"golang.go",
 		"bradymholt.pgformatter",
 		// optional:
+		"42crunch.vscode-openapi",
 		"heaths.vscode-guid",
 		"bungcip.better-toml",
 		"eamodio.gitlens",
-		"casualjim.gotemplate"
+		"casualjim.gotemplate",
+		"yzhang.markdown-all-in-one"
 	],
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],

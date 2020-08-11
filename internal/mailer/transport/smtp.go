@@ -36,7 +36,7 @@ func NewSMTP(config SMTPMailTransportConfig) *SMTPMailTransport {
 func (m *SMTPMailTransport) Send(mail *email.Email) error {
 	if m.config.UseTLS {
 		return mail.SendWithTLS(m.addr, m.auth, m.config.TLSConfig)
-	} else {
-		return mail.Send(m.addr, m.auth)
 	}
+
+	return mail.Send(m.addr, m.auth)
 }

@@ -1,0 +1,29 @@
+# This is our base swagger file and the primary mixin target.
+# Everything in definitions|paths/*.yml will be mixed through
+# and finally flattened into the actual swagger.yml in this dir.
+consumes:
+  - application/json
+produces:
+  - application/json
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+  description: API documentation
+paths: {}
+definitions:
+  orderDir:
+    type: string
+    enum:
+      - asc
+      - desc
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+    x-keyPrefix: "Bearer "
+  Management:
+    type: apiKey
+    in: query
+    name: mgmt-secret

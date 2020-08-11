@@ -27,3 +27,8 @@ tmp
 
 # mac specific
 .DS_Store
+
+# directory for rw files (PV mounted into the container)
+# /assets/mnt folder should stay gitignored!
+assets/mnt/**
+!assets/mnt/.gitkeep

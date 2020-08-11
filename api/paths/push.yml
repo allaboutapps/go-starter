@@ -1,0 +1,46 @@
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+paths:
+  /api/v1/push/token:
+    put:
+      security:
+        - Bearer: []
+      description: |-
+        Adds a push token for the given provider to the current user.
+        If the oldToken is present it will be deleted.
+        Currently only the provider 'fcm' is supported.
+      tags:
+        - push
+      summary: Adds a push token to the user
+      operationId: PostUpdatePushTokenRoute
+      parameters:
+        - name: Payload
+          in: body
+          schema:
+            "$ref": "../definitions/push.yml#/definitions/PostUpdatePushTokenPayload"
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: PublicHTTPError, type `OLD_PUSH_TOKEN_NOT_FOUND`
+          schema:
+            "$ref": "../definitions/errors.yml#/definitions/PublicHTTPError"
+        "409":
+          description: PublicHTTPError, type `PUSH_TOKEN_ALREADY_EXISTS`
+          schema:
+            "$ref": "../definitions/errors.yml#/definitions/PublicHTTPError"
+  /api/v1/push/test:
+    get:
+      summary: Send test push
+      description: Sends a test push message to the current user
+      security:
+        - Bearer: []
+      operationId: GetPushTestRoute
+      tags:
+        - test
+      responses:
+        "200":
+          description: OK
+      deprecated: true

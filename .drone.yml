@@ -73,7 +73,7 @@ alias:
     # default for sql-migrate (target development) and psql cli tool
     PGDATABASE: &PGDATABASE "development"
     PGUSER: &PGUSER "dbuser"
-    PGPASSWORD: &PGPASSWORD "9bed16f749d74a3c8bfbced18a7647f5"
+    PGPASSWORD: &PGPASSWORD "dbpass"
     PGHOST: &PGHOST "postgres"
     PGPORT: &PGPORT "5432"
     PGSSLMODE: &PGSSLMODE "disable"
@@ -153,24 +153,18 @@ pipeline:
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
-#   # ---------------------------------------------------------------------------
-#   # PUBLISH
-#   # ---------------------------------------------------------------------------
+  "swagger-codegen-cli":
+    group: test
+    # https://github.com/swagger-api/swagger-codegen/blob/master/modules/swagger-codegen-cli/Dockerfile
+    image: swaggerapi/swagger-codegen-cli
+    commands:
+      # run the main swagger.yml validation.
+      - "java -jar /opt/swagger-codegen-cli/swagger-codegen-cli.jar validate -i ./api/swagger.yml"
+    <<: *WHEN_BUILD_EVENT
 
-#   # Built a allowed branch? Push to cloud registry
-#   "publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
-#     group: publish
-#     <<: *GCR_REGISTRY_SETTINGS
-#     tags:
-#       - build_${DRONE_BUILD_NUMBER}
-#       - ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}
-#       - *IMAGE_DEPLOY_TAG
-#       - latest
-#       - ${DRONE_BRANCH}
-#       - ${DRONE_COMMIT_SHA:0:10}
-#     when:
-#       branch: *GCR_PUBLISH_BRANCHES
-#       event: *BUILD_EVENTS
+  # ---------------------------------------------------------------------------
+  # PUBLISH
+  # ---------------------------------------------------------------------------
 
 #   # Built a tag? Push to cloud registry
 #   "publish tag_${DRONE_COMMIT_SHA:0:10}":
@@ -186,9 +180,9 @@ pipeline:
 #     when:
 #       event: tag
 
-#   # ---------------------------------------------------------------------------
-#   # DEPLOYMENT
-#   # ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # DEPLOYMENT
+  # ---------------------------------------------------------------------------
 
 #   # autodeploy dev if it hits the branch
 #   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (auto)":
