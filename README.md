@@ -24,19 +24,20 @@
 ## Features
 
 - Full local golang service development environment using [Docker Compose](https://docs.docker.com/compose/install/) and [VSCode devcontainers](https://code.visualstudio.com/docs/remote/containers) that just works with Linux, MacOS and Windows.
-- Adheres to the project layout defined in [golang-standard/project-layout](https://github.com/golang-standards/project-layout)
-- Provides database migration ([sql-migrate](https://github.com/rubenv/sql-migrate)) and models generation ([SQLBoiler](https://github.com/volatiletech/sqlboiler)) workflows for [PostgreSQL](https://www.postgresql.org/) databases
-- Integrates [IntegreSQL](https://github.com/allaboutapps/integresql) for fast, concurrent and isolated integration testing with real PostgreSQL databases
-- Autoinstalls our recommended VSCode extensions for golang development
+- Adheres to the project layout defined in [golang-standard/project-layout](https://github.com/golang-standards/project-layout).
+- Provides database migration ([sql-migrate](https://github.com/rubenv/sql-migrate)) and models generation ([SQLBoiler](https://github.com/volatiletech/sqlboiler)) workflows for [PostgreSQL](https://www.postgresql.org/) databases.
+- Integrates [IntegreSQL](https://github.com/allaboutapps/integresql) for fast, concurrent and isolated integration testing with real PostgreSQL databases.
+- Autoinstalls our recommended VSCode extensions for golang development.
 - Integrates [go-swagger](https://github.com/go-swagger/go-swagger) for compile-time generation of `swagger.yml`, structs and request/response validation functions.
-- Integrates [MailHog](https://github.com/mailhog/MailHog) for easy SMTP-based email testing
+- Integrates [MailHog](https://github.com/mailhog/MailHog) for easy SMTP-based email testing.
 - Integrates [SwaggerUI](https://github.com/swagger-api/swagger-ui) for live-previewing your Swagger v2 schema.
-- Integrates [pgFormatter](https://github.com/darold/pgFormatter) and [vscode-pgFormatter](https://marketplace.visualstudio.com/items?itemName=bradymholt.pgformatter) for SQL formatting
+- Integrates [pgFormatter](https://github.com/darold/pgFormatter) and [vscode-pgFormatter](https://marketplace.visualstudio.com/items?itemName=bradymholt.pgformatter) for SQL formatting.
 - Comes with fully implemented `auth` package, an OAuth2 RESTful JSON API ready to be extended according to your requirements.
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
-- Parallel jobs optimized `Makefile` and various convenience scripts, a full rebuild via `make build` only takes seconds
-- Multi-staged `Dockerfile` (`development` -> `builder` -> `builder-apiserver` -> `apiserver`)
+- CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to add additional subcommands.
+- Parallel jobs optimized `Makefile` and various convenience scripts (see all targets and description with `make help`). A full rebuild via `make build` only takes seconds.
+- Multi-staged `Dockerfile` (`development` -> `builder` -> `builder-app` -> `app`).
 
 ## Usage
 

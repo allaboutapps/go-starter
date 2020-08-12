@@ -1,6 +1,6 @@
 module allaboutapps.dev/aw/go-starter
 
-go 1.14
+go 1.15
 
 require (
 	github.com/allaboutapps/integresql-client-go v1.0.0
