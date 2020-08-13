@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"github.com/stretchr/testify/assert"
@@ -31,5 +32,21 @@ func TestMailerSendPasswordReset(t *testing.T) {
 		assert.Equal(t, test.TestMailerDefaultSender, mail.From)
 		assert.Equal(t, "Password reset", mail.Subject)
 		assert.Contains(t, string(mail.HTML), passwordResetLink)
+	})
+}
+
+func SkipTestMailerSendPasswordResetWithMailhog(t *testing.T) {
+	t.Skip()
+	t.Parallel()
+
+	ctx := context.Background()
+	fixtures := test.Fixtures()
+
+	test.WithTestServer(t, func(s *api.Server) {
+		test.WithMailer(t, s)
+
+		passwordResetLink := "http://localhost/password/reset/12345"
+		err := s.Mailer.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
+		require.NoError(t, err)
 	})
 }

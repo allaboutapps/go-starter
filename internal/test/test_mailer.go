@@ -3,6 +3,7 @@ package test
 import (
 	"testing"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
@@ -17,6 +18,12 @@ func WithTestMailer(t *testing.T, closure func(m *mailer.Mailer)) {
 	t.Helper()
 
 	closure(NewTestMailer(t))
+}
+
+func WithMailer(t *testing.T, s *api.Server) {
+	if err := s.InitMailer(); err != nil {
+		t.Fatalf("Failed to init mailer: %v", err)
+	}
 }
 
 func NewTestMailer(t *testing.T) *mailer.Mailer {
