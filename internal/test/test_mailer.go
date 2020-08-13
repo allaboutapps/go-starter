@@ -6,11 +6,18 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
+	"github.com/jordan-wright/email"
 )
 
 const (
 	TestMailerDefaultSender = "test@example.com"
 )
+
+func WithTestMailer(t *testing.T, closure func(m *mailer.Mailer)) {
+	t.Helper()
+
+	closure(NewTestMailer(t))
+}
 
 func NewTestMailer(t *testing.T) *mailer.Mailer {
 	t.Helper()
@@ -27,12 +34,22 @@ func NewTestMailer(t *testing.T) *mailer.Mailer {
 	return m
 }
 
-func GetTestMailerMockTransport(t *testing.T, m *mailer.Mailer) *transport.MockMailTransport {
+func GetLastSentMail(t *testing.T, m *mailer.Mailer) *email.Email {
 	t.Helper()
 	mt, ok := m.Transport.(*transport.MockMailTransport)
 	if !ok {
 		t.Fatalf("invalid mailer transport type, got %T, want *transport.MockMailTransport", m.Transport)
 	}
 
-	return mt
+	return mt.GetLastSentMail()
+}
+
+func GetSentMails(t *testing.T, m *mailer.Mailer) []*email.Email {
+	t.Helper()
+	mt, ok := m.Transport.(*transport.MockMailTransport)
+	if !ok {
+		t.Fatalf("invalid mailer transport type, got %T, want *transport.MockMailTransport", m.Transport)
+	}
+
+	return mt.GetSentMails()
 }

@@ -102,6 +102,7 @@ func DefaultServiceConfigFromEnv() Server {
 			DefaultSender:               util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "go-starter@example.com"),
 			Send:                        util.GetEnvAsBool("SERVER_MAILER_SEND", true),
 			WebTemplatesEmailBaseDirAbs: util.GetEnv("SERVER_MAILER_WEB_TEMPLATES_EMAIL_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/templates/email")), // /app/web/templates/email
+			UserMockTransporter:         util.GetEnvAsBool("SERVER_MAILER_USE_MOCK_TRANSPORTER", false),
 		},
 		SMTP: transport.SMTPMailTransportConfig{
 			Host:      util.GetEnv("SERVER_SMTP_HOST", "mailhog"),

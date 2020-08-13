@@ -80,8 +80,8 @@ func (s *Server) InitDB(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) InitMailer(mock ...bool) error {
-	if len(mock) > 0 && mock[0] {
+func (s *Server) InitMailer() error {
+	if s.Config.Mailer.UserMockTransporter {
 		log.Warn().Msg("Initializing mock mailer")
 		s.Mailer = mailer.New(s.Config.Mailer, transport.NewMock())
 	} else {
