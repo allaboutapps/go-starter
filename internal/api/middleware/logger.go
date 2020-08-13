@@ -38,12 +38,12 @@ func DefaultRequestBodyLogSkipper(req *http.Request) bool {
 
 // ResponseBodyLogSkipper defines a function to skip logging certain response bodies.
 // Returning true skips logging the payload of the response.
-type ResponseBodyLogSkipper func(res *echo.Response) bool
+type ResponseBodyLogSkipper func(req *http.Request, res *echo.Response) bool
 
 // DefaultResponseBodyLogSkipper returns false for all responses with Content-Type
 // application/json, preventing logging for all other types of payloads as those
 // might contain binary or URL-encoded data unfit for logging purposes.
-func DefaultResponseBodyLogSkipper(res *echo.Response) bool {
+func DefaultResponseBodyLogSkipper(req *http.Request, res *echo.Response) bool {
 	contentType := res.Header().Get(echo.HeaderContentType)
 	switch {
 	case strings.HasPrefix(contentType, echo.MIMEApplicationJSON):
@@ -258,7 +258,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					Err(err),
 				)
 
-			if config.LogResponseBody && !config.ResponseBodyLogSkipper(res) {
+			if config.LogResponseBody && !config.ResponseBodyLogSkipper(req, res) {
 				lle = lle.Bytes("res_body", config.ResponseBodyLogReplacer(resBody.Bytes()))
 			}
 			if config.LogResponseHeader {
