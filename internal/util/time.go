@@ -15,13 +15,13 @@ func DateFromString(dateString string) (time.Time, error) {
 	return time.Parse(DateFormat, dateString)
 }
 
-func EndOfMonth(d time.Time, timeZone *time.Location) time.Time {
+func EndOfMonth(d time.Time) time.Time {
 
-	return time.Date(d.Year(), d.Month()+1, 1, 0, 0, 0, -1, timeZone)
+	return time.Date(d.Year(), d.Month()+1, 1, 0, 0, 0, -1, time.UTC)
 }
 
 func EndOfDay(d time.Time) time.Time {
-	return time.Date(d.Year(), d.Month(), d.Day()+1, 0, 0, 0, -1, d.Location())
+	return time.Date(d.Year(), d.Month(), d.Day()+1, 0, 0, 0, -1, time.UTC)
 }
 
 func StartOfMonth(d time.Time) time.Time {

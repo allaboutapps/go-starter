@@ -22,6 +22,9 @@ func GetMapFromStructByTag(tag string, s interface{}) map[string]string {
 	for i := 0; i < rt.NumField(); i++ {
 		f := rt.Field(i)
 		v := strings.Split(f.Tag.Get(tag), ",")[0] // use split to ignore tag "options" like omitempty, etc.
+		if v == "" {
+			continue
+		}
 		fs := rv.Field(i)
 		if fs.Kind() == reflect.Ptr {
 			if !fs.IsNil() {
