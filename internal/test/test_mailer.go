@@ -21,6 +21,8 @@ func WithTestMailer(t *testing.T, closure func(m *mailer.Mailer)) {
 }
 
 func WithMailer(t *testing.T, s *api.Server) {
+	t.Helper()
+
 	if err := s.InitMailer(); err != nil {
 		t.Fatalf("Failed to init mailer: %v", err)
 	}
