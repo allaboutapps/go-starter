@@ -1,6 +1,9 @@
 package router
 
 import (
+	"net/http"
+	"strings"
+
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
@@ -33,6 +36,22 @@ func Init(s *api.Server) {
 		LogRequestQuery:   s.Config.Logger.LogRequestQuery,
 		LogResponseBody:   s.Config.Logger.LogResponseBody,
 		LogResponseHeader: s.Config.Logger.LogResponseHeader,
+		RequestBodyLogSkipper: func(req *http.Request) bool {
+			// We skip all body logging for auth endpoints as these might contain credentials
+			if strings.HasPrefix(req.URL.Path, "/api/v1/auth") {
+				return true
+			}
+
+			return middleware.DefaultRequestBodyLogSkipper(req)
+		},
+		ResponseBodyLogSkipper: func(req *http.Request, res *echo.Response) bool {
+			// We skip all body logging for auth endpoints as these might contain credentials
+			if strings.HasPrefix(req.URL.Path, "/api/v1/auth") {
+				return true
+			}
+
+			return middleware.DefaultResponseBodyLogSkipper(req, res)
+		},
 	}))
 	s.Echo.Use(echoMiddleware.CORS())
 
