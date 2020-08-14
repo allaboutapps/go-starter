@@ -22,8 +22,9 @@ func TestMailerSendPasswordReset(t *testing.T) {
 		err := m.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 		require.NoError(t, err)
 
-		mail := test.GetLastSentMail(t, m)
-		mails := test.GetSentMails(t, m)
+		mt := test.GetTestMailerMockTransport(t, m)
+		mail := mt.GetLastSentMail()
+		mails := mt.GetSentMails()
 		require.NotNil(t, mail)
 		require.Len(t, mails, 1)
 		assert.Equal(t, m.Config.DefaultSender, mail.From)
@@ -42,11 +43,24 @@ func SkipTestMailerSendPasswordResetWithMailhog(t *testing.T) {
 	ctx := context.Background()
 	fixtures := test.Fixtures()
 
-	test.WithTestServer(t, func(s *api.Server) {
-		test.WithMailer(t, s)
+	test.WithSMTPMailerFromDefaultEnv(t, func(m *mailer.Mailer) {
 
+		passwordResetLink := "http://localhost/password/reset/12345"
+		err := m.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
+		require.NoError(t, err)
+	})
+}
+
+func SkipTestMailerSendPasswordResetWithMailhogAndServer(t *testing.T) {
+	t.Skip()
+	t.Parallel()
+
+	ctx := context.Background()
+	fixtures := test.Fixtures()
+
+	test.WithTestServer(t, test.InjectSMTPMailerFromDefaultEnv(t, func(s *api.Server) {
 		passwordResetLink := "http://localhost/password/reset/12345"
 		err := s.Mailer.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 		require.NoError(t, err)
-	})
+	}))
 }

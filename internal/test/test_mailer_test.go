@@ -4,7 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
+	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,8 +29,9 @@ func TestWithTestMailer(t *testing.T) {
 			err = m2.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 			require.NoError(t, err)
 
-			mail := test.GetLastSentMail(t, m1)
-			mails := test.GetSentMails(t, m1)
+			mt1 := test.GetTestMailerMockTransport(t, m1)
+			mail := mt1.GetLastSentMail()
+			mails := mt1.GetSentMails()
 			require.NotNil(t, mail)
 			require.Len(t, mails, 1)
 			assert.Equal(t, m1.Config.DefaultSender, mail.From)
@@ -38,8 +41,9 @@ func TestWithTestMailer(t *testing.T) {
 			assert.Equal(t, "Password reset", mail.Subject)
 			assert.Contains(t, string(mail.HTML), passwordResetLink)
 
-			mail = test.GetLastSentMail(t, m2)
-			mails = test.GetSentMails(t, m2)
+			mt2 := test.GetTestMailerMockTransport(t, m2)
+			mail = mt2.GetLastSentMail()
+			mails = mt2.GetSentMails()
 			require.NotNil(t, mail)
 			require.Len(t, mails, 1)
 			assert.Equal(t, m2.Config.DefaultSender, mail.From)
@@ -50,4 +54,24 @@ func TestWithTestMailer(t *testing.T) {
 			assert.Contains(t, string(mail.HTML), passwordResetLink)
 		})
 	})
+}
+
+func TestWithSMTPMailerFromDefaultEnv(t *testing.T) {
+	t.Parallel()
+
+	test.WithSMTPMailerFromDefaultEnv(t, func(m *mailer.Mailer) {
+		require.NotNil(t, m)
+		require.NotEmpty(t, m.Transport)
+		assert.IsType(t, &transport.SMTPMailTransport{}, m.Transport)
+	})
+}
+
+func TestWithTestServerAndSMTPMailerInject(t *testing.T) {
+	t.Parallel()
+
+	test.WithTestServer(t, test.InjectSMTPMailerFromDefaultEnv(t, func(s *api.Server) {
+		require.NotNil(t, s.Mailer)
+		require.NotEmpty(t, s.Mailer.Transport)
+		assert.IsType(t, &transport.SMTPMailTransport{}, s.Mailer.Transport)
+	}))
 }
