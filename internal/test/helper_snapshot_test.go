@@ -84,6 +84,7 @@ func TestSnapshotShouldFail(t *testing.T) {
 	tMock.On("Error", mock.Anything).Return()
 	test.Snapshot(tMock, false, a, b)
 	tMock.AssertNotCalled(t, "Fatal")
+	tMock.AssertNotCalled(t, "Fatalf")
 	tMock.AssertCalled(t, "Error", mock.Anything)
 }
 
@@ -107,10 +108,11 @@ func TestSnapshotWithUpdate(t *testing.T) {
 	tMock := new(mocks.TestingT)
 	tMock.On("Helper").Return()
 	tMock.On("Name").Return("TestSnapshotWithUpdate")
-	tMock.On("Fatal", mock.Anything).Return()
+	tMock.On("Fatalf", mock.Anything, mock.Anything).Return()
 	test.Snapshot(tMock, true, a, b)
 	tMock.AssertNotCalled(t, "Error")
-	tMock.AssertCalled(t, "Fatal", mock.Anything)
+	tMock.AssertNotCalled(t, "Fatal")
+	tMock.AssertCalled(t, "Fatalf", mock.Anything, mock.Anything)
 }
 
 func TestSnapshotNotExists(t *testing.T) {
@@ -137,9 +139,33 @@ func TestSnapshotNotExists(t *testing.T) {
 	tMock := new(mocks.TestingT)
 	tMock.On("Helper").Return()
 	tMock.On("Name").Return("TestSnapshotNotExists")
+	tMock.On("Fatalf", mock.Anything, mock.Anything).Return()
 	tMock.On("Fatal", mock.Anything).Return()
 	tMock.On("Error", mock.Anything).Return()
 	test.Snapshot(tMock, false, a, b)
 	tMock.AssertNotCalled(t, "Error")
-	tMock.AssertCalled(t, "Fatal", mock.Anything)
+	tMock.AssertNotCalled(t, "Fatalf")
+	tMock.AssertCalled(t, "Fatalf", mock.Anything, mock.Anything)
+}
+
+func TestSnapshotSkipFields(t *testing.T) {
+	t.Parallel()
+
+	randID, err := util.GenerateRandomBase64String(20)
+	require.NoError(t, err)
+	a := struct {
+		ID string
+		A  string
+		B  int
+		C  bool
+		D  *string
+	}{
+		ID: randID,
+		A:  "foo",
+		B:  1,
+		C:  true,
+		D:  swag.String("bar"),
+	}
+
+	test.SnapshotWithSkipper(t, false, []string{"ID"}, a)
 }

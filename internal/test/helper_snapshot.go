@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
@@ -33,8 +34,10 @@ func init() {
 	SnapshotDirPathAbs = filepath.Join(basePath, snapshotDir)
 }
 
+// SnapshotWithReplacer is similiar to Snapshot but with the addition of a custom replacer function,
+// in order to replace generated values (e.g. IDs).
 // vastly inspired by https://github.com/bradleyjkemp/cupaloy
-// main reason for self implementation is the replacer function, to replace generated values (IDs)
+// main reason for self implementation is the replacer function and general flexibility
 func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) string, data ...interface{}) {
 	t.Helper()
 	err := os.MkdirAll(SnapshotDirPathAbs, os.ModePerm)
@@ -52,7 +55,7 @@ func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) strin
 			t.Fatal(err)
 		}
 
-		t.Fatal(fmt.Errorf("Updating snapshot: '%s'", snapshotName))
+		t.Fatalf("Updating snapshot: '%s'", snapshotName)
 	}
 
 	prevSnapBytes, err := ioutil.ReadFile(snapshotAbsPath)
@@ -63,7 +66,7 @@ func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) strin
 				t.Fatal(err)
 			}
 
-			t.Fatal(fmt.Errorf("No snapshot exists for name: '%s'. Creating new snapshot", snapshotName))
+			t.Fatalf("No snapshot exists for name: '%s'. Creating new snapshot", snapshotName)
 		}
 
 		t.Fatal(err)
@@ -85,6 +88,30 @@ func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) strin
 		t.Error(diff)
 	}
 }
+
+// SnapshotWithSkipper creates a custom replace function using a regex.
+// Each line of the formatted dump is matched against the property name defined in skip and
+// the value will be replaced to deal with generated values that change each test.
+// It will then call SnapshotWithReplacer with the replace function.
+func SnapshotWithSkipper(t TestingT, update bool, skip []string, data ...interface{}) {
+	t.Helper()
+	replacer := func(s string) string {
+		skipString := strings.Join(skip, "|")
+		re, err := regexp.Compile(fmt.Sprintf("(%s): .*,", skipString))
+		if err != nil {
+			t.Fatal("Could not compile regex")
+		}
+
+		// replace lines with property name + <redacted>
+		return re.ReplaceAllString(s, "$1: <redacted>,")
+	}
+
+	SnapshotWithReplacer(t, update, replacer, data...)
+}
+
+// Snapshot creates a formatted dump of the given data.
+// It will fail the test if the dump is different from the saved dump.
+// It will also fail if it is the creation or an update of the snapshot.
 func Snapshot(t TestingT, update bool, data ...interface{}) {
 	t.Helper()
 	SnapshotWithReplacer(t, update, defaultReplacer, data...)
