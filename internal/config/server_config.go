@@ -98,7 +98,7 @@ func DefaultServiceConfigFromEnv() Server {
 			LastAuthenticatedAtThreshold: time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900)),
 		},
 		Management: ManagementServer{
-			Secret: util.GetEnv("SERVER_MANAGEMENT_SECRET", "mgmt-pass"),
+			Secret: util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
 		},
 		Mailer: Mailer{
 			DefaultSender:               util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "go-starter@example.com"),
