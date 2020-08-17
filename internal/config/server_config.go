@@ -47,6 +47,7 @@ type LoggerServer struct {
 	LogRequestQuery   bool
 	LogResponseBody   bool
 	LogResponseHeader bool
+	PrettyPrint       bool
 }
 
 type Server struct {
@@ -124,6 +125,7 @@ func DefaultServiceConfigFromEnv() Server {
 			LogRequestQuery:   util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_QUERY", false),
 			LogResponseBody:   util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_BODY", false),
 			LogResponseHeader: util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_HEADER", false),
+			PrettyPrint:       util.GetEnvAsBool("SERVER_LOGGER_PRETTY_PRINT", false),
 		},
 		Push: PushService{
 			UseFCMProvider:  util.GetEnvAsBool("SERVER_PUSH_USE_FCM", false),
