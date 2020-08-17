@@ -97,7 +97,7 @@ func SnapshotWithSkipper(t TestingT, update bool, skip []string, data ...interfa
 	t.Helper()
 	replacer := func(s string) string {
 		skipString := strings.Join(skip, "|")
-		re, err := regexp.Compile(fmt.Sprintf("(%s): .*,", skipString))
+		re, err := regexp.Compile(fmt.Sprintf("(%s): .*", skipString))
 		if err != nil {
 			t.Fatal("Could not compile regex")
 		}
