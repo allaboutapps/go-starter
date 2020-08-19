@@ -38,6 +38,11 @@ func runServer() {
 
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 	zerolog.SetGlobalLevel(config.Logger.Level)
+	if config.Logger.PrettyPrintConsole {
+		log.Logger = log.Output(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+			w.TimeFormat = "15:04:05"
+		}))
+	}
 
 	s := api.NewServer(config)
 

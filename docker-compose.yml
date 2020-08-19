@@ -52,6 +52,11 @@ services:
       # optional: env for integresql client testing
       # INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
 
+      # optional: enable pretty print of log output
+      # intended use is for development and debugging purposes only
+      # not recommended to enable on production systems due to performance penalty and loss of parsing ability
+      SERVER_LOGGER_PRETTY_PRINT_CONSOLE: "true"
+
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     cap_add:
       - SYS_PTRACE
