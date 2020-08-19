@@ -1,0 +1,48 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+env:
+  DOCKER_ENV_FILE: ".github/workflows/docker.env"
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12.2-alpine
+        env:
+          POSTGRES_DB: "development"
+          POSTGRES_USER: "dbuser"
+          POSTGRES_PASSWORD: "dbpass"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      integresql:
+        image: allaboutapps/integresql:latest
+        env:
+          PGHOST: "postgres"
+          PGUSER: "dbuser"
+          PGPASSWORD: "dbpass"
+      mailhog:
+        image: mailhog/mailhog
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: docker build --target builder --file Dockerfile --tag allaboutapps/go-starter:${GITHUB_SHA:8} .
+      - name: Create container
+        run: docker run -d --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" --name=builder -it allaboutapps/go-starter:${GITHUB_SHA:8}
+      - name: make tidy
+        run: docker exec builder make tidy
+      - name: make build
+        run: docker exec builder make build
+      # - name: git diff --exit-code
+      #   run: docker exec builder git diff --exit-code
+      - name: make test
+        run: docker exec builder make test
