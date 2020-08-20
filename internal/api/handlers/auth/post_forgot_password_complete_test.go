@@ -54,7 +54,7 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, *response.RefreshToken)
 		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response.ExpiresIn)
 		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
-		test.SnapshotWithSkipper(t, false, []string{"AccessToken", "RefreshToken"}, response)
+		test.Snapshoter.Skip([]string{"AccessToken", "RefreshToken"}).Save(t, response)
 
 		err = fixtures.User1AccessToken1.Reload(ctx, s.DB)
 		assert.Equal(t, sql.ErrNoRows, err)

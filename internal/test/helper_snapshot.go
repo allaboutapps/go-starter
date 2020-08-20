@@ -31,22 +31,35 @@ var spewConfig = spew.ConfigState{
 	SpewKeys:                true, // if unable to sort map keys then spew keys to strings and sort those
 }
 
-// SnapshotWithReplacer is similiar to Snapshot but with the addition of a custom replacer function,
-// in order to replace generated values (e.g. IDs).
+type snapshoter struct {
+	update   bool
+	label    string
+	replacer func(s string) string
+}
+
+var Snapshoter snapshoter = snapshoter{
+	update:   false,
+	label:    "",
+	replacer: defaultReplacer,
+}
+
+// Save creates a formatted dump of the given data.
+// It will fail the test if the dump is different from the saved dump.
+// It will also fail if it is the creation or an update of the snapshot.
 // vastly inspired by https://github.com/bradleyjkemp/cupaloy
 // main reason for self implementation is the replacer function and general flexibility
-func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) string, data ...interface{}) {
+func (s snapshoter) Save(t TestingT, data ...interface{}) {
 	t.Helper()
 	err := os.MkdirAll(SnapshotDirPathAbs, os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	dump := replacer(spewConfig.Sdump(data...))
+	dump := s.replacer(spewConfig.Sdump(data...))
 	snapshotName := strings.Replace(t.Name(), "/", "-", -1)
-	snapshotAbsPath := filepath.Join(SnapshotDirPathAbs, snapshotName+".golden")
+	snapshotAbsPath := filepath.Join(SnapshotDirPathAbs, snapshotName+s.label+".golden")
 
-	if update || UpdateGoldenGlobal {
+	if s.update || UpdateGoldenGlobal {
 		err := writeSnapshot(snapshotAbsPath, dump)
 		if err != nil {
 			t.Fatal(err)
@@ -86,32 +99,42 @@ func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) strin
 	}
 }
 
-// SnapshotWithSkipper creates a custom replace function using a regex.
+// Skip creates a custom replace function using a regex, this will replace any
+// replacer function set in the Snapshoter.
 // Each line of the formatted dump is matched against the property name defined in skip and
 // the value will be replaced to deal with generated values that change each test.
-// It will then call SnapshotWithReplacer with the replace function.
-func SnapshotWithSkipper(t TestingT, update bool, skip []string, data ...interface{}) {
-	t.Helper()
-	replacer := func(s string) string {
+func (s snapshoter) Skip(skip []string) snapshoter {
+	s.replacer = func(s string) string {
 		skipString := strings.Join(skip, "|")
 		re, err := regexp.Compile(fmt.Sprintf("(%s): .*", skipString))
 		if err != nil {
-			t.Fatal("Could not compile regex")
+			panic(err)
 		}
 
 		// replace lines with property name + <redacted>
 		return re.ReplaceAllString(s, "$1: <redacted>,")
 	}
 
-	SnapshotWithReplacer(t, update, replacer, data...)
+	return s
 }
 
-// Snapshot creates a formatted dump of the given data.
-// It will fail the test if the dump is different from the saved dump.
-// It will also fail if it is the creation or an update of the snapshot.
-func Snapshot(t TestingT, update bool, data ...interface{}) {
-	t.Helper()
-	SnapshotWithReplacer(t, update, defaultReplacer, data...)
+// Upadte is used to force an update for the snapshot. Will fail the test.
+func (s snapshoter) Update(update bool) snapshoter {
+	s.update = update
+	return s
+}
+
+// Label is used to add a suffix to the snapshots golden file.
+func (s snapshoter) Label(label string) snapshoter {
+	s.label = label
+	return s
+}
+
+// Replacer is used to define a custom replace function in order to replace
+// generated values (e.g. IDs).
+func (s snapshoter) Replacer(replacer func(s string) string) snapshoter {
+	s.replacer = replacer
+	return s
 }
 
 func writeSnapshot(absPath string, dump string) error {

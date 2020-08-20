@@ -34,7 +34,7 @@ func TestSnapshot(t *testing.T) {
 
 	b := "Hello World!"
 
-	test.Snapshot(t, false, a, b)
+	test.Snapshoter.Save(t, a, b)
 }
 
 func TestSnapshotWithReplacer(t *testing.T) {
@@ -64,7 +64,7 @@ func TestSnapshotWithReplacer(t *testing.T) {
 		require.NoError(t, err)
 		return re.ReplaceAllString(s, "ID: <redacted>,")
 	}
-	test.SnapshotWithReplacer(t, false, replacer, a)
+	test.Snapshoter.Replacer(replacer).Save(t, a)
 }
 
 func TestSnapshotShouldFail(t *testing.T) {
@@ -91,7 +91,7 @@ func TestSnapshotShouldFail(t *testing.T) {
 	tMock.On("Helper").Return()
 	tMock.On("Name").Return("TestSnapshotShouldFail")
 	tMock.On("Error", mock.Anything).Return()
-	test.Snapshot(tMock, false, a, b)
+	test.Snapshoter.Save(tMock, a, b)
 	tMock.AssertNotCalled(t, "Fatal")
 	tMock.AssertNotCalled(t, "Fatalf")
 	tMock.AssertCalled(t, "Error", mock.Anything)
@@ -121,7 +121,7 @@ func TestSnapshotWithUpdate(t *testing.T) {
 	tMock.On("Helper").Return()
 	tMock.On("Name").Return("TestSnapshotWithUpdate")
 	tMock.On("Fatalf", mock.Anything, mock.Anything).Return()
-	test.Snapshot(tMock, true, a, b)
+	test.Snapshoter.Update(true).Save(tMock, a, b)
 	tMock.AssertNotCalled(t, "Error")
 	tMock.AssertNotCalled(t, "Fatal")
 	tMock.AssertCalled(t, "Fatalf", mock.Anything, mock.Anything)
@@ -157,7 +157,7 @@ func TestSnapshotNotExists(t *testing.T) {
 	tMock.On("Fatalf", mock.Anything, mock.Anything).Return()
 	tMock.On("Fatal", mock.Anything).Return()
 	tMock.On("Error", mock.Anything).Return()
-	test.Snapshot(tMock, false, a, b)
+	test.Snapshoter.Save(tMock, a, b)
 	tMock.AssertNotCalled(t, "Error")
 	tMock.AssertNotCalled(t, "Fatalf")
 	tMock.AssertCalled(t, "Fatalf", mock.Anything, mock.Anything)
@@ -185,5 +185,5 @@ func TestSnapshotSkipFields(t *testing.T) {
 		D:  swag.String("bar"),
 	}
 
-	test.SnapshotWithSkipper(t, false, []string{"ID"}, a)
+	test.Snapshoter.Skip([]string{"ID"}).Save(t, a)
 }
