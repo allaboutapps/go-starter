@@ -3,3 +3,6 @@ linters:
     # https://github.com/golangci/golangci-lint#enabled-by-default-linters
     # additional linter you want to activate may be specified here...
     - golint # official golang linter
+    # https://github.com/maratori/testpackage
+    # used to enforce blackbox testing
+    - testpackage
