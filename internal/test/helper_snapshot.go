@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	SnapshotDirPathAbs string = filepath.Join(util.GetProjectRootDir(), "/test/testdata/snapshots")
-	UpdateGoldenGlobal bool   = util.GetEnvAsBool("TEST_UPDATE_GOLDEN", false)
+	DefaultSnapshotDirPathAbs string = filepath.Join(util.GetProjectRootDir(), "/test/testdata/snapshots")
+	UpdateGoldenGlobal        bool   = util.GetEnvAsBool("TEST_UPDATE_GOLDEN", false)
 )
 
 var defaultReplacer = func(s string) string {
@@ -35,12 +35,14 @@ type snapshoter struct {
 	update   bool
 	label    string
 	replacer func(s string) string
+	location string
 }
 
 var Snapshoter snapshoter = snapshoter{
 	update:   false,
 	label:    "",
 	replacer: defaultReplacer,
+	location: DefaultSnapshotDirPathAbs,
 }
 
 // Save creates a formatted dump of the given data.
@@ -50,14 +52,14 @@ var Snapshoter snapshoter = snapshoter{
 // main reason for self implementation is the replacer function and general flexibility
 func (s snapshoter) Save(t TestingT, data ...interface{}) {
 	t.Helper()
-	err := os.MkdirAll(SnapshotDirPathAbs, os.ModePerm)
+	err := os.MkdirAll(s.location, os.ModePerm)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	dump := s.replacer(spewConfig.Sdump(data...))
 	snapshotName := strings.Replace(t.Name(), "/", "-", -1)
-	snapshotAbsPath := filepath.Join(SnapshotDirPathAbs, snapshotName+s.label+".golden")
+	snapshotAbsPath := filepath.Join(s.location, snapshotName+s.label+".golden")
 
 	if s.update || UpdateGoldenGlobal {
 		err := writeSnapshot(snapshotAbsPath, dump)
@@ -134,6 +136,12 @@ func (s snapshoter) Label(label string) snapshoter {
 // generated values (e.g. IDs).
 func (s snapshoter) Replacer(replacer func(s string) string) snapshoter {
 	s.replacer = replacer
+	return s
+}
+
+// Location is used to save the golden file to a different location.
+func (s snapshoter) Location(location string) snapshoter {
+	s.location = location
 	return s
 }
 

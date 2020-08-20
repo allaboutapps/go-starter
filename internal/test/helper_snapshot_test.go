@@ -148,7 +148,7 @@ func TestSnapshotNotExists(t *testing.T) {
 	b := "Hello World!"
 
 	defer func() {
-		os.Remove(filepath.Join(test.SnapshotDirPathAbs, "TestSnapshotNotExists.golden"))
+		os.Remove(filepath.Join(test.DefaultSnapshotDirPathAbs, "TestSnapshotNotExists.golden"))
 	}()
 
 	tMock := new(mocks.TestingT)
@@ -186,4 +186,50 @@ func TestSnapshotSkipFields(t *testing.T) {
 	}
 
 	test.Snapshoter.Skip([]string{"ID"}).Save(t, a)
+}
+
+func TestSnapshotWithLabel(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+	t.Parallel()
+
+	a := struct {
+		A string
+		B int
+		C bool
+		D *string
+	}{
+		A: "foo",
+		B: 1,
+		C: true,
+		D: swag.String("bar"),
+	}
+
+	b := "Hello World!"
+
+	test.Snapshoter.Label("_A").Save(t, a)
+	test.Snapshoter.Label("_B").Save(t, b)
+}
+
+func TestSnapshotWithLocation(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+	t.Parallel()
+
+	a := struct {
+		A string
+		B int
+		C bool
+		D *string
+	}{
+		A: "foo",
+		B: 1,
+		C: true,
+		D: swag.String("bar"),
+	}
+
+	location := filepath.Join(util.GetProjectRootDir(), "/internal/test/testdata")
+	test.Snapshoter.Location(location).Save(t, a)
 }
