@@ -41,13 +41,14 @@ type FrontendServer struct {
 }
 
 type LoggerServer struct {
-	Level             zerolog.Level
-	RequestLevel      zerolog.Level
-	LogRequestBody    bool
-	LogRequestHeader  bool
-	LogRequestQuery   bool
-	LogResponseBody   bool
-	LogResponseHeader bool
+	Level              zerolog.Level
+	RequestLevel       zerolog.Level
+	LogRequestBody     bool
+	LogRequestHeader   bool
+	LogRequestQuery    bool
+	LogResponseBody    bool
+	LogResponseHeader  bool
+	PrettyPrintConsole bool
 }
 
 type Server struct {
@@ -119,13 +120,14 @@ func DefaultServiceConfigFromEnv() Server {
 			PasswordResetEndpoint: util.GetEnv("SERVER_FRONTEND_PASSWORD_RESET_ENDPOINT", "/set-new-password"),
 		},
 		Logger: LoggerServer{
-			Level:             util.LogLevelFromString(util.GetEnv("SERVER_LOGGER_LEVEL", zerolog.DebugLevel.String())),
-			RequestLevel:      util.LogLevelFromString(util.GetEnv("SERVER_LOGGER_REQUEST_LEVEL", zerolog.DebugLevel.String())),
-			LogRequestBody:    util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_BODY", false),
-			LogRequestHeader:  util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_HEADER", false),
-			LogRequestQuery:   util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_QUERY", false),
-			LogResponseBody:   util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_BODY", false),
-			LogResponseHeader: util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_HEADER", false),
+			Level:              util.LogLevelFromString(util.GetEnv("SERVER_LOGGER_LEVEL", zerolog.DebugLevel.String())),
+			RequestLevel:       util.LogLevelFromString(util.GetEnv("SERVER_LOGGER_REQUEST_LEVEL", zerolog.DebugLevel.String())),
+			LogRequestBody:     util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_BODY", false),
+			LogRequestHeader:   util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_HEADER", false),
+			LogRequestQuery:    util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_QUERY", false),
+			LogResponseBody:    util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_BODY", false),
+			LogResponseHeader:  util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_HEADER", false),
+			PrettyPrintConsole: util.GetEnvAsBool("SERVER_LOGGER_PRETTY_PRINT_CONSOLE", false),
 		},
 		Push: PushService{
 			UseFCMProvider:  util.GetEnvAsBool("SERVER_PUSH_USE_FCM", false),
