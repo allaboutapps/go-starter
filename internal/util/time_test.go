@@ -12,11 +12,11 @@ import (
 func TestStartOfMonth(t *testing.T) {
 	t.Parallel()
 
-	d := util.Date(2020, 3, 12)
+	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfMonth(d))
 
-	d = util.Date(2020, 12, 35)
+	d = util.Date(2020, 12, 35, time.UTC)
 	expected = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfMonth(d))
 }
@@ -35,23 +35,23 @@ func TestTimeFromString(t *testing.T) {
 func TestStartOfQuarter(t *testing.T) {
 	t.Parallel()
 
-	d := util.Date(2020, 3, 31)
+	d := util.Date(2020, 3, 31, time.UTC)
 	expected := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfQuarter(d))
 
-	d = util.Date(2020, 1, 1)
+	d = util.Date(2020, 1, 1, time.UTC)
 	expected = time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfQuarter(d))
 
-	d = util.Date(2020, 12, 1)
+	d = util.Date(2020, 12, 1, time.UTC)
 	expected = time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfQuarter(d))
 
-	d = util.Date(2020, 12, 35)
+	d = util.Date(2020, 12, 35, time.UTC)
 	expected = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfQuarter(d))
 
-	d = util.Date(2020, 4, 1)
+	d = util.Date(2020, 4, 1, time.UTC)
 	expected = time.Date(2020, 4, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfQuarter(d))
 }
@@ -59,15 +59,15 @@ func TestStartOfQuarter(t *testing.T) {
 func TestStartOfWeek(t *testing.T) {
 	t.Parallel()
 
-	d := util.Date(2020, 3, 12)
+	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 9, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfWeek(d))
 
-	d = util.Date(2020, 6, 15)
+	d = util.Date(2020, 6, 15, time.UTC)
 	expected = time.Date(2020, 6, 15, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfWeek(d))
 
-	d = util.Date(2020, 6, 21)
+	d = util.Date(2020, 6, 21, time.UTC)
 	expected = time.Date(2020, 6, 15, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfWeek(d))
 }
@@ -88,11 +88,11 @@ func TestDateFromString(t *testing.T) {
 func TestEndOfMonth(t *testing.T) {
 	t.Parallel()
 
-	d := util.Date(2020, 3, 12)
+	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 31, 23, 59, 59, 999999999, time.UTC)
 	assert.True(t, expected.Equal(util.EndOfMonth(d)))
 
-	d = util.Date(2020, 12, 35)
+	d = util.Date(2020, 12, 35, time.UTC)
 	expected = time.Date(2021, 1, 31, 23, 59, 59, 999999999, time.UTC)
 	res := util.EndOfMonth(d)
 	assert.True(t, expected.Equal(res))
@@ -105,11 +105,11 @@ func TestEndOfMonth(t *testing.T) {
 func TestEndOfDay(t *testing.T) {
 	t.Parallel()
 
-	d := util.Date(2020, 3, 12)
+	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 12, 23, 59, 59, 999999999, time.UTC)
 	assert.True(t, expected.Equal(util.EndOfDay(d)))
 
-	d = util.Date(2020, 12, 35)
+	d = util.Date(2020, 12, 35, time.UTC)
 	expected = time.Date(2021, 1, 4, 23, 59, 59, 999999999, time.UTC)
 	res := util.EndOfDay(d)
 	assert.True(t, expected.Equal(res))
@@ -121,17 +121,17 @@ func TestEndOfDay(t *testing.T) {
 func TestDateAdds(t *testing.T) {
 	t.Parallel()
 
-	d := util.Date(2020, 3, 12)
+	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2022, 4, 12, 0, 0, 0, 0, time.UTC)
 	res := util.AddMonths(d, 25)
 	assert.True(t, expected.Equal(res))
 
-	d = util.Date(2020, 1, 30)
+	d = util.Date(2020, 1, 30, time.UTC)
 	expected = time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC)
 	res = util.AddMonths(d, 1)
 	assert.True(t, expected.Equal(res))
 
-	d = util.Date(2020, 1, 30)
+	d = util.Date(2020, 1, 30, time.UTC)
 	expected = time.Date(2020, 3, 5, 0, 0, 0, 0, time.UTC)
 	res = util.AddWeeks(d, 5)
 	assert.True(t, expected.Equal(res))
@@ -140,7 +140,7 @@ func TestDateAdds(t *testing.T) {
 func TestDayBefore(t *testing.T) {
 	t.Parallel()
 
-	d := util.Date(2020, 3, 1)
+	d := util.Date(2020, 3, 1, time.UTC)
 	expected := time.Date(2020, 2, 29, 23, 59, 59, 999999999, time.UTC)
 	res := util.DayBefore(d)
 	assert.True(t, expected.Equal(res))

@@ -16,22 +16,21 @@ func DateFromString(dateString string) (time.Time, error) {
 }
 
 func EndOfMonth(d time.Time) time.Time {
-
-	return time.Date(d.Year(), d.Month()+1, 1, 0, 0, 0, -1, time.UTC)
+	return time.Date(d.Year(), d.Month()+1, 1, 0, 0, 0, -1, d.Location())
 }
 
 func EndOfDay(d time.Time) time.Time {
-	return time.Date(d.Year(), d.Month(), d.Day()+1, 0, 0, 0, -1, time.UTC)
+	return time.Date(d.Year(), d.Month(), d.Day()+1, 0, 0, 0, -1, d.Location())
 }
 
 func StartOfMonth(d time.Time) time.Time {
-	return time.Date(d.Year(), d.Month(), 1, 0, 0, 0, 0, time.UTC)
+	return time.Date(d.Year(), d.Month(), 1, 0, 0, 0, 0, d.Location())
 }
 
 func StartOfQuarter(d time.Time) time.Time {
 	quarter := (int(d.Month()) - 1) / 3
 	m := quarter*3 + 1
-	return time.Date(d.Year(), time.Month(m), 1, 0, 0, 0, 0, time.UTC)
+	return time.Date(d.Year(), time.Month(m), 1, 0, 0, 0, 0, d.Location())
 }
 
 // Returns the monday (assuming week starts at monday) of the week of the date
@@ -42,11 +41,11 @@ func StartOfWeek(d time.Time) time.Time {
 	if dayOffset < 0 {
 		dayOffset = 6
 	}
-	return time.Date(d.Year(), d.Month(), d.Day()-dayOffset, 0, 0, 0, 0, time.UTC)
+	return time.Date(d.Year(), d.Month(), d.Day()-dayOffset, 0, 0, 0, 0, d.Location())
 }
 
-func Date(year int, month int, day int) time.Time {
-	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+func Date(year int, month int, day int, loc *time.Location) time.Time {
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)
 }
 
 func AddWeeks(d time.Time, weeks int) time.Time {
@@ -58,9 +57,9 @@ func AddMonths(d time.Time, months int) time.Time {
 }
 
 func DayBefore(d time.Time) time.Time {
-	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, -1, time.UTC)
+	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, -1, d.Location())
 }
 
 func TruncateTime(d time.Time) time.Time {
-	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
 }

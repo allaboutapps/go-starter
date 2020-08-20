@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/util"
@@ -53,7 +54,7 @@ func TestCompareAllPayload(t *testing.T) {
 		"B": "b",
 		"C": "2.3",
 		"D": "true",
-		"E": util.Date(2020, 2, 1).String(),
+		"E": util.Date(2020, 2, 1, time.UTC).String(),
 		"F": "0862573e-6ccb-4684-847d-276d3364e91e",
 	}
 
@@ -93,7 +94,7 @@ func TestCompareAll(t *testing.T) {
 		"B": "b",
 		"C": "2.3",
 		"D": "true",
-		"E": util.Date(2020, 2, 1).String(),
+		"E": util.Date(2020, 2, 1, time.UTC).String(),
 		"F": "0862573e-6ccb-4684-847d-276d3364e91e",
 	}
 
