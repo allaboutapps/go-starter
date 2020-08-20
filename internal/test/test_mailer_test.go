@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/test"
@@ -64,14 +63,4 @@ func TestWithSMTPMailerFromDefaultEnv(t *testing.T) {
 		require.NotEmpty(t, m.Transport)
 		assert.IsType(t, &transport.SMTPMailTransport{}, m.Transport)
 	})
-}
-
-func TestWithTestServerAndSMTPMailerInject(t *testing.T) {
-	t.Parallel()
-
-	test.WithTestServer(t, test.InjectSMTPMailerFromDefaultEnv(t, func(s *api.Server) {
-		require.NotNil(t, s.Mailer)
-		require.NotEmpty(t, s.Mailer.Transport)
-		assert.IsType(t, &transport.SMTPMailTransport{}, s.Mailer.Transport)
-	}))
 }

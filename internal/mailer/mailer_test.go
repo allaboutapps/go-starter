@@ -58,9 +58,12 @@ func SkipTestMailerSendPasswordResetWithMailhogAndServer(t *testing.T) {
 	ctx := context.Background()
 	fixtures := test.Fixtures()
 
-	test.WithTestServer(t, test.InjectSMTPMailerFromDefaultEnv(t, func(s *api.Server) {
+	test.WithTestServer(t, func(s *api.Server) {
+		// explizit overwrite
+		s.Mailer = test.NewSMTPMailerFromDefaultEnv(t)
+
 		passwordResetLink := "http://localhost/password/reset/12345"
 		err := s.Mailer.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 		require.NoError(t, err)
-	}))
+	})
 }

@@ -3,7 +3,6 @@ package test
 import (
 	"testing"
 
-	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
@@ -29,15 +28,6 @@ func NewTestMailer(t *testing.T) *mailer.Mailer {
 	t.Helper()
 
 	return newMailerWithTransporter(t, transport.NewMock())
-}
-
-func InjectSMTPMailerFromDefaultEnv(t *testing.T, closure func(s *api.Server)) func(s *api.Server) {
-	t.Helper()
-
-	return func(s *api.Server) {
-		s.Mailer = NewSMTPMailerFromDefaultEnv(t)
-		closure(s)
-	}
 }
 
 func NewSMTPMailerFromDefaultEnv(t *testing.T) *mailer.Mailer {
