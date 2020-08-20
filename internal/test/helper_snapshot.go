@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	SnapshotDirPathAbs     string = filepath.Join(util.GetProjectRootDir(), "/test/testdata/snapshots")
-	testUpdateGoldenGlobal bool   = util.GetEnvAsBool("TEST_UPDATE_GOLDEN", false)
+	SnapshotDirPathAbs string = filepath.Join(util.GetProjectRootDir(), "/test/testdata/snapshots")
+	UpdateGoldenGlobal bool   = util.GetEnvAsBool("TEST_UPDATE_GOLDEN", false)
 )
 
 var defaultReplacer = func(s string) string {
@@ -46,7 +46,7 @@ func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) strin
 	snapshotName := strings.Replace(t.Name(), "/", "-", -1)
 	snapshotAbsPath := filepath.Join(SnapshotDirPathAbs, snapshotName+".golden")
 
-	if update || testUpdateGoldenGlobal {
+	if update || UpdateGoldenGlobal {
 		err := writeSnapshot(snapshotAbsPath, dump)
 		if err != nil {
 			t.Fatal(err)

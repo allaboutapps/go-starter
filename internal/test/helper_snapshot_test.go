@@ -15,6 +15,9 @@ import (
 )
 
 func TestSnapshot(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
 	t.Parallel()
 
 	a := struct {
@@ -35,6 +38,9 @@ func TestSnapshot(t *testing.T) {
 }
 
 func TestSnapshotWithReplacer(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
 	t.Parallel()
 
 	randID, err := util.GenerateRandomBase64String(20)
@@ -62,6 +68,9 @@ func TestSnapshotWithReplacer(t *testing.T) {
 }
 
 func TestSnapshotShouldFail(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
 	t.Parallel()
 
 	a := struct {
@@ -89,6 +98,9 @@ func TestSnapshotShouldFail(t *testing.T) {
 }
 
 func TestSnapshotWithUpdate(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
 	t.Parallel()
 
 	a := struct {
@@ -116,6 +128,9 @@ func TestSnapshotWithUpdate(t *testing.T) {
 }
 
 func TestSnapshotNotExists(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
 	t.Parallel()
 
 	a := struct {
@@ -149,6 +164,9 @@ func TestSnapshotNotExists(t *testing.T) {
 }
 
 func TestSnapshotSkipFields(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
 	t.Parallel()
 
 	randID, err := util.GenerateRandomBase64String(20)
