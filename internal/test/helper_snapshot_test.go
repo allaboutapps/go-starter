@@ -133,7 +133,7 @@ func TestSnapshotNotExists(t *testing.T) {
 	b := "Hello World!"
 
 	defer func() {
-		os.Remove(filepath.Join(test.SnapshotDirPathAbs, "TestSnapshotNotExists.dump"))
+		os.Remove(filepath.Join(test.SnapshotDirPathAbs, "TestSnapshotNotExists.golden"))
 	}()
 
 	tMock := new(mocks.TestingT)

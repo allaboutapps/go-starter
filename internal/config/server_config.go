@@ -88,9 +88,8 @@ func DefaultServiceConfigFromEnv() Server {
 		},
 		Paths: PathsServer{
 			// Please ALWAYS work with ABSOLUTE (ABS) paths from ENV_VARS (however you may resolve a project-relative to absolute for the default value)
-			APIBaseDirAbs:        util.GetEnv("SERVER_PATHS_API_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/api")),                   // /app/api (swagger.yml)
-			MntBaseDirAbs:        util.GetEnv("SERVER_PATHS_MNT_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/assets/mnt")),            // /app/assets/mnt (user-generated content)
-			TestAssetsBaseDirAbs: util.GetEnv("SERVER_PATHS_TEST_ASSETS_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/test/testdata")), // /app/test/testdata (files used in tests and test snapshots)
+			APIBaseDirAbs: util.GetEnv("SERVER_PATHS_API_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/api")),        // /app/api (swagger.yml)
+			MntBaseDirAbs: util.GetEnv("SERVER_PATHS_MNT_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/assets/mnt")), // /app/assets/mnt (user-generated content)
 		},
 		Auth: AuthServer{
 			AccessTokenValidity:          time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_ACCESS_TOKEN_VALIDITY", 86400)),

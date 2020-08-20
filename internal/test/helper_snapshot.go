@@ -14,9 +14,11 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 )
 
-const snapshotDir string = "/snapshots"
+var (
+	SnapshotDirPathAbs     string = filepath.Join(util.GetProjectRootDir(), "/test/testdata/snapshots")
+	testUpdateGoldenGlobal bool   = util.GetEnvAsBool("TEST_UPDATE_GOLDEN", false)
+)
 
-var SnapshotDirPathAbs string
 var defaultReplacer = func(s string) string {
 	return s
 }
@@ -27,11 +29,6 @@ var spewConfig = spew.ConfigState{
 	DisablePointerAddresses: true, // don't spew the addresses of pointers
 	DisableCapacities:       true, // don't spew capacities of collections
 	SpewKeys:                true, // if unable to sort map keys then spew keys to strings and sort those
-}
-
-func init() {
-	basePath := util.GetEnv("SERVER_PATHS_TEST_ASSETS_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/test/testdata"))
-	SnapshotDirPathAbs = filepath.Join(basePath, snapshotDir)
 }
 
 // SnapshotWithReplacer is similiar to Snapshot but with the addition of a custom replacer function,
@@ -47,9 +44,9 @@ func SnapshotWithReplacer(t TestingT, update bool, replacer func(s string) strin
 
 	dump := replacer(spewConfig.Sdump(data...))
 	snapshotName := strings.Replace(t.Name(), "/", "-", -1)
-	snapshotAbsPath := filepath.Join(SnapshotDirPathAbs, snapshotName+".dump")
+	snapshotAbsPath := filepath.Join(SnapshotDirPathAbs, snapshotName+".golden")
 
-	if update {
+	if update || testUpdateGoldenGlobal {
 		err := writeSnapshot(snapshotAbsPath, dump)
 		if err != nil {
 			t.Fatal(err)
