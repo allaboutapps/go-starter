@@ -16,6 +16,12 @@ This are your global db test fixtures, that are only available while testing. Ho
 
 Please use this convention to specify test only utility functions.
 
+### Regarding snapshot testing
+
+Golden files can be created by using the `Snapshoter.Save(t TestingT, data ...interface{})` method. The snapshot can be configured to force an update, use a different replacer function or to set a different file location and suffix for the snaphot.
+
+A snapshot can be updated by either calling the `Update(true)` method, or by using the global override by setting the environment variable `TEST_UPDATE_GOLDEN` to `true`. To update all snapshots the call might look like this: `TEST_UPDATE_GOLDEN=true make test`.
+
 ### `testdata` and `.` or `_` prefixed files
 
 Note that Go will ignore directories or files that begin with "." or "_", so you have more flexibility in terms of how you name your test data directory.
