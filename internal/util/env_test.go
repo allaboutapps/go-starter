@@ -24,6 +24,29 @@ func TestGetEnv(t *testing.T) {
 	assert.Equal(t, "string", res)
 }
 
+func TestGetEnvEnum(t *testing.T) {
+	t.Parallel()
+
+	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_ENUM"
+
+	panicFunc := func() {
+		_ = util.GetEnvEnum(testVarKey, "smtp", []string{"mock", "foo"})
+	}
+	assert.Panics(t, panicFunc)
+
+	res := util.GetEnvEnum(testVarKey, "smtp", []string{"mock", "smtp"})
+	assert.Equal(t, "smtp", res)
+
+	os.Setenv(testVarKey, "mock")
+	defer os.Unsetenv(testVarKey)
+	res = util.GetEnvEnum(testVarKey, "smtp", []string{"mock", "smtp"})
+	assert.Equal(t, "mock", res)
+
+	os.Setenv(testVarKey, "foo")
+	res = util.GetEnvEnum(testVarKey, "smtp", []string{"mock", "smtp"})
+	assert.Equal(t, "smtp", res)
+}
+
 func TestGetEnvAsInt(t *testing.T) {
 	t.Parallel()
 
