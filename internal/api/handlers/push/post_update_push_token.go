@@ -16,8 +16,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-var ()
-
 func PostUpdatePushTokenRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Push.PUT("/token", postUpdatePushTokenHandler(s))
 }
