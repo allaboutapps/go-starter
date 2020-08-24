@@ -26,9 +26,8 @@ type AuthServer struct {
 }
 
 type PathsServer struct {
-	APIBaseDirAbs        string
-	MntBaseDirAbs        string
-	TestAssetsBaseDirAbs string
+	APIBaseDirAbs string
+	MntBaseDirAbs string
 }
 
 type ManagementServer struct {
