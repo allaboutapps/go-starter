@@ -7,7 +7,7 @@ func Int64PtrWithCentsToFloat64Ptr(c *int64) *float64 {
 		return nil
 	}
 
-	return swag.Float64(float64(*c) / 100.0)
+	return Int64WithCentsToFloat64Ptr(*c)
 }
 
 func Int64WithCentsToFloat64Ptr(c int64) *float64 {
@@ -19,7 +19,7 @@ func IntPtrWithCentsToFloat64Ptr(c *int) *float64 {
 		return nil
 	}
 
-	return swag.Float64(float64(*c) / 100.0)
+	return IntWithCentsToFloat64Ptr(*c)
 }
 
 func IntWithCentsToFloat64Ptr(c int) *float64 {
@@ -31,7 +31,7 @@ func Float64PtrToInt64PtrWithCents(f *float64) *int64 {
 		return nil
 	}
 
-	return swag.Int64(int64(*f * 100))
+	return swag.Int64(Float64PtrToInt64WithCents(f))
 }
 
 func Float64PtrToInt64WithCents(f *float64) int64 {
@@ -43,7 +43,7 @@ func Float64PtrToIntPtrWithCents(f *float64) *int {
 		return nil
 	}
 
-	return swag.Int(int(*f * 100))
+	return swag.Int(Float64PtrToIntWithCents(f))
 }
 
 func Float64PtrToIntWithCents(f *float64) int {

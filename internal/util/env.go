@@ -30,6 +30,24 @@ func GetEnv(key string, defaultVal string) string {
 	return defaultVal
 }
 
+func GetEnvEnum(key string, defaultVal string, allowedValues []string) string {
+	if !ContainsString(allowedValues, defaultVal) {
+		log.Panic().Str("value", defaultVal).Msg("Default value is not in the allowed values list.")
+	}
+
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal
+	}
+
+	if !ContainsString(allowedValues, val) {
+		log.Error().Str("value", val).Msg("Value is not allowed. Fallback to default value.")
+		return defaultVal
+	}
+
+	return val
+}
+
 func GetEnvAsInt(key string, defaultVal int) int {
 	strVal := GetEnv(key, "")
 

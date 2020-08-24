@@ -15,16 +15,14 @@ const (
 func NewTestMailer(t *testing.T) *mailer.Mailer {
 	t.Helper()
 
-	config := config.DefaultServiceConfigFromEnv().Mailer
-	config.DefaultSender = TestMailerDefaultSender
+	return newMailerWithTransporter(t, transport.NewMock())
+}
 
-	m := mailer.New(config, transport.NewMock())
+func NewSMTPMailerFromDefaultEnv(t *testing.T) *mailer.Mailer {
+	t.Helper()
 
-	if err := m.ParseTemplates(); err != nil {
-		t.Fatal("Failed to parse mailer templates", err)
-	}
-
-	return m
+	config := config.DefaultServiceConfigFromEnv().SMTP
+	return newMailerWithTransporter(t, transport.NewSMTP(config))
 }
 
 func GetTestMailerMockTransport(t *testing.T, m *mailer.Mailer) *transport.MockMailTransport {
@@ -35,4 +33,19 @@ func GetTestMailerMockTransport(t *testing.T, m *mailer.Mailer) *transport.MockM
 	}
 
 	return mt
+}
+
+func newMailerWithTransporter(t *testing.T, transporter transport.MailTransporter) *mailer.Mailer {
+	t.Helper()
+
+	config := config.DefaultServiceConfigFromEnv().Mailer
+	config.DefaultSender = TestMailerDefaultSender
+
+	m := mailer.New(config, transporter)
+
+	if err := m.ParseTemplates(); err != nil {
+		t.Fatal("Failed to parse mailer templates", err)
+	}
+
+	return m
 }
