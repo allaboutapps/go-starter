@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
@@ -81,11 +82,14 @@ func (s *Server) InitDB(ctx context.Context) error {
 }
 
 func (s *Server) InitMailer() error {
-	if s.Config.Mailer.UseMockTransporter {
+	switch config.MailerTransporter(s.Config.Mailer.Transporter) {
+	case config.MailerTransporterMock:
 		log.Warn().Msg("Initializing mock mailer")
 		s.Mailer = mailer.New(s.Config.Mailer, transport.NewMock())
-	} else {
+	case config.MailerTransporterSMTP:
 		s.Mailer = mailer.New(s.Config.Mailer, transport.NewSMTP(s.Config.SMTP))
+	default:
+		return fmt.Errorf("Unsupported mail transporter: %s", s.Config.Mailer.Transporter)
 	}
 
 	return s.Mailer.ParseTemplates()

@@ -37,8 +37,11 @@ func WithTestServerConfigurable(t *testing.T, config config.Server, closure func
 		// attach the already initalized db
 		s.DB = db
 
+		if err := s.InitMailer(); err != nil {
+			t.Fatalf("Failed to init mailer: %v", err)
+		}
+
 		// attach any other mocks
-		s.Mailer = NewTestMailer(t)
 		s.Push = NewTestPusher(t, db)
 
 		router.Init(s)

@@ -12,18 +12,6 @@ const (
 	TestMailerDefaultSender = "test@example.com"
 )
 
-func WithTestMailer(t *testing.T, closure func(m *mailer.Mailer)) {
-	t.Helper()
-
-	closure(NewTestMailer(t))
-}
-
-func WithSMTPMailerFromDefaultEnv(t *testing.T, closure func(m *mailer.Mailer)) {
-	t.Helper()
-
-	closure(NewSMTPMailerFromDefaultEnv(t))
-}
-
 func NewTestMailer(t *testing.T) *mailer.Mailer {
 	t.Helper()
 
