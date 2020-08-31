@@ -1,0 +1,7 @@
+(struct { ID string; A string; B int; C bool; D *string }) {
+  ID: <redacted>,
+  A: (string) (len=3) "foo",
+  B: (int) 1,
+  C: (bool) true,
+  D: (*string)((len=3) "bar")
+}

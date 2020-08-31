@@ -1,0 +1,8 @@
+(types.GetUserInfoResponse) {
+  Email: (strfmt.Email) (len=17) user1@example.com,
+  Scopes: ([]string) (len=1) {
+    (string) (len=3) "app"
+  },
+  Sub: (*string)((len=36) "f6ede5d8-e22a-4ca5-aa12-67821865a3e5"),
+  UpdatedAt: <redacted>,
+}
