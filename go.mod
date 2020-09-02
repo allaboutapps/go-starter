@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/validate v0.19.10
 	github.com/jordan-wright/email v0.0.0-20200602115436-fd8a7622303e
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
-	github.com/labstack/echo/v4 v4.1.16
+	github.com/labstack/echo/v4 v4.1.17
 	github.com/lib/pq v1.8.0
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0
@@ -28,7 +28,7 @@ require (
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.2.0
 	github.com/volatiletech/strmangle v0.0.1
-	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
-	golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6
 	google.golang.org/api v0.30.0
 )
