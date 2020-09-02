@@ -86,8 +86,8 @@ RUN mkdir -p /tmp/pgFormatter \
 # https://github.com/gotestyourself/gotestsum/releases
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
-    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.5.2/gotestsum_0.5.2_linux_amd64.tar.gz \
-    && tar xzf gotestsum_0.5.2_linux_amd64.tar.gz \
+    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.5.3/gotestsum_0.5.3_linux_amd64.tar.gz \
+    && tar xzf gotestsum_0.5.3_linux_amd64.tar.gz \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum 
 
