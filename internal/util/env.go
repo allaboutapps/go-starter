@@ -142,7 +142,7 @@ func GetMgmtSecret(envKey string) string {
 			log.Panic().Err(err).Msg("Failed to generate random management secret")
 		}
 
-		log.Info().Str("envKey", envKey).Str("mgmtSecret", val).Msg("Could not retrieve management secret from env key, using randomly generated one")
+		log.Warn().Str("envKey", envKey).Str("mgmtSecret", mgmtSecret).Msg("Could not retrieve management secret from env key, using randomly generated one")
 	})
 
 	return mgmtSecret
