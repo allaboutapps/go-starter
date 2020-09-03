@@ -11,7 +11,7 @@ type Database struct {
 	Host             string            `json:"host"`
 	Port             int               `json:"port"`
 	Username         string            `json:"username"`
-	Password         string            `json:"password"`
+	Password         string            `json:"-"` // sensitive, do not emit if this struct gets marshalled.
 	Database         string            `json:"database"`
 	AdditionalParams map[string]string `json:"additionalParams,omitempty"` // Optional additional connection parameters mapped into the connection string
 	MaxOpenConns     int               `json:"maxOpenConns"`

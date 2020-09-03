@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"net/http"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -25,4 +26,8 @@ func getReadyHandler(s *api.Server) echo.HandlerFunc {
 
 		return c.String(http.StatusOK, "Ready.")
 	}
+}
+
+func init() {
+	fmt.Println("TEST")
 }
