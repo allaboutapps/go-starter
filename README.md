@@ -35,6 +35,7 @@
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
 - CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to add additional subcommands.
+- Comes with an initial [PostgreSQL](https://www.postgresql.org/) database structure, overing user authentication, management and push notifications tokens.
 - Parallel jobs optimized `Makefile` and various convenience scripts (see all targets and its description via `make help`). A full rebuild only takes seconds.
 - Multi-staged `Dockerfile` (`development` -> `builder` -> `app`).
 
@@ -50,7 +51,9 @@ Requires the following local setup for development:
 - [Docker Compose](https://docs.docker.com/compose/install/) (1.25 or above)
 - [VSCode Extension: Remote - Containers](https://code.visualstudio.com/docs/remote/containers) (`ms-vscode-remote.remote-containers`)
 
-The project makes use of the [Remote - Containers extension](https://code.visualstudio.com/docs/remote/containers) provided by [Visual Studio Code](https://code.visualstudio.com/). A local installation of the Go toolchain is *no longer* required when using this setup. Please refer to the above official installation guide how this works for your host OS.
+This project makes use of the [Remote - Containers extension](https://code.visualstudio.com/docs/remote/containers) provided by [Visual Studio Code](https://code.visualstudio.com/). A local installation of the Go toolchain is **no longer required** when using this setup.
+
+Please refer to the [official installation guide](https://code.visualstudio.com/docs/remote/containers) how this works for your host OS and head to our [FAQ: How does our VSCode setup work?](https://github.com/allaboutapps/go-starter/wiki/FAQ#how-does-our-vscode-setup-work) if you encounter issues.
 
 ### Quickstart
 
@@ -58,9 +61,9 @@ The project makes use of the [Remote - Containers extension](https://code.visual
 > Contributions and others: You will need to fork this repository.
 
 ```bash
-# If you haven't forked already...
-git clone git@github.com:allaboutapps/go-starter.git
-cd go-starter
+# If you haven't forked/cloned already...
+git clone git@github.com:allaboutapps/go-starter.git my-service
+cd my-service
 
 # Easily start the docker-compose dev environment through our helper
 ./docker-helper.sh --up
@@ -91,10 +94,11 @@ To replace all occurances of `allaboutapps.dev/aw/go-stater` (our internal modul
 ```bash
 development@94242c61cf2b:/app$ # inside your container...
 
-# Change the go project module name.
+# Set a new go project module name.
 make set-module-name
-# allaboutapps internal: allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO>
-# typical other projects: github.com/<USER>/<PROJECT>
+# allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO> (internal only)
+# github.com/<USER>/<PROJECT>
+# e.g. github.com/majodev/my-service
 
 # Optionally you may want to move our LICENSE and README.md away.
 mv README.md README-go-starter.md
