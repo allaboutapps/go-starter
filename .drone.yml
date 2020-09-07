@@ -65,7 +65,7 @@ alias:
   #     mgmt_repo: https://git.allaboutapps.at/scm/aw/a3cloud-mgmt.git
   #     mgmt_git_email: infrastructure+drone@allaboutapps.at
 
-  # ENV variables for executing yarn:test (typically only the DB connector is relevant)
+  # ENV variables for executing within the test env (similar to the env in docker-compose.yml)
   - &TEST_ENV
     CI: ${CI}
 
@@ -87,12 +87,11 @@ alias:
     PSQL_PORT: *PGPORT
     PSQL_SSLMODE: *PGSSLMODE
 
-    # optional: project root directory, used for relative path resolution (e.g. fixtures)
+    # required for drone: project root directory, used for relative path resolution (e.g. fixtures)
     PROJECT_ROOT_DIR: /app
 
     # optional: env for integresql client testing
     # INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
-
   # Which build events should trigger the main pipeline (defaults to all)
   - &BUILD_EVENTS [push, pull_request, tag]
 
@@ -139,9 +138,12 @@ pipeline:
     group: pre-test
     image: *IMAGE_DEPLOY_ID
     commands:
+      - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
       - make tidy
       - make build
-      - git diff --exit-code
+      - cp -R $PROJECT_ROOT_DIR $DRONE_WORKSPACE # switch back to drone workspace ...
+      - cd $DRONE_WORKSPACE
+      - "git diff --exit-code" # ... for git diffing (otherwise not possible as .git is .dockerignored)
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
@@ -149,6 +151,7 @@ pipeline:
     group: test
     image: *IMAGE_DEPLOY_ID
     commands:
+      - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
       - make test
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
@@ -165,6 +168,21 @@ pipeline:
   # ---------------------------------------------------------------------------
   # PUBLISH
   # ---------------------------------------------------------------------------
+
+#   # Built a allowed branch? Push to cloud registry
+#   "publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
+#     group: publish
+#     <<: *GCR_REGISTRY_SETTINGS
+#     tags:
+#       - build_${DRONE_BUILD_NUMBER}
+#       - ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}
+#       - *IMAGE_DEPLOY_TAG
+#       - latest
+#       - ${DRONE_BRANCH}
+#       - ${DRONE_COMMIT_SHA:0:10}
+#     when:
+#       branch: *GCR_PUBLISH_BRANCHES
+#       event: *BUILD_EVENTS
 
 #   # Built a tag? Push to cloud registry
 #   "publish tag_${DRONE_COMMIT_SHA:0:10}":

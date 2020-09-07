@@ -10,12 +10,11 @@
   - [Usage](#usage)
     - [Requirements](#requirements)
     - [Quickstart](#quickstart)
+    - [Visual Studio Code](#visual-studio-code)
     - [Set project module name](#set-project-module-name)
     - [Typical commands](#typical-commands)
-    - [Running locally](#running-locally)
-    - [`./docker-helper.sh`](#docker-helpersh)
-    - [PostgreSQL](#postgresql)
-    - [SwaggerUI](#swaggerui)
+    - [Running](#running)
+    - [Uninstall](#uninstall)
   - [Additional resources](#additional-resources)
   - [Contributing](#contributing)
   - [Maintainers](#maintainers)
@@ -36,10 +35,12 @@
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
 - CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to add additional subcommands.
-- Parallel jobs optimized `Makefile` and various convenience scripts (see all targets and description with `make help`). A full rebuild via `make build` only takes seconds.
-- Multi-staged `Dockerfile` (`development` -> `builder` -> `builder-app` -> `app`).
+- Parallel jobs optimized `Makefile` and various convenience scripts (see all targets and its description via `make help`). A full rebuild only takes seconds.
+- Multi-staged `Dockerfile` (`development` -> `builder` -> `app`).
 
 ## Usage
+
+> Please find more detailed information regarding the usage of this project in our **[FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ)**.
 
 ### Requirements
 
@@ -57,31 +58,49 @@ The project makes use of the [Remote - Containers extension](https://code.visual
 > Contributions and others: You will need to fork this repository.
 
 ```bash
+# If you haven't forked already...
+git clone git@github.com:allaboutapps/go-starter.git
+cd go-starter
+
 # Easily start the docker-compose dev environment through our helper
 ./docker-helper.sh --up
+```
 
-# You should be inside the 'service' docker container with a bash shell.
-# development@XXXXXXXXX:/app$
+You should be inside the 'service' docker container with a bash shell.
 
-# You may also work in VSCode's integrated terminal after connecting via CMD+SHIFT+P "Remote-Containers: Reopen in Container"
+```bash
+development@94242c61cf2b:/app$ # inside your container...
+
+# Shortcut for make init, make build, make info and make test
+make all
 
 # Print all available make targets
 make help
 ```
 
+### Visual Studio Code
+
+> If you are new to VSCode Remote - Containers feature, see our [FAQ: How does our VSCode setup work?](https://github.com/allaboutapps/go-starter/wiki/FAQ#how-does-our-vscode-setup-work).
+
+Run `CMD+SHIFT+P` `Go: Install/Update Tools` **after** attaching to the container with VSCode to auto-install all golang related vscode extensions.
+
 ### Set project module name
 
-After your `git clone` you may do the following:
+To replace all occurances of `allaboutapps.dev/aw/go-stater` (our internal module name of this project) with yours, do the following:
 
 ```bash
-# Change the go project module name and create a new README
-make set-module-name
-# internal: allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO>
-# others: github.com/<USER>/<PROJECT>
+development@94242c61cf2b:/app$ # inside your container...
 
-# Finally move our license file away and create a new README.md for your project
+# Change the go project module name.
+make set-module-name
+# allaboutapps internal: allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO>
+# typical other projects: github.com/<USER>/<PROJECT>
+
+# Optionally you may want to move our LICENSE and README.md away.
 mv README.md README-go-starter.md
 mv LICENSE LICENSE-go-starter
+
+# Optionally create a new README.md for your project.
 make get-module-name > README.md
 ```
 
@@ -90,6 +109,8 @@ make get-module-name > README.md
 Other useful commands while developing your service:
 
 ```bash
+development@94242c61cf2b:/app$ # inside your container...
+
 # Print all available make targets
 make help
 
@@ -106,11 +127,13 @@ make
 make test
 ```
 
-### Running locally
+### Running 
 
-To finally run the service locally you may:
+To run the service locally you may:
 
 ```bash
+development@94242c61cf2b:/app$ # inside your container...
+
 # Migrate up the database
 sql-migrate up
 
@@ -121,48 +144,15 @@ app db seed
 app server
 
 # Now available at http://127.0.0.1:8080
-``` 
-
-### `./docker-helper.sh`
-
-Our `docker-helper.sh` script does its best to assist our `docker-compose`-based local dev workflow: 
-
-```bash
-# ---
-
-# $local
-
-# you may attach to the development container through multiple shells, it's always the same command
-./docker-helper.sh --up
-
-# if you ever need to halt the docker-compose env (without deleting your projects' images & volumes)
-./docker-helper.sh --halt
-
-# if you ever change something in the Dockerfile and require a rebuild of the service image only
-./docker-helper.sh --rebuild
-
-# if you ever need to wipe ALL docker traces (will delete your projects' images & volumes)
-./docker-helper.sh --destroy
 ```
 
-### PostgreSQL
+### Uninstall
 
-A PostgreSQL database is automatically started and exposed on `localhost:5432`.
-
-Feel free to connect with your preferred database client from your host maschine for debugging purposes or just issue `psql` within our development container.
-
-### SwaggerUI
-
-A Swagger-UI container was automatically started through our `docker-compose.yml` and is exposed on Port `8081`. Please visit [http://localhost:8081](http://localhost:8081/) to access it (it does not require a running `app server`).
-
-Regarding [Visual Studio Code](https://code.visualstudio.com/): Always develop *inside* the running `development` docker container, by attaching to this container.
-
-Run CMD+SHIFT+P `Go: Install/Update Tools` after starting vscode to autoinstall all golang vscode dependencies, then **reload your window**.
+Simply run `./docker-helper --destroy` in your working directory (on your host machine) to wipe all docker related traces of this project (and its volumes!).
 
 ## Additional resources
 
-* [Wiki](https://github.com/allaboutapps/go-starter/wiki)
-* [FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ)
+* **Please visit our [FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ)**.
 * [Random Training Material](https://github.com/allaboutapps/go-starter/wiki/Random-training-material)
 
 ## Contributing

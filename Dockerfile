@@ -1,5 +1,6 @@
 ### -----------------------
 # --- Stage: development
+# --- Purpose: Local development environment
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
@@ -135,6 +136,7 @@ RUN mkdir -p /$GOPATH/pkg && chown -R $USERNAME /$GOPATH
 
 ### -----------------------
 # --- Stage: builder
+# --- Purpose: Statically built binaries and CI environment
 ### -----------------------
 
 FROM development as builder
@@ -146,16 +148,11 @@ RUN make modules
 COPY tools.go /app/tools.go
 RUN make tools
 COPY . /app/
-
-### -----------------------
-# --- Stage: builder-app
-### -----------------------
-
-FROM builder as builder-app
 RUN make go-build
 
 ### -----------------------
 # --- Stage: app
+# --- Purpose: Image for actual deployment
 ### -----------------------
 
 FROM debian:buster-slim as app
@@ -174,12 +171,12 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder-app /app/bin/app /app/bin/sql-migrate /app/
-COPY --from=builder-app /app/dbconfig.yml /app/
-COPY --from=builder-app /app/api/swagger.yml /app/api/
-COPY --from=builder-app /app/assets /app/assets/
-COPY --from=builder-app /app/migrations /app/migrations/
-COPY --from=builder-app /app/web /app/web/
+COPY --from=builder /app/bin/app /app/bin/sql-migrate /app/
+COPY --from=builder /app/dbconfig.yml /app/
+COPY --from=builder /app/api/swagger.yml /app/api/
+COPY --from=builder /app/assets /app/assets/
+COPY --from=builder /app/migrations /app/migrations/
+COPY --from=builder /app/web /app/web/
 
 WORKDIR /app
 
