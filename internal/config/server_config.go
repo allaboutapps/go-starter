@@ -16,6 +16,11 @@ type EchoServer struct {
 	ListenAddress                  string
 	HideInternalServerErrorDetails bool
 	BaseURL                        string
+	EnableCORSMiddleware           bool
+	EnableLoggerMiddleware         bool
+	EnableRecoverMiddleware        bool
+	EnableRequestIDMiddleware      bool
+	EnableTrailingSlashMiddleware  bool
 }
 
 type AuthServer struct {
@@ -84,6 +89,11 @@ func DefaultServiceConfigFromEnv() Server {
 			ListenAddress:                  util.GetEnv("SERVER_ECHO_LISTEN_ADDRESS", ":8080"),
 			HideInternalServerErrorDetails: util.GetEnvAsBool("SERVER_ECHO_HIDE_INTERNAL_SERVER_ERROR_DETAILS", true),
 			BaseURL:                        util.GetEnv("SERVER_ECHO_BASE_URL", "http://localhost:8080"),
+			EnableCORSMiddleware:           util.GetEnvAsBool("SERVER_ECHO_ENABLE_CORS_MIDDLEWARE", true),
+			EnableLoggerMiddleware:         util.GetEnvAsBool("SERVER_ECHO_ENABLE_LOGGER_MIDDLEWARE", true),
+			EnableRecoverMiddleware:        util.GetEnvAsBool("SERVER_ECHO_ENABLE_RECOVER_MIDDLEWARE", true),
+			EnableRequestIDMiddleware:      util.GetEnvAsBool("SERVER_ECHO_ENABLE_REQUEST_ID_MIDDLEWARE", true),
+			EnableTrailingSlashMiddleware:  util.GetEnvAsBool("SERVER_ECHO_ENABLE_TRAILING_SLASH_MIDDLEWARE", true),
 		},
 		Paths: PathsServer{
 			// Please ALWAYS work with ABSOLUTE (ABS) paths from ENV_VARS (however you may resolve a project-relative to absolute for the default value)
