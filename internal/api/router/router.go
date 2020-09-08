@@ -25,35 +25,58 @@ func Init(s *api.Server) {
 
 	// ---
 	// General middleware
-	s.Echo.Pre(echoMiddleware.RemoveTrailingSlash())
+	if s.Config.Echo.EnableTrailingSlashMiddleware {
+		s.Echo.Pre(echoMiddleware.RemoveTrailingSlash())
+	} else {
+		log.Info().Msg("Disabling trailing slash middleware due to environment config")
+	}
 
-	s.Echo.Use(echoMiddleware.Recover())
-	s.Echo.Use(echoMiddleware.RequestID())
-	s.Echo.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Level:             s.Config.Logger.RequestLevel,
-		LogRequestBody:    s.Config.Logger.LogRequestBody,
-		LogRequestHeader:  s.Config.Logger.LogRequestHeader,
-		LogRequestQuery:   s.Config.Logger.LogRequestQuery,
-		LogResponseBody:   s.Config.Logger.LogResponseBody,
-		LogResponseHeader: s.Config.Logger.LogResponseHeader,
-		RequestBodyLogSkipper: func(req *http.Request) bool {
-			// We skip all body logging for auth endpoints as these might contain credentials
-			if strings.HasPrefix(req.URL.Path, "/api/v1/auth") {
-				return true
-			}
+	if s.Config.Echo.EnableRecoverMiddleware {
+		s.Echo.Use(echoMiddleware.Recover())
+	} else {
+		log.Info().Msg("Disabling recover middleware due to environment config")
+	}
 
-			return middleware.DefaultRequestBodyLogSkipper(req)
-		},
-		ResponseBodyLogSkipper: func(req *http.Request, res *echo.Response) bool {
-			// We skip all body logging for auth endpoints as these might contain credentials
-			if strings.HasPrefix(req.URL.Path, "/api/v1/auth") {
-				return true
-			}
+	if s.Config.Echo.EnableRequestIDMiddleware {
+		s.Echo.Use(echoMiddleware.RequestID())
+	} else {
+		log.Info().Msg("Disabling request ID middleware due to environment config")
+	}
 
-			return middleware.DefaultResponseBodyLogSkipper(req, res)
-		},
-	}))
-	s.Echo.Use(echoMiddleware.CORS())
+	if s.Config.Echo.EnableLoggerMiddleware {
+		s.Echo.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+			Level:             s.Config.Logger.RequestLevel,
+			LogRequestBody:    s.Config.Logger.LogRequestBody,
+			LogRequestHeader:  s.Config.Logger.LogRequestHeader,
+			LogRequestQuery:   s.Config.Logger.LogRequestQuery,
+			LogResponseBody:   s.Config.Logger.LogResponseBody,
+			LogResponseHeader: s.Config.Logger.LogResponseHeader,
+			RequestBodyLogSkipper: func(req *http.Request) bool {
+				// We skip all body logging for auth endpoints as these might contain credentials
+				if strings.HasPrefix(req.URL.Path, "/api/v1/auth") {
+					return true
+				}
+
+				return middleware.DefaultRequestBodyLogSkipper(req)
+			},
+			ResponseBodyLogSkipper: func(req *http.Request, res *echo.Response) bool {
+				// We skip all body logging for auth endpoints as these might contain credentials
+				if strings.HasPrefix(req.URL.Path, "/api/v1/auth") {
+					return true
+				}
+
+				return middleware.DefaultResponseBodyLogSkipper(req, res)
+			},
+		}))
+	} else {
+		log.Info().Msg("Disabling logger middleware due to environment config")
+	}
+
+	if s.Config.Echo.EnableCORSMiddleware {
+		s.Echo.Use(echoMiddleware.CORS())
+	} else {
+		log.Info().Msg("Disabling CORS middleware due to environment config")
+	}
 
 	// ---
 	// Initialize our general groups and set middleware to use above them
