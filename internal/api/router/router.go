@@ -28,19 +28,19 @@ func Init(s *api.Server) {
 	if s.Config.Echo.EnableTrailingSlashMiddleware {
 		s.Echo.Pre(echoMiddleware.RemoveTrailingSlash())
 	} else {
-		log.Info().Msg("Disabling trailing slash middleware due to environment config")
+		log.Warn().Msg("Disabling trailing slash middleware due to environment config")
 	}
 
 	if s.Config.Echo.EnableRecoverMiddleware {
 		s.Echo.Use(echoMiddleware.Recover())
 	} else {
-		log.Info().Msg("Disabling recover middleware due to environment config")
+		log.Warn().Msg("Disabling recover middleware due to environment config")
 	}
 
 	if s.Config.Echo.EnableRequestIDMiddleware {
 		s.Echo.Use(echoMiddleware.RequestID())
 	} else {
-		log.Info().Msg("Disabling request ID middleware due to environment config")
+		log.Warn().Msg("Disabling request ID middleware due to environment config")
 	}
 
 	if s.Config.Echo.EnableLoggerMiddleware {
@@ -69,13 +69,13 @@ func Init(s *api.Server) {
 			},
 		}))
 	} else {
-		log.Info().Msg("Disabling logger middleware due to environment config")
+		log.Warn().Msg("Disabling logger middleware due to environment config")
 	}
 
 	if s.Config.Echo.EnableCORSMiddleware {
 		s.Echo.Use(echoMiddleware.CORS())
 	} else {
-		log.Info().Msg("Disabling CORS middleware due to environment config")
+		log.Warn().Msg("Disabling CORS middleware due to environment config")
 	}
 
 	// ---
