@@ -80,7 +80,11 @@ func runServer() {
 
 	go func() {
 		if err := s.Start(); err != nil {
-			log.Fatal().Err(err).Msg("Failed to start server")
+			if err == http.ErrServerClosed {
+				log.Info().Msg("Server closed")
+			} else {
+				log.Fatal().Err(err).Msg("Failed to start server")
+			}
 		}
 	}()
 

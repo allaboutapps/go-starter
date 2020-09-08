@@ -107,7 +107,7 @@ func (s *Server) InitPush() error {
 	}
 
 	if s.Config.Push.UseMockProvider {
-		log.Warn().Msg("Initializing push mock provider")
+		log.Warn().Msg("Initializing mock push provider")
 		mockProvider := provider.NewMock(push.ProviderTypeFCM)
 		s.Push.RegisterProvider(mockProvider)
 	}
@@ -128,7 +128,7 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
-	log.Info().Msg("Shutting down server")
+	log.Warn().Msg("Shutting down server")
 
 	if s.DB != nil {
 		log.Debug().Msg("Closing database connection")
