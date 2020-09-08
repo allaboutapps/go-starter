@@ -16,7 +16,7 @@ type FCM struct {
 }
 
 type FCMConfig struct {
-	GoogleApplicationCredentials string
+	GoogleApplicationCredentials string `json:"-"` // sensitive
 	ProjectID                    string
 	ValidateOnly                 bool
 }

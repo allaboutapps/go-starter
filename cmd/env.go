@@ -15,8 +15,10 @@ var envCmd = &cobra.Command{
 	Short: "Prints the env",
 	Long: `Prints the currently applied env
 
-You may use this to get an overview about how
-your ENV_VARS are currently bound by the server config.`,
+You may use this cmd to get an overview about how 
+your ENV_VARS are bound by the server config.
+Please note that certain secrets are automatically
+removed from this output.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runEnv()
 	},
