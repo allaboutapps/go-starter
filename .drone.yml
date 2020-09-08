@@ -93,8 +93,8 @@ alias:
     # required for drone: project root directory, used for relative path resolution (e.g. fixtures)
     PROJECT_ROOT_DIR: /app
 
-    # optional: env for integresql client testing
-    # INTEGRESQL_CLIENT_BASE_URL: "http://integresql:5000/api"
+    SERVER_MANAGEMENT_SECRET: "mgmt-secret"
+
   # Which build events should trigger the main pipeline (defaults to all)
   - &BUILD_EVENTS [push, pull_request, tag]
 
@@ -181,12 +181,13 @@ pipeline:
       - "java -jar /opt/swagger-codegen-cli/swagger-codegen-cli.jar validate -i ./api/swagger.yml"
     <<: *WHEN_BUILD_EVENT
 
-  "app binary":
+  "test binary":
     group: test
     image: *IMAGE_DEPLOY_ID
     commands:
       - cd $PROJECT_ROOT_DIR
       - ./app db migrate
+      - ./app db seed
       - ./app env
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
