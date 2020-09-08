@@ -155,6 +155,9 @@ RUN make go-build
 # --- Purpose: Image for actual deployment
 ### -----------------------
 
+# If you don't require apt-get, you may even use distroless as a more minimal base image
+# FROM gcr.io/distroless/base:debug as app
+
 FROM debian:buster-slim as app
 
 RUN apt-get update \
@@ -171,8 +174,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/bin/app /app/bin/sql-migrate /app/
-COPY --from=builder /app/dbconfig.yml /app/
+COPY --from=builder /app/bin/app /app/
 COPY --from=builder /app/api/swagger.yml /app/api/
 COPY --from=builder /app/assets /app/assets/
 COPY --from=builder /app/migrations /app/migrations/
@@ -180,4 +182,4 @@ COPY --from=builder /app/web /app/web/
 
 WORKDIR /app
 
-CMD [ "/bin/sh", "-c", "/app/sql-migrate up && /app/app server" ]
+ENTRYPOINT [ "./app", "server", "--migrate"]

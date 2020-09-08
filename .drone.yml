@@ -23,7 +23,10 @@ alias:
   # The image name, defaults to lowercase repo name <owner>/<project>, e.g. aw/aaa-cab-kubernetes-test
   - &IMAGE_DEPLOY_NAME ${DRONE_REPO,,}
 
-  # The full uniquely tagged image name
+  # The intermediate builder image name
+  - &IMAGE_BUILDER_ID ${DRONE_REPO,,}-builder:${DRONE_COMMIT_SHA}
+
+  # The full uniquely tagged app image name
   - &IMAGE_DEPLOY_ID ${DRONE_REPO,,}:${DRONE_COMMIT_SHA}
 
   #   # Defines which branches will trigger a docker image push our Google Cloud Registry (tags are always published)
@@ -126,8 +129,10 @@ pipeline:
     image: docker:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - IMAGE_TAG: *IMAGE_BUILDER_ID
     commands:
-      - "docker build --target builder --compress -t ${DRONE_REPO,,}:${DRONE_COMMIT_SHA} ."
+      - "docker build --target builder --compress -t $${IMAGE_TAG} ."
     <<: *WHEN_BUILD_EVENT
 
   # ---------------------------------------------------------------------------
@@ -136,7 +141,7 @@ pipeline:
 
   "build & diff":
     group: pre-test
-    image: *IMAGE_DEPLOY_ID
+    image: *IMAGE_BUILDER_ID
     commands:
       - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
       - make tidy
@@ -149,7 +154,7 @@ pipeline:
 
   "test":
     group: test
-    image: *IMAGE_DEPLOY_ID
+    image: *IMAGE_BUILDER_ID
     commands:
       - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
       - make test
@@ -163,6 +168,26 @@ pipeline:
     commands:
       # run the main swagger.yml validation.
       - "java -jar /opt/swagger-codegen-cli/swagger-codegen-cli.jar validate -i ./api/swagger.yml"
+    <<: *WHEN_BUILD_EVENT
+
+  "docker build (target app)":
+    group: build-app
+    image: docker:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - IMAGE_TAG: *IMAGE_DEPLOY_ID
+    commands:
+      - "docker build --target builder --compress -t $${IMAGE_TAG} ."
+    <<: *WHEN_BUILD_EVENT
+
+  "app env":
+    group: post-test
+    image: *IMAGE_DEPLOY_ID
+    commands:
+      - cd $PROJECT_ROOT_DIR
+      - ./app env
+    environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
   # ---------------------------------------------------------------------------
@@ -198,9 +223,9 @@ pipeline:
 #     when:
 #       event: tag
 
-  # ---------------------------------------------------------------------------
-  # DEPLOYMENT
-  # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# DEPLOYMENT
+# ---------------------------------------------------------------------------
 
 #   # autodeploy dev if it hits the branch
 #   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (auto)":
