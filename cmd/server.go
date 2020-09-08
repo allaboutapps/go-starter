@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,6 +17,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	migrateFlag string = "migrate"
+)
+
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
 	Use:   "server",
@@ -25,11 +30,21 @@ var serverCmd = &cobra.Command{
 Requires configuration through ENV and
 and a fully migrated PostgreSQL database.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		applyMigrations, err := cmd.Flags().GetBool(migrateFlag)
+		if err != nil {
+			fmt.Printf("Error while parsing flags: %v\n", err)
+			os.Exit(1)
+		}
+		if applyMigrations {
+			migrateCmdFunc(cmd, args)
+		}
+
 		runServer()
 	},
 }
 
 func init() {
+	serverCmd.Flags().BoolP(migrateFlag, "m", false, "Apply migrations before startup.")
 	rootCmd.AddCommand(serverCmd)
 }
 
