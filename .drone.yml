@@ -130,7 +130,7 @@ pipeline:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - IMAGE_TAG: *IMAGE_BUILDER_ID
+      IMAGE_TAG: *IMAGE_BUILDER_ID
     commands:
       - "docker build --target builder --compress -t $${IMAGE_TAG} ."
     <<: *WHEN_BUILD_EVENT
@@ -176,7 +176,7 @@ pipeline:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - IMAGE_TAG: *IMAGE_DEPLOY_ID
+      IMAGE_TAG: *IMAGE_DEPLOY_ID
     commands:
       - "docker build --target builder --compress -t $${IMAGE_TAG} ."
     <<: *WHEN_BUILD_EVENT
