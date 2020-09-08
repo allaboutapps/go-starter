@@ -22,6 +22,11 @@ type EchoServer struct {
 	ListenAddress                  string
 	HideInternalServerErrorDetails bool
 	BaseURL                        string
+	EnableCORSMiddleware           bool
+	EnableLoggerMiddleware         bool
+	EnableRecoverMiddleware        bool
+	EnableRequestIDMiddleware      bool
+	EnableTrailingSlashMiddleware  bool
 }
 
 type AuthServer struct {
@@ -37,7 +42,7 @@ type PathsServer struct {
 }
 
 type ManagementServer struct {
-	Secret string
+	Secret string `json:"-"` // sensitive
 }
 
 type FrontendServer struct {
@@ -61,7 +66,7 @@ type Server struct {
 	Echo       EchoServer
 	Paths      PathsServer
 	Auth       AuthServer
-	Management ManagementServer
+	Management ManagementServer `json:"-"` // sensitive
 	Mailer     Mailer
 	SMTP       transport.SMTPMailTransportConfig
 	Frontend   FrontendServer
@@ -72,7 +77,8 @@ type Server struct {
 
 // We don't expect that ENV_VARs change while we are running our application or our tests
 // (and it would be a bad thing to do anyways with parallel testing).
-// Therefore we can optimize here to do ENV_VAR parsing only once.
+// Do NOT use os.Setenv / os.Unsetenv in tests utilizing DefaultServiceConfigFromEnv()!
+// We can optimize here to do ENV_VAR parsing only once.
 func DefaultServiceConfigFromEnv() Server {
 	configOnce.Do(func() {
 		config = Server{
@@ -94,6 +100,11 @@ func DefaultServiceConfigFromEnv() Server {
 				ListenAddress:                  util.GetEnv("SERVER_ECHO_LISTEN_ADDRESS", ":8080"),
 				HideInternalServerErrorDetails: util.GetEnvAsBool("SERVER_ECHO_HIDE_INTERNAL_SERVER_ERROR_DETAILS", true),
 				BaseURL:                        util.GetEnv("SERVER_ECHO_BASE_URL", "http://localhost:8080"),
+				EnableCORSMiddleware:           util.GetEnvAsBool("SERVER_ECHO_ENABLE_CORS_MIDDLEWARE", true),
+				EnableLoggerMiddleware:         util.GetEnvAsBool("SERVER_ECHO_ENABLE_LOGGER_MIDDLEWARE", true),
+				EnableRecoverMiddleware:        util.GetEnvAsBool("SERVER_ECHO_ENABLE_RECOVER_MIDDLEWARE", true),
+				EnableRequestIDMiddleware:      util.GetEnvAsBool("SERVER_ECHO_ENABLE_REQUEST_ID_MIDDLEWARE", true),
+				EnableTrailingSlashMiddleware:  util.GetEnvAsBool("SERVER_ECHO_ENABLE_TRAILING_SLASH_MIDDLEWARE", true),
 			},
 			Paths: PathsServer{
 				// Please ALWAYS work with ABSOLUTE (ABS) paths from ENV_VARS (however you may resolve a project-relative to absolute for the default value)
@@ -148,6 +159,7 @@ func DefaultServiceConfigFromEnv() Server {
 				ValidateOnly:                 util.GetEnvAsBool("SERVER_FCM_VALIDATE_ONLY", true),
 			},
 		}
+
 	})
 
 	return config

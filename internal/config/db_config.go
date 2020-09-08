@@ -8,15 +8,15 @@ import (
 )
 
 type Database struct {
-	Host             string            `json:"host"`
-	Port             int               `json:"port"`
-	Username         string            `json:"username"`
-	Password         string            `json:"-"` // sensitive, do not emit if this struct gets marshalled.
-	Database         string            `json:"database"`
-	AdditionalParams map[string]string `json:"additionalParams,omitempty"` // Optional additional connection parameters mapped into the connection string
-	MaxOpenConns     int               `json:"maxOpenConns"`
-	MaxIdleConns     int               `json:"maxIdleConns"`
-	ConnMaxLifetime  time.Duration     `json:"connMaxLifetime"`
+	Host             string
+	Port             int
+	Username         string
+	Password         string `json:"-"` // sensitive
+	Database         string
+	AdditionalParams map[string]string `json:",omitempty"` // Optional additional connection parameters mapped into the connection string
+	MaxOpenConns     int
+	MaxIdleConns     int
+	ConnMaxLifetime  time.Duration
 }
 
 // Generates a connection string to be passed to sql.Open or equivalents, assuming Postgres syntax

@@ -46,9 +46,9 @@ func SMTPAuthTypeFromString(s string) SMTPAuthType {
 type SMTPMailTransportConfig struct {
 	Host      string
 	Port      int
-	AuthType  SMTPAuthType
+	AuthType  SMTPAuthType `json:"-"` // iota
 	Username  string
-	Password  string
+	Password  string `json:"-"` // sensitive
 	UseTLS    bool
-	TLSConfig *tls.Config
+	TLSConfig *tls.Config `json:"-"` // pointer
 }
