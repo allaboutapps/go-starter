@@ -135,6 +135,17 @@ pipeline:
       - "docker build --target builder --compress -t $${IMAGE_TAG} ."
     <<: *WHEN_BUILD_EVENT
 
+  "docker build (target app)":
+    group: build-app
+    image: docker:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      IMAGE_TAG: *IMAGE_DEPLOY_ID
+    commands:
+      - "docker build --target app --compress -t $${IMAGE_TAG} ."
+    <<: *WHEN_BUILD_EVENT
+
   # ---------------------------------------------------------------------------
   # CHECK
   # ---------------------------------------------------------------------------
@@ -170,19 +181,8 @@ pipeline:
       - "java -jar /opt/swagger-codegen-cli/swagger-codegen-cli.jar validate -i ./api/swagger.yml"
     <<: *WHEN_BUILD_EVENT
 
-  "docker build (target app)":
-    group: build-app
-    image: docker:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      IMAGE_TAG: *IMAGE_DEPLOY_ID
-    commands:
-      - "docker build --target app --compress -t $${IMAGE_TAG} ."
-    <<: *WHEN_BUILD_EVENT
-
   "app binary":
-    group: post-test
+    group: test
     image: *IMAGE_DEPLOY_ID
     commands:
       - cd $PROJECT_ROOT_DIR
