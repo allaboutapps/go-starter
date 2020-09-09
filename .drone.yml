@@ -198,7 +198,7 @@ pipeline:
       - cd $PROJECT_ROOT_DIR
       - make get-licenses
     environment: *TEST_ENV
-    secrets: ["GITHUB_TOKEN"]
+    secrets: ["GITHUB_TOKEN"] # TOKEN required by license check.
     <<: *WHEN_BUILD_EVENT
 
   "binary: test":
