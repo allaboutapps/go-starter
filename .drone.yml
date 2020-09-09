@@ -181,6 +181,17 @@ pipeline:
       - "java -jar /opt/swagger-codegen-cli/swagger-codegen-cli.jar validate -i ./api/swagger.yml"
     <<: *WHEN_BUILD_EVENT
 
+  "deps & licenses":
+    group: test
+    image: *IMAGE_BUILDER_ID
+    commands:
+      - cd $PROJECT_ROOT_DIR
+      - make get-embedded-modules
+      - make get-licenses
+    environment: *TEST_ENV
+    secrets: ["GITHUB_TOKEN"]
+    <<: *WHEN_BUILD_EVENT
+
   "test binary":
     group: test
     image: *IMAGE_DEPLOY_ID

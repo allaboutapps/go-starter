@@ -239,6 +239,13 @@ swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 # --- Binary checks
 ### -----------------------
 
+get-licenses:
+ifndef GITHUB_TOKEN
+	$(warning Please specify GITHUB_TOKEN otherwise you will run into rate-limits!)
+	$(warning https://github.com/mitchellh/golicense#github-authentication)
+endif
+	golicense bin/app || exit 0
+
 get-embedded-modules: ##- (opt) Prints embedded modules in the compiled bin/app
 	go version -m -v bin/app
 
