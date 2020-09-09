@@ -189,7 +189,6 @@ pipeline:
       - make get-embedded-modules-count
       - make get-embedded-modules
     environment: *TEST_ENV
-    secrets: ["GITHUB_TOKEN"]
     <<: *WHEN_BUILD_EVENT
 
   "binary: licenses":
