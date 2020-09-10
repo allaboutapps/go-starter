@@ -25,7 +25,7 @@ all: ##- Runs (pretty much) all targets: make clean, init, build, info and test.
 	@$(MAKE) info
 	@$(MAKE) test
 
-info: ##- Prints database spec, implemented vs. speced handlers, go module-name and current go version.
+info: ##- Prints database spec, prints handlers, go module-name and current go version.
 	@echo "database:"
 	@cat scripts/sql/info.sql | psql -q -d "${PSQL_DBNAME}"
 	@echo "handlers:"
@@ -34,7 +34,7 @@ info: ##- Prints database spec, implemented vs. speced handlers, go module-name 
 	@$(MAKE) info-module-name
 	@go version
 
-lint: check-gen-dirs check-handlers go-lint  ##- (opt) Lints and checks handler paths match swagger spec.
+lint: check-gen-dirs check-handlers check-embedded-modules-go-not go-lint  ##- (opt) Runs golangci-lint and make check-*.
 
 # these recipies may execute in parallel
 build-pre: sql-generate swagger ##- (opt) Runs prebuild related targets (sql, swagger, go-generate).
@@ -234,6 +234,28 @@ swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 		--keep-spec-order \
 		-q
 	@find internal/types -type f -exec grep -q '^// DELETE ME; DO NOT EDIT\.$$' {} \; -delete
+
+### -----------------------
+# --- Binary checks
+### -----------------------
+
+get-licenses: ##- (opt) Prints licenses of embedded modules in the compiled bin/app
+ifndef GITHUB_TOKEN
+	$(warning Please specify GITHUB_TOKEN otherwise you will run into rate-limits!)
+	$(warning https://github.com/mitchellh/golicense#github-authentication)
+endif
+	golicense bin/app || exit 0
+
+get-embedded-modules: ##- (opt) Prints embedded modules in the compiled bin/app
+	go version -m -v bin/app
+
+get-embedded-modules-count: ##- (opt) Prints count of embedded modules in the compiled bin/app
+	go version -m -v bin/app | grep $$'\tdep' | wc -l
+
+check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin/app against go.not, throws on occurance
+	@echo "make check-embedded-modules-go-not"
+	@(mkdir -p tmp 2> /dev/null && go version -m -v bin/app > tmp/.modules)
+	grep -f go.not -F tmp/.modules && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) || exit 0
 
 ### -----------------------
 # --- Helpers

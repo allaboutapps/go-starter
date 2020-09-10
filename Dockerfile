@@ -104,6 +104,15 @@ RUN curl -o /usr/local/bin/swagger -L'#' \
     "https://github.com/go-swagger/go-swagger/releases/download/v0.25.0/swagger_linux_amd64" \
     && chmod +x /usr/local/bin/swagger
 
+# golicense: (this package should NOT be installed via go get) 
+# https://github.com/mitchellh/golicense/releases
+RUN mkdir -p /tmp/golicense \
+    && cd /tmp/golicense \
+    && wget https://github.com/mitchellh/golicense/releases/download/v0.2.0/golicense_0.2.0_linux_x86_64.tar.gz \
+    && tar xzf golicense_0.2.0_linux_x86_64.tar.gz \
+    && cp golicense /usr/local/bin/golicense \
+    && rm -rf /tmp/golicense
+
 # linux permissions / vscode support: Add user to avoid linux file permission issues
 # Detail: Inside the container, any mounted files/folders will have the exact same permissions
 # as outside the container - including the owner user ID (UID) and group ID (GID). 
