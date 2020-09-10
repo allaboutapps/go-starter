@@ -163,6 +163,15 @@ pipeline:
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
+  "info":
+    group: test
+    image: *IMAGE_BUILDER_ID
+    commands:
+      - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
+      - make info
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
   "test":
     group: test
     image: *IMAGE_BUILDER_ID

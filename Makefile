@@ -31,6 +31,9 @@ info: ##- Prints database spec, prints handlers, go module-name and current go v
 	@echo "handlers:"
 	@go run scripts/handlers/check_handlers.go --print-all
 	@echo ""
+	@echo "go.mod updates:"
+	@$(MAKE) get-go-outdated-modules
+	@echo ""
 	@$(MAKE) info-module-name
 	@go version
 
@@ -92,6 +95,9 @@ go-test-print-coverage: ##- (opt) Print overall test coverage (must be done afte
 
 go-test-print-slowest: ##- (opt) Print slowest running tests (must be done after running tests).
 	gotestsum tool slowest --jsonfile /tmp/test.log --threshold 2s
+
+get-go-outdated-modules: ##- (opt) Prints outdated (direct) modules
+	@((go list -u -m -f '{{if and .Update (not .Indirect)}}{{.}}{{end}}' all) | grep " ") || echo "go modules are up-to-date."
 
 ### -----------------------
 # --- Initializing
