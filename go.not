@@ -1,0 +1,5 @@
+# Specifies go modules that should *never* be embedded in the final app executable
+github.com/allaboutapps/integresql-client-go
+github.com/davecgh/go-spew
+github.com/pmezard/go-difflib
+github.com/stretchr/testify
