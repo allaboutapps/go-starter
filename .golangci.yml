@@ -15,7 +15,7 @@ issues:
     - path: _test\.go
       linters:
         - gosec
-    # Exclude gosec from our internal/test pkg
+    # Exclude gosec from running in our internal/test pkg
     - path: internal/test
       linters:
         - gosec
