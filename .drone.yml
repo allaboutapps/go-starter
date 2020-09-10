@@ -160,9 +160,9 @@ pipeline:
     environment:
       IMAGE_TAG: *IMAGE_DEPLOY_ID
     commands:
-      # Build report
+      # Print report
       - "trivy image --exit-code 0 --no-progress $${IMAGE_TAG}"
-      # Fail on severity CRITICAL
+      # Fail on severity HIGH and CRITICAL
       - "trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress $${IMAGE_TAG}"
     <<: *WHEN_BUILD_EVENT
 
