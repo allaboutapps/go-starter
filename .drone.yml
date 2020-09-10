@@ -157,7 +157,7 @@ pipeline:
       - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
       - make tidy
       - make build
-      - cp -R $PROJECT_ROOT_DIR $DRONE_WORKSPACE # switch back to drone workspace ...
+      - /bin/cp -Rf $PROJECT_ROOT_DIR/* $DRONE_WORKSPACE # switch back to drone workspace ...
       - cd $DRONE_WORKSPACE
       - "git diff --exit-code" # ... for git diffing (otherwise not possible as .git is .dockerignored)
     environment: *TEST_ENV
