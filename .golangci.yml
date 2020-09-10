@@ -6,3 +6,16 @@ linters:
     # https://github.com/maratori/testpackage
     # used to enforce blackbox testing
     - testpackage
+    # https://github.com/securego/gosec
+    # inspects source code for security problems by scanning the Go AST.
+    - gosec
+issues:
+  exclude-rules:
+    # Exclude gosec from running on tests files.
+    - path: _test\.go
+      linters:
+        - gosec
+    # Exclude gosec from our internal/test pkg
+    - path: internal/test
+      linters:
+        - gosec
