@@ -162,26 +162,30 @@ RUN make go-build
 ### -----------------------
 # --- Stage: app
 # --- Purpose: Image for actual deployment
+# --- Prefer https://github.com/GoogleContainerTools/distroless over
+# --- debian:buster-slim https://hub.docker.com/_/debian (if you need apt-get).
 ### -----------------------
 
-# If you don't require apt-get, you may even use distroless as a more minimal base image
-# FROM gcr.io/distroless/base:debug as app
+# Distroless images are minimal and lack shell access.
+# https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
+# The :debug image provides a busybox shell to enter (base-debian10 only, not static).
+# https://github.com/GoogleContainerTools/distroless#debug-images
+FROM gcr.io/distroless/base-debian10:debug as app
 
-FROM debian:buster-slim as app
-
-RUN apt-get update \
-    && apt-get install -y \
-    #
-    # Mandadory minimal linux packages
-    # Installed at development stage and app stage
-    # Do not forget to add mandadory linux packages to the base development Dockerfile stage above!
-    #
-    # -- START MANDADORY --
-    ca-certificates \
-    # --- END MANDADORY ---
-    #
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# FROM debian:buster-slim as app
+# RUN apt-get update \
+#     && apt-get install -y \
+#     #
+#     # Mandadory minimal linux packages
+#     # Installed at development stage and app stage
+#     # Do not forget to add mandadory linux packages to the base development Dockerfile stage above!
+#     #
+#     # -- START MANDADORY --
+#     ca-certificates \
+#     # --- END MANDADORY ---
+#     #
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/bin/app /app/
 COPY --from=builder /app/api/swagger.yml /app/api/
@@ -191,4 +195,14 @@ COPY --from=builder /app/web /app/web/
 
 WORKDIR /app
 
-ENTRYPOINT [ "./app", "server", "--migrate"]
+# Must comply to vector form
+# https://github.com/GoogleContainerTools/distroless#entrypoints
+# Sample usage of this image:
+# docker run <image> help
+# docker run <image> db migrate
+# docker run <image> db seed
+# docker run <image> env
+# docker run <image> server
+# docker run <image> server --migrate
+ENTRYPOINT ["/app/app"]
+CMD ["server", "--migrate"]
