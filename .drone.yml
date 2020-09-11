@@ -93,6 +93,7 @@ alias:
     # required for drone: project root directory, used for relative path resolution (e.g. fixtures)
     PROJECT_ROOT_DIR: /app
 
+    # docker run related.
     SERVER_MANAGEMENT_SECRET: "mgmt-secret"
 
   # Which build events should trigger the main pipeline (defaults to all)
@@ -149,6 +150,21 @@ pipeline:
   # ---------------------------------------------------------------------------
   # CHECK
   # ---------------------------------------------------------------------------
+
+  "trivy scan":
+    group: pre-test
+    image: aquasec/trivy:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /server/drone/trivy-cache:/root/.cache/
+    environment:
+      IMAGE_TAG: *IMAGE_DEPLOY_ID
+    commands:
+      # Print report
+      - "trivy image --exit-code 0 --no-progress $${IMAGE_TAG}"
+      # Fail on severity HIGH and CRITICAL
+      - "trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress $${IMAGE_TAG}"
+    <<: *WHEN_BUILD_EVENT
 
   "build & diff":
     group: pre-test
@@ -210,15 +226,24 @@ pipeline:
     secrets: ["GITHUB_TOKEN"] # TOKEN required by license check.
     <<: *WHEN_BUILD_EVENT
 
-  "binary: test":
+  "docker run (target app)":
     group: test
-    image: *IMAGE_DEPLOY_ID
+    image: docker:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      <<: *TEST_ENV
+      IMAGE_TAG: *IMAGE_DEPLOY_ID
     commands:
-      - cd $PROJECT_ROOT_DIR
-      - ./app db migrate
-      - ./app db seed
-      - ./app env
-    environment: *TEST_ENV
+      # Note: NO network related tests are possible here, dnd can just
+      # run sibling containers. We have no possibility to connect them
+      # into the drone user defined per build docker network!
+      # https://github.com/drone-plugins/drone-docker/issues/193
+      # https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/
+      - (env | grep "=" | grep -v -e "DRONE=" -e "DRONE_" -e "CI_" -e "CI=" -e "HOME=" -e "HOSTNAME=" -e "SHELL=" -e "PWD=" -e "PATH=") > .hostenv
+      - cat .hostenv
+      - "docker run --env-file .hostenv $${IMAGE_TAG} help"
+      - "docker run --env-file .hostenv $${IMAGE_TAG} env"
     <<: *WHEN_BUILD_EVENT
 
   # ---------------------------------------------------------------------------
