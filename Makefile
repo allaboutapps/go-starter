@@ -31,6 +31,9 @@ info: ##- Prints database spec, prints handlers, go module-name and current go v
 	@echo "handlers:"
 	@go run scripts/handlers/check_handlers.go --print-all
 	@echo ""
+	@echo "go.mod updates:"
+	@$(MAKE) get-go-outdated-modules
+	@echo ""
 	@$(MAKE) info-module-name
 	@go version
 
@@ -92,6 +95,9 @@ go-test-print-coverage: ##- (opt) Print overall test coverage (must be done afte
 
 go-test-print-slowest: ##- (opt) Print slowest running tests (must be done after running tests).
 	gotestsum tool slowest --jsonfile /tmp/test.log --threshold 2s
+
+get-go-outdated-modules: ##- (opt) Prints outdated (direct) go modules (from go.mod). 
+	@((go list -u -m -f '{{if and .Update (not .Indirect)}}{{.}}{{end}}' all) 2>/dev/null | grep " ") || echo "go modules are up-to-date."
 
 ### -----------------------
 # --- Initializing
@@ -239,20 +245,20 @@ swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 # --- Binary checks
 ### -----------------------
 
-get-licenses: ##- (opt) Prints licenses of embedded modules in the compiled bin/app
+get-licenses: ##- (opt) Prints licenses of embedded modules in the compiled bin/app.
 ifndef GITHUB_TOKEN
 	$(warning Please specify GITHUB_TOKEN otherwise you will run into rate-limits!)
 	$(warning https://github.com/mitchellh/golicense#github-authentication)
 endif
 	golicense bin/app || exit 0
 
-get-embedded-modules: ##- (opt) Prints embedded modules in the compiled bin/app
+get-embedded-modules: ##- (opt) Prints embedded modules in the compiled bin/app.
 	go version -m -v bin/app
 
-get-embedded-modules-count: ##- (opt) Prints count of embedded modules in the compiled bin/app
+get-embedded-modules-count: ##- (opt) Prints count of embedded modules in the compiled bin/app.
 	go version -m -v bin/app | grep $$'\tdep' | wc -l
 
-check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin/app against go.not, throws on occurance
+check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin/app against go.not, throws on occurance.
 	@echo "make check-embedded-modules-go-not"
 	@(mkdir -p tmp 2> /dev/null && go version -m -v bin/app > tmp/.modules)
 	grep -f go.not -F tmp/.modules && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) || exit 0
