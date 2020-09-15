@@ -7,11 +7,11 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gabriel-vasile/mimetype v1.1.1
-	github.com/go-openapi/errors v0.19.6
+	github.com/go-openapi/errors v0.19.7
 	github.com/go-openapi/runtime v0.19.21
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/swag v0.19.9
-	github.com/go-openapi/validate v0.19.10
+	github.com/go-openapi/validate v0.19.11
 	github.com/jordan-wright/email v4.0.1-0.20200824153738-3f5bafa1cd84+incompatible
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/labstack/echo/v4 v4.1.17
