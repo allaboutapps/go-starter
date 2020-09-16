@@ -1,7 +1,7 @@
 // +build scripts
 
 //  This program prints the current project's module name
-// It can be invoked by running go run scripts/modulename/modulename.go
+// It can be invoked by running go run -tags scripts scripts/modulename/modulename.go
 package main
 
 import (
