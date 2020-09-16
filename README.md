@@ -1,6 +1,11 @@
 # go-starter
 
-`go-starter` is an opinionated [golang](https://golang.org/) backend development template by [allaboutapps](https://allaboutapps.at/).
+**go-starter** is an opinionated *production-ready* RESTful JSON backend template written in [Go](https://golang.org/), highly integrated with [VSCode DevContainers](https://code.visualstudio.com/docs/remote/containers) by [allaboutapps](https://allaboutapps.at/).
+
+![go starter overview](https://public.allaboutapps.at/go-starter-wiki/go-starter-main-overview.png)
+
+Demo: **[https://go-starter.allaboutapps.at](https://go-starter.allaboutapps.at)**  
+FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ)**
 
 ## Table of Contents
 
@@ -8,6 +13,7 @@
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Usage](#usage)
+    - [Demo](#demo)
     - [Requirements](#requirements)
     - [Quickstart](#quickstart)
     - [Visual Studio Code](#visual-studio-code)
@@ -41,7 +47,13 @@
 
 ## Usage
 
-> Please find more detailed information regarding the usage of this project in our **[FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ)**.
+> Please find more detailed information regarding the history, usage and other *whys?* of this project in our **[FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ)**.
+
+### Demo
+
+A demo go-starter service is deployed at **[https://go-starter.allaboutapps.at](https://go-starter.allaboutapps.at)** for you to play around with.
+
+Please visit our [FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ#what-are-the-limitations-of-your-demo-environment) to find out more about the limitations of this demo environment.
 
 ### Requirements
 
