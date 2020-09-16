@@ -251,7 +251,7 @@ pipeline:
   # ---------------------------------------------------------------------------
 
 #   # Built a allowed branch? Push to cloud registry
-#   "publish ${DRONE_BRANCH/\//-}_${DRONE_COMMIT_SHA:0:10}":
+#   "publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
 #     group: publish
 #     <<: *GCR_REGISTRY_SETTINGS
 #     tags:
@@ -335,7 +335,7 @@ pipeline:
 # These steps won't be executed unless we work in the main "AW/go-starter" repo
 # ---------------------------------------------------------------------------
 
-  "go-starter publish ${DRONE_BRANCH/\//-}_${DRONE_COMMIT_SHA:0:10}":
+  "go-starter publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
     group: go-starter-publish
     image: plugins/gcr
     repo: a3cloud-192413/${DRONE_REPO,,}
