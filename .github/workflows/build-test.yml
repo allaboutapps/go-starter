@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:12.2-alpine
+        image: postgres:12.4-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
         env:
           POSTGRES_DB: "development"
           POSTGRES_USER: "dbuser"

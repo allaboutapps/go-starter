@@ -112,7 +112,7 @@ pipeline:
 
   "database connection":
     group: build
-    image: postgres:12.2-alpine
+    image: postgres:12.4-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
     commands:
       # wait for postgres service to become available
       - |
@@ -400,7 +400,7 @@ services:
       - "env | sort"
 
   "postgres":
-    image: postgres:12.2-alpine
+    image: postgres:12.4-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
     environment:
       POSTGRES_DB: *PGDATABASE
       POSTGRES_USER: *PGUSER
