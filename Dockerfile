@@ -9,10 +9,6 @@ FROM golang:1.15.2 AS development
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
 
-# https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
-ENV GOBIN /app/bin
-ENV PATH $GOBIN:$PATH
-
 # Our Makefile / env fully supports parallel job execution
 ENV MAKEFLAGS "-j 8 --no-print-directory"
 
@@ -142,6 +138,15 @@ RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
 # linux permissions / vscode support: chown $GOPATH so $USERNAME can directly work with it
 # Note that this should be the final step after installing all build deps 
 RUN mkdir -p /$GOPATH/pkg && chown -R $USERNAME /$GOPATH
+
+# $GOBIN is where our own compiled binaries will live and other go.mod / VSCode binaries will be installed.
+# It should always come AFTER our other $PATH segments and should be earliest targeted in stage "builder", 
+# as /app/bin will the shadowed by a volume mount via docker-compose!
+# E.g. "which golangci-lint" should report "/go/bin" not "/app/bin" (where VSCode will place it).
+# https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
+WORKDIR /app
+ENV GOBIN /app/bin
+ENV PATH $PATH:$GOBIN
 
 ### -----------------------
 # --- Stage: builder
