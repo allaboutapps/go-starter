@@ -1,4 +1,4 @@
-// +build ignore
+// +build scripts
 
 // This program checks /internal/api/handlers.go and /internal/types/spec_handlers.go
 // It can be invoked by running go run scripts/handlers/check_handlers.go

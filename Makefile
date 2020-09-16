@@ -7,7 +7,7 @@
 # http://make.mad-scientist.net/deferred-simple-variable-expansion/
 GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
 	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
-	|| (go run scripts/modulename/modulename.go | tee tmp/.modulename) \
+	|| (go run -tags scripts scripts/modulename/modulename.go | tee tmp/.modulename) \
 ))$(GO_MODULE_NAME)
 
 # first is default target when running "make" without args
@@ -29,7 +29,7 @@ info: ##- Prints database spec, prints handlers, go module-name and current go v
 	@echo "database:"
 	@cat scripts/sql/info.sql | psql -q -d "${PSQL_DBNAME}"
 	@echo "handlers:"
-	@go run scripts/handlers/check_handlers.go --print-all
+	@go run -tags scripts scripts/handlers/check_handlers.go --print-all
 	@echo ""
 	@echo "go.mod updates:"
 	@$(MAKE) get-go-outdated-modules
@@ -53,10 +53,10 @@ go-lint: ##- (opt) Runs golangci-lint.
 	golangci-lint run --fast --timeout 5m
 
 go-generate: ##- (opt) Generates the internal/api/handlers/handlers.go binding.
-	go run scripts/handlers/gen_handlers.go
+	go run -tags scripts scripts/handlers/gen_handlers.go
 
 check-handlers: ##- (opt) Checks if implemented handlers match their spec (path).
-	go run scripts/handlers/check_handlers.go
+	go run -tags scripts scripts/handlers/check_handlers.go
 
 # https://golang.org/pkg/cmd/go/internal/generate/
 # To convey to humans and machine tools that code is generated,

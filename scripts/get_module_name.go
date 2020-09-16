@@ -1,4 +1,6 @@
-package util
+// +build scripts
+
+package scripts
 
 import (
 	"io/ioutil"

@@ -1,4 +1,4 @@
-// +build ignore
+// +build scripts
 
 // This program generates /internal/api/handlers.go.
 // It can be invoked by running go run scripts/handlers/gen_handlers.go
@@ -21,7 +21,7 @@ import (
 	"strings"
 	"text/template"
 
-	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/scripts"
 )
 
 // https://blog.carlmjohnson.net/post/2016-11-27-how-to-use-go-generate/
@@ -29,7 +29,7 @@ import (
 var (
 	HANDLERS_PACKAGE = "/internal/api/handlers"
 
-	PATH_PROJECT_ROOT  = util.GetProjectRootDir()
+	PATH_PROJECT_ROOT  = scripts.GetProjectRootDir()
 	PATH_HANDLERS_ROOT = PATH_PROJECT_ROOT + HANDLERS_PACKAGE
 	PATH_MOD_FILE      = PATH_PROJECT_ROOT + "/go.mod"
 	PATH_HANDLERS_FILE = PATH_HANDLERS_ROOT + "/handlers.go"
@@ -83,7 +83,7 @@ func main() {
 
 	funcs := []ResolvedFunction{}
 
-	baseModuleName, err := util.GetModuleName(PATH_MOD_FILE)
+	baseModuleName, err := scripts.GetModuleName(PATH_MOD_FILE)
 
 	if err != nil {
 		log.Fatal(err)

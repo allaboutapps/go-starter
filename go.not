@@ -3,3 +3,4 @@ github.com/allaboutapps/integresql-client-go
 github.com/davecgh/go-spew
 github.com/pmezard/go-difflib
 github.com/stretchr/testify
+github.com/rogpeppe/go-internal
