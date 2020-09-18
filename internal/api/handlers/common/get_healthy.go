@@ -32,9 +32,11 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 
 		fmt.Fprintln(&str, "Ready.")
 
+		ctx := c.Request().Context()
+
 		// Check database is pingable...
 		dbPingStart := time.Now()
-		if err := s.DB.Ping(); err != nil {
+		if err := s.DB.PingContext(ctx); err != nil {
 			checksHaveErrored = true
 			fmt.Fprintf(&str, "Database: Ping errored after %s, error=%v.\n", time.Since(dbPingStart), err.Error())
 		} else {
@@ -44,7 +46,7 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 		// Check database is writable...
 		dbWriteStart := time.Now()
 		var seqVal int
-		if err := s.DB.QueryRow("SELECT nextval('seq_health');").Scan(&seqVal); err != nil {
+		if err := s.DB.QueryRowContext(ctx, "SELECT nextval('seq_health');").Scan(&seqVal); err != nil {
 			checksHaveErrored = true
 			fmt.Fprintf(&str, "Database: Next health sequence errored after %s, error=%v.\n", time.Since(dbWriteStart), err.Error())
 		} else {
