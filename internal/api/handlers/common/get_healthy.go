@@ -3,6 +3,8 @@ package common
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -57,9 +59,19 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 		fsStart := time.Now()
 		if err := unix.Access(s.Config.Paths.MntBaseDirAbs, unix.W_OK); err != nil {
 			checksHaveErrored = true
-			fmt.Fprintf(&str, "Mount '%s': Errored after %s, error=%v.\n", s.Config.Paths.MntBaseDirAbs, time.Since(fsStart), err.Error())
+			fmt.Fprintf(&str, "Mount '%s': Writeable check errored after %s, error=%v.\n", s.Config.Paths.MntBaseDirAbs, time.Since(fsStart), err.Error())
 		} else {
 			fmt.Fprintf(&str, "Mount '%s': Writeable check succeeded in %s.\n", s.Config.Paths.MntBaseDirAbs, time.Since(fsStart))
+		}
+
+		// Actually write a file...
+		fsWriteStart := time.Now()
+		fsNameAbs := path.Join(s.Config.Paths.MntBaseDirAbs, ".healthy")
+		if err := touchFile(fsNameAbs); err != nil {
+			checksHaveErrored = true
+			fmt.Fprintf(&str, "Touch '%s': Write errored after %s, error=%v.\n", fsNameAbs, time.Since(fsWriteStart), err.Error())
+		} else {
+			fmt.Fprintf(&str, "Touch '%s': Write succeeded in %s.\n", fsNameAbs, time.Since(fsWriteStart))
 		}
 
 		// Feel free to add additional checks here...
@@ -75,4 +87,20 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 
 		return c.String(http.StatusOK, str.String())
 	}
+}
+
+func touchFile(fileName string) error {
+	_, err := os.Stat(fileName)
+
+	if os.IsNotExist(err) {
+		file, err := os.Create(fileName)
+		if err != nil {
+			file.Close()
+		}
+		return err
+	}
+
+	currentTime := time.Now().Local()
+	err = os.Chtimes(fileName, currentTime, currentTime)
+	return err
 }

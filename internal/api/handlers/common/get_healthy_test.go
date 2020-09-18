@@ -20,6 +20,8 @@ func TestGetHealthySuccess(t *testing.T) {
 		res = test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 		require.Contains(t, res.Body.String(), "seq_health=2")
+
+		// fmt.Println(res.Body.String())
 	})
 }
 
