@@ -60,6 +60,7 @@
 			"-count=1",
 			"-v"
 		],
+		"go.coverMode": "atomic", // atomic is required when utilizing -race
 		"go.delveConfig": {
 			"dlvLoadConfig": {
 				// increase max length of strings displayed in debugger
