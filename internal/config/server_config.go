@@ -57,7 +57,9 @@ type PathsServer struct {
 }
 
 type ManagementServer struct {
-	Secret string `json:"-"` // sensitive
+	Secret                          string `json:"-"` // sensitive
+	HealthyCheckWriteablePathsAbs   []string
+	HealthyCheckWriteablePathsTouch string
 }
 
 type FrontendServer struct {
@@ -81,7 +83,7 @@ type Server struct {
 	Echo       EchoServer
 	Paths      PathsServer
 	Auth       AuthServer
-	Management ManagementServer `json:"-"` // sensitive
+	Management ManagementServer
 	Mailer     Mailer
 	SMTP       transport.SMTPMailTransportConfig
 	Frontend   FrontendServer
@@ -148,6 +150,9 @@ func DefaultServiceConfigFromEnv() Server {
 			},
 			Management: ManagementServer{
 				Secret: util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
+				HealthyCheckWriteablePathsAbs: util.GetEnvAsStringArr("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_ABS", []string{
+					filepath.Join(util.GetProjectRootDir(), "/assets/mnt")}, ","),
+				HealthyCheckWriteablePathsTouch: util.GetEnv("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_TOUCH", ".healthy"),
 			},
 			Mailer: Mailer{
 				DefaultSender:               util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "go-starter@example.com"),

@@ -43,35 +43,39 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 			fmt.Fprintf(&str, "Database: Ping errored after %s, error=%v.\n", time.Since(dbPingStart), err.Error())
 		} else {
 			fmt.Fprintf(&str, "Database: Ping succeeded in %s.\n", time.Since(dbPingStart))
+
+			// Check database is writable...
+			dbWriteStart := time.Now()
+			var seqVal int
+			if err := s.DB.QueryRowContext(ctx, "SELECT nextval('seq_health');").Scan(&seqVal); err != nil {
+				checksHaveErrored = true
+				fmt.Fprintf(&str, "Database: Next health sequence errored after %s, error=%v.\n", time.Since(dbWriteStart), err.Error())
+			} else {
+				fmt.Fprintf(&str, "Database: Next health sequence succeeded in %s, seq_health=%v.\n", time.Since(dbWriteStart), seqVal)
+			}
 		}
 
-		// Check database is writable...
-		dbWriteStart := time.Now()
-		var seqVal int
-		if err := s.DB.QueryRowContext(ctx, "SELECT nextval('seq_health');").Scan(&seqVal); err != nil {
-			checksHaveErrored = true
-			fmt.Fprintf(&str, "Database: Next health sequence errored after %s, error=%v.\n", time.Since(dbWriteStart), err.Error())
-		} else {
-			fmt.Fprintf(&str, "Database: Next health sequence succeeded in %s, seq_health=%v.\n", time.Since(dbWriteStart), seqVal)
-		}
+		for _, writeablePath := range s.Config.Management.HealthyCheckWriteablePathsAbs {
 
-		// Check mount is writeable...
-		fsStart := time.Now()
-		if err := unix.Access(s.Config.Paths.MntBaseDirAbs, unix.W_OK); err != nil {
-			checksHaveErrored = true
-			fmt.Fprintf(&str, "Mount '%s': Writeable check errored after %s, error=%v.\n", s.Config.Paths.MntBaseDirAbs, time.Since(fsStart), err.Error())
-		} else {
-			fmt.Fprintf(&str, "Mount '%s': Writeable check succeeded in %s.\n", s.Config.Paths.MntBaseDirAbs, time.Since(fsStart))
-		}
+			// Check mount is writeable...
+			fsStart := time.Now()
+			if err := unix.Access(writeablePath, unix.W_OK); err != nil {
+				checksHaveErrored = true
+				fmt.Fprintf(&str, "Mount '%s': Writeable check errored after %s, error=%v.\n", writeablePath, time.Since(fsStart), err.Error())
+			} else {
+				fmt.Fprintf(&str, "Mount '%s': Writeable check succeeded in %s.\n", writeablePath, time.Since(fsStart))
 
-		// Actually write a file...
-		fsWriteStart := time.Now()
-		fsNameAbs := path.Join(s.Config.Paths.MntBaseDirAbs, ".healthy")
-		if err := touchFile(fsNameAbs); err != nil {
-			checksHaveErrored = true
-			fmt.Fprintf(&str, "Touch '%s': Write errored after %s, error=%v.\n", fsNameAbs, time.Since(fsWriteStart), err.Error())
-		} else {
-			fmt.Fprintf(&str, "Touch '%s': Write succeeded in %s.\n", fsNameAbs, time.Since(fsWriteStart))
+				// Actually write a file...
+				fsWriteStart := time.Now()
+				fsNameAbs := path.Join(writeablePath, s.Config.Management.HealthyCheckWriteablePathsTouch)
+				if err := touchFile(fsNameAbs); err != nil {
+					checksHaveErrored = true
+					fmt.Fprintf(&str, "Touch '%s': Write errored after %s, error=%v.\n", fsNameAbs, time.Since(fsWriteStart), err.Error())
+				} else {
+					fmt.Fprintf(&str, "Touch '%s': Write succeeded in %s.\n", fsNameAbs, time.Since(fsWriteStart))
+				}
+			}
+
 		}
 
 		// Feel free to add additional checks here...
@@ -94,9 +98,7 @@ func touchFile(fileName string) error {
 
 	if os.IsNotExist(err) {
 		file, err := os.Create(fileName)
-		if err != nil {
-			file.Close()
-		}
+		file.Close()
 		return err
 	}
 
