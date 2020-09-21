@@ -37,6 +37,23 @@ func Init(s *api.Server) {
 		log.Warn().Msg("Disabling recover middleware due to environment config")
 	}
 
+	if s.Config.Echo.EnableSecureMiddleware {
+		s.Echo.Use(echoMiddleware.SecureWithConfig(echoMiddleware.SecureConfig{
+			Skipper:               echoMiddleware.DefaultSecureConfig.Skipper,
+			XSSProtection:         s.Config.Echo.SecureMiddleware.XSSProtection,
+			ContentTypeNosniff:    s.Config.Echo.SecureMiddleware.ContentTypeNosniff,
+			XFrameOptions:         s.Config.Echo.SecureMiddleware.XFrameOptions,
+			HSTSMaxAge:            s.Config.Echo.SecureMiddleware.HSTSMaxAge,
+			HSTSExcludeSubdomains: s.Config.Echo.SecureMiddleware.HSTSExcludeSubdomains,
+			ContentSecurityPolicy: s.Config.Echo.SecureMiddleware.ContentSecurityPolicy,
+			CSPReportOnly:         s.Config.Echo.SecureMiddleware.CSPReportOnly,
+			HSTSPreloadEnabled:    s.Config.Echo.SecureMiddleware.HSTSPreloadEnabled,
+			ReferrerPolicy:        s.Config.Echo.SecureMiddleware.ReferrerPolicy,
+		}))
+	} else {
+		log.Warn().Msg("Disabling secure middleware due to environment config")
+	}
+
 	if s.Config.Echo.EnableRequestIDMiddleware {
 		s.Echo.Use(echoMiddleware.RequestID())
 	} else {
@@ -77,6 +94,9 @@ func Init(s *api.Server) {
 	} else {
 		log.Warn().Msg("Disabling CORS middleware due to environment config")
 	}
+
+	// Add your custom / additional middlewares here.
+	// see https://echo.labstack.com/middleware
 
 	// ---
 	// Initialize our general groups and set middleware to use above them

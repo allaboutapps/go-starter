@@ -27,6 +27,21 @@ type EchoServer struct {
 	EnableRecoverMiddleware        bool
 	EnableRequestIDMiddleware      bool
 	EnableTrailingSlashMiddleware  bool
+	EnableSecureMiddleware         bool
+	SecureMiddleware               EchoServerSecureMiddleware
+}
+
+// https://github.com/labstack/echo/blob/master/middleware/secure.go
+type EchoServerSecureMiddleware struct {
+	XSSProtection         string
+	ContentTypeNosniff    string
+	XFrameOptions         string
+	HSTSMaxAge            int
+	HSTSExcludeSubdomains bool
+	ContentSecurityPolicy string
+	CSPReportOnly         bool
+	HSTSPreloadEnabled    bool
+	ReferrerPolicy        string
 }
 
 type AuthServer struct {
@@ -105,6 +120,20 @@ func DefaultServiceConfigFromEnv() Server {
 				EnableRecoverMiddleware:        util.GetEnvAsBool("SERVER_ECHO_ENABLE_RECOVER_MIDDLEWARE", true),
 				EnableRequestIDMiddleware:      util.GetEnvAsBool("SERVER_ECHO_ENABLE_REQUEST_ID_MIDDLEWARE", true),
 				EnableTrailingSlashMiddleware:  util.GetEnvAsBool("SERVER_ECHO_ENABLE_TRAILING_SLASH_MIDDLEWARE", true),
+				EnableSecureMiddleware:         util.GetEnvAsBool("SERVER_ECHO_ENABLE_SECURE_MIDDLEWARE", true),
+				// see https://echo.labstack.com/middleware/secure
+				// see https://github.com/labstack/echo/blob/master/middleware/secure.go
+				SecureMiddleware: EchoServerSecureMiddleware{
+					XSSProtection:         util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_XSS_PROTECTION", "1; mode=block"),
+					ContentTypeNosniff:    util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_CONTENT_TYPE_NOSNIFF", "nosniff"),
+					XFrameOptions:         util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_X_FRAME_OPTIONS", "SAMEORIGIN"),
+					HSTSMaxAge:            util.GetEnvAsInt("SERVER_ECHO_SECURE_MIDDLEWARE_HSTS_MAX_AGE", 0),
+					HSTSExcludeSubdomains: util.GetEnvAsBool("SERVER_ECHO_SECURE_MIDDLEWARE_HSTS_EXCLUDE_SUBDOMAINS", false),
+					ContentSecurityPolicy: util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_CONTENT_SECURITY_POLICY", ""),
+					CSPReportOnly:         util.GetEnvAsBool("SERVER_ECHO_SECURE_MIDDLEWARE_CSP_REPORT_ONLY", false),
+					HSTSPreloadEnabled:    util.GetEnvAsBool("SERVER_ECHO_SECURE_MIDDLEWARE_HSTS_PRELOAD_ENABLED", false),
+					ReferrerPolicy:        util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_REFERRER_POLICY", ""),
+				},
 			},
 			Paths: PathsServer{
 				// Please ALWAYS work with ABSOLUTE (ABS) paths from ENV_VARS (however you may resolve a project-relative to absolute for the default value)

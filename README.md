@@ -41,7 +41,12 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
 - CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to add additional subcommands.
-- Comes with an initial [PostgreSQL](https://www.postgresql.org/) database structure, overing user authentication, management and push notifications tokens.
+- Comes with an initial [PostgreSQL](https://www.postgresql.org/) database structure (see [/migrations](https://github.com/allaboutapps/go-starter/tree/master/migrations)), covering: 
+  - auth tokens (access-, refresh-, passwordreset-tokens),
+  - a generic auth-related `user` model
+  - an app-specific barebones `app_user_profile` model,
+  - push notification tokens and 
+  - a health check sequence (for performing writeable checks).
 - Parallel jobs optimized `Makefile` and various convenience scripts (see all targets and its description via `make help`). A full rebuild only takes seconds.
 - Multi-staged `Dockerfile` (`development` -> `builder` -> `app`).
 
