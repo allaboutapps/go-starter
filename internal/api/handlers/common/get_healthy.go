@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 	"sync"
@@ -39,26 +38,11 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 		ctx, cancel := context.WithTimeout(c.Request().Context(), s.Config.Management.HealthyTimeout)
 		defer cancel()
 
-		// DB writeable?
-		dbStr, dbErr := CheckHealthyWriteableDatabase(ctx, s.DB)
-		str.WriteString(dbStr)
+		healthyStr, errs := CheckHealthy(ctx, s.DB, s.Config.Management.HealthyCheckWriteablePathsAbs, s.Config.Management.HealthyCheckWriteablePathsTouch)
+		str.WriteString(healthyStr)
 
-		// FS writeable?
-		fsErrs := make([]error, 0, len(s.Config.Management.HealthyCheckWriteablePathsAbs))
-		for _, writeablePath := range s.Config.Management.HealthyCheckWriteablePathsAbs {
-
-			fsStr, fsErr := CheckHealthyWriteablePath(ctx, writeablePath, s.Config.Management.HealthyCheckWriteablePathsTouch)
-			str.WriteString(fsStr)
-			if fsErr != nil {
-				fsErrs = append(fsErrs, fsErr)
-			}
-		}
-
-		// Feel free to add additional checks here...
-
-		// --
 		// Finally return the health status according to the seen states
-		if ctx.Err() != nil || dbErr != nil || len(fsErrs) != 0 {
+		if ctx.Err() != nil || len(errs) != 0 {
 			fmt.Fprintln(&str, "Not healthy.")
 			// We use 521 to indicate this error state
 			// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
@@ -69,6 +53,34 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 
 		return c.String(http.StatusOK, str.String())
 	}
+}
+
+func CheckHealthy(ctx context.Context, database *sql.DB, writeablePaths []string, touch string) (string, []error) {
+	var str strings.Builder
+
+	// slice collects all errors from checks
+	errs := make([]error, 0, 1+len(writeablePaths))
+
+	// DB writeable?
+	dbStr, dbErr := CheckHealthyWriteableDatabase(ctx, database)
+	str.WriteString(dbStr)
+	if dbErr != nil {
+		errs = append(errs, dbErr)
+	}
+
+	// FS writeable?
+	for _, writeablePath := range writeablePaths {
+
+		fsStr, fsErr := CheckHealthyWriteablePath(ctx, writeablePath, touch)
+		str.WriteString(fsStr)
+		if fsErr != nil {
+			errs = append(errs, fsErr)
+		}
+	}
+
+	// Feel free to add additional checks here...
+
+	return str.String(), errs
 }
 
 func CheckHealthyWriteableDatabase(ctx context.Context, database *sql.DB) (string, error) {
@@ -100,15 +112,15 @@ func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch 
 
 	// FS calls may be blocking and thus need to run detached
 	// However, we want them to timeout (e.g. useful for hard mounted NFS paths)
-	// Typically a context will already have a deadline associated, if not we will define one here.
+	// Typically a context will already have a deadline associated, if not we will explicitly define one here.
 	ctxDeadline, hasDeadline := ctx.Deadline()
 	if !hasDeadline {
 		ctxDeadline = time.Now().Add(5 * time.Second)
 	}
 
+	// ---
+	// Check Path is writeable...
 	{
-		// ---
-		// Check Path is writeable...
 		fsWriteStart := time.Now()
 
 		if ctx.Err() != nil {
@@ -138,10 +150,10 @@ func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch 
 
 	}
 
+	// ---
+	// Actually write a file...
 	{
 
-		// ---
-		// Actually write a file...
 		fsTouchStart := time.Now()
 		fsTouchNameAbs := path.Join(writeablePath, touch)
 
@@ -155,7 +167,7 @@ func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch 
 		var fsTouchModTime time.Time
 		fsTouchWg.Add(1)
 		go func(tn string) {
-			fsTouchModTime, fsTouchErr = touchFile(tn)
+			fsTouchModTime, fsTouchErr = util.TouchFile(tn)
 			fsTouchWg.Done()
 		}(fsTouchNameAbs)
 
@@ -175,30 +187,4 @@ func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch 
 
 	return str.String(), nil
 
-}
-
-func touchFile(fileName string) (time.Time, error) {
-	_, err := os.Stat(fileName)
-
-	if os.IsNotExist(err) {
-		file, err := os.Create(fileName)
-
-		if err != nil {
-			return time.Time{}, err
-		}
-
-		defer file.Close()
-
-		stat, err := file.Stat()
-
-		if err != nil {
-			return time.Time{}, err
-		}
-
-		return stat.ModTime(), nil
-	}
-
-	currentTime := time.Now().Local()
-	err = os.Chtimes(fileName, currentTime, currentTime)
-	return currentTime, err
 }
