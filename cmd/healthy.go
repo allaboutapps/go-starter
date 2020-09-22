@@ -53,6 +53,7 @@ func runHealthy(verbose bool) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to the database")
 	}
+	defer db.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.Management.HealthyTimeout)
 	defer cancel()
