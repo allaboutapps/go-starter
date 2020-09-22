@@ -1,7 +1,6 @@
 package common_test
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -30,6 +29,7 @@ func TestGetHealthySuccess(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)
+		// fmt.Println(res.Body.String())
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 		require.Contains(t, res.Body.String(), "seq_health=1")
 
@@ -61,7 +61,7 @@ func TestGetHealthySuccess(t *testing.T) {
 			assert.NotEqual(t, firstTouchTime[i], stat.ModTime())
 		}
 
-		fmt.Println(res.Body.String())
+		// fmt.Println(res.Body.String())
 	})
 }
 

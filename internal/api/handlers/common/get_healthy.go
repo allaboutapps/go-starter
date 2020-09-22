@@ -8,9 +8,11 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/sys/unix"
 )
@@ -33,7 +35,9 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 		var str strings.Builder
 		fmt.Fprintln(&str, "Ready.")
 
-		ctx := c.Request().Context()
+		// General Timeout and associated context.
+		ctx, cancel := context.WithTimeout(c.Request().Context(), s.Config.Management.HealthyTimeout)
+		defer cancel()
 
 		// DB writeable?
 		dbStr, dbErr := CheckHealthyWriteableDatabase(ctx, s.DB)
@@ -54,7 +58,7 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 
 		// --
 		// Finally return the health status according to the seen states
-		if dbErr != nil || len(fsErrs) != 0 {
+		if ctx.Err() != nil || dbErr != nil || len(fsErrs) != 0 {
 			fmt.Fprintln(&str, "Not healthy.")
 			// We use 521 to indicate this error state
 			// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
@@ -94,25 +98,83 @@ func CheckHealthyWriteableDatabase(ctx context.Context, database *sql.DB) (strin
 func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch string) (string, error) {
 	var str strings.Builder
 
-	// Check Path is writeable...
-	fsStart := time.Now()
-	if err := unix.Access(writeablePath, unix.W_OK); err != nil {
-		fmt.Fprintf(&str, "Path '%s': Writeable check errored after %s, error=%v.\n", writeablePath, time.Since(fsStart), err.Error())
-		return str.String(), err
+	// FS calls may be blocking and thus need to run detached
+	// However, we want them to timeout (e.g. useful for hard mounted NFS paths)
+	// Typically a context will already have a deadline associated, if not we will define one here.
+	ctxDeadline, hasDeadline := ctx.Deadline()
+	if !hasDeadline {
+		ctxDeadline = time.Now().Add(5 * time.Second)
 	}
-	fmt.Fprintf(&str, "Path '%s': Writeable check succeeded in %s.\n", writeablePath, time.Since(fsStart))
 
-	// Actually write a file...
-	fsWriteStart := time.Now()
-	fsNameAbs := path.Join(writeablePath, touch)
-	modTime, err := touchFile(fsNameAbs)
-	if err != nil {
-		fmt.Fprintf(&str, "Touch '%s': Write errored after %s, error=%v.\n", fsNameAbs, time.Since(fsWriteStart), err.Error())
-		return str.String(), err
+	{
+		// ---
+		// Check Path is writeable...
+		fsWriteStart := time.Now()
+
+		if ctx.Err() != nil {
+			fmt.Fprintf(&str, "Path '%s': Writeable check cancelled after %s, error=%v.\n", writeablePath, time.Since(fsWriteStart), ctx.Err())
+			return str.String(), ctx.Err()
+		}
+
+		var fsWriteWg sync.WaitGroup
+		var fsWriteErr error
+		fsWriteWg.Add(1)
+		go func(wp string) {
+			fsWriteErr = unix.Access(wp, unix.W_OK)
+			fsWriteWg.Done()
+		}(writeablePath)
+
+		if err := util.WaitTimeout(&fsWriteWg, time.Until(ctxDeadline)); err != nil {
+			fmt.Fprintf(&str, "Path '%s': Writeable check deadline after %s, error=%v.\n", writeablePath, time.Since(fsWriteStart), err)
+			return str.String(), err
+		}
+
+		if fsWriteErr != nil {
+			fmt.Fprintf(&str, "Path '%s': Writeable check errored after %s, error=%v.\n", writeablePath, time.Since(fsWriteStart), fsWriteErr.Error())
+			return str.String(), fsWriteErr
+		}
+
+		fmt.Fprintf(&str, "Path '%s': Writeable check succeeded in %s.\n", writeablePath, time.Since(fsWriteStart))
+
 	}
-	fmt.Fprintf(&str, "Touch '%s': Write succeeded in %s, modTime=%v.\n", fsNameAbs, time.Since(fsWriteStart), modTime.Unix())
+
+	{
+
+		// ---
+		// Actually write a file...
+		fsTouchStart := time.Now()
+		fsTouchNameAbs := path.Join(writeablePath, touch)
+
+		if ctx.Err() != nil {
+			fmt.Fprintf(&str, "Touch '%s': Write cancelled after %s, error=%v.\n", fsTouchNameAbs, time.Since(fsTouchStart), ctx.Err())
+			return str.String(), ctx.Err()
+		}
+
+		var fsTouchWg sync.WaitGroup
+		var fsTouchErr error
+		var fsTouchModTime time.Time
+		fsTouchWg.Add(1)
+		go func(tn string) {
+			fsTouchModTime, fsTouchErr = touchFile(tn)
+			fsTouchWg.Done()
+		}(fsTouchNameAbs)
+
+		if err := util.WaitTimeout(&fsTouchWg, time.Until(ctxDeadline)); err != nil {
+			fmt.Fprintf(&str, "Touch '%s': Write deadline after %s, error=%v.\n", fsTouchNameAbs, time.Since(fsTouchStart), err)
+			return str.String(), err
+		}
+
+		if fsTouchErr != nil {
+			fmt.Fprintf(&str, "Touch '%s': Write errored after %s, error=%v.\n", fsTouchNameAbs, time.Since(fsTouchStart), fsTouchErr.Error())
+			return str.String(), fsTouchErr
+		}
+
+		fmt.Fprintf(&str, "Touch '%s': Write succeeded in %s, modTime=%v.\n", fsTouchNameAbs, time.Since(fsTouchStart), fsTouchModTime.Unix())
+
+	}
 
 	return str.String(), nil
+
 }
 
 func touchFile(fileName string) (time.Time, error) {

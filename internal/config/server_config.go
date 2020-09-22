@@ -58,6 +58,7 @@ type PathsServer struct {
 
 type ManagementServer struct {
 	Secret                          string `json:"-"` // sensitive
+	HealthyTimeout                  time.Duration
 	HealthyCheckWriteablePathsAbs   []string
 	HealthyCheckWriteablePathsTouch string
 }
@@ -149,7 +150,8 @@ func DefaultServiceConfigFromEnv() Server {
 				LastAuthenticatedAtThreshold: time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900)),
 			},
 			Management: ManagementServer{
-				Secret: util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
+				Secret:         util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
+				HealthyTimeout: time.Second * time.Duration(util.GetEnvAsInt("SERVER_MANAGEMENT_HEALTHY_TIMEOUT_SEC", 5)),
 				HealthyCheckWriteablePathsAbs: util.GetEnvAsStringArr("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_ABS", []string{
 					filepath.Join(util.GetProjectRootDir(), "/assets/mnt")}, ","),
 				HealthyCheckWriteablePathsTouch: util.GetEnv("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_TOUCH", ".healthy"),
