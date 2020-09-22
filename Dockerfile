@@ -207,6 +207,7 @@ WORKDIR /app
 # docker run <image> db migrate
 # docker run <image> db seed
 # docker run <image> env
+# docker run <image> healthy
 # docker run <image> server
 # docker run <image> server --migrate
 ENTRYPOINT ["/app/app"]

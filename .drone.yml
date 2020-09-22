@@ -358,7 +358,7 @@ pipeline:
       - '${DRONE_COMMIT_SHA:0:10}'
     when:
       repo: AW/go-starter
-      branch: [master, mr/a3cloud]
+      branch: [master, mr/a3cloud, mr/liveness-probing]
       event: [push, pull_request, tag]
 
   "go-starter deploy ${DRONE_COMMIT_SHA:0:10} to allaboutapps-go-starter-dev (auto)":
@@ -385,7 +385,7 @@ pipeline:
     mgmt_deployment_yaml: namespaces/allaboutapps-go-starter-dev/app.deployment.yaml
     when:
       repo: AW/go-starter
-      branch: [master, mr/a3cloud]
+      branch: [master, mr/a3cloud, mr/liveness-probing]
       event: [push, pull_request, tag]
 
 # Long living services where the startup order does not matter (otherwise use detach: true)

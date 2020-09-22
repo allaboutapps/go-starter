@@ -32,7 +32,7 @@ func GetEnv(key string, defaultVal string) string {
 
 func GetEnvEnum(key string, defaultVal string, allowedValues []string) string {
 	if !ContainsString(allowedValues, defaultVal) {
-		log.Panic().Str("value", defaultVal).Msg("Default value is not in the allowed values list.")
+		log.Panic().Str("key", key).Str("value", defaultVal).Msg("Default value is not in the allowed values list.")
 	}
 
 	val, ok := os.LookupEnv(key)
@@ -41,7 +41,7 @@ func GetEnvEnum(key string, defaultVal string, allowedValues []string) string {
 	}
 
 	if !ContainsString(allowedValues, val) {
-		log.Error().Str("value", val).Msg("Value is not allowed. Fallback to default value.")
+		log.Error().Str("key", key).Str("value", val).Msg("Value is not allowed. Fallback to default value.")
 		return defaultVal
 	}
 
@@ -109,7 +109,7 @@ func GetEnvAsURL(key string, defaultVal string) *url.URL {
 	if len(strVal) == 0 {
 		u, err := url.Parse(defaultVal)
 		if err != nil {
-			log.Panic().Err(err).Msg("Failed to parse default value for env variable as URL")
+			log.Panic().Str("key", key).Str("defaultVal", defaultVal).Err(err).Msg("Failed to parse default value for env variable as URL")
 		}
 
 		return u
@@ -117,7 +117,7 @@ func GetEnvAsURL(key string, defaultVal string) *url.URL {
 
 	u, err := url.Parse(strVal)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed to parse env variable as URL")
+		log.Panic().Str("key", key).Str("strVal", strVal).Err(err).Msg("Failed to parse env variable as URL")
 	}
 
 	return u
