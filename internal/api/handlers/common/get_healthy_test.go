@@ -1,6 +1,7 @@
 package common_test
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -60,7 +61,7 @@ func TestGetHealthySuccess(t *testing.T) {
 			assert.NotEqual(t, firstTouchTime[i], stat.ModTime())
 		}
 
-		// fmt.Println(res.Body.String())
+		fmt.Println(res.Body.String())
 	})
 }
 
