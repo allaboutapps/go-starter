@@ -86,24 +86,69 @@ func CheckHealthy(ctx context.Context, database *sql.DB, writeablePaths []string
 func CheckHealthyWriteableDatabase(ctx context.Context, database *sql.DB) (string, error) {
 	var str strings.Builder
 
+	// PostgreSQL calls may take too long and thus need to run detached
+	// We additionally want them to timeout
+	// Typically a context will already have a deadline associated, if not we will explicitly define one here.
+	ctxDeadline, hasDeadline := ctx.Deadline()
+	if !hasDeadline {
+		ctxDeadline = time.Now().Add(5 * time.Second)
+	}
+
+	// ---
 	// Check database is pingable...
-	dbPingStart := time.Now()
-	if err := database.PingContext(ctx); err != nil {
-		fmt.Fprintf(&str, "Database: Ping errored after %s, error=%v.\n", time.Since(dbPingStart), err.Error())
-		return str.String(), err
+	{
+		dbPingStart := time.Now()
+
+		var dbPingWg sync.WaitGroup
+		var dbErr error
+
+		dbPingWg.Add(1)
+		go func() {
+			dbErr = database.PingContext(ctx)
+			dbPingWg.Done()
+		}()
+
+		if err := util.WaitTimeout(&dbPingWg, time.Until(ctxDeadline)/2); err != nil {
+			fmt.Fprintf(&str, "Database: Ping deadline after %s, error=%v.\n", time.Since(dbPingStart), err.Error())
+			return str.String(), err
+		}
+
+		if dbErr != nil {
+			fmt.Fprintf(&str, "Database: Ping errored after %s, error=%v.\n", time.Since(dbPingStart), dbErr.Error())
+			return str.String(), dbErr
+		}
+
+		fmt.Fprintf(&str, "Database: Ping succeeded in %s.\n", time.Since(dbPingStart))
 	}
 
-	fmt.Fprintf(&str, "Database: Ping succeeded in %s.\n", time.Since(dbPingStart))
-
+	// ---
 	// Check database is writable...
-	dbWriteStart := time.Now()
-	var seqVal int
-	if err := database.QueryRowContext(ctx, "SELECT nextval('seq_health');").Scan(&seqVal); err != nil {
-		fmt.Fprintf(&str, "Database: Next health sequence errored after %s, error=%v.\n", time.Since(dbWriteStart), err.Error())
-		return str.String(), err
+	{
+		dbWriteStart := time.Now()
+
+		var seqVal int
+		var dbWriteWg sync.WaitGroup
+		var dbErr error
+
+		dbWriteWg.Add(1)
+		go func() {
+			dbErr = database.QueryRowContext(ctx, "SELECT nextval('seq_health');").Scan(&seqVal)
+			dbWriteWg.Done()
+		}()
+
+		if err := util.WaitTimeout(&dbWriteWg, time.Until(ctxDeadline)/2); err != nil {
+			fmt.Fprintf(&str, "Database: Next health sequence deadline after %s, error=%v.\n", time.Since(dbWriteStart), err.Error())
+			return str.String(), err
+		}
+
+		if dbErr != nil {
+			fmt.Fprintf(&str, "Database: Next health sequence errored after %s, error=%v.\n", time.Since(dbWriteStart), dbErr.Error())
+			return str.String(), dbErr
+		}
+
+		fmt.Fprintf(&str, "Database: Next health sequence succeeded in %s, seq_health=%v.\n", time.Since(dbWriteStart), seqVal)
 	}
 
-	fmt.Fprintf(&str, "Database: Next health sequence succeeded in %s, seq_health=%v.\n", time.Since(dbWriteStart), seqVal)
 	return str.String(), nil
 }
 
@@ -111,7 +156,7 @@ func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch 
 	var str strings.Builder
 
 	// FS calls may be blocking and thus need to run detached
-	// However, we want them to timeout (e.g. useful for hard mounted NFS paths)
+	// We additionally want them to timeout (e.g. useful for hard mounted NFS paths)
 	// Typically a context will already have a deadline associated, if not we will explicitly define one here.
 	ctxDeadline, hasDeadline := ctx.Deadline()
 	if !hasDeadline {
@@ -136,7 +181,7 @@ func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch 
 			fsWriteWg.Done()
 		}(writeablePath)
 
-		if err := util.WaitTimeout(&fsWriteWg, time.Until(ctxDeadline)); err != nil {
+		if err := util.WaitTimeout(&fsWriteWg, time.Until(ctxDeadline)/2); err != nil {
 			fmt.Fprintf(&str, "Path '%s': Writeable check deadline after %s, error=%v.\n", writeablePath, time.Since(fsWriteStart), err)
 			return str.String(), err
 		}
@@ -171,7 +216,7 @@ func CheckHealthyWriteablePath(ctx context.Context, writeablePath string, touch 
 			fsTouchWg.Done()
 		}(fsTouchNameAbs)
 
-		if err := util.WaitTimeout(&fsTouchWg, time.Until(ctxDeadline)); err != nil {
+		if err := util.WaitTimeout(&fsTouchWg, time.Until(ctxDeadline)/2); err != nil {
 			fmt.Fprintf(&str, "Touch '%s': Write deadline after %s, error=%v.\n", fsTouchNameAbs, time.Since(fsTouchStart), err)
 			return str.String(), err
 		}

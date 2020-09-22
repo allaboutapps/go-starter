@@ -151,7 +151,7 @@ func DefaultServiceConfigFromEnv() Server {
 			},
 			Management: ManagementServer{
 				Secret:         util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
-				HealthyTimeout: time.Second * time.Duration(util.GetEnvAsInt("SERVER_MANAGEMENT_HEALTHY_TIMEOUT_SEC", 5)),
+				HealthyTimeout: time.Second * time.Duration(util.GetEnvAsInt("SERVER_MANAGEMENT_HEALTHY_TIMEOUT_SEC", 9)),
 				HealthyCheckWriteablePathsAbs: util.GetEnvAsStringArr("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_ABS", []string{
 					filepath.Join(util.GetProjectRootDir(), "/assets/mnt")}, ","),
 				HealthyCheckWriteablePathsTouch: util.GetEnv("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_TOUCH", ".healthy"),
