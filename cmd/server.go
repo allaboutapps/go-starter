@@ -18,7 +18,9 @@ import (
 )
 
 var (
+	probeFlag   string = "probe"
 	migrateFlag string = "migrate"
+	seedFlag    string = "seed"
 )
 
 // serverCmd represents the server command
@@ -30,13 +32,35 @@ var serverCmd = &cobra.Command{
 Requires configuration through ENV and
 and a fully migrated PostgreSQL database.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		probeReadiness, err := cmd.Flags().GetBool(probeFlag)
+		if err != nil {
+			fmt.Printf("Error while parsing flags: %v\n", err)
+			os.Exit(1)
+		}
+
 		applyMigrations, err := cmd.Flags().GetBool(migrateFlag)
 		if err != nil {
 			fmt.Printf("Error while parsing flags: %v\n", err)
 			os.Exit(1)
 		}
+
+		seedFixtures, err := cmd.Flags().GetBool(seedFlag)
+		if err != nil {
+			fmt.Printf("Error while parsing flags: %v\n", err)
+			os.Exit(1)
+		}
+
+		if probeReadiness {
+			runReadiness(true)
+		}
+
 		if applyMigrations {
 			migrateCmdFunc(cmd, args)
+		}
+
+		if seedFixtures {
+			seedCmdFunc(cmd, args)
 		}
 
 		runServer()
@@ -44,7 +68,9 @@ and a fully migrated PostgreSQL database.`,
 }
 
 func init() {
+	serverCmd.Flags().BoolP(probeFlag, "p", false, "Probe readiness before startup.")
 	serverCmd.Flags().BoolP(migrateFlag, "m", false, "Apply migrations before startup.")
+	serverCmd.Flags().BoolP(seedFlag, "s", false, "Seed fixtures into database before startup.")
 	rootCmd.AddCommand(serverCmd)
 }
 

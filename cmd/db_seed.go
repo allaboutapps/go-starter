@@ -17,18 +17,20 @@ var seedCmd = &cobra.Command{
 	Use:   "seed",
 	Short: "Inserts or updates fixtures to the database.",
 	Long:  `Uses upsert to add test data to the current environment.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := applyFixtures(); err != nil {
-			fmt.Printf("Error while applying fixtures: %v", err)
-			os.Exit(1)
-		}
-
-		fmt.Println("Applied all fixtures")
-	},
+	Run:   seedCmdFunc,
 }
 
 func init() {
 	dbCmd.AddCommand(seedCmd)
+}
+
+func seedCmdFunc(cmd *cobra.Command, args []string) {
+	if err := applyFixtures(); err != nil {
+		fmt.Printf("Error while seeding fixtures: %v", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Seeded all fixtures.")
 }
 
 func applyFixtures() error {

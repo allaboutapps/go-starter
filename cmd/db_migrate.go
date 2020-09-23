@@ -28,7 +28,7 @@ func migrateCmdFunc(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Applied %d migrations\n", n)
+	fmt.Printf("Applied %d migrations.\n", n)
 }
 
 func applyMigrations() (int, error) {

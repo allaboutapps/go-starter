@@ -15,7 +15,7 @@ func TestGetReadyReadiness(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "GET", "/-/ready", nil, nil)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
-		require.Equal(t, "Ready.", res.Body.String())
+		require.Contains(t, res.Body.String(), "Ready.")
 	})
 }
 
