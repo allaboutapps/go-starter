@@ -16,7 +16,8 @@ func GetHealthyRoute(s *api.Server) *echo.Route {
 
 // Heathly check (= liveness)
 // Returns an human readable string about the current service status.
-// Does actual write checks apart from the general server ready state.
+// In addition to readiness probes, it performs actual write probes.
+// Note that /-/healthy is private (shielded by the mgmt-secret) as it may expose sensitive information about your service.
 // Structured upon https://prometheus.io/docs/prometheus/latest/management_api/
 func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {

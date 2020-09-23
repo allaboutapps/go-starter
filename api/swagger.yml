@@ -15,12 +15,14 @@ paths:
       - Management: []
       description: |-
         This endpoint returns 200 when the service is healthy.
-        It performs additional checks to ensure other parts of the system are available.
+        Returns an human readable string about the current service status.
+        In addition to readiness probes, it performs actual write probes.
+        Note that /-/healthy is private (shielded by the mgmt-secret) as it may expose sensitive information about your service.
       produces:
       - text/plain
       tags:
       - common
-      summary: Get healthy
+      summary: Get healthy (liveness probe)
       operationId: GetHealthyRoute
       responses:
         "200":
@@ -29,12 +31,15 @@ paths:
           description: Not ready.
   /-/ready:
     get:
-      description: This endpoint returns 200 when the service is ready to serve traffic (i.e. respond to queries).
+      description: |-
+        This endpoint returns 200 when the service is ready to serve traffic.
+        Does read-only probes apart from the general server ready state.
+        Note that /-/ready is typically public (and not shielded by a mgmt-secret), we thus prevent information leakage here and only return `"Ready."`.
       produces:
       - text/plain
       tags:
       - common
-      summary: Get ready
+      summary: Get ready (readiness probe)
       operationId: GetReadyRoute
       responses:
         "200":
