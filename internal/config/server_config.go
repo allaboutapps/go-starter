@@ -57,10 +57,11 @@ type PathsServer struct {
 }
 
 type ManagementServer struct {
-	Secret                          string `json:"-"` // sensitive
-	HealthyTimeout                  time.Duration
-	HealthyCheckWriteablePathsAbs   []string
-	HealthyCheckWriteablePathsTouch string
+	Secret                  string `json:"-"` // sensitive
+	ReadinessTimeout        time.Duration
+	LivenessTimeout         time.Duration
+	ProbeWriteablePathsAbs  []string
+	ProbeWriteableTouchfile string
 }
 
 type FrontendServer struct {
@@ -150,11 +151,12 @@ func DefaultServiceConfigFromEnv() Server {
 				LastAuthenticatedAtThreshold: time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900)),
 			},
 			Management: ManagementServer{
-				Secret:         util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
-				HealthyTimeout: time.Second * time.Duration(util.GetEnvAsInt("SERVER_MANAGEMENT_HEALTHY_TIMEOUT_SEC", 9)),
-				HealthyCheckWriteablePathsAbs: util.GetEnvAsStringArr("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_ABS", []string{
+				Secret:           util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
+				ReadinessTimeout: time.Second * time.Duration(util.GetEnvAsInt("SERVER_MANAGEMENT_READINESS_TIMEOUT_SEC", 4)),
+				LivenessTimeout:  time.Second * time.Duration(util.GetEnvAsInt("SERVER_MANAGEMENT_LIVENESS_TIMEOUT_SEC", 9)),
+				ProbeWriteablePathsAbs: util.GetEnvAsStringArr("SERVER_MANAGEMENT_PROBE_WRITEABLE_PATHS_ABS", []string{
 					filepath.Join(util.GetProjectRootDir(), "/assets/mnt")}, ","),
-				HealthyCheckWriteablePathsTouch: util.GetEnv("SERVER_MANAGEMENT_HEALTHY_CHECK_WRITEABLE_PATHS_TOUCH", ".healthy"),
+				ProbeWriteableTouchfile: util.GetEnv("SERVER_MANAGEMENT_PROBE_WRITEABLE_TOUCHFILE", ".healthy"),
 			},
 			Mailer: Mailer{
 				DefaultSender:               util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "go-starter@example.com"),

@@ -51,10 +51,10 @@ func runLiveness(verbose bool) {
 	}
 	defer db.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), config.Management.HealthyTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.Management.LivenessTimeout)
 	defer cancel()
 
-	str, errs := common.ProbeLiveness(ctx, db, config.Management.HealthyCheckWriteablePathsAbs, config.Management.HealthyCheckWriteablePathsTouch)
+	str, errs := common.ProbeLiveness(ctx, db, config.Management.ProbeWriteablePathsAbs, config.Management.ProbeWriteableTouchfile)
 
 	if verbose {
 		fmt.Print(str)

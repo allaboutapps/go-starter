@@ -83,13 +83,14 @@ func ProbeLiveness(ctx context.Context, database *sql.DB, writeablePaths []strin
 	return str.String(), errs
 }
 
+// FS (especially hard mounted NFS paths) or PostgreSQL calls may be blocking or running for too long and thus need to run detached
+// We additionally want them to timeout (e.g. useful for hard mounted NFS paths)
+// Typically a any context used here will already have a deadline associated
+// If not we will explicitly return a short one here.
 func ensureProbeDeadlineFromContext(ctx context.Context) time.Time {
-	// FS (especially hard mounted NFS paths) or PostgreSQL calls may be blocking or running for too long and thus need to run detached
-	// We additionally want them to timeout (e.g. useful for hard mounted NFS paths)
-	// Typically a any context used here will already have a deadline associated, if not we will explicitly define one here.
 	ctxDeadline, hasDeadline := ctx.Deadline()
 	if !hasDeadline {
-		ctxDeadline = time.Now().Add(5 * time.Second)
+		ctxDeadline = time.Now().Add(1 * time.Second)
 	}
 
 	return ctxDeadline
@@ -110,7 +111,7 @@ func probeDatabasePingable(ctx context.Context, database *sql.DB) (string, error
 		dbPingWg.Done()
 	}()
 
-	if err := util.WaitTimeout(&dbPingWg, time.Until(ctxDeadline)/2); err != nil {
+	if err := util.WaitTimeout(&dbPingWg, time.Until(ctxDeadline)); err != nil {
 		fmt.Fprintf(&str, "Probe db: Ping deadline after %s, error=%v.\n", time.Since(dbPingStart), err.Error())
 		return str.String(), err
 	}
@@ -141,7 +142,7 @@ func probeDatabaseNextHealthSequence(ctx context.Context, database *sql.DB) (str
 		dbWriteWg.Done()
 	}()
 
-	if err := util.WaitTimeout(&dbWriteWg, time.Until(ctxDeadline)/2); err != nil {
+	if err := util.WaitTimeout(&dbWriteWg, time.Until(ctxDeadline)); err != nil {
 		fmt.Fprintf(&str, "Probe db: Next health sequence deadline after %s, error=%v.\n", time.Since(dbWriteStart), err.Error())
 		return str.String(), err
 	}
@@ -175,7 +176,7 @@ func probePathWriteablePermission(ctx context.Context, writeablePath string) (st
 		fsWriteWg.Done()
 	}(writeablePath)
 
-	if err := util.WaitTimeout(&fsWriteWg, time.Until(ctxDeadline)/2); err != nil {
+	if err := util.WaitTimeout(&fsWriteWg, time.Until(ctxDeadline)); err != nil {
 		fmt.Fprintf(&str, "Probe path '%s': W_OK check deadline after %s, error=%v.\n", writeablePath, time.Since(fsWriteStart), err)
 		return str.String(), err
 	}
@@ -211,7 +212,7 @@ func probePathWriteableTouch(ctx context.Context, writeablePath string, touch st
 		fsTouchWg.Done()
 	}(fsTouchNameAbs)
 
-	if err := util.WaitTimeout(&fsTouchWg, time.Until(ctxDeadline)/2); err != nil {
+	if err := util.WaitTimeout(&fsTouchWg, time.Until(ctxDeadline)); err != nil {
 		fmt.Fprintf(&str, "Probe path '%s': Touch deadline after %s, error=%v.\n", fsTouchNameAbs, time.Since(fsTouchStart), err)
 		return str.String(), err
 	}

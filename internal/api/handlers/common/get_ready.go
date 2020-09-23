@@ -2,9 +2,7 @@ package common
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"github.com/labstack/echo/v4"
@@ -17,6 +15,7 @@ func GetReadyRoute(s *api.Server) *echo.Route {
 // Readiness check
 // This endpoint returns 200 when our Service is ready to serve traffic (i.e. respond to queries).
 // Does read-only checks apart from the general server ready state.
+// Note that /-/ready is typically public (and not shielded by a mgmt-secret), thus prevent information leakage here
 // Structured upon https://prometheus.io/docs/prometheus/latest/management_api/
 func getReadyHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -27,26 +26,19 @@ func getReadyHandler(s *api.Server) echo.HandlerFunc {
 			return c.String(521, "Not ready.")
 		}
 
-		var str strings.Builder
-		fmt.Fprintln(&str, "Ready.")
-
 		// General Timeout and associated context.
-		ctx, cancel := context.WithTimeout(c.Request().Context(), s.Config.Management.HealthyTimeout)
+		ctx, cancel := context.WithTimeout(c.Request().Context(), s.Config.Management.ReadinessTimeout)
 		defer cancel()
 
-		healthyStr, errs := ProbeReadiness(ctx, s.DB, s.Config.Management.HealthyCheckWriteablePathsAbs)
-		str.WriteString(healthyStr)
+		_, errs := ProbeReadiness(ctx, s.DB, s.Config.Management.ProbeWriteablePathsAbs)
 
 		// Finally return the health status according to the seen states
 		if ctx.Err() != nil || len(errs) != 0 {
-			fmt.Fprintln(&str, "Probes failed.")
 			// We use 521 to indicate this error state
 			// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
-			return c.String(521, str.String())
+			return c.String(521, "Not ready.")
 		}
 
-		fmt.Fprintln(&str, "Probes succeeded.")
-
-		return c.String(http.StatusOK, str.String())
+		return c.String(http.StatusOK, "Ready.")
 	}
 }

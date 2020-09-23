@@ -19,13 +19,13 @@ func TestGetHealthySuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 
 		// explicitly set touchfile that no other test has (so we can explicitly remove it beforehand.)
-		s.Config.Management.HealthyCheckWriteablePathsTouch = ".healthy-test"
+		s.Config.Management.ProbeWriteableTouchfile = ".healthy-test"
 
-		for _, writeablePath := range s.Config.Management.HealthyCheckWriteablePathsAbs {
-			os.Remove(path.Join(writeablePath, s.Config.Management.HealthyCheckWriteablePathsTouch))
+		for _, writeablePath := range s.Config.Management.ProbeWriteablePathsAbs {
+			os.Remove(path.Join(writeablePath, s.Config.Management.ProbeWriteableTouchfile))
 
 			// also remove after test completion.
-			defer os.Remove(path.Join(writeablePath, s.Config.Management.HealthyCheckWriteablePathsTouch))
+			defer os.Remove(path.Join(writeablePath, s.Config.Management.ProbeWriteableTouchfile))
 		}
 
 		res := test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)
@@ -33,11 +33,11 @@ func TestGetHealthySuccess(t *testing.T) {
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 		require.Contains(t, res.Body.String(), "seq_health=1")
 
-		firstTouchTime := make([]time.Time, len(s.Config.Management.HealthyCheckWriteablePathsAbs))
+		firstTouchTime := make([]time.Time, len(s.Config.Management.ProbeWriteablePathsAbs))
 
 		// expect a new touchfiles were written
-		for _, writeablePath := range s.Config.Management.HealthyCheckWriteablePathsAbs {
-			filePath := path.Join(writeablePath, s.Config.Management.HealthyCheckWriteablePathsTouch)
+		for _, writeablePath := range s.Config.Management.ProbeWriteablePathsAbs {
+			filePath := path.Join(writeablePath, s.Config.Management.ProbeWriteableTouchfile)
 			stat, err := os.Stat(filePath)
 			if err != nil {
 				t.Fatalf("Expected to have %v", filePath)
@@ -51,8 +51,8 @@ func TestGetHealthySuccess(t *testing.T) {
 		require.Contains(t, res.Body.String(), "seq_health=2")
 
 		// expect touchfiles modTime was updated
-		for i, writeablePath := range s.Config.Management.HealthyCheckWriteablePathsAbs {
-			filePath := path.Join(writeablePath, s.Config.Management.HealthyCheckWriteablePathsTouch)
+		for i, writeablePath := range s.Config.Management.ProbeWriteablePathsAbs {
+			filePath := path.Join(writeablePath, s.Config.Management.ProbeWriteableTouchfile)
 			stat, err := os.Stat(filePath)
 			if err != nil {
 				t.Fatalf("Expected to have %v", filePath)
@@ -117,7 +117,7 @@ func TestGetHealthyMountError(t *testing.T) {
 
 	test.WithTestServer(t, func(s *api.Server) {
 
-		s.Config.Management.HealthyCheckWriteablePathsAbs = []string{"/this/path/does/not/exist"}
+		s.Config.Management.ProbeWriteablePathsAbs = []string{"/this/path/does/not/exist"}
 
 		res := test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)
 		require.Equal(t, 521, res.Result().StatusCode)

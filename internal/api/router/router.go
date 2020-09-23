@@ -84,6 +84,14 @@ func Init(s *api.Server) {
 
 				return middleware.DefaultResponseBodyLogSkipper(req, res)
 			},
+			Skipper: func(c echo.Context) bool {
+				// We skip logging of readiness and liveness endpoints
+				switch c.Path() {
+				case "/-/ready", "/-/healthy":
+					return true
+				}
+				return false
+			},
 		}))
 	} else {
 		log.Warn().Msg("Disabling logger middleware due to environment config")

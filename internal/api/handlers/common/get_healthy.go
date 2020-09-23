@@ -31,10 +31,10 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 		fmt.Fprintln(&str, "Ready.")
 
 		// General Timeout and associated context.
-		ctx, cancel := context.WithTimeout(c.Request().Context(), s.Config.Management.HealthyTimeout)
+		ctx, cancel := context.WithTimeout(c.Request().Context(), s.Config.Management.LivenessTimeout)
 		defer cancel()
 
-		healthyStr, errs := ProbeLiveness(ctx, s.DB, s.Config.Management.HealthyCheckWriteablePathsAbs, s.Config.Management.HealthyCheckWriteablePathsTouch)
+		healthyStr, errs := ProbeLiveness(ctx, s.DB, s.Config.Management.ProbeWriteablePathsAbs, s.Config.Management.ProbeWriteableTouchfile)
 		str.WriteString(healthyStr)
 
 		// Finally return the health status according to the seen states

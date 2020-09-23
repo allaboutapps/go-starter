@@ -51,10 +51,10 @@ func runReadiness(verbose bool) {
 	}
 	defer db.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), config.Management.HealthyTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.Management.ReadinessTimeout)
 	defer cancel()
 
-	str, errs := common.ProbeReadiness(ctx, db, config.Management.HealthyCheckWriteablePathsAbs)
+	str, errs := common.ProbeReadiness(ctx, db, config.Management.ProbeWriteablePathsAbs)
 
 	if verbose {
 		fmt.Print(str)
