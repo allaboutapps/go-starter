@@ -39,9 +39,7 @@ func TestGetHealthySuccess(t *testing.T) {
 		for _, writeablePath := range s.Config.Management.ProbeWriteablePathsAbs {
 			filePath := path.Join(writeablePath, s.Config.Management.ProbeWriteableTouchfile)
 			stat, err := os.Stat(filePath)
-			if err != nil {
-				t.Fatalf("Expected to have %v", filePath)
-			}
+			require.NoErrorf(t, err, "Expected to have %v", filePath)
 
 			firstTouchTime = append(firstTouchTime, stat.ModTime())
 		}
@@ -54,9 +52,7 @@ func TestGetHealthySuccess(t *testing.T) {
 		for i, writeablePath := range s.Config.Management.ProbeWriteablePathsAbs {
 			filePath := path.Join(writeablePath, s.Config.Management.ProbeWriteableTouchfile)
 			stat, err := os.Stat(filePath)
-			if err != nil {
-				t.Fatalf("Expected to have %v", filePath)
-			}
+			require.NoErrorf(t, err, "Expected to have %v", filePath)
 
 			assert.NotEqual(t, firstTouchTime[i], stat.ModTime())
 		}
