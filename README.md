@@ -47,6 +47,7 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
   - an app-specific barebones `app_user_profile` model,
   - push notification tokens and 
   - a health check sequence (for performing writeable checks).
+- API endpoints and CLI for liveness (`/-/healthy`) and readiness (`/-/ready`) probes
 - Parallel jobs optimized `Makefile` and various convenience scripts (see all targets and its description via `make help`). A full rebuild only takes seconds.
 - Multi-staged `Dockerfile` (`development` -> `builder` -> `app`).
 
@@ -153,10 +154,16 @@ make test
 To run the service locally you may:
 
 ```bash
-development@94242c61cf2b:/app$ # inside your container...
+development@94242c61cf2b:/app$ # inside your development container...
+
+# First ensure you have a fresh `app` executable available
+make build
+
+# Check if all requirements for becoming are met (db is available, mnt path is writeable)
+app probe readiness -v
 
 # Migrate up the database
-sql-migrate up
+app db migrate
 
 # Seed the database (if you have any fixtures defined in `/internal/data/fixtures.go`)
 app db seed
@@ -165,6 +172,9 @@ app db seed
 app server
 
 # Now available at http://127.0.0.1:8080
+
+# You may also run all the above commands in a single command
+app server --probe --migrate --seed # or `app server -pms`
 ```
 
 ### Uninstall
