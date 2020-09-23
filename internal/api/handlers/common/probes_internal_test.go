@@ -40,7 +40,7 @@ func TestProbeDatabasePingableDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probeDatabasePingable(ctx, &sql.DB{})
-	assert.Equal(t, util.ErrWaitTimeout, err)
+	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
@@ -50,7 +50,7 @@ func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probeDatabaseNextHealthSequence(ctx, &sql.DB{})
-	assert.Equal(t, util.ErrWaitTimeout, err)
+	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
@@ -60,7 +60,7 @@ func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probePathWriteablePermission(ctx, "/any/thing")
-	assert.Equal(t, context.DeadlineExceeded, err)
+	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
@@ -70,7 +70,7 @@ func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probePathWriteableTouch(ctx, "/any/thing", ".touch")
-	assert.Equal(t, context.DeadlineExceeded, err)
+	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbePathWriteableTouchInaccessable(t *testing.T) {

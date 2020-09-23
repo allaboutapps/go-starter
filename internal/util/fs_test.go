@@ -15,7 +15,7 @@ func TestTouchfile(t *testing.T) {
 	err := os.Remove("/tmp/.touchfile-test")
 
 	if err != nil {
-		require.Equalf(t, true, os.IsNotExist(err), "Expected err to be of tpye os.IsNotExist(err), but is: %v", err)
+		require.Equalf(t, true, os.IsNotExist(err), "Only permitting os.IsNotExist(err) as file may not preexistant on test start, but is: %v", err)
 	}
 
 	ts1, err := util.TouchFile("/tmp/.touchfile-test")
