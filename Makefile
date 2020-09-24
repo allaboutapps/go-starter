@@ -264,6 +264,30 @@ check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin
 	grep -f go.not -F tmp/.modules && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) || exit 0
 
 ### -----------------------
+# --- Git related
+### -----------------------
+
+git-fetch-go-starter: ##- Fetches upstream go-starter master (creating git remote 'go-starter').
+	@git config remote.go-starter.url >&- || git remote add go-starter https://github.com/allaboutapps/go-starter.git
+	@git fetch go-starter master
+
+git-compare-go-starter: ##- Compare upstream go-starter master to HEAD displaying commits away and git log.
+	@$(MAKE) git-fetch-go-starter
+	@echo "Commits away from upstream go-starter master:"
+	git --no-pager rev-list --pretty=oneline --left-only --count go-starter/master...HEAD
+	@echo ""
+	@echo "Git log:"
+	git --no-pager log --left-only --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --abbrev-commit --count go-starter/master...HEAD
+
+git-merge-go-starter: ##- Merges upstream go-starter master into current HEAD.
+	@$(MAKE) git-compare-go-starter
+	@(echo "" \
+		&& echo "Attempting execute 'git merge --no-commit --no-ff go-starter/master' into your current HEAD." \
+		&& echo -n "Are you sure? [y/N]" \
+		&& read ans && [ $${ans:-N} = y ]) || exit 1
+	git merge --no-commit --no-ff go-starter/master
+
+### -----------------------
 # --- Helpers
 ### -----------------------
 
@@ -286,9 +310,12 @@ set-module-name: ##- Wizard to set a new go module-name.
 		&& echo -n "Are you sure? [y/N]" \
 		&& read ans && [ $${ans:-N} = y ] \
 		&& echo -n "Please wait..." \
-		&& find . -not -path '*/\.*' -type f -exec sed -i "s|${GO_MODULE_NAME}|$${new_module_name}|g" {} \; \
+		&& find . -not -path '*/\.*' -not -path './Makefile' -type f -exec sed -i "s|${GO_MODULE_NAME}|$${new_module_name}|g" {} \; \
 		&& echo "new go module-name: '$${new_module_name}'!"
 	@rm -f tmp/.modulename
+
+force-module-name: ##- Overwrite occurences of 'allaboutapps.dev/aw/go-starter' with current go module-name.
+	find . -not -path '*/\.*' -not -path './Makefile' -type f -exec sed -i "s|allaboutapps.dev/aw/go-starter|${GO_MODULE_NAME}|g" {} \;
 
 # https://gist.github.com/prwhite/8168133 - based on comment from @m000
 help: ##- Show this help.

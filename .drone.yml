@@ -197,6 +197,14 @@ pipeline:
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
+  "git-compare-go-starter":
+    group: test
+    image: *IMAGE_DEPLOY_ID
+    commands:
+      - make git-compare-go-starter
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
   "swagger-codegen-cli":
     group: test
     # https://github.com/swagger-api/swagger-codegen/blob/master/modules/swagger-codegen-cli/Dockerfile
