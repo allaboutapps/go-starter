@@ -17,8 +17,8 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
     - [Requirements](#requirements)
     - [Quickstart](#quickstart)
     - [Visual Studio Code](#visual-studio-code)
-    - [Set project module name](#set-project-module-name)
-    - [Typical commands](#typical-commands)
+    - [Set project module name for your new project](#set-project-module-name-for-your-new-project)
+    - [Building and testing](#building-and-testing)
     - [Running](#running)
     - [Uninstall](#uninstall)
   - [Additional resources](#additional-resources)
@@ -105,9 +105,9 @@ make help
 
 Run `CMD+SHIFT+P` `Go: Install/Update Tools` **after** attaching to the container with VSCode to auto-install all golang related vscode extensions.
 
-### Set project module name
+### Set project module name for your new project
 
-To replace all occurances of `allaboutapps.dev/aw/go-stater` (our internal module name of this project) with yours, do the following:
+To replace all occurances of `allaboutapps.dev/aw/go-stater` (our internal module name of this project) with your desired projects' module name, do the following:
 
 ```bash
 development@94242c61cf2b:/app$ # inside your container...
@@ -117,6 +117,14 @@ make set-module-name
 # allaboutapps.dev/<GIT_PROJECT>/<GIT_REPO> (internal only)
 # github.com/<USER>/<PROJECT>
 # e.g. github.com/majodev/my-service
+```
+
+The above command writes your new go modulename to `tmp/.modulename`, `go.mod`. It actually sets it everywhere in `**/*` - thus this step is typically only required **once**. If you need to merge changes from the upstream go-starter later, we may want to run `make force-module-name` to set your own go modulename everywhere again (especially relevant for new files / import paths). See our [FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-want-to-compare-or-update-my-projectfork-to-the-latest-go-starter-master) for more information about this update flow.
+
+Optionally you may want to move the original `README.md` and `LICENSE` away:
+
+```bash
+development@94242c61cf2b:/app$ # inside your container...
 
 # Optionally you may want to move our LICENSE and README.md away.
 mv README.md README-go-starter.md
@@ -126,7 +134,7 @@ mv LICENSE LICENSE-go-starter
 make get-module-name > README.md
 ```
 
-### Typical commands
+### Building and testing
 
 Other useful commands while developing your service:
 
