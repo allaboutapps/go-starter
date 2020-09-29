@@ -51,6 +51,7 @@ RUN apt-get update \
     sudo \
     bash-completion \
     bsdmainutils \
+    graphviz \
     postgresql-client-12 \
     # --- END DEVELOPMENT ---
     # 

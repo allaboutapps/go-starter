@@ -31,6 +31,13 @@ type EchoServer struct {
 	SecureMiddleware               EchoServerSecureMiddleware
 }
 
+type PprofServer struct {
+	Enable                      bool
+	EnableManagementKeyAuth     bool
+	RuntimeBlockProfileRate     int
+	RuntimeMutexProfileFraction int
+}
+
 // https://github.com/labstack/echo/blob/master/middleware/secure.go
 type EchoServerSecureMiddleware struct {
 	XSSProtection         string
@@ -83,6 +90,7 @@ type LoggerServer struct {
 type Server struct {
 	Database   Database
 	Echo       EchoServer
+	Pprof      PprofServer
 	Paths      PathsServer
 	Auth       AuthServer
 	Management ManagementServer
@@ -138,6 +146,13 @@ func DefaultServiceConfigFromEnv() Server {
 					HSTSPreloadEnabled:    util.GetEnvAsBool("SERVER_ECHO_SECURE_MIDDLEWARE_HSTS_PRELOAD_ENABLED", false),
 					ReferrerPolicy:        util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_REFERRER_POLICY", ""),
 				},
+			},
+			Pprof: PprofServer{
+				// https://golang.org/pkg/net/http/pprof/
+				Enable:                      util.GetEnvAsBool("SERVER_PPROF_ENABLE", false),
+				EnableManagementKeyAuth:     util.GetEnvAsBool("SERVER_PPROF_ENABLE_MANAGEMENT_KEY_AUTH", true),
+				RuntimeBlockProfileRate:     util.GetEnvAsInt("SERVER_PPROF_RUNTIME_BLOCK_PROFILE_RATE", 0),
+				RuntimeMutexProfileFraction: util.GetEnvAsInt("SERVER_PPROF_RUNTIME_MUTEX_PROFILE_FRACTION", 0),
 			},
 			Paths: PathsServer{
 				// Please ALWAYS work with ABSOLUTE (ABS) paths from ENV_VARS (however you may resolve a project-relative to absolute for the default value)

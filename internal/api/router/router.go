@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"runtime"
 	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -10,6 +11,9 @@ import (
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
+
+	// #nosec G108 - pprof handlers (conditionally made available via http.DefaultServeMux)
+	"net/http/pprof"
 )
 
 func Init(s *api.Server) {
@@ -101,6 +105,35 @@ func Init(s *api.Server) {
 		s.Echo.Use(echoMiddleware.CORS())
 	} else {
 		log.Warn().Msg("Disabling CORS middleware due to environment config")
+	}
+
+	if s.Config.Pprof.Enable {
+
+		pprofAuthMiddleware := middleware.Noop()
+
+		if s.Config.Pprof.EnableManagementKeyAuth {
+			pprofAuthMiddleware = echoMiddleware.KeyAuthWithConfig(echoMiddleware.KeyAuthConfig{
+				KeyLookup: "query:mgmt-secret",
+				Validator: func(key string, c echo.Context) (bool, error) {
+					return key == s.Config.Management.Secret, nil
+				},
+			})
+		}
+
+		s.Echo.GET("/debug/pprof", echo.WrapHandler(http.HandlerFunc(pprof.Index)), pprofAuthMiddleware)
+		s.Echo.Any("/debug/pprof/*", echo.WrapHandler(http.DefaultServeMux), pprofAuthMiddleware)
+
+		log.Warn().Bool("EnableManagementKeyAuth", s.Config.Pprof.EnableManagementKeyAuth).Msg("Pprof http handlers are available at /debug/pprof")
+
+		if s.Config.Pprof.RuntimeBlockProfileRate != 0 {
+			runtime.SetBlockProfileRate(s.Config.Pprof.RuntimeBlockProfileRate)
+			log.Warn().Int("RuntimeBlockProfileRate", s.Config.Pprof.RuntimeBlockProfileRate).Msg("Pprof runtime.SetBlockProfileRate")
+		}
+
+		if s.Config.Pprof.RuntimeMutexProfileFraction != 0 {
+			runtime.SetMutexProfileFraction(s.Config.Pprof.RuntimeMutexProfileFraction)
+			log.Warn().Int("RuntimeMutexProfileFraction", s.Config.Pprof.RuntimeMutexProfileFraction).Msg("Pprof runtime.SetMutexProfileFraction")
+		}
 	}
 
 	// Add your custom / additional middlewares here.
