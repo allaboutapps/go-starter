@@ -1,4 +1,4 @@
-name: build
+name: trivy
 on:
   push:
     branches:
@@ -7,8 +7,8 @@ on:
     # The branches below must be a subset of the branches above
     branches: [master]
 jobs:
-  build:
-    name: Build
+  trivy:
+    name: Trivy
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout code
