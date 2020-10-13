@@ -19,6 +19,7 @@ var migrateCmd = &cobra.Command{
 
 func init() {
 	dbCmd.AddCommand(migrateCmd)
+	migrate.SetTable("migrations")
 }
 
 func migrateCmdFunc(cmd *cobra.Command, args []string) {
@@ -41,6 +42,12 @@ func applyMigrations() (int, error) {
 	defer db.Close()
 
 	if err := db.PingContext(ctx); err != nil {
+		return 0, err
+	}
+
+	// In case an old migration table exists we rename it to the new name equivalent
+	// to the settings in dbconfig.yml
+	if _, err := db.Exec("ALTER TABLE IF EXISTS gorp_migrations RENAME TO migrations;"); err != nil {
 		return 0, err
 	}
 
