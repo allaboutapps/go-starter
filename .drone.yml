@@ -163,7 +163,7 @@ pipeline:
       # Print report
       - "trivy image --exit-code 0 --no-progress $${IMAGE_TAG}"
       # Fail on severity HIGH and CRITICAL
-      - "trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress $${IMAGE_TAG}"
+      - "trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress --ignore-unfixed $${IMAGE_TAG}"
     <<: *WHEN_BUILD_EVENT
 
   "build & diff":
