@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.15.2 AS development
+FROM golang:1.15.3 AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -67,15 +67,16 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 
 ENV LANG en_US.UTF-8
 
-# sql pgFormatter: Install the same version of pg_formatter as used in your editors, as of 2020-04 thats v4.3
+# sql pgFormatter: Install the same version of pg_formatter as used in your editors.
+# as of 2020-10 thats v4.4.
 # requires perl to be installed
 # https://github.com/bradymholt/vscode-pgFormatter/commits/master
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v4.3.tar.gz \
-    && tar xzf v4.3.tar.gz \
-    && cd pgFormatter-4.3 \
+    && wget https://github.com/darold/pgFormatter/archive/v4.4.tar.gz \
+    && tar xzf v4.4.tar.gz \
+    && cd pgFormatter-4.4 \
     && perl Makefile.PL \
     && make && make install \
     && rm -rf /tmp/pgFormatter 
@@ -84,8 +85,8 @@ RUN mkdir -p /tmp/pgFormatter \
 # https://github.com/gotestyourself/gotestsum/releases
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
-    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.5.3/gotestsum_0.5.3_linux_amd64.tar.gz \
-    && tar xzf gotestsum_0.5.3_linux_amd64.tar.gz \
+    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.5.4/gotestsum_0.5.4_linux_amd64.tar.gz \
+    && tar xzf gotestsum_0.5.4_linux_amd64.tar.gz \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum 
 

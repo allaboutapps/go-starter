@@ -6,7 +6,6 @@ CREATE TABLE users (
     is_active bool NOT NULL,
     -- TODO: use user_scope enum as "scopes user_scope[]" when supported
     -- https://github.com/volatiletech/sqlboiler/issues/739
-
     scopes text[] NOT NULL,
     last_authenticated_at timestamptz,
     created_at timestamptz NOT NULL,

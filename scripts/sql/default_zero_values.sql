@@ -30,7 +30,6 @@
 --
 -- https://stackoverflow.com/questions/8146448/get-the-default-values-of-table-columns-in-postgres
 -- https://dba.stackexchange.com/questions/205471/why-does-information-schema-have-yes-and-no-character-strings-rather-than-bo
-
 CREATE OR REPLACE FUNCTION check_default_go_sql_zero_values ()
     RETURNS SETOF information_schema.columns
     AS $BODY$
