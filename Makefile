@@ -99,6 +99,9 @@ go-test-print-slowest: ##- (opt) Print slowest running tests (must be done after
 get-go-outdated-modules: ##- (opt) Prints outdated (direct) go modules (from go.mod). 
 	@((go list -u -m -f '{{if and .Update (not .Indirect)}}{{.}}{{end}}' all) 2>/dev/null | grep " ") || echo "go modules are up-to-date."
 
+watch-tests: ##- Watches .go files and runs package tests on modifications.
+	gotestsum --format testname --watch -- -race -count=1
+
 ### -----------------------
 # --- Initializing
 ### -----------------------
