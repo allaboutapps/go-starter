@@ -85,8 +85,8 @@ RUN mkdir -p /tmp/pgFormatter \
 # https://github.com/gotestyourself/gotestsum/releases
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
-    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.5.4/gotestsum_0.5.4_linux_amd64.tar.gz \
-    && tar xzf gotestsum_0.5.4_linux_amd64.tar.gz \
+    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.6.0/gotestsum_0.6.0_linux_amd64.tar.gz \
+    && tar xzf gotestsum_0.6.0_linux_amd64.tar.gz \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum 
 
@@ -94,7 +94,7 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.31.0
+    | sh -s -- -b $(go env GOPATH)/bin v1.32.1
 
 # go swagger: (this package should NOT be installed via go get) 
 # https://github.com/go-swagger/go-swagger/releases
