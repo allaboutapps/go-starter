@@ -52,6 +52,7 @@ RUN apt-get update \
     bash-completion \
     bsdmainutils \
     graphviz \
+    xz-utils \
     postgresql-client-12 \
     # --- END DEVELOPMENT ---
     # 
@@ -110,6 +111,15 @@ RUN mkdir -p /tmp/golicense \
     && tar xzf golicense_0.2.0_linux_x86_64.tar.gz \
     && cp golicense /usr/local/bin/golicense \
     && rm -rf /tmp/golicense
+
+# watchexec
+# https://github.com/watchexec/watchexec/releases
+RUN mkdir -p /tmp/watchexec \
+    && cd /tmp/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/1.14.1/watchexec-1.14.1-x86_64-unknown-linux-gnu.tar.xz \
+    && tar xf watchexec-1.14.1-x86_64-unknown-linux-gnu.tar.xz \
+    && cp watchexec-1.14.1-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
+    && rm -rf /tmp/watchexec
 
 # linux permissions / vscode support: Add user to avoid linux file permission issues
 # Detail: Inside the container, any mounted files/folders will have the exact same permissions
