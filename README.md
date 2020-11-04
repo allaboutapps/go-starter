@@ -16,8 +16,8 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
     - [Demo](#demo)
     - [Requirements](#requirements)
     - [Quickstart](#quickstart)
-    - [Visual Studio Code](#visual-studio-code)
     - [Set project module name for your new project](#set-project-module-name-for-your-new-project)
+    - [Visual Studio Code](#visual-studio-code)
     - [Building and testing](#building-and-testing)
     - [Running](#running)
     - [Uninstall](#uninstall)
@@ -84,6 +84,9 @@ You will need to clone/fork this repository.
 git clone git@github.com:allaboutapps/go-starter.git my-service
 cd my-service
 
+# If you have cloned the go-starter project, reset the origin remote to your actual new repository
+git remote set-url origin https://github.com/...
+
 # Easily start the docker-compose dev environment through our helper
 ./docker-helper.sh --up
 ```
@@ -99,12 +102,6 @@ make all
 # Print all available make targets
 make help
 ```
-
-### Visual Studio Code
-
-> If you are new to VSCode Remote - Containers feature, see our [FAQ: How does our VSCode setup work?](https://github.com/allaboutapps/go-starter/wiki/FAQ#how-does-our-vscode-setup-work).
-
-Run `CMD+SHIFT+P` `Go: Install/Update Tools` **after** attaching to the container with VSCode to auto-install all golang related vscode extensions.
 
 ### Set project module name for your new project
 
@@ -134,6 +131,13 @@ mv LICENSE LICENSE-go-starter
 # Optionally create a new README.md for your project.
 make get-module-name > README.md
 ```
+
+### Visual Studio Code
+
+> If you are new to VSCode Remote - Containers feature, see our [FAQ: How does our VSCode setup work?](https://github.com/allaboutapps/go-starter/wiki/FAQ#how-does-our-vscode-setup-work).
+
+Run `CMD+SHIFT+P` `Go: Install/Update Tools` **after** attaching to the container with VSCode to auto-install all golang related vscode extensions.
+
 
 ### Building and testing
 
