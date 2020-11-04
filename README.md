@@ -75,8 +75,9 @@ Please refer to the [official installation guide](https://code.visualstudio.com/
 
 ### Quickstart
 
-> GitHub: Click on **[Use this template](https://github.com/allaboutapps/go-starter/generate)** to create your own project.   
-> Contributions and others: You will need to fork this repository.
+> **Note**: It's possible to create a new git repository from this template ([use this template](https://github.com/allaboutapps/go-starter/generate)). However, we *strongly recommend that you DO NOT DO THIS*! **Instead manually clone or fork this repository.** Otherwise you won't be able to easily merge upstream go-starter changes into your own repository (see [GitHub Template Repositories](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template), [Refusing to merge unrelated histories](https://www.educative.io/edpresso/the-fatal-refusing-to-merge-unrelated-histories-git-error) and [FAQ: I want to compare or update my project/fork to the latest go-starter master](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-want-to-compare-or-update-my-projectfork-to-the-latest-go-starter-master)).
+
+You will need to clone/fork this repository.
 
 ```bash
 # If you haven't forked/cloned already...
