@@ -40,7 +40,7 @@ info: ##- Prints database spec, prints handlers, go module-name and current go v
 lint: check-gen-dirs check-handlers check-embedded-modules-go-not go-lint  ##- (opt) Runs golangci-lint and make check-*.
 
 # these recipies may execute in parallel
-build-pre: sql-generate swagger ##- (opt) Runs prebuild related targets (sql, swagger, go-generate).
+build-pre: sql swagger ##- (opt) Runs prebuild related targets (sql, swagger, go-generate).
 	@$(MAKE) go-generate
 
 go-format: ##- (opt) Runs go format.
@@ -99,7 +99,7 @@ go-test-print-slowest: ##- (opt) Print slowest running tests (must be done after
 get-go-outdated-modules: ##- (opt) Prints outdated (direct) go modules (from go.mod). 
 	@((go list -u -m -f '{{if and .Update (not .Indirect)}}{{.}}{{end}}' all) 2>/dev/null | grep " ") || echo "go modules are up-to-date."
 
-watch-tests: ##- Watches .go files and runs package tests on modifications.
+watch-tests: ##- Watches *.go files and runs package tests on modifications.
 	gotestsum --format testname --watch -- -race -count=1
 
 ### -----------------------
@@ -146,9 +146,11 @@ sql-drop-all: ##- Wizard to drop ALL databases: spec, development and tracked by
 	@echo "Done. Please run 'make sql-reset && make sql-spec-reset && make sql-spec-migrate' to reinitialize."
 
 # This step is only required to be executed when the "migrations" folder has changed!
-# MIGRATION_FILES = $(find ./migrations/ -type f -iname '*.sql')
-sql-generate: ##- (opt) Runs all sql related formats/checks and finally generates internal/models/*.go.
+sql: ##- Runs sql format, all sql related checks and finally generates internal/models/*.go.
 	@$(MAKE) sql-format
+	@$(MAKE) sql-regenerate
+
+sql-regenerate: ##- (opt) Runs sql related checks and finally generates internal/models/*.go.
 	@$(MAKE) sql-check-files
 	@$(MAKE) sql-spec-reset
 	@$(MAKE) sql-spec-migrate
@@ -199,6 +201,10 @@ sql-check-structure-default-zero-values: ##- (opt) Ensures spec database objects
 	@echo "make sql-check-structure-default-zero-values"
 	@cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
 
+watch-sql: ##- Watches *.sql files in /migrations and runs 'make sql-regenerate' on modifications.
+	@echo Watching /migrations. Use Ctrl-c to stop a run or exit.
+	watchexec -p -w migrations --exts sql $(MAKE) sql-regenerate
+
 ### -----------------------
 # --- Swagger
 ### -----------------------
@@ -244,7 +250,7 @@ swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 		-q
 	@find internal/types -type f -exec grep -q '^// DELETE ME; DO NOT EDIT\.$$' {} \; -delete
 
-watch-swagger: ##- Watches swagger files in /api and runs 'make swagger' on modifications.
+watch-swagger: ##- Watches *.yml|yaml|gotmpl files in /api and runs 'make swagger' on modifications.
 	@echo Watching /api/**/*.yml|yaml|gotmpl. Use Ctrl-c to to stop a run or exit.
 	watchexec -p -w api -i tmp -i api/swagger.yml --exts yml,yaml,gotmpl $(MAKE) swagger
 
