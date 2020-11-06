@@ -47,7 +47,8 @@ BEGIN
             OR (data_type IN ('char', 'character', 'varchar', 'character varying', 'text')
                 AND column_default NOT LIKE concat('''''', '::%'))
             OR (data_type IN ('smallint', 'integer', 'bigint', 'smallserial', 'serial', 'bigserial')
-                AND column_default <> '0')
+                AND (column_default <> '0'
+                    AND column_default NOT LIKE 'nextval(%'))
             OR (data_type IN ('decimal', 'numeric', 'real', 'double precision')
                 AND column_default <> '0.0'));
 END
