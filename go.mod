@@ -6,7 +6,7 @@ require (
 	github.com/allaboutapps/integresql-client-go v1.0.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/friendsofgo/errors v0.9.2
-	github.com/gabriel-vasile/mimetype v1.1.1
+	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/go-openapi/errors v0.19.8
 	github.com/go-openapi/runtime v0.19.24
 	github.com/go-openapi/strfmt v0.19.10
@@ -28,7 +28,7 @@ require (
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.3.0
 	github.com/volatiletech/strmangle v0.0.1
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	golang.org/x/sys v0.0.0-20201107080550-4d91cf3a1aaf
+	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
+	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba
 	google.golang.org/api v0.35.0
 )
