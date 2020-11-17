@@ -9,9 +9,9 @@ require (
 	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/go-openapi/errors v0.19.8
 	github.com/go-openapi/runtime v0.19.24
-	github.com/go-openapi/strfmt v0.19.10
-	github.com/go-openapi/swag v0.19.11
-	github.com/go-openapi/validate v0.19.12
+	github.com/go-openapi/strfmt v0.19.11
+	github.com/go-openapi/swag v0.19.12
+	github.com/go-openapi/validate v0.19.13
 	github.com/jordan-wright/email v4.0.1-0.20200917010138-e1c00e156980+incompatible
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/labstack/echo/v4 v4.1.17
@@ -28,7 +28,7 @@ require (
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.3.1
 	github.com/volatiletech/strmangle v0.0.1
-	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
-	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba
+	golang.org/x/crypto v0.0.0-20201116153603-4be66e5b6582
+	golang.org/x/sys v0.0.0-20201116194326-cc9327a14d48
 	google.golang.org/api v0.35.0
 )
