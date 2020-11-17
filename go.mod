@@ -26,7 +26,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/volatiletech/null/v8 v8.1.0
 	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/sqlboiler/v4 v4.3.0
+	github.com/volatiletech/sqlboiler/v4 v4.3.1
 	github.com/volatiletech/strmangle v0.0.1
 	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
 	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba
