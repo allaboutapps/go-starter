@@ -28,7 +28,7 @@ require (
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.3.1
 	github.com/volatiletech/strmangle v0.0.1
-	golang.org/x/crypto v0.0.0-20201116153603-4be66e5b6582
-	golang.org/x/sys v0.0.0-20201116194326-cc9327a14d48
+	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68
 	google.golang.org/api v0.35.0
 )
