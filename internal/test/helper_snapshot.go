@@ -58,8 +58,8 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 	}
 
 	dump := s.replacer(spewConfig.Sdump(data...))
-	snapshotName := strings.Replace(t.Name(), "/", "-", -1)
-	snapshotAbsPath := filepath.Join(s.location, snapshotName+s.label+".golden")
+	snapshotName := fmt.Sprintf("%s%s", strings.Replace(t.Name(), "/", "-", -1), s.label)
+	snapshotAbsPath := filepath.Join(s.location, fmt.Sprintf("%s.golden", snapshotName))
 
 	if s.update || UpdateGoldenGlobal {
 		err := writeSnapshot(snapshotAbsPath, dump)
