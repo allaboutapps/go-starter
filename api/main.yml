@@ -22,8 +22,12 @@ securityDefinitions:
     type: apiKey
     name: Authorization
     in: header
+    description: |-
+      Access token for application access, **must** include "Bearer " prefix.
+      Example: `Bearer b4a94a42-3ea2-4af3-9699-8bcbfee6e6d2`
     x-keyPrefix: "Bearer "
   Management:
     type: apiKey
     in: query
+    description: Management secret, used for monitoring and infrastructure related calls
     name: mgmt-secret
