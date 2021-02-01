@@ -6,6 +6,8 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -18,15 +20,18 @@ import (
 type PostUpdatePushTokenPayload struct {
 
 	// New push token for given provider.
+	// Example: 1c91e550-8167-439c-8021-dee7de2f7e96
 	// Required: true
 	// Max Length: 500
 	NewToken *string `json:"newToken"`
 
 	// Old token that can be deleted if present.
+	// Example: 495179de-b771-48f0-aab2-8d23701b0f02
 	// Max Length: 500
 	OldToken *string `json:"oldToken,omitempty"`
 
 	// Identifier of the provider the token is for (eg. "fcm", "apn"). Currently only "fcm" is supported.
+	// Example: fcm
 	// Required: true
 	// Max Length: 500
 	Provider *string `json:"provider"`
@@ -60,7 +65,7 @@ func (m *PostUpdatePushTokenPayload) validateNewToken(formats strfmt.Registry) e
 		return err
 	}
 
-	if err := validate.MaxLength("newToken", "body", string(*m.NewToken), 500); err != nil {
+	if err := validate.MaxLength("newToken", "body", *m.NewToken, 500); err != nil {
 		return err
 	}
 
@@ -68,12 +73,11 @@ func (m *PostUpdatePushTokenPayload) validateNewToken(formats strfmt.Registry) e
 }
 
 func (m *PostUpdatePushTokenPayload) validateOldToken(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.OldToken) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("oldToken", "body", string(*m.OldToken), 500); err != nil {
+	if err := validate.MaxLength("oldToken", "body", *m.OldToken, 500); err != nil {
 		return err
 	}
 
@@ -86,10 +90,15 @@ func (m *PostUpdatePushTokenPayload) validateProvider(formats strfmt.Registry) e
 		return err
 	}
 
-	if err := validate.MaxLength("provider", "body", string(*m.Provider), 500); err != nil {
+	if err := validate.MaxLength("provider", "body", *m.Provider, 500); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this post update push token payload based on context it is used
+func (m *PostUpdatePushTokenPayload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

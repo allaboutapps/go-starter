@@ -520,7 +520,8 @@ definitions:
         x-nullable: true
         example: 495179de-b771-48f0-aab2-8d23701b0f02
       provider:
-        description: Identifier of the provider the token is for (eg. "fcm", "apn"). Currently only "fcm" is supported.
+        description: Identifier of the provider the token is for (eg. "fcm", "apn").
+          Currently only "fcm" is supported.
         type: string
         maxLength: 500
         example: fcm
@@ -548,7 +549,8 @@ definitions:
         type: string
         example: Forbidden
       type:
-        description: Type of error returned, should be used for client-side error handling
+        description: Type of error returned, should be used for client-side error
+          handling
         type: string
         example: generic
   publicHttpValidationError:
@@ -590,7 +592,8 @@ securityDefinitions:
     in: header
     x-keyPrefix: 'Bearer '
   Management:
-    description: Management secret, used for monitoring and infrastructure related calls
+    description: Management secret, used for monitoring and infrastructure related
+      calls
     type: apiKey
     name: mgmt-secret
     in: query

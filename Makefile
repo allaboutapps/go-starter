@@ -234,6 +234,7 @@ swagger-concat: ##- (opt) Regenerates api/swagger.yml based on api/paths/*.
 # https://goswagger.io/generate/server.html
 # Note that we first flag all files to delete (as previously generated), regenerate, then delete all still flagged files
 # This allows us to ensure that any filewatchers (VScode) don't panic as these files are removed.
+# --keep-spec-order is broken (/tmp spec resolving): https://github.com/go-swagger/go-swagger/issues/2216
 swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 	@echo "make swagger-server"
 	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$$$' ./internal/types \
@@ -246,7 +247,6 @@ swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 		--model-package=internal/types \
 		--exclude-main \
 		--config-file=api/config/go-swagger-config.yml \
-		--keep-spec-order \
 		-q
 	@find internal/types -type f -exec grep -q '^// DELETE ME; DO NOT EDIT\.$$' {} \; -delete
 

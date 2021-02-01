@@ -6,6 +6,8 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -18,20 +20,24 @@ import (
 type PostLoginResponse struct {
 
 	// Access token required for accessing protected API endpoints
+	// Example: c1247d8d-0d65-41c4-bc86-ec041d2ac437
 	// Required: true
 	// Format: uuid4
 	AccessToken *strfmt.UUID4 `json:"access_token"`
 
 	// Access token expiry in seconds
+	// Example: 86400
 	// Required: true
 	ExpiresIn *int64 `json:"expires_in"`
 
 	// Refresh token for refreshing the access token once it expires
+	// Example: 1dadb3bd-50d8-485d-83a3-6111392568f0
 	// Required: true
 	// Format: uuid4
 	RefreshToken *strfmt.UUID4 `json:"refresh_token"`
 
 	// Type of access token, will always be `bearer`
+	// Example: bearer
 	// Required: true
 	TokenType *string `json:"token_type"`
 }
@@ -103,6 +109,11 @@ func (m *PostLoginResponse) validateTokenType(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this post login response based on context it is used
+func (m *PostLoginResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

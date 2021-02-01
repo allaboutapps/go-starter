@@ -6,6 +6,8 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -18,6 +20,7 @@ import (
 type PostRefreshPayload struct {
 
 	// Refresh token to use for retrieving new token set
+	// Example: 7503cd8a-c921-4368-a32d-6c1d01d86da9
 	// Required: true
 	// Format: uuid4
 	RefreshToken *strfmt.UUID4 `json:"refresh_token"`
@@ -47,6 +50,11 @@ func (m *PostRefreshPayload) validateRefreshToken(formats strfmt.Registry) error
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this post refresh payload based on context it is used
+func (m *PostRefreshPayload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

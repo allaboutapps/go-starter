@@ -39,6 +39,8 @@ RUN apt-get update \
     # https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
     # https://raw.githubusercontent.com/microsoft/vscode-dev-containers/master/script-library/common-debian.sh
     #
+    # icu-devtools: https://stackoverflow.com/questions/58736399/how-to-get-vscode-liveshare-extension-working-when-running-inside-vscode-remote
+    # graphviz: https://github.com/google/pprof#building-pprof
     # -- START DEVELOPMENT --
     apt-utils \
     dialog \
@@ -54,6 +56,7 @@ RUN apt-get update \
     graphviz \
     xz-utils \
     postgresql-client-12 \
+    icu-devtools \
     # --- END DEVELOPMENT ---
     # 
     && apt-get clean \
@@ -86,8 +89,8 @@ RUN mkdir -p /tmp/pgFormatter \
 # https://github.com/gotestyourself/gotestsum/releases
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
-    && wget https://github.com/gotestyourself/gotestsum/releases/download/v0.6.0/gotestsum_0.6.0_linux_amd64.tar.gz \
-    && tar xzf gotestsum_0.6.0_linux_amd64.tar.gz \
+    && wget https://github.com/gotestyourself/gotestsum/releases/download/v1.6.1/gotestsum_1.6.1_linux_amd64.tar.gz \
+    && tar xzf gotestsum_1.6.1_linux_amd64.tar.gz \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum 
 
@@ -95,12 +98,12 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.33.0
+    | sh -s -- -b $(go env GOPATH)/bin v1.36.0
 
 # go swagger: (this package should NOT be installed via go get) 
 # https://github.com/go-swagger/go-swagger/releases
 RUN curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.25.0/swagger_linux_amd64" \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.26.0/swagger_linux_amd64" \
     && chmod +x /usr/local/bin/swagger
 
 # golicense: (this package should NOT be installed via go get) 

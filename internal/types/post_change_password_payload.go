@@ -6,6 +6,8 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -18,12 +20,14 @@ import (
 type PostChangePasswordPayload struct {
 
 	// Current password of user
+	// Example: correct horse battery staple
 	// Required: true
 	// Max Length: 500
 	// Min Length: 1
 	CurrentPassword *string `json:"currentPassword"`
 
 	// New password to set for user
+	// Example: correct horse battery staple
 	// Required: true
 	// Max Length: 500
 	// Min Length: 1
@@ -54,11 +58,11 @@ func (m *PostChangePasswordPayload) validateCurrentPassword(formats strfmt.Regis
 		return err
 	}
 
-	if err := validate.MinLength("currentPassword", "body", string(*m.CurrentPassword), 1); err != nil {
+	if err := validate.MinLength("currentPassword", "body", *m.CurrentPassword, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("currentPassword", "body", string(*m.CurrentPassword), 500); err != nil {
+	if err := validate.MaxLength("currentPassword", "body", *m.CurrentPassword, 500); err != nil {
 		return err
 	}
 
@@ -71,14 +75,19 @@ func (m *PostChangePasswordPayload) validateNewPassword(formats strfmt.Registry)
 		return err
 	}
 
-	if err := validate.MinLength("newPassword", "body", string(*m.NewPassword), 1); err != nil {
+	if err := validate.MinLength("newPassword", "body", *m.NewPassword, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("newPassword", "body", string(*m.NewPassword), 500); err != nil {
+	if err := validate.MaxLength("newPassword", "body", *m.NewPassword, 500); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this post change password payload based on context it is used
+func (m *PostChangePasswordPayload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

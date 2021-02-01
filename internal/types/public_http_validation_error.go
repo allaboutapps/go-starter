@@ -6,6 +6,7 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -102,6 +103,43 @@ func (m *PublicHTTPValidationError) validateValidationErrors(formats strfmt.Regi
 
 		if m.ValidationErrors[i] != nil {
 			if err := m.ValidationErrors[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("validationErrors" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this public Http validation error based on the context it is used
+func (m *PublicHTTPValidationError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with PublicHTTPError
+	if err := m.PublicHTTPError.ContextValidate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateValidationErrors(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PublicHTTPValidationError) contextValidateValidationErrors(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.ValidationErrors); i++ {
+
+		if m.ValidationErrors[i] != nil {
+			if err := m.ValidationErrors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("validationErrors" + "." + strconv.Itoa(i))
 				}

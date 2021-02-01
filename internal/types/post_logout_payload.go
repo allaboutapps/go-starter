@@ -6,6 +6,8 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -18,6 +20,7 @@ import (
 type PostLogoutPayload struct {
 
 	// Optional refresh token to delete while logging out
+	// Example: 700ebed3-40f7-4211-bc83-a89b22b9875e
 	// Format: uuid4
 	RefreshToken strfmt.UUID4 `json:"refresh_token,omitempty"`
 }
@@ -37,7 +40,6 @@ func (m *PostLogoutPayload) Validate(formats strfmt.Registry) error {
 }
 
 func (m *PostLogoutPayload) validateRefreshToken(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.RefreshToken) { // not required
 		return nil
 	}
@@ -46,6 +48,11 @@ func (m *PostLogoutPayload) validateRefreshToken(formats strfmt.Registry) error 
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this post logout payload based on context it is used
+func (m *PostLogoutPayload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -6,6 +6,8 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -18,12 +20,14 @@ import (
 type PostRegisterPayload struct {
 
 	// Password to register with
+	// Example: correct horse battery staple
 	// Required: true
 	// Max Length: 500
 	// Min Length: 1
 	Password *string `json:"password"`
 
 	// Username to register with
+	// Example: user@example.com
 	// Required: true
 	// Max Length: 255
 	// Min Length: 1
@@ -55,11 +59,11 @@ func (m *PostRegisterPayload) validatePassword(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("password", "body", string(*m.Password), 1); err != nil {
+	if err := validate.MinLength("password", "body", *m.Password, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("password", "body", string(*m.Password), 500); err != nil {
+	if err := validate.MaxLength("password", "body", *m.Password, 500); err != nil {
 		return err
 	}
 
@@ -72,11 +76,11 @@ func (m *PostRegisterPayload) validateUsername(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("username", "body", string(*m.Username), 1); err != nil {
+	if err := validate.MinLength("username", "body", m.Username.String(), 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("username", "body", string(*m.Username), 255); err != nil {
+	if err := validate.MaxLength("username", "body", m.Username.String(), 255); err != nil {
 		return err
 	}
 
@@ -84,6 +88,11 @@ func (m *PostRegisterPayload) validateUsername(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this post register payload based on context it is used
+func (m *PostRegisterPayload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

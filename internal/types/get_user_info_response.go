@@ -6,6 +6,7 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 
@@ -21,18 +22,22 @@ import (
 type GetUserInfoResponse struct {
 
 	// Email address of user, if available
+	// Example: user@example.com
 	// Max Length: 255
 	// Format: email
 	Email strfmt.Email `json:"email,omitempty"`
 
 	// Auth-Scopes of the user, if available
+	// Example: ["app"]
 	Scopes []string `json:"scopes"`
 
 	// ID of user
+	// Example: 82ebdfad-c586-4407-a873-4cc1c33d56fc
 	// Required: true
 	Sub *string `json:"sub"`
 
 	// Unix timestamp the user's info was last updated at
+	// Example: 1591960808
 	// Required: true
 	UpdatedAt *int64 `json:"updated_at"`
 }
@@ -64,12 +69,11 @@ func (m *GetUserInfoResponse) Validate(formats strfmt.Registry) error {
 }
 
 func (m *GetUserInfoResponse) validateEmail(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Email) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("email", "body", string(m.Email), 255); err != nil {
+	if err := validate.MaxLength("email", "body", m.Email.String(), 255); err != nil {
 		return err
 	}
 
@@ -100,7 +104,6 @@ func (m *GetUserInfoResponse) validateScopesItemsEnum(path, location string, val
 }
 
 func (m *GetUserInfoResponse) validateScopes(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Scopes) { // not required
 		return nil
 	}
@@ -132,6 +135,11 @@ func (m *GetUserInfoResponse) validateUpdatedAt(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this get user info response based on context it is used
+func (m *GetUserInfoResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

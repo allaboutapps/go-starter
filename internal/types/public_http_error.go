@@ -6,6 +6,8 @@ package types
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -17,20 +19,24 @@ import (
 // swagger:model publicHttpError
 type PublicHTTPError struct {
 
-	// More detailed, human-readable, optional explanation of the error
-	Detail string `json:"detail,omitempty"`
-
 	// HTTP status code returned for the error
+	// Example: 403
 	// Required: true
 	// Maximum: 599
 	// Minimum: 100
 	Code *int64 `json:"status"`
 
+	// More detailed, human-readable, optional explanation of the error
+	// Example: User is lacking permission to access this resource
+	Detail string `json:"detail,omitempty"`
+
 	// Short, human-readable description of the error
+	// Example: Forbidden
 	// Required: true
 	Title *string `json:"title"`
 
 	// Type of error returned, should be used for client-side error handling
+	// Example: generic
 	// Required: true
 	Type *string `json:"type"`
 }
@@ -63,11 +69,11 @@ func (m *PublicHTTPError) validateCode(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinimumInt("status", "body", int64(*m.Code), 100, false); err != nil {
+	if err := validate.MinimumInt("status", "body", *m.Code, 100, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("status", "body", int64(*m.Code), 599, false); err != nil {
+	if err := validate.MaximumInt("status", "body", *m.Code, 599, false); err != nil {
 		return err
 	}
 
@@ -89,6 +95,11 @@ func (m *PublicHTTPError) validateType(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this public Http error based on context it is used
+func (m *PublicHTTPError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
