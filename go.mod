@@ -20,7 +20,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/rogpeppe/go-internal v1.7.0
 	github.com/rs/zerolog v1.20.0
-	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
+	github.com/rubenv/sql-migrate v0.0.0-20210215143335-f84234893558
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
