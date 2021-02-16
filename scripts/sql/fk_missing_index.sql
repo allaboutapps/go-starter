@@ -40,8 +40,7 @@ WHERE
         c.confrelid
     ORDER BY
         pg_catalog.pg_relation_size(c.conrelid) DESC LOOP
-            RAISE WARNING 'CREATE INDEX "idx_%_fk_%" ON "%" ("%");', item.table, item.columns, item.table, item.columns
-            USING HINT = to_json(item);
+            RAISE WARNING 'CREATE INDEX "idx_%_fk_%" ON "%" ("%");', item.table, item.columns, item.table, item.columns USING HINT = to_json(item);
         END LOOP;
     IF FOUND THEN
         RAISE EXCEPTION ' We require ALL FOREIGN keys TO have an INDEX defined. ';

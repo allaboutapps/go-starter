@@ -67,7 +67,9 @@
 				"maxStringLen": 2048,
 			},
 			"apiVersion": 2,
-		}
+		},
+		// ensure that the pgFormatter VSCode extension uses the pgFormatter that comes preinstalled in the Dockerfile
+		"pgFormatter.pgFormatterPath": "/usr/local/bin/pg_format"
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [

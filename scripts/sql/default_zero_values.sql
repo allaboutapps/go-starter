@@ -73,11 +73,11 @@ BEGIN
         check_default_go_sql_zero_values ()
         LOOP
             RAISE WARNING ' %.% % : INVALID DEFAULT ''%''', item.table_name, item.column_name, item.data_type, item.column_default USING HINT = to_json(item);
-        END LOOP;
+END LOOP;
     IF FOUND THEN
         RAISE EXCEPTION 'NOT NULL columns require the respective go zero value () AS their DEFAULT value or no DEFAULT at all'
             USING HINT = '0 for integer types, 0.0 for floating point numbers, false for booleans, "" for strings';
-    END IF;
+        END IF;
 END;
 $$
 LANGUAGE plpgsql;

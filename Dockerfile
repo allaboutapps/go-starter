@@ -71,16 +71,15 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 
 ENV LANG en_US.UTF-8
 
-# sql pgFormatter: Install the same version of pg_formatter as used in your editors.
-# as of 2020-10 thats v4.4.
+# sql pgFormatter: Integrates with vscode-pgFormatter (we pin pgFormatter.pgFormatterPath for the extension to this version)
 # requires perl to be installed
 # https://github.com/bradymholt/vscode-pgFormatter/commits/master
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v4.4.tar.gz \
-    && tar xzf v4.4.tar.gz \
-    && cd pgFormatter-4.4 \
+    && wget https://github.com/darold/pgFormatter/archive/v5.0.tar.gz \
+    && tar xzf v5.0.tar.gz \
+    && cd pgFormatter-5.0 \
     && perl Makefile.PL \
     && make && make install \
     && rm -rf /tmp/pgFormatter 
