@@ -1,6 +1,6 @@
 module allaboutapps.dev/aw/go-starter
 
-go 1.15
+go 1.16
 
 require (
 	github.com/allaboutapps/integresql-client-go v1.0.0
@@ -28,7 +28,7 @@ require (
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.4.0
 	github.com/volatiletech/strmangle v0.0.1
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
-	golang.org/x/sys v0.0.0-20210216155314-c4c1ae6d1848
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/sys v0.0.0-20210220050731-9a76102bfb43
 	google.golang.org/api v0.40.0
 )
