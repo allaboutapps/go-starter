@@ -73,7 +73,7 @@ func TestBindAndValidateBadRequest(t *testing.T) {
 	e.POST("/", func(c echo.Context) error {
 		var body types.PostRefreshPayload
 
-		err := util.BindAndValidate(c, &body)
+		err := util.BindAndValidateBody(c, &body)
 		assert.Error(t, err)
 
 		return nil

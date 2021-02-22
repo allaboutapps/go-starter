@@ -24,7 +24,7 @@ func postLogoutHandler(s *api.Server) echo.HandlerFunc {
 		log := util.LogFromContext(ctx)
 
 		var body types.PostLogoutPayload
-		if err := util.BindAndValidate(c, &body); err != nil {
+		if err := util.BindAndValidateBody(c, &body); err != nil {
 			return err
 		}
 

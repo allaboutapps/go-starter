@@ -80,7 +80,7 @@ func TestWithTestServer(t *testing.T) {
 			s1.Echo.POST(path, func(c echo.Context) error {
 
 				var body TestRequestPayload
-				if err := util.BindAndValidate(c, &body); err != nil {
+				if err := util.BindAndValidateBody(c, &body); err != nil {
 					t.Fatal(err)
 				}
 

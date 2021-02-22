@@ -26,7 +26,7 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 		ctx := c.Request().Context()
 
 		var body types.PostForgotPasswordPayload
-		if err := util.BindAndValidate(c, &body); err != nil {
+		if err := util.BindAndValidateBody(c, &body); err != nil {
 			return err
 		}
 

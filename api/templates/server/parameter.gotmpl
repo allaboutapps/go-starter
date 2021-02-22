@@ -429,7 +429,7 @@ type {{ pascalize .Name }}Params struct {
   Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .HasDefault }}
   Default: {{ printf "%#v" .Default }}{{ end }}
   */
-  {{ if not .Schema }}{{ pascalize .ID }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}{{/* BEGIN CUSTOM BY AAA */}}{{ if .IsQueryParam }}`query:"{{ .Name }}"`{{ end }}{{ if .IsPathParam }}`param:"{{ .Name }}"`{{ end }}{{/* END CUSTOM BY AAA */}}
+  {{ if not .Schema }}{{ pascalize .ID }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}{{/* BEGIN CUSTOM BY AAA */}}{{ if .IsQueryParam }}`query:"{{ .Name }}"`{{ else if .IsPathParam }}`param:"{{ .Name }}"`{{ else if .IsFormParam }}`form:"{{ .Name }}"`{{ end }}{{/* END CUSTOM BY AAA */}}
   {{ end}}
 }
 
