@@ -19,9 +19,87 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// BindAndValidate binds the request, parsing its body (depending on the `Content-Type` request header) and performs payload
-// validation as enforced by the Swagger schema associated with the provided type. In addition to binding the body, BindAndValidate
-// can also assign query and URL parameters to a struct and perform validations on those.
+// BindAndValidateBody binds the request, parsing **only** its body (depending on the `Content-Type` request header) and performs validation
+// as enforced by the Swagger schema associated with the provided type.
+//
+// Note: In contrast to BindAndValidate, this method does not restore the body after binding (it's considered consumed).
+// Thus use BindAndValidateBody only once per request!
+//
+// Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
+func BindAndValidateBody(c echo.Context, v runtime.Validatable) error {
+	binder := c.Echo().Binder.(*echo.DefaultBinder)
+
+	if err := binder.BindBody(c, v); err != nil {
+		return err
+	}
+
+	return validatePayload(c, v)
+}
+
+// BindAndValidatePathAndQueryParams binds the request, parsing **only** its path **and** query params and performs validation
+// as enforced by the Swagger schema associated with the provided type.
+//
+// Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
+func BindAndValidatePathAndQueryParams(c echo.Context, v runtime.Validatable) error {
+	binder := c.Echo().Binder.(*echo.DefaultBinder)
+
+	if err := binder.BindPathParams(c, v); err != nil {
+		return err
+	}
+
+	if err := binder.BindQueryParams(c, v); err != nil {
+		return err
+	}
+
+	return validatePayload(c, v)
+}
+
+// BindAndValidatePathParams binds the request, parsing **only** its path params and performs validation
+// as enforced by the Swagger schema associated with the provided type.
+//
+// Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
+func BindAndValidatePathParams(c echo.Context, v runtime.Validatable) error {
+	binder := c.Echo().Binder.(*echo.DefaultBinder)
+
+	if err := binder.BindPathParams(c, v); err != nil {
+		return err
+	}
+
+	return validatePayload(c, v)
+}
+
+// BindAndValidateQueryParams binds the request, parsing **only** its query params and performs validation
+// as enforced by the Swagger schema associated with the provided type.
+//
+// Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
+func BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error {
+	binder := c.Echo().Binder.(*echo.DefaultBinder)
+
+	if err := binder.BindQueryParams(c, v); err != nil {
+		return err
+	}
+
+	return validatePayload(c, v)
+}
+
+// BindAndValidate binds the request, parsing path+query+body and validating these structs.
+//
+// Deprecated: Use our dedicated BindAndValidate* mappers instead:
+//   BindAndValidateBody(c echo.Context, v runtime.Validatable) error // preferred
+//   BindAndValidatePathAndQueryParams(c echo.Context, v runtime.Validatable) error  // preferred
+//   BindAndValidatePathParams(c echo.Context, v runtime.Validatable) error // rare usecases
+//   BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error // rare usecases
+//
+// BindAndValidate works like Echo <v4.2.0. It was preferred to .Bind() everything (query, params, body) to a single struct
+// in one pass. Thus we included additional handling to allow multiple body rebindings (though copying while restoring),
+// as goswagger generated structs per endpoint are typically **separated** into one params struct (path and query) and one
+// body struct. Echo >=v4.2.0 DefaultBinder now supports binding query, path params and body to their **own** structs natively.
+// Thus, you areencouraged to use our new dedicated BindAndValidate* mappers, which are relevant for the structs goswagger
+// autogenerates for you.
+//
+// Original: Parses body (depending on the `Content-Type` request header) and performs payload validation as enforced by
+// the Swagger schema associated with the provided type. In addition to binding the body, BindAndValidate also assigns query
+// and URL parameters (if any) to a struct and perform validations on those.
 //
 // Providing more than one struct allows for binding payload and parameters simultaneously since echo and goswagger expect data
 // to be structured differently. If you do not require parsing of both body and params, additional structs can be omitted.
@@ -30,7 +108,7 @@ import (
 func BindAndValidate(c echo.Context, v runtime.Validatable, vs ...runtime.Validatable) error {
 	// TODO error handling for all occurrences of Bind() due to JSON unmarshal type mismatches
 	if len(vs) == 0 {
-		if err := c.Bind(v); err != nil {
+		if err := defaultEchoBindAll(c, v); err != nil {
 			return err
 		}
 
@@ -137,7 +215,7 @@ func restoreBindAndValidate(c echo.Context, reqBody []byte, v runtime.Validatabl
 		c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 	}
 
-	if err := c.Bind(v); err != nil {
+	if err := defaultEchoBindAll(c, v); err != nil {
 		return err
 	}
 
@@ -172,6 +250,31 @@ func validatePayload(c echo.Context, v runtime.Validatable) error {
 	}
 
 	return nil
+}
+
+// Bind it all
+// Restores echo query binding pre 4.2.0 handling
+// Newer echo versions no longer automatically bind query params to tagged :query struct-fields unless its a GET or DELETE request
+// Workaround, depends on the internal echo.DefaultBinder methods.
+//
+// TODO: Eventually move to a customly implemented Binder.
+// Hopefully BindPathParams, BindQueryParams and BindBody stay provided in the future.
+//
+// This upstream security fix does not directly affect us, as our goswagger generated params/query structs
+// and body structs are separated from each other and cannot collide/overwrite props.
+// https://github.com/labstack/echo/commit/4d626c210d3946814a30d545adf9b8f2296686a7#diff-aade326d3512b5a2ada6faa791ddec468f2a0adedb352339c9e314e74c8949d2
+func defaultEchoBindAll(c echo.Context, v runtime.Validatable) (err error) {
+
+	binder := c.Echo().Binder.(*echo.DefaultBinder)
+
+	if err := binder.BindPathParams(c, v); err != nil {
+		return err
+	}
+	if err = binder.BindQueryParams(c, v); err != nil {
+		return err
+	}
+
+	return binder.BindBody(c, v)
 }
 
 func formatValidationErrors(ctx context.Context, err *errors.CompositeError) []*types.HTTPValidationErrorDetail {
