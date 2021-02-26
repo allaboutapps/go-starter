@@ -367,6 +367,93 @@ definitions:
       key:
         description: Key of field failing validation
         type: string
+  nullableBool:
+    type: boolean
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Bool
+    example: true
+  nullableFloat:
+    type: number
+    format: float
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Float32
+    example: 1.5
+  nullableFloat32:
+    type: number
+    format: float
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Float32
+    example: 1.5
+  nullableFloat64:
+    type: number
+    format: float
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Float64
+    example: 1.5
+  nullableInt:
+    type: integer
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Int
+    example: 1234
+  nullableInt16:
+    type: integer
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Int16
+    example: 1234
+  nullableInt32:
+    type: integer
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Int32
+    example: 1234
+  nullableInt64:
+    type: integer
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: Int64
+    example: 1234
+  nullableString:
+    type: string
+    x-go-type:
+      import:
+        package: github.com/majodev/nullable
+      type: String
+    example: example
+  nullables:
+    type: object
+    properties:
+      nullableBool:
+        $ref: '#/definitions/nullableBool'
+      nullableFloat:
+        $ref: '#/definitions/nullableFloat'
+      nullableFloat32:
+        $ref: '#/definitions/nullableFloat32'
+      nullableFloat64:
+        $ref: '#/definitions/nullableFloat64'
+      nullableInt:
+        $ref: '#/definitions/nullableInt'
+      nullableInt16:
+        $ref: '#/definitions/nullableInt16'
+      nullableInt32:
+        $ref: '#/definitions/nullableInt32'
+      nullableInt64:
+        $ref: '#/definitions/nullableInt64'
+      nullableString:
+        $ref: '#/definitions/nullableString'
   orderDir:
     type: string
     enum:
