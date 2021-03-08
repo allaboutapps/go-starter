@@ -371,7 +371,7 @@ definitions:
     type: boolean
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Bool
     example: true
   nullableBoolSlice:
@@ -380,14 +380,14 @@ definitions:
       type: boolean
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: BoolSlice
   nullableFloat:
     type: number
     format: float
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32
     example: 1.5
   nullableFloat32:
@@ -395,7 +395,7 @@ definitions:
     format: float
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32
     example: 1.5
   nullableFloat32Slice:
@@ -406,14 +406,14 @@ definitions:
       example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32Slice
   nullableFloat64:
     type: number
     format: float
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float64
     example: 1.5
   nullableFloat64Slice:
@@ -424,7 +424,7 @@ definitions:
       example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float64Slice
   nullableFloatSlice:
     type: array
@@ -434,20 +434,20 @@ definitions:
       example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32Slice
   nullableInt:
     type: integer
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int
     example: 1234
   nullableInt16:
     type: integer
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int16
     example: 1234
   nullableInt16Slice:
@@ -457,13 +457,13 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int16Slice
   nullableInt32:
     type: integer
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int32
     example: 1234
   nullableInt32Slice:
@@ -473,13 +473,13 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int32Slice
   nullableInt64:
     type: integer
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int64
     example: 1234
   nullableInt64Slice:
@@ -489,7 +489,7 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int64Slice
   nullableIntSlice:
     type: array
@@ -498,13 +498,13 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: IntSlice
   nullableString:
     type: string
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: String
     example: example
   nullableStringSlice:
@@ -513,7 +513,7 @@ definitions:
       type: string
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: StringSlice
   nullables:
     type: object

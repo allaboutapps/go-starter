@@ -8,10 +8,10 @@ package types
 import (
 	"context"
 
+	"github.com/allaboutapps/nullable"
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/majodev/nullable"
 )
 
 // Nullables nullables

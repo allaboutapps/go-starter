@@ -4,7 +4,7 @@ info:
   version: 0.1.0
 paths: {}
 definitions:
-  # https://github.com/majodev/nullable
+  # https://github.com/allaboutapps/nullable
   # Provides ability to determine if a json key has been set to null or not provided.
   # These constructs are especially important for PATCH endpoints e.g. to explicity patch an *optional* field in payload to null
   NullableBool:
@@ -12,7 +12,7 @@ definitions:
     example: true
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Bool
   NullableBoolSlice:
     type: array
@@ -20,14 +20,14 @@ definitions:
       type: boolean
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: BoolSlice
   NullableString:
     type: string
     example: example
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: String
   NullableStringSlice:
     type: array
@@ -35,14 +35,14 @@ definitions:
       type: string
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: StringSlice
   NullableInt:
     type: integer
     example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int
   NullableIntSlice:
     type: array
@@ -51,14 +51,14 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: IntSlice
   NullableInt16:
     type: integer
     example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int16
   NullableInt16Slice:
     type: array
@@ -67,14 +67,14 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int16Slice
   NullableInt32:
     type: integer
     example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int32
   NullableInt32Slice:
     type: array
@@ -83,14 +83,14 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int32Slice
   NullableInt64:
     type: integer
     example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int64
   NullableInt64Slice:
     type: array
@@ -99,7 +99,7 @@ definitions:
       example: 1234
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Int64Slice
   NullableFloat:
     type: number
@@ -107,7 +107,7 @@ definitions:
     example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32
   NullableFloatSlice:
     type: array
@@ -117,7 +117,7 @@ definitions:
       example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32Slice
   NullableFloat32:
     type: number
@@ -125,7 +125,7 @@ definitions:
     example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32
   NullableFloat32Slice:
     type: array
@@ -135,7 +135,7 @@ definitions:
       example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float32Slice
   NullableFloat64:
     type: number
@@ -143,7 +143,7 @@ definitions:
     example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float64
   NullableFloat64Slice:
     type: array
@@ -153,7 +153,7 @@ definitions:
       example: 1.5
     x-go-type:
       import:
-        package: github.com/majodev/nullable
+        package: github.com/allaboutapps/nullable
       type: Float64Slice
   Nullables:
     type: object
