@@ -1,0 +1,196 @@
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+paths: {}
+definitions:
+  # https://github.com/allaboutapps/nullable
+  # Provides ability to determine if a json key has been set to null or not provided.
+  # These constructs are especially important for PATCH endpoints e.g. to explicity patch an *optional* field in payload to null
+  NullableBool:
+    type: boolean
+    example: true
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Bool
+  NullableBoolSlice:
+    type: array
+    items:
+      type: boolean
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: BoolSlice
+  NullableString:
+    type: string
+    example: example
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: String
+  NullableStringSlice:
+    type: array
+    items:
+      type: string
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: StringSlice
+  NullableInt:
+    type: integer
+    example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Int
+  NullableIntSlice:
+    type: array
+    items:
+      type: integer
+      example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: IntSlice
+  NullableInt16:
+    type: integer
+    example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Int16
+  NullableInt16Slice:
+    type: array
+    items:
+      type: integer
+      example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Int16Slice
+  NullableInt32:
+    type: integer
+    example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Int32
+  NullableInt32Slice:
+    type: array
+    items:
+      type: integer
+      example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Int32Slice
+  NullableInt64:
+    type: integer
+    example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Int64
+  NullableInt64Slice:
+    type: array
+    items:
+      type: integer
+      example: 1234
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Int64Slice
+  NullableFloat:
+    type: number
+    format: float
+    example: 1.5
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Float32
+  NullableFloatSlice:
+    type: array
+    items:
+      type: number
+      format: float
+      example: 1.5
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Float32Slice
+  NullableFloat32:
+    type: number
+    format: float
+    example: 1.5
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Float32
+  NullableFloat32Slice:
+    type: array
+    items:
+      type: number
+      format: float
+      example: 1.5
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Float32Slice
+  NullableFloat64:
+    type: number
+    format: float
+    example: 1.5
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Float64
+  NullableFloat64Slice:
+    type: array
+    items:
+      type: number
+      format: float
+      example: 1.5
+    x-go-type:
+      import:
+        package: github.com/allaboutapps/nullable
+      type: Float64Slice
+  Nullables:
+    type: object
+    properties:
+      nullableBool:
+        $ref: "../definitions/nullable.yml#/definitions/NullableBool"
+      nullableBoolSlice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableBoolSlice"
+      nullableString:
+        $ref: "../definitions/nullable.yml#/definitions/NullableString"
+      nullableStringSlice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableStringSlice"
+      nullableInt:
+        $ref: "../definitions/nullable.yml#/definitions/NullableInt"
+      nullableIntSlice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableIntSlice"
+      nullableInt16:
+        $ref: "../definitions/nullable.yml#/definitions/NullableInt16"
+      nullableInt16Slice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableInt16Slice"
+      nullableInt32:
+        $ref: "../definitions/nullable.yml#/definitions/NullableInt32"
+      nullableInt32Slice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableInt32Slice"
+      nullableInt64:
+        $ref: "../definitions/nullable.yml#/definitions/NullableInt64"
+      nullableInt64Slice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableInt64Slice"
+      nullableFloat:
+        $ref: "../definitions/nullable.yml#/definitions/NullableFloat"
+      nullableFloatSlice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableFloatSlice"
+      nullableFloat32:
+        $ref: "../definitions/nullable.yml#/definitions/NullableFloat32"
+      nullableFloat32Slice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableFloat32Slice"
+      nullableFloat64:
+        $ref: "../definitions/nullable.yml#/definitions/NullableFloat64"
+      nullableFloat64Slice:
+        $ref: "../definitions/nullable.yml#/definitions/NullableFloat64Slice"

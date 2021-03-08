@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/allaboutapps/integresql-client-go v1.0.0
+	github.com/allaboutapps/nullable v1.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gabriel-vasile/mimetype v1.1.2

@@ -58,6 +58,8 @@ github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRF
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/allaboutapps/integresql-client-go v1.0.0 h1:sVsV2Z78BR5E9la+8TJ4fkzP832z+uHtfDOt7Mo3SKI=
 github.com/allaboutapps/integresql-client-go v1.0.0/go.mod h1:C5fz9y+Nnjidhj7Mc9h4qKXSmJanIXMa4nFeEOva0oA=
+github.com/allaboutapps/nullable v1.3.0 h1:1LTKtycnfmNZk7VL+am+eB5v11ePAL7RXThNgpqmq3s=
+github.com/allaboutapps/nullable v1.3.0/go.mod h1:sfKLUs0wIWSPPWqFEXB+Ma4aun9jAeBAcffq7XQFu/g=
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.13.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
