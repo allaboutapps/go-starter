@@ -295,7 +295,7 @@ git-compare-go-starter: ##- Compare upstream go-starter master to HEAD displayin
 git-merge-go-starter: ##- Merges upstream go-starter master into current HEAD.
 	@$(MAKE) git-compare-go-starter
 	@(echo "" \
-		&& echo "Attempting to execute 'git merge --no-commit --no-ff go-starter/master' into your current HEAD." \
+		&& echo "Attempting to execute 'git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master' into your current HEAD." \
 		&& echo -n "Are you sure? [y/N]" \
 		&& read ans && [ $${ans:-N} = y ]) || exit 1
 	git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master
