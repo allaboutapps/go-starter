@@ -16,6 +16,7 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
     - [Demo](#demo)
     - [Requirements](#requirements)
     - [Quickstart](#quickstart)
+    - [Merge with the go-starter template repository to get future updates](#merge-with-the-go-starter-template-repository-to-get-future-updates)
     - [Set project module name for your new project](#set-project-module-name-for-your-new-project)
     - [Visual Studio Code](#visual-studio-code)
     - [Building and testing](#building-and-testing)
@@ -32,7 +33,7 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
 - Adheres to the project layout defined in [golang-standard/project-layout](https://github.com/golang-standards/project-layout).
 - Provides database migration ([sql-migrate](https://github.com/rubenv/sql-migrate)) and models generation ([SQLBoiler](https://github.com/volatiletech/sqlboiler)) workflows for [PostgreSQL](https://www.postgresql.org/) databases.
 - Integrates [IntegreSQL](https://github.com/allaboutapps/integresql) for fast, concurrent and isolated integration testing with real PostgreSQL databases.
-- Autoinstalls our recommended VSCode extensions for golang development.
+- Auto-installs our recommended VSCode extensions for golang development.
 - Integrates [go-swagger](https://github.com/go-swagger/go-swagger) for compile-time generation of `swagger.yml`, structs and request/response validation functions.
 - Integrates [MailHog](https://github.com/mailhog/MailHog) for easy SMTP-based email testing.
 - Integrates [SwaggerUI](https://github.com/swagger-api/swagger-ui) for live-previewing your Swagger v2 schema.
@@ -40,11 +41,11 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
 - Comes with fully implemented `auth` package, an OAuth2 RESTful JSON API ready to be extended according to your requirements.
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
-- CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to add additional subcommands.
+- CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to add additional sub-commands.
 - Comes with an initial [PostgreSQL](https://www.postgresql.org/) database structure (see [/migrations](https://github.com/allaboutapps/go-starter/tree/master/migrations)), covering: 
-  - auth tokens (access-, refresh-, passwordreset-tokens),
+  - auth tokens (access-, refresh-, password-reset-tokens),
   - a generic auth-related `user` model
-  - an app-specific barebones `app_user_profile` model,
+  - an app-specific bare-bones `app_user_profile` model,
   - push notification tokens and 
   - a health check sequence (for performing writeable checks).
 - API endpoints and CLI for liveness (`/-/healthy`) and readiness (`/-/ready`) probes
@@ -69,25 +70,16 @@ Requires the following local setup for development:
 - [Docker Compose](https://docs.docker.com/compose/install/) (1.25 or above)
 - [VSCode Extension: Remote - Containers](https://code.visualstudio.com/docs/remote/containers) (`ms-vscode-remote.remote-containers`)
 
-This project makes use of the [Remote - Containers extension](https://code.visualstudio.com/docs/remote/containers) provided by [Visual Studio Code](https://code.visualstudio.com/). A local installation of the Go toolchain is **no longer required** when using this setup.
+This project makes use of the [Remote - Containers extension](https://code.visualstudio.com/docs/remote/containers) provided by [Visual Studio Code](https://code.visualstudio.com/). A local installation of the Go tool-chain is **no longer required** when using this setup.
 
 Please refer to the [official installation guide](https://code.visualstudio.com/docs/remote/containers) how this works for your host OS and head to our [FAQ: How does our VSCode setup work?](https://github.com/allaboutapps/go-starter/wiki/FAQ#how-does-our-vscode-setup-work) if you encounter issues.
 
 ### Quickstart
 
-> **Note**: It's possible to create a new git repository from through the GitHub template repository feature ([use this template](https://github.com/allaboutapps/go-starter/generate)). However, we *strongly recommend that you DO NOT DO THIS*! **Instead manually clone or fork this repository.** Otherwise you won't be able to easily merge upstream go-starter changes into your own repository (see [GitHub Template Repositories](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template), [Refusing to merge unrelated histories](https://www.educative.io/edpresso/the-fatal-refusing-to-merge-unrelated-histories-git-error) and [FAQ: I want to compare or update my project/fork to the latest go-starter master](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-want-to-compare-or-update-my-projectfork-to-the-latest-go-starter-master)).
-
-You will need to clone/fork this repository.
+Create a new git repository through the GitHub template repository feature ([use this template](https://github.com/allaboutapps/go-starter/generate)). You will then start with a **single initial commit** in your own repository. 
 
 ```bash
-# If you haven't forked/cloned already...
-git clone git@github.com:allaboutapps/go-starter.git my-service
-cd my-service
-
-# If you have cloned the go-starter project, reset the origin remote to your actual new repository
-git remote set-url origin https://github.com/...
-
-# Easily start the docker-compose dev environment through our helper
+# Clone your new repository, cd into it, then easily start the docker-compose dev environment through our helper
 ./docker-helper.sh --up
 ```
 
@@ -103,9 +95,24 @@ make all
 make help
 ```
 
+### Merge with the go-starter template repository to get future updates
+
+> These steps are **not** necessary if you have a *"real"* fork.
+
+If your new project is generated from a template project (you have a **single commit**), you want to run the following command immediately and **before** applying any changes. Otherwise you won't be able to easily merge upstream go-starter changes into your own repository (see [GitHub Template Repositories](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template), [Refusing to merge unrelated histories](https://www.educative.io/edpresso/the-fatal-refusing-to-merge-unrelated-histories-git-error) and [FAQ: I want to compare or update my project/fork to the latest go-starter master](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-want-to-compare-or-update-my-projectfork-to-the-latest-go-starter-master)).
+
+```bash
+make git-merge-go-starter
+# Attempting to execute 'git merge --no-commit --no-ff go-starter/master' into your current HEAD.
+# Are you sure? [y/N]y
+# git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master
+
+git commit -m "Initial merge of unrelated go-starter template history"
+```
+
 ### Set project module name for your new project
 
-To replace all occurances of `allaboutapps.dev/aw/go-stater` (our internal module name of this project) with your desired projects' module name, do the following:
+To replace all occurrences of `allaboutapps.dev/aw/go-stater` (our internal module name of this project) with your desired projects' module name, do the following:
 
 ```bash
 development@94242c61cf2b:/app$ # inside your container...
@@ -117,7 +124,7 @@ make set-module-name
 # e.g. github.com/majodev/my-service
 ```
 
-The above command writes your new go modulename to `tmp/.modulename`, `go.mod`. It actually sets it everywhere in `**/*` - thus this step is typically only required **once**. If you need to merge changes from the upstream go-starter later, we may want to run `make force-module-name` to set your own go modulename everywhere again (especially relevant for new files / import paths). See our [FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-want-to-compare-or-update-my-projectfork-to-the-latest-go-starter-master) for more information about this update flow.
+The above command writes your new go module name to `tmp/.modulename`, `go.mod`. It actually sets it everywhere in `**/*` - thus this step is typically only required **once**. If you need to merge changes from the upstream go-starter later, we may want to run `make force-module-name` to set your own go module name everywhere again (especially relevant for new files / import paths). See our [FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-want-to-compare-or-update-my-projectfork-to-the-latest-go-starter-master) for more information about this update flow.
 
 Optionally you may want to move the original `README.md` and `LICENSE` away:
 
@@ -214,4 +221,4 @@ Please make sure to update tests as appropriate.
 
 ## License
 
-[MIT](LICENSE) © 2020 aaa – all about apps GmbH | Michael Farkas | Nick Müller | Mario Ranftl | Manuel Wieser and the "go-starter" project contributors
+[MIT](LICENSE) © 2021 aaa – all about apps GmbH | Michael Farkas | Nick Müller | Mario Ranftl | Manuel Wieser and the "go-starter" project contributors

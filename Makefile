@@ -40,7 +40,7 @@ info: ##- Prints database spec, prints handlers, go module-name and current go v
 lint: check-gen-dirs check-handlers check-embedded-modules-go-not go-lint  ##- (opt) Runs golangci-lint and make check-*.
 
 # these recipies may execute in parallel
-build-pre: sql swagger ##- (opt) Runs prebuild related targets (sql, swagger, go-generate).
+build-pre: sql swagger ##- (opt) Runs pre-build related targets (sql, swagger, go-generate).
 	@$(MAKE) go-generate
 
 go-format: ##- (opt) Runs go format.
@@ -167,7 +167,7 @@ sql-format: ##- (opt) Formats all *.sql files.
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| xargs -i pg_format {} -o {}
 
-sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt) Check syntax and unneccessary use of NULL keyword.
+sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt) Check syntax and unnecessary use of NULL keyword.
 
 # check syntax via the real database
 # https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
@@ -177,7 +177,7 @@ sql-check-syntax: ##- (opt) Checks syntax of all *.sql files.
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
 		| psql -d postgres --quiet -v ON_ERROR_STOP=1
 
-sql-check-migrations-unnecessary-null: ##- (opt) Checks migrations/*.sql for unneccessary use of NULL keywords.
+sql-check-migrations-unnecessary-null: ##- (opt) Checks migrations/*.sql for unnecessary use of NULL keywords.
 	@echo "make sql-check-migrations-unnecessary-null"
 	@(grep -R "NULL" ./migrations/ | grep --invert "DEFAULT NULL" | grep --invert "NOT NULL" | grep --invert "WITH NULL" | grep --invert "NULL, " | grep --invert ", NULL" | grep --invert "RETURN NULL" | grep --invert "SET NULL") \
 		&& exit 1 || exit 0
@@ -271,7 +271,7 @@ get-embedded-modules: ##- (opt) Prints embedded modules in the compiled bin/app.
 get-embedded-modules-count: ##- (opt) Prints count of embedded modules in the compiled bin/app.
 	go version -m -v bin/app | grep $$'\tdep' | wc -l
 
-check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin/app against go.not, throws on occurance.
+check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin/app against go.not, throws on occurrence.
 	@echo "make check-embedded-modules-go-not"
 	@(mkdir -p tmp 2> /dev/null && go version -m -v bin/app > tmp/.modules)
 	grep -f go.not -F tmp/.modules && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) || exit 0
@@ -298,7 +298,7 @@ git-merge-go-starter: ##- Merges upstream go-starter master into current HEAD.
 		&& echo "Attempting to execute 'git merge --no-commit --no-ff go-starter/master' into your current HEAD." \
 		&& echo -n "Are you sure? [y/N]" \
 		&& read ans && [ $${ans:-N} = y ]) || exit 1
-	git merge --no-commit --no-ff go-starter/master
+	git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master
 
 ### -----------------------
 # --- Helpers
@@ -327,7 +327,7 @@ set-module-name: ##- Wizard to set a new go module-name.
 		&& echo "new go module-name: '$${new_module_name}'!"
 	@rm -f tmp/.modulename
 
-force-module-name: ##- Overwrite occurences of 'allaboutapps.dev/aw/go-starter' with current go module-name.
+force-module-name: ##- Overwrite occurrences of 'allaboutapps.dev/aw/go-starter' with current go module-name.
 	find . -not -path '*/\.*' -not -path './Makefile' -type f -exec sed -i "s|allaboutapps.dev/aw/go-starter|${GO_MODULE_NAME}|g" {} \;
 
 # https://gist.github.com/prwhite/8168133 - based on comment from @m000
