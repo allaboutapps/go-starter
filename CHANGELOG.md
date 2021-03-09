@@ -1,16 +1,17 @@
 # Changelog
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-
-We **do not follow [semantic versioning](https://semver.org/)** within [allaboutapps/go-starter](https://github.com/allaboutapps/go-starter) and there are **no git tags** for this template project. Instead all changes are solely tracked by date here, the latest `master` is considered **stable** and periodically merged into our customer projects.
-
+- All notable changes to this project will be documented in this file.
+- The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+- We **do not follow [semantic versioning](https://semver.org/)**.
+- There are **no git tags**. 
+- All changes are solely **tracked by date**. 
+- The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 ## 2021-03-09
 ### Added
 - Introduces `CHANGELOG.md`
 ### Changed
 - `make git-merge-go-starter` now uses `--allow-unrelated-histories` by default.
-  - `README.md` and FAQ now mention that it's recommended to execute `make git-merge-go-starter` during project setup (especially for single commit generated from template project project setups)
+  - `README.md` and FAQ now mention that it's recommended to execute `make git-merge-go-starter` during project setup (especially for single commit generated from template project project setups).
   - See [FAQ: I want to compare or update my project/fork to the latest go-starter master.](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-want-to-compare-or-update-my-projectfork-to-the-latest-go-starter-master)
 - Various typos in `README.md` and `Makefile`.
 - Upgrade to [`golangci-lint@v1.38.0`](https://github.com/golangci/golangci-lint/releases/tag/v1.38.0)
