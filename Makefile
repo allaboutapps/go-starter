@@ -223,7 +223,7 @@ swagger-concat: ##- (opt) Regenerates api/swagger.yml based on api/paths/*.
 		--output=api/tmp/tmp.yml \
 		--format=yaml \
 		--keep-spec-order \
-		api/main.yml api/paths/* \
+		api/config/main.yml api/paths/* \
 		-q
 	@swagger flatten api/tmp/tmp.yml \
 		--output=api/swagger.yml \

@@ -159,38 +159,38 @@ definitions:
     type: object
     properties:
       nullableBool:
-        $ref: "../definitions/nullable.yml#/definitions/NullableBool"
+        $ref: "#/definitions/NullableBool"
       nullableBoolSlice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableBoolSlice"
+        $ref: "#/definitions/NullableBoolSlice"
       nullableString:
-        $ref: "../definitions/nullable.yml#/definitions/NullableString"
+        $ref: "#/definitions/NullableString"
       nullableStringSlice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableStringSlice"
+        $ref: "#/definitions/NullableStringSlice"
       nullableInt:
-        $ref: "../definitions/nullable.yml#/definitions/NullableInt"
+        $ref: "#/definitions/NullableInt"
       nullableIntSlice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableIntSlice"
+        $ref: "#/definitions/NullableIntSlice"
       nullableInt16:
-        $ref: "../definitions/nullable.yml#/definitions/NullableInt16"
+        $ref: "#/definitions/NullableInt16"
       nullableInt16Slice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableInt16Slice"
+        $ref: "#/definitions/NullableInt16Slice"
       nullableInt32:
-        $ref: "../definitions/nullable.yml#/definitions/NullableInt32"
+        $ref: "#/definitions/NullableInt32"
       nullableInt32Slice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableInt32Slice"
+        $ref: "#/definitions/NullableInt32Slice"
       nullableInt64:
-        $ref: "../definitions/nullable.yml#/definitions/NullableInt64"
+        $ref: "#/definitions/NullableInt64"
       nullableInt64Slice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableInt64Slice"
+        $ref: "#/definitions/NullableInt64Slice"
       nullableFloat:
-        $ref: "../definitions/nullable.yml#/definitions/NullableFloat"
+        $ref: "#/definitions/NullableFloat"
       nullableFloatSlice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableFloatSlice"
+        $ref: "#/definitions/NullableFloatSlice"
       nullableFloat32:
-        $ref: "../definitions/nullable.yml#/definitions/NullableFloat32"
+        $ref: "#/definitions/NullableFloat32"
       nullableFloat32Slice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableFloat32Slice"
+        $ref: "#/definitions/NullableFloat32Slice"
       nullableFloat64:
-        $ref: "../definitions/nullable.yml#/definitions/NullableFloat64"
+        $ref: "#/definitions/NullableFloat64"
       nullableFloat64Slice:
-        $ref: "../definitions/nullable.yml#/definitions/NullableFloat64Slice"
+        $ref: "#/definitions/NullableFloat64Slice"
