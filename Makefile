@@ -2,14 +2,6 @@
 # --- Building
 ### -----------------------
 
-# go module name (as in go.mod)
-# only evaluated if required by a recipe
-# http://make.mad-scientist.net/deferred-simple-variable-expansion/
-GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
-	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
-	|| (go run -tags scripts scripts/modulename/modulename.go | tee tmp/.modulename) \
-))$(GO_MODULE_NAME)
-
 # first is default target when running "make" without args
 build: ##- Default make target: make build-pre, go-format, go-build and lint.
 	@$(MAKE) build-pre
@@ -47,7 +39,7 @@ go-format: ##- (opt) Runs go format.
 	go fmt ./...
 
 go-build: ##- (opt) Runs go build.
-	go build -o bin/app
+	go build -ldflags "-X '$(GO_MODULE_NAME)/internal/config.Commit=$(ARG_COMMIT)' -X '$(GO_MODULE_NAME)/internal/config.BuildDate=$$(date -Is)'" -o bin/app
 
 go-lint: ##- (opt) Runs golangci-lint.
 	golangci-lint run --fast --timeout 5m
@@ -336,6 +328,25 @@ help: ##- Show this help.
 	@echo "note: targets flagged with '(opt)' are *internal* and executed as part of another target."
 	@echo ""
 	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | sort | column -t -s '@'
+
+### -----------------------
+# --- Make variables
+### -----------------------
+
+# only evaluated if required by a recipe
+# http://make.mad-scientist.net/deferred-simple-variable-expansion/
+
+# go module name (as in go.mod)
+GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
+	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
+	|| (go run -tags scripts scripts/modulename/modulename.go | tee tmp/.modulename) \
+))$(GO_MODULE_NAME)
+
+# https://medium.com/the-go-journey/adding-version-information-to-go-binaries-e1b79878f6f2
+ARG_COMMIT = $(eval ARG_COMMIT := $$(shell \
+	(git rev-list -1 HEAD 2> /dev/null) \
+	|| (echo "unknown") \
+))$(ARG_COMMIT)
 
 ### -----------------------
 # --- Special targets

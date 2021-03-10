@@ -46,6 +46,21 @@ paths:
           description: Ready.
         "521":
           description: Not ready.
+  /-/version:
+    get:
+      security:
+      - Management: []
+      description: This endpoint returns the commit and build-date as baked into the
+        app binary.
+      produces:
+      - text/plain
+      tags:
+      - common
+      summary: Get version
+      operationId: GetVersionRoute
+      responses:
+        "200":
+          description: '@ <Commit> (<BuildDate>)'
   /api/v1/auth/change-password:
     post:
       security:

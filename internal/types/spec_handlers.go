@@ -41,6 +41,7 @@ func (o *SwaggerSpec) initHandlerCache() {
 	o.Handlers["GET"]["/-/ready"] = true
 	o.Handlers["GET"]["/swagger.yml"] = true
 	o.Handlers["GET"]["/api/v1/auth/userinfo"] = true
+	o.Handlers["GET"]["/-/version"] = true
 	o.Handlers["POST"]["/api/v1/auth/change-password"] = true
 	o.Handlers["POST"]["/api/v1/auth/forgot-password/complete"] = true
 	o.Handlers["POST"]["/api/v1/auth/forgot-password"] = true

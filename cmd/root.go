@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 
+	"allaboutapps.dev/aw/go-starter/internal/config"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "app",
-	Short: "allaboutapps.dev/aw/go-starter",
+	Version: config.GetBuildArgVersion(),
+	Use:     "app",
+	Short:   "allaboutapps.dev/aw/go-starter",
 	Long: `A stateless RESTful JSON service written in Go.
 Built on the shoulders of giants.
 
