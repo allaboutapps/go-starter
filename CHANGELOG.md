@@ -21,6 +21,7 @@ allaboutapps.dev/aw/go-starter @ 19c4cdd0da151df432cd5ab33c35c8987b594cac (2021-
 - Updates `google.golang.org/api@v0.41.0`, `github.com/gabriel-vasile/mimetype@v1.2.0` ([new supported formats](https://github.com/gabriel-vasile/mimetype/tree/v1.2.0)), `golang.org/x/sys`
 - Removed `**/.git` from `.dockerignore` (`builder` stage) as we want the local git repo available while running `make go-build`.
 - `app --help` now prominently includes the module name of the project. 
+- Prominently recommend `make force-module-name` after running `make git-merge-go-starter` to fix all import paths.
 ## 2021-03-09
 ### Added
 - Introduces `CHANGELOG.md`
