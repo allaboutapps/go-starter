@@ -6,6 +6,14 @@
 - There are **no git tags**. 
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
+
+## Unreleased
+### Added
+- `make build` (`make go-build`) now sets `internal/config.commit` and `internal/config.buildDate` via `-ldflags`.
+  - `app -v` is now available and prints out buildDate and commit
+  - `/-/version` (mgmt key auth) endpoint is now available, prints the same as `app -v`
+### Changed
+- Removed `**/.git` from `.dockerignore` as we want git information available while running `make build`.
 ## 2021-03-09
 ### Added
 - Introduces `CHANGELOG.md`
