@@ -290,7 +290,8 @@ git-merge-go-starter: ##- Merges upstream go-starter master into current HEAD.
 		&& echo "Attempting to execute 'git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master' into your current HEAD." \
 		&& echo -n "Are you sure? [y/N]" \
 		&& read ans && [ $${ans:-N} = y ]) || exit 1
-	git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master
+	git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master || true
+	@echo "Done. We recommend to run 'make force-module-name' to automatically fix all import paths."
 
 ### -----------------------
 # --- Helpers
@@ -352,7 +353,7 @@ ARG_COMMIT = $(eval ARG_COMMIT := $$(shell \
 ))$(ARG_COMMIT)
 
 ARG_BUILD_DATE = $(eval ARG_BUILD_DATE := $$(shell \
-	(date -Is) \
+	(date -Is 2> /dev/null || date 2> /dev/null || echo "unknown") \
 ))$(ARG_BUILD_DATE)
 
 # https://www.digitalocean.com/community/tutorials/using-ldflags-to-set-version-information-for-go-applications
