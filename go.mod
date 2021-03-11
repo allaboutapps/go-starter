@@ -7,7 +7,7 @@ require (
 	github.com/allaboutapps/nullable v1.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/friendsofgo/errors v0.9.2
-	github.com/gabriel-vasile/mimetype v1.1.2
+	github.com/gabriel-vasile/mimetype v1.2.0
 	github.com/go-openapi/errors v0.20.0
 	github.com/go-openapi/runtime v0.19.26
 	github.com/go-openapi/strfmt v0.20.0
@@ -30,6 +30,6 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.4.0
 	github.com/volatiletech/strmangle v0.0.1
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/sys v0.0.0-20210308170721-88b6017d0656
+	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2
 	google.golang.org/api v0.41.0
 )
