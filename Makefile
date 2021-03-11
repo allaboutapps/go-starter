@@ -2,14 +2,6 @@
 # --- Building
 ### -----------------------
 
-# go module name (as in go.mod)
-# only evaluated if required by a recipe
-# http://make.mad-scientist.net/deferred-simple-variable-expansion/
-GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
-	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
-	|| (go run -tags scripts scripts/modulename/modulename.go | tee tmp/.modulename) \
-))$(GO_MODULE_NAME)
-
 # first is default target when running "make" without args
 build: ##- Default make target: make build-pre, go-format, go-build and lint.
 	@$(MAKE) build-pre
@@ -47,7 +39,7 @@ go-format: ##- (opt) Runs go format.
 	go fmt ./...
 
 go-build: ##- (opt) Runs go build.
-	go build -o bin/app
+	go build -ldflags $(LDFLAGS) -o bin/app
 
 go-lint: ##- (opt) Runs golangci-lint.
 	golangci-lint run --fast --timeout 5m
@@ -330,12 +322,45 @@ set-module-name: ##- Wizard to set a new go module-name.
 force-module-name: ##- Overwrite occurrences of 'allaboutapps.dev/aw/go-starter' with current go module-name.
 	find . -not -path '*/\.*' -not -path './Makefile' -type f -exec sed -i "s|allaboutapps.dev/aw/go-starter|${GO_MODULE_NAME}|g" {} \;
 
+get-go-ldflags: ##- (opt) Prints used -ldflags as evaluated in Makefile used in make go-build
+	@echo $(LDFLAGS)
+
 # https://gist.github.com/prwhite/8168133 - based on comment from @m000
 help: ##- Show this help.
 	@echo "usage: make <target>"
 	@echo "note: targets flagged with '(opt)' are *internal* and executed as part of another target."
 	@echo ""
 	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | sort | column -t -s '@'
+
+### -----------------------
+# --- Make variables
+### -----------------------
+
+# only evaluated if required by a recipe
+# http://make.mad-scientist.net/deferred-simple-variable-expansion/
+
+# go module name (as in go.mod)
+GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
+	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
+	|| (go run -tags scripts scripts/modulename/modulename.go | tee tmp/.modulename) \
+))$(GO_MODULE_NAME)
+
+# https://medium.com/the-go-journey/adding-version-information-to-go-binaries-e1b79878f6f2
+ARG_COMMIT = $(eval ARG_COMMIT := $$(shell \
+	(git rev-list -1 HEAD 2> /dev/null) \
+	|| (echo "unknown") \
+))$(ARG_COMMIT)
+
+ARG_BUILD_DATE = $(eval ARG_BUILD_DATE := $$(shell \
+	(date -Is) \
+))$(ARG_BUILD_DATE)
+
+# https://www.digitalocean.com/community/tutorials/using-ldflags-to-set-version-information-for-go-applications
+LDFLAGS = $(eval LDFLAGS := "\
+-X '$(GO_MODULE_NAME)/internal/config.ModuleName=$(GO_MODULE_NAME)'\
+-X '$(GO_MODULE_NAME)/internal/config.Commit=$(ARG_COMMIT)'\
+-X '$(GO_MODULE_NAME)/internal/config.BuildDate=$(ARG_BUILD_DATE)'\
+")$(LDFLAGS)
 
 ### -----------------------
 # --- Special targets

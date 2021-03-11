@@ -45,7 +45,8 @@ jobs:
       - name: make test
         run: docker exec builder make test
       - name: git diff --exit-code
-        run: docker cp builder:/app ./post-build && git -C post-build diff --exit-code
+        # Note builder stage now includes .git, thus we rm it again to again diff with the original git workspace
+        run: docker cp builder:/app ./post-build && rm -rf ./post-build/.git && git -C post-build diff --exit-code
       - name: Stop container
         if: ${{ always() }}
         run: docker stop builder

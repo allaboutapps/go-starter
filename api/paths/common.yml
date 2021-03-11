@@ -54,3 +54,18 @@ paths:
           description: Ready.
         "521":
           description: Not ready.
+  /-/version:
+    get:
+      security:
+        - Management: []
+      summary: Get version
+      operationId: GetVersionRoute
+      produces:
+        - text/plain
+      description: |-
+        This endpoint returns the module name, commit and build-date baked into the app binary.
+      tags:
+        - common
+      responses:
+        "200":
+          description: "<ModuleName> @ <Commit> (<BuildDate>)"
