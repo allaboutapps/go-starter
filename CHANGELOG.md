@@ -17,6 +17,8 @@ app -v
 allaboutapps.dev/aw/go-starter @ 19c4cdd0da151df432cd5ab33c35c8987b594cac (2021-03-11T15:42:27+00:00)
 ```
 ### Changed
+- Upgrades to `golang@v1.16.1` (use `./docker-helper.sh --rebuild`).
+- Updates `google.golang.org/api@v0.41.0`, `github.com/gabriel-vasile/mimetype@v1.2.0` ([new supported formats](https://github.com/gabriel-vasile/mimetype/tree/v1.2.0)), `golang.org/x/sys`
 - Removed `**/.git` from `.dockerignore` (`builder` stage) as we want the local git repo available while running `make go-build`.
 - `app --help` now prominently includes the module name of the project. 
 ## 2021-03-09
