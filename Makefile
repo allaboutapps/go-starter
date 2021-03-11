@@ -39,7 +39,7 @@ go-format: ##- (opt) Runs go format.
 	go fmt ./...
 
 go-build: ##- (opt) Runs go build.
-	go build -ldflags "-X '$(GO_MODULE_NAME)/internal/config.Commit=$(ARG_COMMIT)' -X '$(GO_MODULE_NAME)/internal/config.BuildDate=$$(date -Is)'" -o bin/app
+	go build -ldflags $(LDFLAGS) -o bin/app
 
 go-lint: ##- (opt) Runs golangci-lint.
 	golangci-lint run --fast --timeout 5m
@@ -322,6 +322,9 @@ set-module-name: ##- Wizard to set a new go module-name.
 force-module-name: ##- Overwrite occurrences of 'allaboutapps.dev/aw/go-starter' with current go module-name.
 	find . -not -path '*/\.*' -not -path './Makefile' -type f -exec sed -i "s|allaboutapps.dev/aw/go-starter|${GO_MODULE_NAME}|g" {} \;
 
+get-go-ldflags: ##- (opt) Prints used -ldflags as evaluated in Makefile used in make go-build
+	@echo $(LDFLAGS)
+
 # https://gist.github.com/prwhite/8168133 - based on comment from @m000
 help: ##- Show this help.
 	@echo "usage: make <target>"
@@ -347,6 +350,17 @@ ARG_COMMIT = $(eval ARG_COMMIT := $$(shell \
 	(git rev-list -1 HEAD 2> /dev/null) \
 	|| (echo "unknown") \
 ))$(ARG_COMMIT)
+
+ARG_BUILD_DATE = $(eval ARG_BUILD_DATE := $$(shell \
+	(date -Is) \
+))$(ARG_BUILD_DATE)
+
+# https://www.digitalocean.com/community/tutorials/using-ldflags-to-set-version-information-for-go-applications
+LDFLAGS = $(eval LDFLAGS := "\
+-X '$(GO_MODULE_NAME)/internal/config.ModuleName=$(GO_MODULE_NAME)'\
+-X '$(GO_MODULE_NAME)/internal/config.Commit=$(ARG_COMMIT)'\
+-X '$(GO_MODULE_NAME)/internal/config.BuildDate=$(ARG_BUILD_DATE)'\
+")$(LDFLAGS)
 
 ### -----------------------
 # --- Special targets

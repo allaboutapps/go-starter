@@ -63,9 +63,9 @@ paths:
       produces:
         - text/plain
       description: |-
-        This endpoint returns the commit and build-date as baked into the app binary.
+        This endpoint returns the module name, commit and build-date baked into the app binary.
       tags:
         - common
       responses:
         "200":
-          description: "@ <Commit> (<BuildDate>)"
+          description: "<ModuleName> @ <Commit> (<BuildDate>)"

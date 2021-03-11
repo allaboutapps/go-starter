@@ -10,17 +10,13 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Version: config.GetBuildArgVersion(),
+	Version: config.GetFormattedBuildArgs(),
 	Use:     "app",
-	Short:   "allaboutapps.dev/aw/go-starter",
-	Long: `A stateless RESTful JSON service written in Go.
-Built on the shoulders of giants.
+	Short:   config.ModuleName,
+	Long: fmt.Sprintf(`%v
 
-Requires configuration through ENV and
-a fully migrated PostgreSQL database.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+A stateless RESTful JSON service written in Go.
+Requires configuration through ENV.`, config.ModuleName),
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -33,13 +29,5 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// rootCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.SetVersionTemplate(`{{printf "%s\n" .Version}}`)
 }

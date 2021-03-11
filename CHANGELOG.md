@@ -7,13 +7,18 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
-## Unreleased
+## 2021-03-11
 ### Added
-- `make build` (`make go-build`) now sets `internal/config.commit` and `internal/config.buildDate` via `-ldflags`.
-  - `app -v` is now available and prints out buildDate and commit
-  - `/-/version` (mgmt key auth) endpoint is now available, prints the same as `app -v`
+- `make build` (`make go-build`) now sets `internal/config.ModuleName`, `internal/config.Commit` and `internal/config.BuildDate` via `-ldflags`.
+  - `/-/version` (mgmt key auth) endpoint is now available, prints the same as `app -v`.
+  - `app -v` is now available and prints out buildDate and commit. Sample:
+```bash
+app -v
+allaboutapps.dev/aw/go-starter @ 19c4cdd0da151df432cd5ab33c35c8987b594cac (2021-03-11T15:42:27+00:00)
+```
 ### Changed
-- Removed `**/.git` from `.dockerignore` as we want git information available while running `make build`.
+- Removed `**/.git` from `.dockerignore` (`builder` stage) as we want the local git repo available while running `make go-build`.
+- `app --help` now prominently includes the module name of the project. 
 ## 2021-03-09
 ### Added
 - Introduces `CHANGELOG.md`
