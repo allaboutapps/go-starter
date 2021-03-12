@@ -60,7 +60,7 @@ paths:
       operationId: GetVersionRoute
       responses:
         "200":
-          description: <ModuleName> @ <Commit> (<BuildDate>)
+          description: ModuleName @ Commit (BuildDate)
   /api/v1/auth/change-password:
     post:
       security:

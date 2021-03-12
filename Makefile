@@ -343,7 +343,7 @@ help: ##- Show this help.
 # go module name (as in go.mod)
 GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
 	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
-	|| (go run -tags scripts scripts/modulename/modulename.go | tee tmp/.modulename) \
+	|| (go run -tags scripts scripts/modulename/modulename.go 2> /dev/null | tee tmp/.modulename) || echo "unknown" \
 ))$(GO_MODULE_NAME)
 
 # https://medium.com/the-go-journey/adding-version-information-to-go-binaries-e1b79878f6f2

@@ -7,6 +7,11 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-03-12
+### Changed
+- Upgrades to `golang@v1.16.2` (use `./docker-helper.sh --rebuild`).
+- Silence revolve of `GO_MODULE_NAME` if `go` was not found in path (typically host env related).
+
 ## 2021-03-11
 ### Added
 - `make build` (`make go-build`) now sets `internal/config.ModuleName`, `internal/config.Commit` and `internal/config.BuildDate` via `-ldflags`.
