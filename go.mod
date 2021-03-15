@@ -19,7 +19,7 @@ require (
 	github.com/lib/pq v1.10.0
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/rogpeppe/go-internal v1.7.0
+	github.com/rogpeppe/go-internal v1.8.0
 	github.com/rs/zerolog v1.20.0
 	github.com/rubenv/sql-migrate v0.0.0-20210215143335-f84234893558
 	github.com/spf13/cobra v1.1.3
