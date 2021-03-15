@@ -10,10 +10,15 @@
 ## 2021-03-15
 ### Changed
 - Upgrades `go.mod`:
-  - `github.com/volatiletech/sqlboiler/v4@v4.5.0`
-  - `github.com/rogpeppe/go-internal@v1.8.0`
+  - [`github.com/volatiletech/sqlboiler/v4@v4.5.0`](https://github.com/volatiletech/sqlboiler/blob/master/CHANGELOG.md#v450---2021-03-14)
+  - [`github.com/rogpeppe/go-internal@v1.8.0`](https://github.com/rogpeppe/go-internal/releases/tag/v1.8.0)
   - `golang.org/x/crypto@v0.0.0-20210314154223-e6e6c4f2bb5b`
-  - `golang.org/x/sys@v0.0.0-20210314195730-07df6a141424`
+  - ~`golang.org/x/sys@v0.0.0-20210314195730-07df6a141424`~
+  - `golang.org/x/sys@v0.0.0-20210315160823-c6e025ad8005`
+  - [`google.golang.org/api@v0.42.0`](https://github.com/googleapis/google-api-go-client/releases/tag/v0.42.0)
+- `make help` no longer reports `(opt)` flagged targets, use `make help-all` instead.
+- `make tools` now executes `go install {}` in parallel
+- `make info` now fetches information in parallel
 - Seeding: Switch to `db|dbUtil.WithTransaction` instead of manually managing the db transaction. *Note*: We will enforce using `WithTransaction` instead of manually managing the life-cycle of db transactions through a custom linter in an upcoming change. It's way safer and manually managing db transactions only makes sense in very very special cases (where you will be able to opt-out via linter excludes). Also see [What's `WithTransaction`, shouldn't I use `db.BeginTx`, `db.Commit`, and `db.Rollback`?](https://github.com/allaboutapps/go-starter/wiki/FAQ#whats-withtransaction-shouldnt-i-use-dbbegintx-dbcommit-and-dbrollback).
 
 ### Fixed
