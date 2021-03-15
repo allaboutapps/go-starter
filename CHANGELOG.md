@@ -16,6 +16,13 @@
   - `golang.org/x/sys@v0.0.0-20210314195730-07df6a141424`
 - Seeding: Switch to `db|dbUtil.WithTransaction` instead of manually managing the db transaction. *Note*: We will enforce using `WithTransaction` instead of manually managing the life-cycle of db transactions through a custom linter in an upcoming change. It's way safer and manually managing db transactions only makes sense in very very special cases (where you will be able to opt-out via linter excludes). Also see [What's `WithTransaction`, shouldn't I use `db.BeginTx`, `db.Commit`, and `db.Rollback`?](https://github.com/allaboutapps/go-starter/wiki/FAQ#whats-withtransaction-shouldnt-i-use-dbbegintx-dbcommit-and-dbrollback).
 
+### Fixed
+- The correct implementation of `(util|scripts).GetProjectRootDir() string` now gets automatically selected based on the `scripts` build tag.
+  - We currently have 2 different `GetProjectRootDir()` implementations and each one is useful on its own:
+    - `util.GetProjectRootDir()` gets used while `app` or `go test` runs and resolves in the following way: use `PROJECT_ROOT_DIR` (if set), else default to the resolved path to the executable unless we can't resolve that, then **panic**!
+    - `scripts.GetProjectRootDir()` gets used while **generation time** (`make go-generate`) and resolves in the following way: use `PROJECT_ROOT_DIR` (if set), otherwise default to `/app` (baked, as we can assume we are in the `development` container).
+  - `/internal/util/(get_project_root_dir.go|get_project_root_dir_scripts.go)` is now introduced to automatically switch to the proper implementation based on the `// +build !scripts` or `// +build scripts` build tag, thus it's now consistent to import `util.GetProjectRootDir()`, especially while handler generation time (`make go-generate`).
+
 ## 2021-03-12
 ### Changed
 - Upgrades to `golang@v1.16.2` (use `./docker-helper.sh --rebuild`).
