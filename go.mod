@@ -31,5 +31,5 @@ require (
 	github.com/volatiletech/strmangle v0.0.1
 	golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b
 	golang.org/x/sys v0.0.0-20210315160823-c6e025ad8005
-	google.golang.org/api v0.41.0
+	google.golang.org/api v0.42.0
 )
