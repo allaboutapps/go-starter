@@ -3,7 +3,6 @@ package util
 import (
 	"net/url"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -146,17 +145,4 @@ func GetMgmtSecret(envKey string) string {
 	})
 
 	return mgmtSecret
-}
-
-func GetProjectRootDir() string {
-	dirOnce.Do(func() {
-		ex, err := os.Executable()
-		if err != nil {
-			log.Panic().Err(err).Msg("Failed to get executable path while retrieving project root directory")
-		}
-
-		projectRootDir = GetEnv("PROJECT_ROOT_DIR", filepath.Dir(ex))
-	})
-
-	return projectRootDir
 }
