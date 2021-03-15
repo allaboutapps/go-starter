@@ -19,7 +19,7 @@ require (
 	github.com/lib/pq v1.10.0
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/rogpeppe/go-internal v1.7.0
+	github.com/rogpeppe/go-internal v1.8.0
 	github.com/rs/zerolog v1.20.0
 	github.com/rubenv/sql-migrate v0.0.0-20210215143335-f84234893558
 	github.com/spf13/cobra v1.1.3
@@ -27,9 +27,9 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/sqlboiler/v4 v4.4.0
+	github.com/volatiletech/sqlboiler/v4 v4.5.0
 	github.com/volatiletech/strmangle v0.0.1
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2
+	golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b
+	golang.org/x/sys v0.0.0-20210314195730-07df6a141424
 	google.golang.org/api v0.41.0
 )
