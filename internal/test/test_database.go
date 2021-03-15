@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
+	dbutil "allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/allaboutapps/integresql-client-go"
 	"github.com/allaboutapps/integresql-client-go/pkg/util"
 	migrate "github.com/rubenv/sql-migrate"
@@ -155,28 +156,19 @@ func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
 
 	t.Helper()
 
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
+	// insert test fixtures in an auto-managed db transaction
+	return dbutil.WithTransaction(ctx, db, func(tx boil.ContextExecutor) error {
+		inserts := Inserts()
 
-	inserts := Inserts()
-
-	for _, fixture := range inserts {
-		if err := fixture.Insert(ctx, db, boil.Infer()); err != nil {
-			if err := tx.Rollback(); err != nil {
+		for _, fixture := range inserts {
+			if err := fixture.Insert(ctx, tx, boil.Infer()); err != nil {
+				t.Errorf("Failed to upsert test fixture: %v\n", err)
 				return err
 			}
-
-			return err
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
-		return err
-	}
+		t.Logf("Inserted %d fixtures for hash %q", len(inserts), hash)
 
-	t.Logf("Inserted %d fixtures for hash %q", len(inserts), hash)
-
-	return nil
+		return nil
+	})
 }
