@@ -13,7 +13,8 @@
   - `github.com/volatiletech/sqlboiler/v4@v4.5.0`
   - `github.com/rogpeppe/go-internal@v1.8.0`
   - `golang.org/x/crypto@v0.0.0-20210314154223-e6e6c4f2bb5b`
-  - `golang.org/x/sys@v0.0.0-20210314195730-07df6a141424`
+  - ~`golang.org/x/sys@v0.0.0-20210314195730-07df6a141424`~
+  - `golang.org/x/sys@v0.0.0-20210315160823-c6e025ad8005`
 - Seeding: Switch to `db|dbUtil.WithTransaction` instead of manually managing the db transaction. *Note*: We will enforce using `WithTransaction` instead of manually managing the life-cycle of db transactions through a custom linter in an upcoming change. It's way safer and manually managing db transactions only makes sense in very very special cases (where you will be able to opt-out via linter excludes). Also see [What's `WithTransaction`, shouldn't I use `db.BeginTx`, `db.Commit`, and `db.Rollback`?](https://github.com/allaboutapps/go-starter/wiki/FAQ#whats-withtransaction-shouldnt-i-use-dbbegintx-dbcommit-and-dbrollback).
 
 ### Fixed
