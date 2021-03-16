@@ -7,7 +7,7 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
-## Unreleased
+## 2021-03-16
 
 ### Changed
 - `make all` no longer executes `make info` as part of its targets chain.

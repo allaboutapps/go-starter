@@ -10,7 +10,7 @@ build: ##- 'make' default target: sql, swagger, go-generate, go-format, go-build
 	@$(MAKE) lint
 
 # useful to ensure that everything gets resetuped from scratch
-all: clean init ##- Runs (pretty much) all targets: clean, init, build and test (except info).
+all: clean init ##- Runs all of our common make targets: clean, init, build and test.
 	@$(MAKE) build
 	@$(MAKE) test
 
