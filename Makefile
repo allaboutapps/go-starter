@@ -10,11 +10,8 @@ build: ##- 'make' default target: sql, swagger, go-generate, go-format, go-build
 	@$(MAKE) lint
 
 # useful to ensure that everything gets resetuped from scratch
-all: ##- Runs (pretty much) all targets: make clean, init, build, info and test.
-	@$(MAKE) clean
-	@$(MAKE) init
+all: clean init ##- Runs (pretty much) all targets: clean, init, build and test (except info).
 	@$(MAKE) build
-	@$(MAKE) info
 	@$(MAKE) test
 
 info: info-db info-handlers info-go ##- Prints info about spec db, handlers, and go.mod updates, module-name and current go version.
@@ -111,7 +108,6 @@ init: ##-  Runs make modules, tools and tidy.
 	@$(MAKE) modules
 	@$(MAKE) tools
 	@$(MAKE) tidy
-	@go version
 
 # cache go modules (locally into .pkg)
 modules: ##- (opt) Cache packages as specified in go.mod.
@@ -119,7 +115,7 @@ modules: ##- (opt) Cache packages as specified in go.mod.
 
 # https://marcofranssen.nl/manage-go-tools-via-go-modules/
 tools: ##- (opt) Install packages as specified in tools.go.
-	cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -P $$(nproc) -L 1 -tI % go install %
+	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -P $$(nproc) -L 1 -tI % go install %
 
 tidy: ##- (opt) Tidy our go.sum file.
 	go mod tidy
