@@ -7,6 +7,14 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-03-16
+
+### Changed
+- `make all` no longer executes `make info` as part of its targets chain.
+  - It's very common to use `make all` multiple times per day during development and thats fine! However, the output of `make info` is typically ignored by our engineers (if they explicitly want this information, they use `make info`). So `make all` was just too spammy in it's previous form.
+  - `make info` does network calls and typically takes around 5sec to execute. This slowdown is not acceptable when running `make all`, especially if the information it provides isn't used anyways.
+  - Thus: Just trigger `make info` manually if you need the information of the `[spec DB]` structure, current `[handlers]` and `[go.mod]` information. Furthermore you may also visit `tmp/.info-db`, `tmp/.info-handlers` and `tmp/.info-go` after triggering `make info` as we store this information there after a run. 
+
 ## 2021-03-15
 ### Changed
 - Upgrades `go.mod`:
