@@ -8,8 +8,6 @@ import (
 
 // via https://github.com/allaboutapps/integresql/blob/master/pkg/manager/database_config_test.go
 func TestDatabaseConnectionString(t *testing.T) {
-	t.Parallel() // marks table driven test execution function as capable of running in parallel with other tests
-
 	tests := []struct {
 		name   string
 		config config.Database
@@ -63,8 +61,6 @@ func TestDatabaseConnectionString(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt // NOTE: https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel() // marks each test case as capable of running in parallel with each other
-
 			if got := tt.config.ConnectionString(); got != tt.want {
 				t.Errorf("invalid connection string, got %q, want %q", got, tt.want)
 			}

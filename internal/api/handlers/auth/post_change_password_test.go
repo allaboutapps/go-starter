@@ -19,8 +19,6 @@ import (
 )
 
 func TestPostChangePasswordSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -65,8 +63,6 @@ func TestPostChangePasswordSuccess(t *testing.T) {
 }
 
 func TestPostChangePasswordInvalidPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -99,8 +95,6 @@ func TestPostChangePasswordInvalidPassword(t *testing.T) {
 }
 
 func TestPostChangePasswordDeactivatedUser(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -133,8 +127,6 @@ func TestPostChangePasswordDeactivatedUser(t *testing.T) {
 }
 
 func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -172,8 +164,6 @@ func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 }
 
 func TestPostChangePasswordMissingCurrentPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -209,8 +199,6 @@ func TestPostChangePasswordMissingCurrentPassword(t *testing.T) {
 }
 
 func TestPostChangePasswordMissingNewPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -245,8 +233,6 @@ func TestPostChangePasswordMissingNewPassword(t *testing.T) {
 }
 
 func TestPostChangePasswordEmptyCurrentPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -283,8 +269,6 @@ func TestPostChangePasswordEmptyCurrentPassword(t *testing.T) {
 }
 
 func TestPostChangePasswordEmptyNewPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()

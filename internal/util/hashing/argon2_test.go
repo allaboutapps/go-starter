@@ -10,8 +10,6 @@ import (
 )
 
 func TestHashPassword(t *testing.T) {
-	t.Parallel()
-
 	hashRegex, err := regexp.Compile(`^\$argon2id\$v=19\$m=65536,t=1,p=4\$[A-Za-z0-9+/]{22}\$[A-Za-z0-9+/]{43}$`)
 	require.NoError(t, err, "failed to compile hash regex")
 
@@ -38,8 +36,6 @@ func BenchmarkHashPassword(b *testing.B) {
 }
 
 func TestComparePasswordAndHash(t *testing.T) {
-	t.Parallel()
-
 	hash := "$argon2id$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk"
 
 	match, err := hashing.ComparePasswordAndHash("t3stp4ssw0rd", hash)
@@ -74,8 +70,6 @@ func BenchmarkCompareWrongPasswordAndHash(b *testing.B) {
 }
 
 func TestComparePasswordAndInvalidHash(t *testing.T) {
-	t.Parallel()
-
 	_, err := hashing.ComparePasswordAndHash("t3stp4ssw0rd", "$argon2i$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk")
 	require.Error(t, err)
 	assert.Equal(t, hashing.ErrInvalidArgon2Hash, err)

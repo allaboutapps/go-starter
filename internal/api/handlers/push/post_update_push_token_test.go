@@ -16,8 +16,6 @@ import (
 )
 
 func TestPostUpdatePushTokenSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -44,8 +42,6 @@ func TestPostUpdatePushTokenSuccess(t *testing.T) {
 }
 
 func TestPostUpdatePushTokenSuccessWithOldToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -86,8 +82,6 @@ func TestPostUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 }
 
 func TestPostUpdatePushTokenWithDuplicateToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -136,8 +130,6 @@ func TestPostUpdatePushTokenWithDuplicateToken(t *testing.T) {
 }
 
 func TestPostUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()

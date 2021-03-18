@@ -11,8 +11,6 @@ import (
 )
 
 func TestWithTestMailer(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 	fixtures := test.Fixtures()
 	passwordResetLink := "http://localhost/password/reset/12345"
@@ -53,8 +51,6 @@ func TestWithTestMailer(t *testing.T) {
 }
 
 func TestWithSMTPMailerFromDefaultEnv(t *testing.T) {
-	t.Parallel()
-
 	m := test.NewSMTPMailerFromDefaultEnv(t)
 	require.NotNil(t, m)
 	require.NotEmpty(t, m.Transport)

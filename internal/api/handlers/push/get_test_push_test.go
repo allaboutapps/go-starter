@@ -10,8 +10,6 @@ import (
 )
 
 func TestGetTestPush(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 
@@ -22,8 +20,6 @@ func TestGetTestPush(t *testing.T) {
 }
 
 func TestGetTestPushUnauthorized(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "GET", "/api/v1/push/test", nil, nil)
 

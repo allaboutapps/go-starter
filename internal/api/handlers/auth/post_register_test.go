@@ -20,8 +20,6 @@ import (
 )
 
 func TestPostRegisterSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 
@@ -80,8 +78,6 @@ func TestPostRegisterSuccess(t *testing.T) {
 }
 
 func TestPostRegisterAlreadyExists(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 
@@ -121,8 +117,6 @@ func TestPostRegisterAlreadyExists(t *testing.T) {
 }
 
 func TestPostRegisterMissingUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"password": test.PlainTestUserPassword,
@@ -149,8 +143,6 @@ func TestPostRegisterMissingUsername(t *testing.T) {
 }
 
 func TestPostRegisterMissingPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
@@ -178,8 +170,6 @@ func TestPostRegisterMissingPassword(t *testing.T) {
 }
 
 func TestPostRegisterInvalidUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"username": "definitely not an email",
@@ -207,8 +197,6 @@ func TestPostRegisterInvalidUsername(t *testing.T) {
 }
 
 func TestPostRegisterEmptyUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"username": "",
@@ -236,8 +224,6 @@ func TestPostRegisterEmptyUsername(t *testing.T) {
 }
 
 func TestPostRegisterEmptyPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"username": "usernew@example.com",

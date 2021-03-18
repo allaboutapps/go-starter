@@ -12,8 +12,6 @@ import (
 )
 
 func TestMailerSendPasswordReset(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 	fixtures := test.Fixtures()
 
@@ -37,8 +35,6 @@ func TestMailerSendPasswordReset(t *testing.T) {
 
 func SkipTestMailerSendPasswordResetWithMailhog(t *testing.T) {
 	t.Skip()
-	t.Parallel()
-
 	ctx := context.Background()
 	fixtures := test.Fixtures()
 
@@ -51,8 +47,6 @@ func SkipTestMailerSendPasswordResetWithMailhog(t *testing.T) {
 
 func SkipTestMailerSendPasswordResetWithMailhogAndServer(t *testing.T) {
 	t.Skip()
-	t.Parallel()
-
 	ctx := context.Background()
 	fixtures := test.Fixtures()
 

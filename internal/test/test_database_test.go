@@ -9,9 +9,6 @@ import (
 )
 
 func TestWithTestDatabase(t *testing.T) {
-
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(db1 *sql.DB) {
 		test.WithTestDatabase(t, func(db2 *sql.DB) {
 

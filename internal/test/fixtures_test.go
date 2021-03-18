@@ -13,9 +13,6 @@ import (
 )
 
 func TestFixturesReload(t *testing.T) {
-
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(db *sql.DB) {
 		err := test.Fixtures().User1.Reload(context.Background(), db)
 
@@ -29,9 +26,6 @@ func TestFixturesReload(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(db *sql.DB) {
 
 		userNew := models.User{
@@ -52,9 +46,6 @@ func TestInsert(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(db *sql.DB) {
 
 		originalUser1 := test.Fixtures().User1

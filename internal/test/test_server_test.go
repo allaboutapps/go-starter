@@ -68,9 +68,6 @@ func (m *TestResponsePayload) UnmarshalBinary(b []byte) error {
 }
 
 func TestWithTestServer(t *testing.T) {
-
-	t.Parallel()
-
 	test.WithTestServer(t, func(s1 *api.Server) {
 		test.WithTestServer(t, func(s2 *api.Server) {
 

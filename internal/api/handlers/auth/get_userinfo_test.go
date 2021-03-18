@@ -15,8 +15,6 @@ import (
 )
 
 func TestGetUserInfo(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -43,8 +41,6 @@ func TestGetUserInfo(t *testing.T) {
 }
 
 func TestGetUserInfoMinimal(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()

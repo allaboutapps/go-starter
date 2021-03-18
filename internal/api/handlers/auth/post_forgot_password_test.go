@@ -31,8 +31,6 @@ func getLastSentMail(t *testing.T, m *mailer.Mailer) *email.Email {
 }
 
 func TestPostForgotPasswordSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -54,8 +52,6 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 }
 
 func TestPostForgotPasswordUnknownUser(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		payload := test.GenericPayload{
@@ -76,8 +72,6 @@ func TestPostForgotPasswordUnknownUser(t *testing.T) {
 }
 
 func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -99,8 +93,6 @@ func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
 }
 
 func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -127,8 +119,6 @@ func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
 }
 
 func TestPostForgotPasswordMissingUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		payload := test.GenericPayload{}
@@ -161,8 +151,6 @@ func TestPostForgotPasswordMissingUsername(t *testing.T) {
 }
 
 func TestPostForgotPasswordEmptyUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		payload := test.GenericPayload{
@@ -197,8 +185,6 @@ func TestPostForgotPasswordEmptyUsername(t *testing.T) {
 }
 
 func TestPostForgotPasswordInvalidUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		payload := test.GenericPayload{

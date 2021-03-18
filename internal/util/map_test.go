@@ -8,8 +8,6 @@ import (
 )
 
 func TestMergeStringMap(t *testing.T) {
-	t.Parallel()
-
 	baseMap := map[string]string{
 		"A": "a",
 		"B": "b",

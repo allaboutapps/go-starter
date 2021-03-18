@@ -12,8 +12,6 @@ import (
 )
 
 func TestGetEnv(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_STRING"
 	res := util.GetEnv(testVarKey, "noVal")
 	assert.Equal(t, "noVal", res)
@@ -25,8 +23,6 @@ func TestGetEnv(t *testing.T) {
 }
 
 func TestGetEnvEnum(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_ENUM"
 
 	panicFunc := func() {
@@ -48,8 +44,6 @@ func TestGetEnvEnum(t *testing.T) {
 }
 
 func TestGetEnvAsInt(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_INT"
 	res := util.GetEnvAsInt(testVarKey, 1)
 	assert.Equal(t, 1, res)
@@ -65,8 +59,6 @@ func TestGetEnvAsInt(t *testing.T) {
 }
 
 func TestGetEnvAsUint32(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_UINT32"
 	res := util.GetEnvAsUint32(testVarKey, 1)
 	assert.Equal(t, uint32(1), res)
@@ -82,8 +74,6 @@ func TestGetEnvAsUint32(t *testing.T) {
 }
 
 func TestGetEnvAsUint8(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_UINT8"
 	res := util.GetEnvAsUint8(testVarKey, 1)
 	assert.Equal(t, uint8(1), res)
@@ -99,8 +89,6 @@ func TestGetEnvAsUint8(t *testing.T) {
 }
 
 func TestGetEnvAsBool(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_BOOL"
 	res := util.GetEnvAsBool(testVarKey, true)
 	assert.Equal(t, true, res)
@@ -124,8 +112,6 @@ func TestGetEnvAsBool(t *testing.T) {
 }
 
 func TestGetEnvAsURL(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_URL"
 	testURL, err := url.Parse("https://allaboutapps.at/")
 	require.NoError(t, err)
@@ -151,8 +137,6 @@ func TestGetEnvAsURL(t *testing.T) {
 }
 
 func TestGetEnvAsStringArr(t *testing.T) {
-	t.Parallel()
-
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_STRING_ARR"
 	testVal := []string{"a", "b", "c"}
 	res := util.GetEnvAsStringArr(testVarKey, testVal)

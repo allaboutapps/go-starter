@@ -9,8 +9,6 @@ import (
 )
 
 func TestLogLevelFromString(t *testing.T) {
-	t.Parallel()
-
 	res := util.LogLevelFromString("panic")
 	assert.Equal(t, zerolog.PanicLevel, res)
 
