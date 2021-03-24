@@ -7,6 +7,19 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-03-24
+
+### Changed
+- Switched to [github.com/uw-labs/lichen](https://github.com/uw-labs/lichen) for getting license information of embedded dependencies in our final `./bin/app` binary.
+- The following make targets are no longer flagged as `(opt)` and thus move into the main `make help` target (use `make help-all` to see all targets): 
+  - `make lint`: Runs golangci-lint and make check-*.
+  - `make go-test-print-slowest`: Print slowest running tests (must be done after running tests).
+  - `make get-licenses`: Prints licenses of embedded modules in the compiled bin/app.
+  - `make get-embedded-modules`: Prints embedded modules in the compiled bin/app.
+  - `make clean`: Cleans ./tmp and ./api/tmp folder.
+  - `make get-module-name`: Prints current go module-name (pipeable).
+- `make check-gen-dirs` now ignores `.DS_Store` within `/internal/models/**/*` and `/internal/types/**/*` and echo an errors detailing what happened.
+- Upgrade to [`github.com/go-openapi/runtime@v0.19.27`](https://github.com/go-openapi/runtime/compare/v0.19.26...v0.19.27)
 ## 2021-03-16
 
 ### Changed
