@@ -10,8 +10,6 @@ import (
 )
 
 func TestTouchfile(t *testing.T) {
-	t.Parallel()
-
 	err := os.Remove("/tmp/.touchfile-test")
 
 	if err != nil {

@@ -10,8 +10,6 @@ import (
 )
 
 func TestGetVersion(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "GET", "/-/version?mgmt-secret="+s.Config.Management.Secret, nil, nil)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)

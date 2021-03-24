@@ -23,8 +23,6 @@ import (
 )
 
 func TestBindAndValidateSuccess(t *testing.T) {
-	t.Parallel()
-
 	e := echo.New()
 	testToken := "a546daf5-c845-46a7-8fa6-3d94ae7e1424"
 	testResponse := &types.PostLoginResponse{
@@ -65,8 +63,6 @@ func TestBindAndValidateSuccess(t *testing.T) {
 }
 
 func TestBindAndValidateBadRequest(t *testing.T) {
-	t.Parallel()
-
 	e := echo.New()
 	testToken := "foo"
 
@@ -90,8 +86,6 @@ func TestBindAndValidateBadRequest(t *testing.T) {
 }
 
 func TestParseFileUplaod(t *testing.T) {
-	t.Parallel()
-
 	originalDocumentPath := filepath.Join(util.GetProjectRootDir(), "test", "testdata", "example.jpg")
 	body, contentType := prepareFileUpload(t, originalDocumentPath)
 
@@ -120,8 +114,6 @@ func TestParseFileUplaod(t *testing.T) {
 }
 
 func TestParseFileUplaodUnsupported(t *testing.T) {
-	t.Parallel()
-
 	originalDocumentPath := filepath.Join(util.GetProjectRootDir(), "test", "testdata", "example.jpg")
 	body, contentType := prepareFileUpload(t, originalDocumentPath)
 

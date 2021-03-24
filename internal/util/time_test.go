@@ -10,8 +10,6 @@ import (
 )
 
 func TestStartOfMonth(t *testing.T) {
-	t.Parallel()
-
 	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfMonth(d))
@@ -22,8 +20,6 @@ func TestStartOfMonth(t *testing.T) {
 }
 
 func TestTimeFromString(t *testing.T) {
-	t.Parallel()
-
 	expected := time.Date(2020, 3, 29, 12, 34, 54, 0, time.UTC)
 
 	d, err := util.TimeFromString("2020-03-29T12:34:54Z")
@@ -33,8 +29,6 @@ func TestTimeFromString(t *testing.T) {
 }
 
 func TestStartOfQuarter(t *testing.T) {
-	t.Parallel()
-
 	d := util.Date(2020, 3, 31, time.UTC)
 	expected := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfQuarter(d))
@@ -57,8 +51,6 @@ func TestStartOfQuarter(t *testing.T) {
 }
 
 func TestStartOfWeek(t *testing.T) {
-	t.Parallel()
-
 	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 9, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.StartOfWeek(d))
@@ -73,8 +65,6 @@ func TestStartOfWeek(t *testing.T) {
 }
 
 func TestDateFromString(t *testing.T) {
-	t.Parallel()
-
 	res, err := util.DateFromString("2020-01-03")
 	require.NoError(t, err)
 
@@ -86,8 +76,6 @@ func TestDateFromString(t *testing.T) {
 }
 
 func TestEndOfMonth(t *testing.T) {
-	t.Parallel()
-
 	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 31, 23, 59, 59, 999999999, time.UTC)
 	assert.True(t, expected.Equal(util.EndOfMonth(d)))
@@ -103,8 +91,6 @@ func TestEndOfMonth(t *testing.T) {
 }
 
 func TestEndOfDay(t *testing.T) {
-	t.Parallel()
-
 	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 12, 23, 59, 59, 999999999, time.UTC)
 	assert.True(t, expected.Equal(util.EndOfDay(d)))
@@ -119,8 +105,6 @@ func TestEndOfDay(t *testing.T) {
 }
 
 func TestDateAdds(t *testing.T) {
-	t.Parallel()
-
 	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2022, 4, 12, 0, 0, 0, 0, time.UTC)
 	res := util.AddMonths(d, 25)
@@ -138,8 +122,6 @@ func TestDateAdds(t *testing.T) {
 }
 
 func TestDayBefore(t *testing.T) {
-	t.Parallel()
-
 	d := util.Date(2020, 3, 1, time.UTC)
 	expected := time.Date(2020, 2, 29, 23, 59, 59, 999999999, time.UTC)
 	res := util.DayBefore(d)

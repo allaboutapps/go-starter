@@ -8,8 +8,6 @@ import (
 )
 
 func TestGetMapFromStruct(t *testing.T) {
-	t.Parallel()
-
 	type tmp struct {
 		A string
 		B int
@@ -46,8 +44,6 @@ func TestGetMapFromStruct(t *testing.T) {
 }
 
 func TestGetMapFromStructByTag(t *testing.T) {
-	t.Parallel()
-
 	type tmp struct {
 		A string      `x:"1,omitempty" y:"2"`
 		B int         `x:"3"`

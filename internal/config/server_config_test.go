@@ -8,8 +8,6 @@ import (
 )
 
 func TestPrintServiceEnv(t *testing.T) {
-	t.Parallel()
-
 	config := config.DefaultServiceConfigFromEnv()
 	_, err := json.MarshalIndent(config, "", "  ")
 

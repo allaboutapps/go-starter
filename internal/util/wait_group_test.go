@@ -11,8 +11,6 @@ import (
 )
 
 func TestWaitTimeoutErr(t *testing.T) {
-	t.Parallel()
-
 	var wg sync.WaitGroup
 	var n int32
 

@@ -16,8 +16,6 @@ import (
 )
 
 func TestCompareFileHashes(t *testing.T) {
-	t.Parallel()
-
 	tmpDir := t.TempDir()
 	newFilePath := tmpDir + "example2.jpg"
 	filePath := filepath.Join(util.GetProjectRootDir(), "test", "testdata", "example.jpg")
@@ -38,8 +36,6 @@ func TestCompareFileHashes(t *testing.T) {
 }
 
 func TestCompareAllPayload(t *testing.T) {
-	t.Parallel()
-
 	payload := test.GenericPayload{
 		"A":   1,
 		"B":   "b",
@@ -78,8 +74,6 @@ func TestCompareAllPayload(t *testing.T) {
 }
 
 func TestCompareAll(t *testing.T) {
-	t.Parallel()
-
 	payload := map[string]string{
 		"A":   "1",
 		"B":   "b",

@@ -14,8 +14,6 @@ import (
 )
 
 func TestPostLogoutSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -33,8 +31,6 @@ func TestPostLogoutSuccess(t *testing.T) {
 }
 
 func TestPostLogoutSuccessWithRefreshToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -55,8 +51,6 @@ func TestPostLogoutSuccessWithRefreshToken(t *testing.T) {
 }
 
 func TestPostLogoutSuccessWithUnknownRefreshToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -77,8 +71,6 @@ func TestPostLogoutSuccessWithUnknownRefreshToken(t *testing.T) {
 }
 
 func TestPostLogoutInvalidRefreshToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -109,8 +101,6 @@ func TestPostLogoutInvalidRefreshToken(t *testing.T) {
 }
 
 func TestPostLogoutInvalidAuthToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, test.HeadersWithAuth(t, "not my auth token"))
 
@@ -129,8 +119,6 @@ func TestPostLogoutInvalidAuthToken(t *testing.T) {
 }
 
 func TestPostLogoutUnknownAuthToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, test.HeadersWithAuth(t, "25e8630e-9a41-4f38-8339-373f0c203cef"))
 
@@ -149,8 +137,6 @@ func TestPostLogoutUnknownAuthToken(t *testing.T) {
 }
 
 func TestPostLogoutMissingAuthToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, nil)
 

@@ -15,8 +15,6 @@ import (
 )
 
 func TestSendMessageSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -33,8 +31,6 @@ func TestSendMessageSuccess(t *testing.T) {
 }
 
 func TestSendMessageSuccessWithGenericError(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -52,8 +48,6 @@ func TestSendMessageSuccessWithGenericError(t *testing.T) {
 }
 
 func TestSendMessageWithInvalidToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -82,8 +76,6 @@ func TestSendMessageWithInvalidToken(t *testing.T) {
 }
 
 func TestSendMessageWithNoProvider(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 
 		ctx := context.Background()
@@ -104,8 +96,6 @@ func TestSendMessageWithNoProvider(t *testing.T) {
 }
 
 func TestSendMessageWithMultipleProvider(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()

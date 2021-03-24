@@ -10,8 +10,6 @@ import (
 )
 
 func TestPprofEnabled(t *testing.T) {
-	t.Parallel()
-
 	config := config.DefaultServiceConfigFromEnv()
 
 	// these are typically our default values, however we force set them here to ensure those are set while test execution.
@@ -33,8 +31,6 @@ func TestPprofEnabled(t *testing.T) {
 }
 
 func TestPprofEnabledNoAuth(t *testing.T) {
-	t.Parallel()
-
 	config := config.DefaultServiceConfigFromEnv()
 
 	// these are typically our default values, however we force set them here to ensure those are set while test execution.
@@ -48,8 +44,6 @@ func TestPprofEnabledNoAuth(t *testing.T) {
 }
 
 func TestPprofDisabled(t *testing.T) {
-	t.Parallel()
-
 	config := config.DefaultServiceConfigFromEnv()
 	config.Pprof.Enable = false
 
@@ -60,8 +54,6 @@ func TestPprofDisabled(t *testing.T) {
 }
 
 func TestMiddlewaresDisabled(t *testing.T) {
-	t.Parallel()
-
 	// disable all
 	config := config.DefaultServiceConfigFromEnv()
 	config.Echo.EnableCORSMiddleware = false
