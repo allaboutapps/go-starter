@@ -3,7 +3,7 @@
 ### -----------------------
 
 # first is default target when running "make" without args
-build: ##- 'make' default target: sql, swagger, go-generate, go-format, go-build and lint.
+build: ##- Default 'make' target: sql, swagger, go-generate, go-format, go-build and lint.
 	@$(MAKE) build-pre
 	@$(MAKE) go-format
 	@$(MAKE) go-build
@@ -34,7 +34,7 @@ info-go: ##- (opt) Prints go.mod updates, module-name and current go version.
 	@go version >> tmp/.info-go
 	@cat tmp/.info-go
 
-lint: check-gen-dirs check-handlers check-embedded-modules-go-not go-lint  ##- (opt) Runs golangci-lint and make check-*.
+lint: check-gen-dirs check-handlers check-embedded-modules-go-not go-lint  ##- Runs golangci-lint and make check-*.
 
 # these recipies may execute in parallel
 build-pre: sql swagger ##- (opt) Runs pre-build related targets (sql, swagger, go-generate).
@@ -90,7 +90,7 @@ go-test-print-coverage: ##- (opt) Print overall test coverage (must be done afte
 	@printf "coverage "
 	@go tool cover -func=/tmp/coverage.out | tail -n 1 | awk '{$$1=$$1;print}'
 
-go-test-print-slowest: ##- (opt) Print slowest running tests (must be done after running tests).
+go-test-print-slowest: ##- Print slowest running tests (must be done after running tests).
 	gotestsum tool slowest --jsonfile /tmp/test.log --threshold 2s
 
 # TODO: switch to "-m direct" after go 1.17 hits: https://github.com/golang/go/issues/40364
@@ -104,7 +104,7 @@ watch-tests: ##- Watches *.go files and runs package tests on modifications.
 # --- Initializing
 ### -----------------------
 
-init: ##-  Runs make modules, tools and tidy.
+init: ##- Runs make modules, tools and tidy.
 	@$(MAKE) modules
 	@$(MAKE) tools
 	@$(MAKE) tidy
@@ -255,14 +255,10 @@ watch-swagger: ##- Watches *.yml|yaml|gotmpl files in /api and runs 'make swagge
 # --- Binary checks
 ### -----------------------
 
-get-licenses: ##- (opt) Prints licenses of embedded modules in the compiled bin/app.
-ifndef GITHUB_TOKEN
-	$(warning Please specify GITHUB_TOKEN otherwise you will run into rate-limits!)
-	$(warning https://github.com/mitchellh/golicense#github-authentication)
-endif
-	golicense bin/app || exit 0
+get-licenses: ##- Prints licenses of embedded modules in the compiled bin/app.
+	lichen bin/app
 
-get-embedded-modules: ##- (opt) Prints embedded modules in the compiled bin/app.
+get-embedded-modules: ##- Prints embedded modules in the compiled bin/app.
 	go version -m -v bin/app
 
 get-embedded-modules-count: ##- (opt) Prints count of embedded modules in the compiled bin/app.
@@ -302,12 +298,12 @@ git-merge-go-starter: ##- Merges upstream go-starter master into current HEAD.
 # --- Helpers
 ### -----------------------
 
-clean: ##- (opt) Cleans tmp and api/tmp folder.
+clean: ##- Cleans ./tmp and ./api/tmp folder.
 	@echo "make clean"
 	@rm -rf tmp 2> /dev/null
 	@rm -rf api/tmp 2> /dev/null
 
-get-module-name: ##- (opt) Prints current go module-name (pipeable).
+get-module-name: ##- Prints current go module-name (pipeable).
 	@echo "${GO_MODULE_NAME}"
 
 info-module-name: ##- (opt) Prints current go module-name.
