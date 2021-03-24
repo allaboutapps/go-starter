@@ -62,8 +62,8 @@ check-handlers: ##- (opt) Checks if implemented handlers match their spec (path)
 #    ^// Code generated .* DO NOT EDIT\.$
 check-gen-dirs: ##- (opt) Ensures internal/models|types only hold generated files.
 	@echo "make check-gen-dirs"
-	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' ./internal/types/ && exit 1 || exit 0
-	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' ./internal/models/ && exit 1 || exit 0
+	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/types/ && echo "Error: Non generated file(s) in ./internal/types!" && exit 1 || exit 0
+	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/models/ && echo "Error: Non generated file(s) in ./internal/models!" && && exit 1 || exit 0
 
 # https://github.com/gotestyourself/gotestsum#format 
 # w/o cache https://github.com/golang/go/issues/24573 - see "go help testflag"
