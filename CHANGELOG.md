@@ -18,6 +18,7 @@
   - `make get-embedded-modules`: Prints embedded modules in the compiled bin/app.
   - `make clean`: Cleans ./tmp and ./api/tmp folder.
   - `make get-module-name`: Prints current go module-name (pipeable).
+- `make check-gen-dirs` now ignores `.DS_Store` within `/internal/models/**/*` and `/internal/types/**/*` and echo an errors detailing what happened.
 ## 2021-03-16
 
 ### Changed
