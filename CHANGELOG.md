@@ -7,6 +7,11 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-03-25
+### Changed
+- Bump github.com/rs/zerolog from [1.20.0 to 1.21.0](https://github.com/allaboutapps/go-starter/pull/69)
+- Bump google.golang.org/api from [0.42.0 to 0.43.0](https://github.com/allaboutapps/go-starter/pull/68)
+
 ## 2021-03-24
 
 ### Changed
@@ -22,7 +27,6 @@
 - `make check-gen-dirs` now ignores `.DS_Store` within `/internal/models/**/*` and `/internal/types/**/*` and echo an errors detailing what happened.
 - Upgrade to [`github.com/go-openapi/runtime@v0.19.27`](https://github.com/go-openapi/runtime/compare/v0.19.26...v0.19.27)
 ## 2021-03-16
-
 ### Changed
 - `make all` no longer executes `make info` as part of its targets chain.
   - It's very common to use `make all` multiple times per day during development and thats fine! However, the output of `make info` is typically ignored by our engineers (if they explicitly want this information, they use `make info`). So `make all` was just too spammy in it's previous form.
