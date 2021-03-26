@@ -7,6 +7,10 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-03-26
+### Changed
+- Bump [golangci-lint@v1.39.0](https://github.com/golangci/golangci-lint/releases/tag/v1.39.0) (requires `./docker-helper.sh --rebuild`).
+
 ## 2021-03-25
 ### Changed
 - Bump github.com/rs/zerolog from [1.20.0 to 1.21.0](https://github.com/allaboutapps/go-starter/pull/69)
