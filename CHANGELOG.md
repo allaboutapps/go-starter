@@ -7,6 +7,10 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## Unreleased
+### Changed
+- Bump [github.com/go-swagger v0.26.1 to v0.27.0](https://github.com/go-swagger/go-swagger/releases/tag/v0.27.0)
+
 ## 2021-04-01
 ### Changed
 - Bump golang.org/x/crypto@v0.0.0-20210322153248-0c34fe9e7dc2
