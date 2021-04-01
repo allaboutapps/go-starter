@@ -7,6 +7,13 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-04-01
+### Changed
+- Bump golang.org/x/crypto@v0.0.0-20210322153248-0c34fe9e7dc2
+- Bump golang.org/x/sys@v0.0.0-20210331175145-43e1dd70ce54
+- Bump [github.com/go-openapi/swag@v0.19.15](https://github.com/allaboutapps/go-starter/pull/71)
+- Bump [github.com/go-openapi/strfmt@v0.20.1](https://github.com/allaboutapps/go-starter/pull/70)
+
 ## 2021-03-30
 ### Changed
 - Bump [github.com/gotestyourself/gotestsum@v1.6.3](https://github.com/gotestyourself/gotestsum/releases/tag/v1.6.3) (requires `./docker-helper.sh --rebuild`).
