@@ -255,6 +255,8 @@ watch-swagger: ##- Watches *.yml|yaml|gotmpl files in /api and runs 'make swagge
 # --- Binary checks
 ### -----------------------
 
+# Got license issues with some dependencies? Provide a custom lichen --config
+# see https://github.com/uw-labs/lichen#config 
 get-licenses: ##- Prints licenses of embedded modules in the compiled bin/app.
 	lichen bin/app
 
