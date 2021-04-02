@@ -7,6 +7,10 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-04-02
+### Changed
+- Bump [golang from v1.16.2 to v1.16.3](https://github.com/golang/go/issues?q=milestone%3AGo1.16.3+label%3ACherryPickApproved) (requires `./docker-helper.sh --rebuild`).
+
 ## 2021-04-01
 ### Changed
 - Bump golang.org/x/crypto@v0.0.0-20210322153248-0c34fe9e7dc2
