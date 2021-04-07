@@ -21,8 +21,6 @@ import (
 )
 
 func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -76,8 +74,6 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 }
 
 func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -122,8 +118,6 @@ func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 }
 
 func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -176,8 +170,6 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 }
 
 func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -230,8 +222,6 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 }
 
 func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -289,8 +279,6 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 }
 
 func TestPostForgotPasswordCompleteValidation(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name        string
 		payload     test.GenericPayload
@@ -345,8 +333,6 @@ func TestPostForgotPasswordCompleteValidation(t *testing.T) {
 		for _, tt := range tests {
 			tt := tt
 			t.Run(tt.name, func(t *testing.T) {
-				t.Parallel()
-
 				res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", tt.payload, nil)
 
 				assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)

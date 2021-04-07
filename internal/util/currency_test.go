@@ -8,8 +8,6 @@ import (
 )
 
 func TestCurrencyConversion(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name string
 		val  int
@@ -39,8 +37,6 @@ func TestCurrencyConversion(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			in := int64(tt.val)
 			res := util.Int64PtrWithCentsToFloat64Ptr(&in)
 			out := util.Float64PtrToInt64PtrWithCents(res)
@@ -55,8 +51,6 @@ func TestCurrencyConversion(t *testing.T) {
 }
 
 func TestCurrencyConversionNil(t *testing.T) {
-	t.Parallel()
-
 	res := util.Int64PtrWithCentsToFloat64Ptr(nil)
 	assert.Nil(t, res)
 

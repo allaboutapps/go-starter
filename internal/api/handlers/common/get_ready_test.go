@@ -10,8 +10,6 @@ import (
 )
 
 func TestGetReadyReadiness(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "GET", "/-/ready", nil, nil)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
@@ -20,8 +18,6 @@ func TestGetReadyReadiness(t *testing.T) {
 }
 
 func TestGetReadyReadinessBroken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 
 		// forcefully remove an initialized component to check if ready state works
@@ -34,8 +30,6 @@ func TestGetReadyReadinessBroken(t *testing.T) {
 }
 
 func TestGetReadyDBBrokenNotReady(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 
 		// forcefully remove pg

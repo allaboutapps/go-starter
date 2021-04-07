@@ -17,8 +17,6 @@ import (
 )
 
 func TestWithTransactionSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
 
@@ -62,8 +60,6 @@ func TestWithTransactionSuccess(t *testing.T) {
 }
 
 func TestWithTransactionWithError(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
 
@@ -112,8 +108,6 @@ func TestWithTransactionWithError(t *testing.T) {
 }
 
 func TestWithTransactionWithPanic(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
 
@@ -157,8 +151,6 @@ func TestWithTransactionWithPanic(t *testing.T) {
 }
 
 func TestDBTypeConversions(t *testing.T) {
-	t.Parallel()
-
 	i := int64(19)
 	res := db.NullIntFromInt64Ptr(&i)
 	assert.Equal(t, 19, res.Int)
@@ -177,8 +169,6 @@ func TestDBTypeConversions(t *testing.T) {
 }
 
 func TestSearchStringToTSQuery(t *testing.T) {
-	t.Parallel()
-
 	expected := "abcde:* & 12345:* & xyz:*"
 	in := "    abcde 12345 xyz   "
 	out := db.SearchStringToTSQuery(in)
@@ -191,8 +181,6 @@ func TestSearchStringToTSQuery(t *testing.T) {
 }
 
 func TestInnterJoinWithFilter(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -212,8 +200,6 @@ func TestInnterJoinWithFilter(t *testing.T) {
 }
 
 func TestInnterJoin(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -233,8 +219,6 @@ func TestInnterJoin(t *testing.T) {
 }
 
 func TestOrderBy(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()

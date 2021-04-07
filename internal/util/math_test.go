@@ -9,8 +9,6 @@ import (
 )
 
 func TestMinAndMapInt(t *testing.T) {
-	t.Parallel()
-
 	max := math.MaxInt32
 	min := math.MinInt32
 	assert.Equal(t, max, util.MaxInt(max, min))

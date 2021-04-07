@@ -16,8 +16,6 @@ import (
 )
 
 func TestPostRefreshSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -45,8 +43,6 @@ func TestPostRefreshSuccess(t *testing.T) {
 }
 
 func TestPostRefreshInvalidToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"refresh_token": "not my refresh token",
@@ -69,8 +65,6 @@ func TestPostRefreshInvalidToken(t *testing.T) {
 }
 
 func TestPostRefreshUnknownToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"refresh_token": "c094e933-e5f0-4ece-9c10-914f3122cdb6",
@@ -93,8 +87,6 @@ func TestPostRefreshUnknownToken(t *testing.T) {
 }
 
 func TestPostRefreshDeactivatedUser(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -122,8 +114,6 @@ func TestPostRefreshDeactivatedUser(t *testing.T) {
 }
 
 func TestPostRefreshMissingRefreshToken(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{}
 

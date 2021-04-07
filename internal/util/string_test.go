@@ -11,8 +11,6 @@ import (
 )
 
 func TestGenerateRandom(t *testing.T) {
-	t.Parallel()
-
 	res, err := util.GenerateRandomBytes(13)
 	require.NoError(t, err)
 	assert.Len(t, res, 13)

@@ -18,8 +18,6 @@ func TestSnapshot(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	a := struct {
 		A string
 		B int
@@ -41,8 +39,6 @@ func TestSnapshotWithReplacer(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	randID, err := util.GenerateRandomBase64String(20)
 	require.NoError(t, err)
 	a := struct {
@@ -71,8 +67,6 @@ func TestSnapshotShouldFail(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	a := struct {
 		A string
 		B int
@@ -101,8 +95,6 @@ func TestSnapshotWithUpdate(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	a := struct {
 		A string
 		B int
@@ -131,8 +123,6 @@ func TestSnapshotNotExists(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	a := struct {
 		A string
 		B int
@@ -167,8 +157,6 @@ func TestSnapshotSkipFields(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	randID, err := util.GenerateRandomBase64String(20)
 	require.NoError(t, err)
 	a := struct {
@@ -192,8 +180,6 @@ func TestSnapshotWithLabel(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	a := struct {
 		A string
 		B int
@@ -216,8 +202,6 @@ func TestSnapshotWithLocation(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	t.Parallel()
-
 	a := struct {
 		A string
 		B int

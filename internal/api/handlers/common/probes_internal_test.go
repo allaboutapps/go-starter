@@ -12,8 +12,6 @@ import (
 )
 
 func TestEnsureDeadline(t *testing.T) {
-	t.Parallel()
-
 	deadline := time.Now().Add(1 * time.Second)
 
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
@@ -24,8 +22,6 @@ func TestEnsureDeadline(t *testing.T) {
 }
 
 func TestDummyDeadlineWithinOneSec(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 
 	receivedDeadline := ensureProbeDeadlineFromContext(ctx)
@@ -34,8 +30,6 @@ func TestDummyDeadlineWithinOneSec(t *testing.T) {
 }
 
 func TestProbeDatabasePingableDeadline(t *testing.T) {
-	t.Parallel()
-
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
 	defer cancel()
 
@@ -44,8 +38,6 @@ func TestProbeDatabasePingableDeadline(t *testing.T) {
 }
 
 func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
-	t.Parallel()
-
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
 	defer cancel()
 
@@ -54,8 +46,6 @@ func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
 }
 
 func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
-	t.Parallel()
-
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
 	defer cancel()
 
@@ -64,8 +54,6 @@ func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
 }
 
 func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
-	t.Parallel()
-
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
 	defer cancel()
 
@@ -74,8 +62,6 @@ func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
 }
 
 func TestProbePathWriteableTouchInaccessable(t *testing.T) {
-	t.Parallel()
-
 	_, err := probePathWriteableTouch(context.Background(), "/this/path/does/not/exist", ".touch")
 	assert.True(t, os.IsNotExist(err))
 }

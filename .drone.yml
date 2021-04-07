@@ -231,7 +231,6 @@ pipeline:
       - cd $PROJECT_ROOT_DIR
       - make get-licenses
     environment: *TEST_ENV
-    secrets: ["GITHUB_TOKEN"] # TOKEN required by license check.
     <<: *WHEN_BUILD_EVENT
 
   "docker run (target app)":
@@ -251,6 +250,7 @@ pipeline:
       - (env | grep "=" | grep -v -e "DRONE=" -e "DRONE_" -e "CI_" -e "CI=" -e "HOME=" -e "HOSTNAME=" -e "SHELL=" -e "PWD=" -e "PATH=") > .hostenv
       - cat .hostenv
       - "docker run --env-file .hostenv $${IMAGE_TAG} help"
+      - "docker run --env-file .hostenv $${IMAGE_TAG} -v"
       - "docker run --env-file .hostenv $${IMAGE_TAG} env"
     <<: *WHEN_BUILD_EVENT
 

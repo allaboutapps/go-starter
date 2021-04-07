@@ -18,8 +18,6 @@ import (
 )
 
 func TestPostLoginSuccess(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
@@ -44,8 +42,6 @@ func TestPostLoginSuccess(t *testing.T) {
 }
 
 func TestPostLoginInvalidCredentials(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
@@ -70,8 +66,6 @@ func TestPostLoginInvalidCredentials(t *testing.T) {
 }
 
 func TestPostLoginUnknownUser(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"username": "definitelydoesnotexist@example.com",
@@ -95,8 +89,6 @@ func TestPostLoginUnknownUser(t *testing.T) {
 }
 
 func TestPostLoginDeactivatedUser(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
@@ -121,8 +113,6 @@ func TestPostLoginDeactivatedUser(t *testing.T) {
 }
 
 func TestPostLoginUserWithoutPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
@@ -152,8 +142,6 @@ func TestPostLoginUserWithoutPassword(t *testing.T) {
 }
 
 func TestPostLoginInvalidUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"username": "definitely not an email",
@@ -181,8 +169,6 @@ func TestPostLoginInvalidUsername(t *testing.T) {
 }
 
 func TestPostLoginMissingUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"password": test.PlainTestUserPassword,
@@ -209,8 +195,6 @@ func TestPostLoginMissingUsername(t *testing.T) {
 }
 
 func TestPostLoginMissingPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
@@ -238,8 +222,6 @@ func TestPostLoginMissingPassword(t *testing.T) {
 }
 
 func TestPostLoginEmptyUsername(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"username": "",
@@ -267,8 +249,6 @@ func TestPostLoginEmptyUsername(t *testing.T) {
 }
 
 func TestPostLoginEmptyPassword(t *testing.T) {
-	t.Parallel()
-
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
