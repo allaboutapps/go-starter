@@ -7,6 +7,17 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-04-08
+
+### Added
+- Live-Reload for our swagger-ui is now available out of the box: 
+  - [allaboutapps/browser-sync](https://hub.docker.com/r/allaboutapps/browser-sync) acts as proxy at [localhost:8081](http://localhost:8081/).
+  - Requires `./docker-helper.sh --up`.
+  - Best used in combination with `make watch-swagger` (still refreshes `make all` or `make swagger` of course).
+
+### Changed
+- Upgrades to [swaggerapi/swagger-ui:v3.46.0](https://github.com/swagger-api/swagger-ui/tree/v3.46.0) from [swaggerapi/swagger-ui:v3.28.0](https://github.com/swagger-api/swagger-ui/compare/v3.28.0...v3.46.0)
+
 ## 2021-04-07
 ### Changed
 -  Moved `/api/main.yml` to `/api/config/main.yml` to overcome path resolve issues (`../definitions`) with the VSCode [42crunch.vscode-openapi](https://github.com/42Crunch/vscode-openapi) extension (auto-included in our devContainer) and our go-swagger concat behaviour. 
