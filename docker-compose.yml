@@ -110,9 +110,7 @@ services:
       - "8025:8025"
 
   swaggerui:
-    image: swaggerapi/swagger-ui:v3.28.0
-    ports:
-      - "8081:8080"
+    image: swaggerapi/swagger-ui:v3.46.0
     environment:
       SWAGGER_JSON: "/api/swagger.yml"
     volumes:
@@ -120,6 +118,14 @@ services:
       - ./api:/api:ro,consistent
       # mount overwritten translator.js (intercept requests port 8081 to our local service on port 8080)
       - ./api/config/swagger-ui-local-translator.js:/usr/share/nginx/configurator/translator.js:ro,delegated
+
+  swaggerui-browser-sync:
+    image: allaboutapps/browser-sync:v2.26.14
+    command: start --proxy 'swaggerui:8080' --port 8081 --files "/api/*.yml"
+    volumes:
+      - ./api:/api:ro,consistent
+    ports:
+      - "8081:8081"
 
 volumes:
   # postgresql: declare a named volume to persist DB data

@@ -151,7 +151,7 @@ paths:
   /api/v1/auth/refresh:
     post:
       description: |-
-        Return a fresh set of access and refresh tokens if a valid refresh token was provided.
+        Returns a fresh set of access and refresh tokens if a valid refresh token was provided.
         The old refresh token used to authenticate the request will be invalidated.
       tags:
         - auth
