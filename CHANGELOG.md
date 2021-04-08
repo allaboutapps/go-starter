@@ -17,6 +17,9 @@
 
 ### Changed
 - Upgrades to [swaggerapi/swagger-ui:v3.46.0](https://github.com/swagger-api/swagger-ui/tree/v3.46.0) from [swaggerapi/swagger-ui:v3.28.0](https://github.com/swagger-api/swagger-ui/compare/v3.28.0...v3.46.0)
+- Upgrades to [github.com/labstack/echo@v4.2.2](https://github.com/labstack/echo/releases/tag/v4.2.2)
+- `golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2`
+- Upgrades to [google.golang.org/api@v0.44.0](https://github.com/googleapis/google-api-go-client/releases/tag/v0.44.0)
 
 ## 2021-04-07
 ### Changed
