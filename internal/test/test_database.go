@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	client *integresql.Client
-	hash   string
+	client   *integresql.Client
+	hash     string
+	hashDump string
 
 	// tracks template testDatabase initialization
 	doOnce     sync.Once
@@ -88,7 +89,7 @@ func WithTestDatabaseFromDump(t *testing.T, closure func(db *sql.DB), dumpFile s
 		initializeTestDatabaseTemplateFromDump(ctx, t, dumpFile)
 	})
 
-	testDatabase, err := client.GetTestDatabase(ctx, hash)
+	testDatabase, err := client.GetTestDatabase(ctx, hashDump)
 
 	if err != nil {
 		t.Fatalf("Failed to obtain test database: %v", err)
@@ -167,7 +168,7 @@ func initializeTestDatabaseTemplateFromDump(ctx context.Context, t *testing.T, d
 
 	initIntegresClient(t)
 
-	if err := client.SetupTemplateWithDBClient(ctx, hash, func(db *sql.DB) error {
+	if err := client.SetupTemplateWithDBClient(ctx, hashDump, func(db *sql.DB) error {
 
 		t.Helper()
 
@@ -184,7 +185,7 @@ func initializeTestDatabaseTemplateFromDump(ctx context.Context, t *testing.T, d
 		// test execution with this hash as the template was *never* properly
 		// setuped successfully. All GetTestDatabase will wait unti timeout
 		// unless we interrupt them by discarding the base template...
-		discardError := client.DiscardTemplate(ctx, hash)
+		discardError := client.DiscardTemplate(ctx, hashDump)
 
 		if discardError != nil {
 			t.Fatalf("Failed to setup template database, also discarding failed for hash %q: %v, %v", hash, err, discardError)
@@ -228,7 +229,7 @@ func initTestDatabaseHashFromDump(t *testing.T, dumpFile string) {
 		t.Fatalf("Failed to get template hash: %#v", err)
 	}
 
-	hash = h
+	hashDump = h
 }
 
 func applyMigrations(t *testing.T, db *sql.DB) error {
