@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"database/sql"
+	"io/ioutil"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -20,7 +21,8 @@ var (
 	hash   string
 
 	// tracks template testDatabase initialization
-	doOnce sync.Once
+	doOnce     sync.Once
+	doOnceDump sync.Once
 
 	// we will compute a db template hash over the following dirs/files
 	migDir   = filepath.Join(pUtil.GetProjectRootDir(), "/migrations")
@@ -40,6 +42,50 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 
 		t.Helper()
 		initializeTestDatabaseTemplate(ctx, t)
+	})
+
+	testDatabase, err := client.GetTestDatabase(ctx, hash)
+
+	if err != nil {
+		t.Fatalf("Failed to obtain test database: %v", err)
+	}
+
+	connectionString := testDatabase.Config.ConnectionString()
+
+	db, err := sql.Open("postgres", connectionString)
+
+	if err != nil {
+		t.Fatalf("Failed to setup test database for connectionString %q: %v", connectionString, err)
+	}
+
+	if err := db.PingContext(ctx); err != nil {
+		t.Fatalf("Failed to ping test database for connectionString %q: %v", connectionString, err)
+	}
+
+	t.Logf("WithTestDatabase: %q", testDatabase.Config.Database)
+
+	closure(db)
+
+	// this database object is managed and should close automatically after running the test
+	if err := db.Close(); err != nil {
+		t.Fatalf("Failed to close db %q: %v", connectionString, err)
+	}
+
+	// disallow any further refs to managed object after running the test
+	db = nil
+}
+
+func WithTestDatabaseFromDump(t *testing.T, closure func(db *sql.DB), dumpFile string) {
+
+	t.Helper()
+
+	// new context derived from background
+	ctx := context.Background()
+
+	doOnceDump.Do(func() {
+
+		t.Helper()
+		initializeTestDatabaseTemplateFromDump(ctx, t, dumpFile)
 	})
 
 	testDatabase, err := client.GetTestDatabase(ctx, hash)
@@ -113,6 +159,42 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 	}
 }
 
+func initializeTestDatabaseTemplateFromDump(ctx context.Context, t *testing.T, dumpFile string) {
+
+	t.Helper()
+
+	initTestDatabaseHashFromDump(t, dumpFile)
+
+	initIntegresClient(t)
+
+	if err := client.SetupTemplateWithDBClient(ctx, hash, func(db *sql.DB) error {
+
+		t.Helper()
+
+		err := applyDumpFile(t, db, dumpFile)
+
+		if err != nil {
+			return err
+		}
+
+		return err
+	}); err != nil {
+
+		// This error is exceptionally fatal as it hinders ANY future other
+		// test execution with this hash as the template was *never* properly
+		// setuped successfully. All GetTestDatabase will wait unti timeout
+		// unless we interrupt them by discarding the base template...
+		discardError := client.DiscardTemplate(ctx, hash)
+
+		if discardError != nil {
+			t.Fatalf("Failed to setup template database, also discarding failed for hash %q: %v, %v", hash, err, discardError)
+		}
+
+		t.Fatalf("Failed to setup template database (discarded) for hash %q: %v", hash, err)
+
+	}
+}
+
 func initIntegresClient(t *testing.T) {
 
 	t.Helper()
@@ -130,6 +212,18 @@ func initTestDatabaseHash(t *testing.T) {
 	t.Helper()
 
 	h, err := util.GetTemplateHash(migDir, fixFile, selfFile)
+	if err != nil {
+		t.Fatalf("Failed to get template hash: %#v", err)
+	}
+
+	hash = h
+}
+
+func initTestDatabaseHashFromDump(t *testing.T, dumpFile string) {
+
+	t.Helper()
+
+	h, err := util.GetTemplateHash(selfFile, dumpFile)
 	if err != nil {
 		t.Fatalf("Failed to get template hash: %#v", err)
 	}
@@ -171,4 +265,23 @@ func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
 
 		return nil
 	})
+}
+
+func applyDumpFile(t *testing.T, db *sql.DB, dumpFile string) error {
+
+	t.Helper()
+
+	c, err := ioutil.ReadFile(dumpFile)
+	if err != nil {
+		t.Errorf("Failed to read dumpfile: %v\n", err)
+		return err
+	}
+	sql := string(c)
+	_, err = db.Exec(sql)
+	if err != nil {
+		t.Errorf("Failed to execute dumpfile: %v\n", err)
+		return err
+	}
+
+	return nil
 }
