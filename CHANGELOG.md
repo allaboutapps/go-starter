@@ -7,8 +7,14 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
-## 2021-04-08
+## 2021-04-12
+### Added
+- Adds echo `NoCache` middleware: Use `middleware.NoCache()` and `middleware.NoCacheWithConfig(Skipper)` to explicitly force browsers to never cache calls to these handlers/groups.
 
+### Changed
+- `/swagger.yml` and `/-/*` now explicity set no-cache headers by default, forcing browsers to reexecute calls each and every time.
+
+## 2021-04-08
 ### Added
 - Live-Reload for our swagger-ui is now available out of the box: 
   - [allaboutapps/browser-sync](https://hub.docker.com/r/allaboutapps/browser-sync) acts as proxy at [localhost:8081](http://localhost:8081/).
