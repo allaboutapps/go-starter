@@ -34,8 +34,8 @@ func TestWithTestDatabase(t *testing.T) {
 }
 
 func TestWithTestDatabaseFromDump(t *testing.T) {
-	test.WithTestDatabaseFromDump(t, func(db1 *sql.DB) {
-		test.WithTestDatabaseFromDump(t, func(db2 *sql.DB) {
+	test.WithTestDatabaseFromDump(t, filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/test.db"), func(db1 *sql.DB) {
+		test.WithTestDatabaseFromDump(t, filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/test.db"), func(db2 *sql.DB) {
 
 			var db1Name string
 			err := db1.QueryRow("SELECT current_database();").Scan(&db1Name)
@@ -58,6 +58,6 @@ func TestWithTestDatabaseFromDump(t *testing.T) {
 			userCount2, err := models.Users().Count(context.Background(), db2)
 			require.NoError(t, err)
 			require.Equal(t, int64(1), userCount2)
-		}, filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/test.db"))
-	}, filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/test.db"))
+		})
+	})
 }

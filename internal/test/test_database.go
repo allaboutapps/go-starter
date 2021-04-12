@@ -3,8 +3,10 @@ package test
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 
@@ -17,19 +19,31 @@ import (
 )
 
 var (
-	client   *integresql.Client
-	hash     string
-	hashDump string
+	client *integresql.Client
 
-	// tracks template testDatabase initialization
-	doOnce     sync.Once
-	doOnceDump sync.Once
+	// tracks IntegreSQL template(s) testDatabase initialization
+	doOnceMap = &sync.Map{}
+	hashMap   = make(map[string]string)
 
 	// we will compute a db template hash over the following dirs/files
-	migDir   = filepath.Join(pUtil.GetProjectRootDir(), "/migrations")
-	fixFile  = filepath.Join(pUtil.GetProjectRootDir(), "/internal/test/fixtures.go")
-	selfFile = filepath.Join(pUtil.GetProjectRootDir(), "/internal/test/test_database.go")
+	migDir        = filepath.Join(pUtil.GetProjectRootDir(), "/migrations")
+	fixFile       = filepath.Join(pUtil.GetProjectRootDir(), "/internal/test/fixtures.go")
+	selfFile      = filepath.Join(pUtil.GetProjectRootDir(), "/internal/test/test_database.go")
+	defaultPaths  = []string{migDir, fixFile, selfFile}
+	defaultPoolID = strings.Join(defaultPaths[:], ",")
 )
+
+func init() {
+	// initialize our default IntegreSQL template database hash (used by .WithTestDatabase and .WithTestServer)
+	h, err := util.GetTemplateHash(defaultPaths...)
+
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get default template hash: %#v", err))
+	}
+
+	hashMap[defaultPoolID] = h
+	fmt.Printf("IntegreSQL default template hash: %v\n", h)
+}
 
 // Use this utility func to test with an isolated test database
 func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
@@ -39,13 +53,14 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	// new context derived from background
 	ctx := context.Background()
 
-	doOnce.Do(func() {
+	doOnce, _ := doOnceMap.LoadOrStore(hashMap[defaultPoolID], &sync.Once{})
 
+	doOnce.(*sync.Once).Do(func() {
 		t.Helper()
 		initializeTestDatabaseTemplate(ctx, t)
 	})
 
-	testDatabase, err := client.GetTestDatabase(ctx, hash)
+	testDatabase, err := client.GetTestDatabase(ctx, hashMap[defaultPoolID])
 
 	if err != nil {
 		t.Fatalf("Failed to obtain test database: %v", err)
@@ -76,20 +91,21 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	db = nil
 }
 
-func WithTestDatabaseFromDump(t *testing.T, closure func(db *sql.DB), dumpFile string) {
+func WithTestDatabaseFromDump(t *testing.T, dumpFile string, closure func(db *sql.DB)) {
 
 	t.Helper()
 
 	// new context derived from background
 	ctx := context.Background()
 
-	doOnceDump.Do(func() {
+	doOnce, _ := doOnceMap.LoadOrStore(dumpFile, &sync.Once{})
 
+	doOnce.(*sync.Once).Do(func() {
 		t.Helper()
 		initializeTestDatabaseTemplateFromDump(ctx, t, dumpFile)
 	})
 
-	testDatabase, err := client.GetTestDatabase(ctx, hashDump)
+	testDatabase, err := client.GetTestDatabase(ctx, hashMap[dumpFile])
 
 	if err != nil {
 		t.Fatalf("Failed to obtain test database: %v", err)
@@ -126,21 +142,21 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 
 	t.Helper()
 
-	initTestDatabaseHash(t)
+	// initTestDatabaseHash(t)
 
 	initIntegresClient(t)
 
-	if err := client.SetupTemplateWithDBClient(ctx, hash, func(db *sql.DB) error {
+	if err := client.SetupTemplateWithDBClient(ctx, hashMap[defaultPoolID], func(db *sql.DB) error {
 
 		t.Helper()
 
-		err := applyMigrations(t, db)
+		err := applyDatabaseMigrations(t, db)
 
 		if err != nil {
 			return err
 		}
 
-		err = insertFixtures(ctx, t, db)
+		err = applyDatabaseFixtures(ctx, t, db)
 
 		return err
 	}); err != nil {
@@ -149,13 +165,13 @@ func initializeTestDatabaseTemplate(ctx context.Context, t *testing.T) {
 		// test execution with this hash as the template was *never* properly
 		// setuped successfully. All GetTestDatabase will wait unti timeout
 		// unless we interrupt them by discarding the base template...
-		discardError := client.DiscardTemplate(ctx, hash)
+		discardError := client.DiscardTemplate(ctx, hashMap[defaultPoolID])
 
 		if discardError != nil {
-			t.Fatalf("Failed to setup template database, also discarding failed for hash %q: %v, %v", hash, err, discardError)
+			t.Fatalf("Failed to setup template database, also discarding failed for hash %q: %v, %v", hashMap[defaultPoolID], err, discardError)
 		}
 
-		t.Fatalf("Failed to setup template database (discarded) for hash %q: %v", hash, err)
+		t.Fatalf("Failed to setup template database (discarded) for hash %q: %v", hashMap[defaultPoolID], err)
 
 	}
 }
@@ -168,7 +184,7 @@ func initializeTestDatabaseTemplateFromDump(ctx context.Context, t *testing.T, d
 
 	initIntegresClient(t)
 
-	if err := client.SetupTemplateWithDBClient(ctx, hashDump, func(db *sql.DB) error {
+	if err := client.SetupTemplateWithDBClient(ctx, hashMap[dumpFile], func(db *sql.DB) error {
 
 		t.Helper()
 
@@ -185,13 +201,13 @@ func initializeTestDatabaseTemplateFromDump(ctx context.Context, t *testing.T, d
 		// test execution with this hash as the template was *never* properly
 		// setuped successfully. All GetTestDatabase will wait unti timeout
 		// unless we interrupt them by discarding the base template...
-		discardError := client.DiscardTemplate(ctx, hashDump)
+		discardError := client.DiscardTemplate(ctx, hashMap[dumpFile])
 
 		if discardError != nil {
-			t.Fatalf("Failed to setup template database, also discarding failed for hash %q: %v, %v", hash, err, discardError)
+			t.Fatalf("Failed to setup template database, also discarding failed for hash %q: %v, %v", hashMap[dumpFile], err, discardError)
 		}
 
-		t.Fatalf("Failed to setup template database (discarded) for hash %q: %v", hash, err)
+		t.Fatalf("Failed to setup template database (discarded) for hash %q: %v", hashMap[dumpFile], err)
 
 	}
 }
@@ -208,31 +224,36 @@ func initIntegresClient(t *testing.T) {
 	client = c
 }
 
-func initTestDatabaseHash(t *testing.T) {
-
-	t.Helper()
-
-	h, err := util.GetTemplateHash(migDir, fixFile, selfFile)
-	if err != nil {
-		t.Fatalf("Failed to get template hash: %#v", err)
-	}
-
-	hash = h
-}
-
 func initTestDatabaseHashFromDump(t *testing.T, dumpFile string) {
 
 	t.Helper()
 
-	h, err := util.GetTemplateHash(selfFile, dumpFile)
+	h, err := util.GetTemplateHash(dumpFile)
 	if err != nil {
 		t.Fatalf("Failed to get template hash: %#v", err)
 	}
 
-	hashDump = h
+	hashMap[dumpFile] = h
 }
 
-func applyMigrations(t *testing.T, db *sql.DB) error {
+// func initTestDatabaseHash(t *testing.T, identifiers ...string) {
+// 	t.Helper()
+
+// 	util.GetTemplateHash(identifiers...)
+
+// 	h, err := util.GetTemplateHash(identifiers...)
+// 	if err != nil {
+// 		t.Fatalf("Failed to get template hash for %v: %#v", identifiers, err)
+// 	}
+
+// 	hashMap[getShortIdentifier(identifiers...)] = h
+// }
+
+// func getShortIdentifier(identifiers ...string) string {
+// 	return strings.Join(identifiers[:], ",")
+// }
+
+func applyDatabaseMigrations(t *testing.T, db *sql.DB) error {
 
 	t.Helper()
 
@@ -242,12 +263,12 @@ func applyMigrations(t *testing.T, db *sql.DB) error {
 		return err
 	}
 
-	t.Logf("Applied %d migrations for hash %q", n, hash)
+	t.Logf("Applied %d migrations for hash %q", n, hashMap[defaultPoolID])
 
 	return nil
 }
 
-func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
+func applyDatabaseFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
 
 	t.Helper()
 
@@ -262,7 +283,7 @@ func insertFixtures(ctx context.Context, t *testing.T, db *sql.DB) error {
 			}
 		}
 
-		t.Logf("Inserted %d fixtures for hash %q", len(inserts), hash)
+		t.Logf("Inserted %d fixtures for hash %q", len(inserts), hashMap[defaultPoolID])
 
 		return nil
 	})
