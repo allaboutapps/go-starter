@@ -12,7 +12,8 @@
 - Adds echo `NoCache` middleware: Use `middleware.NoCache()` and `middleware.NoCacheWithConfig(Skipper)` to explicitly force browsers to never cache calls to these handlers/groups.
 
 ### Changed
-- `/swagger.yml` and `/-/*` now explicity set no-cache headers by default, forcing browsers to reexecute calls each and every time.
+- `/swagger.yml` and `/-/*` now explicity set no-cache headers by default, forcing browsers to re-execute calls each and every time.
+- Upgrade [watchexec@v1.15.0](https://github.com/watchexec/watchexec/releases/tag/1.15.0)
 
 ## 2021-04-08
 ### Added
