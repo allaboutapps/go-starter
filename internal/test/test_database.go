@@ -3,7 +3,9 @@ package test
 import (
 	"context"
 	"database/sql"
-	"io/ioutil"
+	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -276,15 +278,23 @@ func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixt
 func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) error {
 	t.Helper()
 
-	c, err := ioutil.ReadFile(dumpFile)
-	if err != nil {
-		return err
-	}
-	sql := string(c)
-	_, err = db.ExecContext(ctx, sql)
-	if err != nil {
+	// ensure file exists
+	if _, err := os.Stat(dumpFile); err != nil {
 		return err
 	}
 
-	return nil
+	// we need to get the db name before beeing able to do anything.
+	var targetDB string
+	if err := db.QueryRow("SELECT current_database();").Scan(&targetDB); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("cat %q | psql %q", dumpFile, targetDB)) //nolint:gosec
+	combinedOutput, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return errors.Wrap(err, string(combinedOutput))
+	}
+
+	return err
 }
