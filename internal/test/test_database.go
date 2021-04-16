@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"crypto/md5" //nolint:gosec
 	"database/sql"
 	"fmt"
 	"os"
@@ -63,7 +64,7 @@ func WithTestDatabaseContext(ctx context.Context, t *testing.T, closure func(db 
 		t.Helper()
 
 		// enable poolHashMap[poolID] integresql hash lookup
-		cachePoolHash(t, poolID)
+		cachePoolIDToIntegresHash(t, poolID, defaultPoolPaths)
 
 		// properly build up the template database once
 		execClosureNewIntegresTemplate(ctx, t, poolHashMap[poolID], func(db *sql.DB) error {
@@ -95,18 +96,31 @@ func WithTestDatabaseContext(ctx context.Context, t *testing.T, closure func(db 
 	})
 }
 
+type DatabaseDumpConfig struct {
+	DumpFile          string // required, absolute path to dump file
+	ApplyMigrations   bool   // optional, default false
+	ApplyTestFixtures bool   // optional, default false
+}
+
 // Use this utility func to test with an isolated test database based on a dump file. No migrations or fixtures are applied.
-func WithTestDatabaseFromDump(t *testing.T, dumpFile string, closure func(db *sql.DB)) {
+func WithTestDatabaseFromDump(t *testing.T, config DatabaseDumpConfig, closure func(db *sql.DB)) {
 	t.Helper()
 	ctx := context.Background()
-	WithTestDatabaseFromDumpContext(ctx, t, dumpFile, closure)
+	WithTestDatabaseFromDumpContext(ctx, t, config, closure)
 }
 
 // Use this utility func to test with an isolated test database based on a dump file. No migrations or fixtures are applied (context injectable).
-func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, dumpFile string, closure func(db *sql.DB)) {
+func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, config DatabaseDumpConfig, closure func(db *sql.DB)) {
 	t.Helper()
 
-	poolID := strings.Join([]string{dumpFile, selfFile}[:], ",")
+	// DumpFile is mandadory.
+	if config.DumpFile == "" {
+		t.Fatal("DatabaseDumpConfig.DumpFile is mandadory and cannot be ''")
+	}
+
+	// poolID must incorporate additional config args in the final hash
+	fragments := fmt.Sprintf("?migrations=%v&fixtures=%v", config.ApplyMigrations, config.ApplyTestFixtures)
+	poolID := strings.Join([]string{config.DumpFile, selfFile}[:], ",") + fragments
 
 	// Get a hold of the &sync.Once{} for this integresql pool in this pkg scope...
 	doOnce, _ := poolInitSyncMap.LoadOrStore(poolID, &sync.Once{})
@@ -114,17 +128,35 @@ func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, dumpFile
 		t.Helper()
 
 		// enable poolHashMap[poolID] integresql hash lookup
-		cachePoolHash(t, poolID)
+		cachePoolIDToIntegresHash(t, poolID, []string{config.DumpFile, selfFile}, fragments)
 
 		// properly build up the template database once
 		execClosureNewIntegresTemplate(ctx, t, poolHashMap[poolID], func(db *sql.DB) error {
 			t.Helper()
 
-			if err := ApplyDump(ctx, t, db, dumpFile); err != nil {
+			if err := ApplyDump(ctx, t, db, config.DumpFile); err != nil {
 				t.Fatalf("Failed to apply dumps for %q: %v\n", poolHashMap[poolID], err)
 				return err
 			}
 			t.Logf("Applied dump for hash %q", poolHashMap[poolID])
+
+			if config.ApplyMigrations {
+				countMigrations, err := ApplyMigrations(t, db)
+				if err != nil {
+					t.Fatalf("Failed to apply migrations for %q: %v\n", poolHashMap[poolID], err)
+					return err
+				}
+				t.Logf("Applied %d migrations for hash %q", countMigrations, poolHashMap[poolID])
+			}
+
+			if config.ApplyTestFixtures {
+				countFixtures, err := ApplyTestFixtures(ctx, t, db)
+				if err != nil {
+					t.Fatalf("Failed to apply test fixtures for %q: %v\n", poolHashMap[poolID], err)
+					return err
+				}
+				t.Logf("Applied %d test fixtures for hash %q", countFixtures, poolHashMap[poolID])
+			}
 
 			return nil
 		})
@@ -154,7 +186,7 @@ func WithTestDatabaseEmptyContext(ctx context.Context, t *testing.T, closure fun
 		t.Helper()
 
 		// enable poolHashMap[poolID] integresql hash lookup
-		cachePoolHash(t, poolID)
+		cachePoolIDToIntegresHash(t, poolID, []string{selfFile})
 
 		// properly build up the template database once (noop)
 		execClosureNewIntegresTemplate(ctx, t, poolHashMap[poolID], func(db *sql.DB) error {
@@ -170,17 +202,25 @@ func WithTestDatabaseEmptyContext(ctx context.Context, t *testing.T, closure fun
 	})
 }
 
-// Adds poolID to poolHashMap pointing to the integresql hash
-// Expects a comma separated list of files and dirs as poolID (are looked up for computing the hash)
-func cachePoolHash(t *testing.T, poolID string) {
+// Adds poolID to poolHashMap pointing to the final integresql hash
+// Expects hashPaths to be absolute paths to actual files or directories (its contents will be md5 hashed)
+// Optional fragments can be used to further enhance the computed md5
+func cachePoolIDToIntegresHash(t *testing.T, poolID string, hashPaths []string, fragments ...string) {
 	t.Helper()
 
-	// compute a new integreSQL pool hash and point poolID to it
-	if integresPoolHash, err := util.GetTemplateHash(strings.Split(poolID, ",")...); err != nil {
-		t.Fatalf("Failed to get template hash for %v: %#v", poolID, err)
-	} else {
-		poolHashMap[poolID] = integresPoolHash // save it for all runners (not having this lock" yet)
+	// compute a new integreSQL pool hash
+	integresPoolHash, err := util.GetTemplateHash(hashPaths...)
+	if err != nil {
+		t.Fatalf("Failed to create template hash for %v: %#v", poolID, err)
 	}
+
+	// update the hash with optional provided fragments
+	if len(fragments) > 0 {
+		integresPoolHash = fmt.Sprintf("%x", md5.Sum([]byte(integresPoolHash+strings.Join(fragments, ",")))) //nolint:gosec
+	}
+
+	// and point poolID to it (sideffect!)
+	poolHashMap[poolID] = integresPoolHash // save it for all runners (not having this lock" yet)
 }
 
 // Executes closure on an integresql **template** database

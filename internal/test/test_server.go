@@ -18,10 +18,10 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 }
 
 // Use this utility func to test with an full blown server (default server config, database dump injectable)
-func WithTestServerFromDump(t *testing.T, dumpFile string, closure func(s *api.Server)) {
+func WithTestServerFromDump(t *testing.T, dumpConfig DatabaseDumpConfig, closure func(s *api.Server)) {
 	t.Helper()
 	defaultConfig := config.DefaultServiceConfigFromEnv()
-	WithTestServerConfigurableFromDump(t, defaultConfig, dumpFile, closure)
+	WithTestServerConfigurableFromDump(t, defaultConfig, dumpConfig, closure)
 }
 
 // Use this utility func to test with an full blown server (server env configurable)
@@ -41,16 +41,16 @@ func WithTestServerConfigurableContext(ctx context.Context, t *testing.T, config
 }
 
 // Use this utility func to test with an full blown server (server env configurable, database dump injectable).
-func WithTestServerConfigurableFromDump(t *testing.T, config config.Server, dumpFile string, closure func(s *api.Server)) {
+func WithTestServerConfigurableFromDump(t *testing.T, config config.Server, dumpConfig DatabaseDumpConfig, closure func(s *api.Server)) {
 	t.Helper()
 	ctx := context.Background()
-	WithTestServerConfigurableFromDumpContext(ctx, t, config, dumpFile, closure)
+	WithTestServerConfigurableFromDumpContext(ctx, t, config, dumpConfig, closure)
 }
 
 // Use this utility func to test with an full blown server (server env configurable, database dump injectable, context injectable).
-func WithTestServerConfigurableFromDumpContext(ctx context.Context, t *testing.T, config config.Server, dumpFile string, closure func(s *api.Server)) {
+func WithTestServerConfigurableFromDumpContext(ctx context.Context, t *testing.T, config config.Server, dumpConfig DatabaseDumpConfig, closure func(s *api.Server)) {
 	t.Helper()
-	WithTestDatabaseFromDump(t, dumpFile, func(db *sql.DB) {
+	WithTestDatabaseFromDump(t, dumpConfig, func(db *sql.DB) {
 		t.Helper()
 		execClosureNewTestServer(ctx, t, config, db, closure)
 	})

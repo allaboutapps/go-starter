@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
@@ -34,10 +35,10 @@ func TestWithTestDatabase(t *testing.T) {
 
 func TestWithTestDatabaseFromDump(t *testing.T) {
 
-	dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/minimal.sql")
+	dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/users.sql")
 
-	test.WithTestDatabaseFromDump(t, dumpFile, func(db1 *sql.DB) {
-		test.WithTestDatabaseFromDump(t, dumpFile, func(db2 *sql.DB) {
+	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db1 *sql.DB) {
+		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db2 *sql.DB) {
 
 			var db1Name string
 			if err := db1.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
@@ -70,6 +71,49 @@ func TestWithTestDatabaseFromDump(t *testing.T) {
 	})
 }
 
+func TestWithTestDatabaseFromDumpAutoMigrateAndTestFixtures(t *testing.T) {
+	dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/plain.sql")
+
+	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db0 *sql.DB) {
+		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true}, func(db1 *sql.DB) {
+			test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true, ApplyTestFixtures: true}, func(db2 *sql.DB) {
+
+				// db0: has only a plain dump
+				// db1: has migrations
+				// db2: has migrations and testFixtures
+
+				var db0Name string
+				if err := db0.QueryRow("SELECT current_database();").Scan(&db0Name); err != nil {
+					t.Fatal(err)
+				}
+
+				var db1Name string
+				if err := db1.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
+					t.Fatal(err)
+				}
+
+				var db2Name string
+				if err := db2.QueryRow("SELECT current_database();").Scan(&db2Name); err != nil {
+					t.Fatal(err)
+				}
+
+				require.NotEqual(t, db0Name, db1Name)
+				require.NotEqual(t, db1Name, db2Name)
+				require.NotEqual(t, db2Name, db0Name)
+
+				// expect hash to be different for all 3 databases!
+				db0Hash := strings.Split(strings.Join(strings.Split(db0Name, "integresql_test_"), ""), "_")[0]
+				db1Hash := strings.Split(strings.Join(strings.Split(db1Name, "integresql_test_"), ""), "_")[0]
+				db2Hash := strings.Split(strings.Join(strings.Split(db2Name, "integresql_test_"), ""), "_")[0]
+
+				require.NotEqual(t, db0Hash, db1Hash)
+				require.NotEqual(t, db1Hash, db2Hash)
+				require.NotEqual(t, db2Hash, db0Hash)
+			})
+		})
+	})
+}
+
 func TestWithTestDatabaseEmpty(t *testing.T) {
 	test.WithTestDatabaseEmpty(t, func(db1 *sql.DB) {
 		test.WithTestDatabaseEmpty(t, func(db2 *sql.DB) {
@@ -95,7 +139,7 @@ func TestWithTestDatabaseEmpty(t *testing.T) {
 			require.NoError(t, err)
 
 			// test apply dump to a empty database 2
-			dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/minimal.sql")
+			dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/users.sql")
 			err = test.ApplyDump(context.Background(), t, db2, dumpFile)
 			require.NoError(t, err)
 
