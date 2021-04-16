@@ -203,8 +203,10 @@ sql-check-structure-default-zero-values: ##- (opt) Ensures spec database objects
 	@cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
 
 dumpfile := /app/dumps/development_$(shell date '+%Y-%m-%d-%H-%M-%S').sql
-sql-dump: ##- Dumps the development database to '/app/dumps/development_YYYY-MM-DD-hh-mm-ss.sql', use 'cat /app/<dump> | psql' to restore
-	pg_dump development --format=p --clean --if-exists > $(dumpfile)
+sql-dump: ##- Dumps the development database to '/app/dumps/development_YYYY-MM-DD-hh-mm-ss.sql'.
+	@mkdir -p /app/dumps
+	@pg_dump development --format=p --clean --if-exists > $(dumpfile)
+	@echo "Dumped '$(dumpfile)'. Use 'cat $(dumpfile) | psql' to restore"
 
 watch-sql: ##- Watches *.sql files in /migrations and runs 'make sql-regenerate' on modifications.
 	@echo Watching /migrations. Use Ctrl-c to stop a run or exit.

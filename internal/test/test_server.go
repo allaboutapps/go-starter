@@ -18,7 +18,7 @@ func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 }
 
 // Use this utility func to test with an full blown server (default server config, database dump injectable)
-func WithTestServerFromDump(t *testing.T, closure func(s *api.Server), dumpFile string) {
+func WithTestServerFromDump(t *testing.T, dumpFile string, closure func(s *api.Server)) {
 	t.Helper()
 	defaultConfig := config.DefaultServiceConfigFromEnv()
 	WithTestServerConfigurableFromDump(t, defaultConfig, dumpFile, closure)
