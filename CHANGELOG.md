@@ -23,8 +23,15 @@
 - `test.ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixtures int, err error)` is now public (e.g. for usage with `test.WithTestDatabaseEmpty*` or `test.WithTestDatabaseFromDump*`)
 - `internal/test/test_database_test.go` and `/app/internal/test/test_server_test.go` were massively refactored to allow for better extensibility later on (non breaking, all method signatures are backwards-compatible).  
 
-## 2021-04-08
+## 2021-04-12
+### Added
+- Adds echo `NoCache` middleware: Use `middleware.NoCache()` and `middleware.NoCacheWithConfig(Skipper)` to explicitly force browsers to never cache calls to these handlers/groups.
 
+### Changed
+- `/swagger.yml` and `/-/*` now explicity set no-cache headers by default, forcing browsers to re-execute calls each and every time.
+- Upgrade [watchexec@v1.15.0](https://github.com/watchexec/watchexec/releases/tag/1.15.0) (requires `./docker-helper.sh --rebuild`).
+
+## 2021-04-08
 ### Added
 - Live-Reload for our swagger-ui is now available out of the box: 
   - [allaboutapps/browser-sync](https://hub.docker.com/r/allaboutapps/browser-sync) acts as proxy at [localhost:8081](http://localhost:8081/).
