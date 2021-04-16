@@ -102,14 +102,14 @@ type DatabaseDumpConfig struct {
 	ApplyTestFixtures bool   // optional, default false
 }
 
-// Use this utility func to test with an isolated test database based on a dump file. No migrations or fixtures are applied.
+// Use this utility func to test with an isolated test database based on a dump file.
 func WithTestDatabaseFromDump(t *testing.T, config DatabaseDumpConfig, closure func(db *sql.DB)) {
 	t.Helper()
 	ctx := context.Background()
 	WithTestDatabaseFromDumpContext(ctx, t, config, closure)
 }
 
-// Use this utility func to test with an isolated test database based on a dump file. No migrations or fixtures are applied (context injectable).
+// Use this utility func to test with an isolated test database based on a dump file (context injectable).
 func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, config DatabaseDumpConfig, closure func(db *sql.DB)) {
 	t.Helper()
 
