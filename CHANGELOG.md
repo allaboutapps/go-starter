@@ -16,14 +16,14 @@
     - `ApplyTestFixtures bool` optional, default `false`, import fixtures after (migrating) installing the dump
   - `test.ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) error` may be used to apply a dump to an existing database connection.
   - As we have dedicated IntegreSQL pools for each combination, testing performance should be on par with the default IntegreSQL database pool. 
-- Adds `test.WithTestDatabaseEmpty*` methods writing tests based on an empty database (also in an IntegreSQL pool). 
+- Adds `test.WithTestDatabaseEmpty*` methods for writing tests based on an empty database (also a dedicated IntegreSQL pool). 
 - Adds context aware `test.WithTest*Context` methods reusing the provided `context.Context` (first arg).
 - Adds `make sql-dump` command to easily create a dump of the local `development` database to `/app/dumps/development_YYYY-MM-DD-hh-mm-ss.sql` (.gitignored).
 
 ### Changed
 - `test.ApplyMigrations(t *testing.T, db *sql.DB) (countMigrations int, err error)` is now public (e.g. for usage with `test.WithTestDatabaseEmpty*` or `test.WithTestDatabaseFromDump*`)
 - `test.ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixtures int, err error)` is now public (e.g. for usage with `test.WithTestDatabaseEmpty*` or `test.WithTestDatabaseFromDump*`)
-- `internal/test/test_database_test.go` and `/app/internal/test/test_server_test.go` were massively refactored to allow for better extensibility later on (non breaking, all method signatures are backwards-compatible).  
+- `internal/test/test_database_test.go` and `/app/internal/test/test_server_test.go` were massively refactored to allow for better extensibility later on (non breaking, all method signatures are backward-compatible).  
 
 ## 2021-04-12
 ### Added
