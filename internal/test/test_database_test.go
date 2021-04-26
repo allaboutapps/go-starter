@@ -5,12 +5,45 @@ import (
 	"database/sql"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/require"
 )
+
+func TestWithTestDatabaseConcurrentUsage(t *testing.T) {
+	wg := sync.WaitGroup{}
+	wg.Add(4)
+
+	go func() {
+		test.WithTestDatabase(t, func(db1 *sql.DB) {
+			wg.Done()
+		})
+	}()
+
+	go func() {
+		test.WithTestDatabaseEmpty(t, func(db2 *sql.DB) {
+			wg.Done()
+		})
+	}()
+
+	go func() {
+		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/plain.sql")}, func(db3 *sql.DB) {
+			wg.Done()
+		})
+	}()
+
+	go func() {
+		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/users.sql")}, func(db4 *sql.DB) {
+			wg.Done()
+		})
+	}()
+
+	// the above will concurrently write to the database pool maps,
+	wg.Wait()
+}
 
 func TestWithTestDatabase(t *testing.T) {
 	test.WithTestDatabase(t, func(db1 *sql.DB) {
