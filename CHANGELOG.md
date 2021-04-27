@@ -7,7 +7,7 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
-## Unreleased
+## 2021-04-27
 ### Added
 - Adds `test.WithTestDatabaseFromDump*`, `test.WithTestServerFromDump` methods for writing tests based on a database dump file that needs to be imported first:
   - We dynamically setup IntegreSQL pools for all combinations passed through a `test.DatabaseDumpConfig{}` object:
