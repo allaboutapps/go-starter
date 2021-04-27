@@ -162,6 +162,8 @@ sql-boiler: ##- (opt) Runs sql-boiler introspects the spec db to generate intern
 sql-format: ##- (opt) Formats all *.sql files.
 	@echo "make sql-format"
 	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
+		| grep --invert "/app/dumps/" \
+		| grep --invert "/app/test/" \
 		| xargs -i pg_format {} -o {}
 
 sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt) Check syntax and unnecessary use of NULL keyword.
@@ -170,7 +172,9 @@ sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt
 # https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
 sql-check-syntax: ##- (opt) Checks syntax of all *.sql files.
 	@echo "make sql-check-syntax"
-	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
+	@find ${PWD} -name ".*" -prune -path ./dumps -prune -false -o -type f -iname "*.sql" -print \
+		| grep --invert "/app/dumps/" \
+		| grep --invert "/app/test/" \
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
 		| psql -d postgres --quiet -v ON_ERROR_STOP=1
 
@@ -197,6 +201,12 @@ sql-check-structure-fk-missing-index: ##- (opt) Ensures spec database objects ha
 sql-check-structure-default-zero-values: ##- (opt) Ensures spec database objects default values match go zero values.
 	@echo "make sql-check-structure-default-zero-values"
 	@cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+
+dumpfile := /app/dumps/development_$(shell date '+%Y-%m-%d-%H-%M-%S').sql
+sql-dump: ##- Dumps the development database to '/app/dumps/development_YYYY-MM-DD-hh-mm-ss.sql'.
+	@mkdir -p /app/dumps
+	@pg_dump development --format=p --clean --if-exists > $(dumpfile)
+	@echo "Dumped '$(dumpfile)'. Use 'cat $(dumpfile) | psql' to restore"
 
 watch-sql: ##- Watches *.sql files in /migrations and runs 'make sql-regenerate' on modifications.
 	@echo Watching /migrations. Use Ctrl-c to stop a run or exit.

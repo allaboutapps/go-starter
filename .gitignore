@@ -32,3 +32,4 @@ tmp
 # /assets/mnt folder should stay gitignored!
 assets/mnt/**
 !assets/mnt/.gitkeep
+dumps
