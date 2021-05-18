@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.16.3 AS development
+FROM golang:1.16.4 AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -88,8 +88,8 @@ RUN mkdir -p /tmp/pgFormatter \
 # https://github.com/gotestyourself/gotestsum/releases
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
-    && wget https://github.com/gotestyourself/gotestsum/releases/download/v1.6.3/gotestsum_1.6.3_linux_amd64.tar.gz \
-    && tar xzf gotestsum_1.6.3_linux_amd64.tar.gz \
+    && wget https://github.com/gotestyourself/gotestsum/releases/download/v1.6.4/gotestsum_1.6.4_linux_amd64.tar.gz \
+    && tar xzf gotestsum_1.6.4_linux_amd64.tar.gz \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum 
 
@@ -97,7 +97,7 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.39.0
+    | sh -s -- -b $(go env GOPATH)/bin v1.40.1
 
 # go swagger: (this package should NOT be installed via go get) 
 # https://github.com/go-swagger/go-swagger/releases
@@ -114,9 +114,9 @@ RUN go install github.com/uw-labs/lichen@v0.1.3
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/1.15.0/watchexec-1.15.0-x86_64-unknown-linux-gnu.tar.xz \
-    && tar xf watchexec-1.15.0-x86_64-unknown-linux-gnu.tar.xz \
-    && cp watchexec-1.15.0-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/cli-v1.16.0/watchexec-1.16.0-x86_64-unknown-linux-gnu.tar.xz \
+    && tar xf watchexec-1.16.0-x86_64-unknown-linux-gnu.tar.xz \
+    && cp watchexec-1.16.0-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # linux permissions / vscode support: Add user to avoid linux file permission issues

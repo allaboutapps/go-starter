@@ -7,6 +7,21 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-05-18
+### Changed
+- Upgraded `Dockerfile` to `golang:1.16.4`, `gotestsum@v1.6.4`, `golangci-lint@v1.40.1`, `watchexec@v1.16.0` (requires `./docker-helper.sh --rebuild`).
+- Upgraded `go.mod`:
+  - [github.com/labstack/echo/v4@v4.3.0](https://github.com/labstack/echo/releases/tag/v4.3.0)
+  - [github.com/lib/pq@v1.10.2](https://github.com/lib/pq/releases/tag/v1.10.2)
+  - [github.com/gabriel-vasile/mimetype@v1.3.0](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.3.0)
+  - `github.com/go-openapi/runtime@v0.19.28`
+  - [github.com/rs/zerolog@v1.22.0](https://github.com/rs/zerolog/releases/tag/v1.22.0)
+  - `github.com/rubenv/sql-migrate@v0.0.0-20210408115534-a32ed26c37ea`
+  - `golang.org/x/crypto@v0.0.0-20210513164829-c07d793c2f9a`
+  - `golang.org/x/sys@v0.0.0-20210514084401-e8d321eab015`
+  - [google.golang.org/api@v0.46.0](https://github.com/googleapis/google-api-go-client/releases/tag/v0.46.0)
+- GitHub Actions pin to `actions/checkout@v2.3.4`.
+
 ## 2021-04-27
 ### Added
 - Adds `test.WithTestDatabaseFromDump*`, `test.WithTestServerFromDump` methods for writing tests based on a database dump file that needs to be imported first:
