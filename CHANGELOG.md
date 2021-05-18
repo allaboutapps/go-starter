@@ -7,6 +7,12 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## Unreleased
+### Changed
+- **BREAKING** Switched from [`golint`](https://github.com/golang/lint) to [`revive`](https://github.com/mgechev/revive)
+  - ['golint' is deprecated](https://github.com/golang/go/issues/38968).
+  - `revive` is considered to be a drop-in replacement for `golint`, however this change still might lead to breaking changes in your codebase.
+
 ## 2021-05-18
 ### Changed
 - Upgraded `Dockerfile` to `golang:1.16.4`, `gotestsum@v1.6.4`, `golangci-lint@v1.40.1`, `watchexec@v1.16.0` (requires `./docker-helper.sh --rebuild`).
