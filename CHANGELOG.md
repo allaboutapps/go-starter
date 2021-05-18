@@ -7,6 +7,12 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## Unreleased
+### Changed
+- Upgraded `Dockerfile` to `golang:1.16.4`, `gotestsum@v1.6.4`, `golangci-lint@v1.40.1`, `watchexec@v1.16.0` (requires `./docker-helper.sh --rebuild`)
+- Upgraded `go.mod`:
+  - `github.com/labstack/echo/v4@v4.3.0`
+
 ## 2021-04-27
 ### Added
 - Adds `test.WithTestDatabaseFromDump*`, `test.WithTestServerFromDump` methods for writing tests based on a database dump file that needs to be imported first:
