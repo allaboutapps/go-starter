@@ -23,7 +23,7 @@
 - GitHub Actions:
   -  Pin to `actions/checkout@v2.3.4`.
   -  Remove unnecessary `git checkout HEAD^2` in CodeQL step (Code Scanning recommends analyzing the merge commit for best results).
-  -  
+  -  Limit trivy and codeQL actions to `push` against `master` and `pull_request` against `master` to overcome read-only access workflow errors.
 
 ## 2021-04-27
 ### Added
