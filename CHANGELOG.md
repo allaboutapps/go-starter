@@ -13,6 +13,7 @@
 - Upgraded `go.mod`:
   - [`github.com/labstack/echo/v4@v4.3.0`](https://github.com/labstack/echo/releases/tag/v4.3.0)
   - [`github.com/lib/pq@v1.10.2`](https://github.com/lib/pq/releases/tag/v1.10.2)
+  - [`github.com/gabriel-vasile/mimetype@v1.3.0`](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.3.0)
 - GitHub Actions pin to `actions/checkout@v2.3.4`.
 
 ## 2021-04-27
