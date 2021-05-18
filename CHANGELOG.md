@@ -20,7 +20,10 @@
   - `golang.org/x/crypto@v0.0.0-20210513164829-c07d793c2f9a`
   - `golang.org/x/sys@v0.0.0-20210514084401-e8d321eab015`
   - [google.golang.org/api@v0.46.0](https://github.com/googleapis/google-api-go-client/releases/tag/v0.46.0)
-- GitHub Actions pin to `actions/checkout@v2.3.4`.
+- GitHub Actions:
+  -  Pin to `actions/checkout@v2.3.4`.
+  -  Remove unnecessary `git checkout HEAD^2` in CodeQL step (Code Scanning recommends analyzing the merge commit for best results).
+  -  
 
 ## 2021-04-27
 ### Added
