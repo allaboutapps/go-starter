@@ -9,9 +9,11 @@
 
 ## Unreleased
 ### Changed
-- Upgraded `Dockerfile` to `golang:1.16.4`, `gotestsum@v1.6.4`, `golangci-lint@v1.40.1`, `watchexec@v1.16.0` (requires `./docker-helper.sh --rebuild`)
+- Upgraded `Dockerfile` to `golang:1.16.4`, `gotestsum@v1.6.4`, `golangci-lint@v1.40.1`, `watchexec@v1.16.0` (requires `./docker-helper.sh --rebuild`).
 - Upgraded `go.mod`:
-  - `github.com/labstack/echo/v4@v4.3.0`
+  - [`github.com/labstack/echo/v4@v4.3.0`](https://github.com/labstack/echo/releases/tag/v4.3.0)
+  - [`github.com/lib/pq@v1.10.2`](https://github.com/lib/pq/releases/tag/v1.10.2)
+- GitHub Actions pin to `actions/checkout@v2.3.4`.
 
 ## 2021-04-27
 ### Added
