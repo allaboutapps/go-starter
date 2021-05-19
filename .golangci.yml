@@ -28,3 +28,29 @@ issues:
     - path: internal/test
       linters:
         - gosec
+
+linters-settings:
+  revive:
+    rules:
+      # https://github.com/mgechev/revive/blob/master/defaults.toml
+      # Previous golint defaults, must be explicit until https://github.com/mgechev/revive/issues/517 lands
+      # Also see https://github.com/mgechev/revive#available-rules
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      # - name: exported
+      # - name: if-return
+      - name: increment-decrement
+      # - name: var-naming
+      # - name: var-declaration
+      # - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
