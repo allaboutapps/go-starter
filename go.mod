@@ -32,5 +32,5 @@ require (
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015
-	google.golang.org/api v0.46.0
+	google.golang.org/api v0.47.0
 )
