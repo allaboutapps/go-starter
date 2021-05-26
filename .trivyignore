@@ -1,0 +1,2 @@
+# Allow https://nvd.nist.gov/vuln/detail/CVE-2020-26160 (JWT unused, still waiting for child deps upgrade)
+CVE-2020-26160

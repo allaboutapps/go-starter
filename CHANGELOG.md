@@ -7,6 +7,11 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-05-26
+### Changed
+- Scans for [CVE-2020-26160](https://nvd.nist.gov/vuln/detail/CVE-2020-26160) also match for our final `app` binary, however, we do not use `github.com/dgrijalva/jwt-go` as part of our auth logic. This dependency is mostly here because of child dependencies, that yet need to upgrade to `>=v4.0.0`. Therefore, we currently disable this CVE for scans in this project (via `.trivyignore`).
+- Upgrades `Dockerfile`: [`watchexec@v1.16.1`](https://github.com/watchexec/watchexec/releases/tag/cli-v1.16.1), [`lichen@v0.1.4`](https://github.com/uw-labs/lichen/releases/tag/v0.1.4) (requires `./docker-helper.sh --rebuild`).
+
 ## 2021-05-18
 ### Changed
 - Upgraded `Dockerfile` to `golang:1.16.4`, `gotestsum@v1.6.4`, `golangci-lint@v1.40.1`, `watchexec@v1.16.0` (requires `./docker-helper.sh --rebuild`).
