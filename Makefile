@@ -340,6 +340,11 @@ force-module-name: ##- Overwrite occurrences of 'allaboutapps.dev/aw/go-starter'
 get-go-ldflags: ##- (opt) Prints used -ldflags as evaluated in Makefile used in make go-build
 	@echo $(LDFLAGS)
 
+scaffold: ##- Generates handlers based on the given resource. Example make scaffold resource=my_resource
+	go run -tags scripts scripts/scaffold/scaffold/main.go $(resource)
+	@$(MAKE) swagger
+	@$(MAKE) go-generate
+
 # https://gist.github.com/prwhite/8168133 - based on comment from @m000
 help: ##- Show common make targets.
 	@echo "usage: make <target>"
