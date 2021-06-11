@@ -252,7 +252,21 @@ func propertyToHandlerField(property Property) HandlerField {
 	}
 }
 
-func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath string) error {
+type handlerConfig struct {
+	filePrefix string
+	fileSuffix string
+	template   string
+}
+
+var configuredHandlers = map[string]handlerConfig{
+	"get-all": {"get_", "_list.go", getListHandlerTemplate},
+	"get":     {"get_", ".go", getHandlerTemplate},
+	"post":    {"post_", ".go", postHandlerTemplate},
+	"put":     {"put_", ".go", putHandlerTemplate},
+	"delete":  {"delete_", ".go", deleteHandlerTemplate},
+}
+
+func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath string, methods []string) error {
 	packageName := strings.ToLower(resource.Name)
 	resourceBaseDir := filepath.Join(handlerBaseDir, packageName)
 
@@ -273,29 +287,16 @@ func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath stri
 		Resource: toHandlerResource(resource, toSwaggerResource(resource)),
 	}
 
-	outputPath := filepath.Join(resourceBaseDir, "get_"+packageName+".go")
-	if err := executeTemplate(getHandlerTemplate, outputPath, handler); err != nil {
-		return err
-	}
+	for _, method := range methods {
+		handlerConfig, ok := configuredHandlers[method]
+		if !ok {
+			return fmt.Errorf("unsupported method: %s", method)
+		}
 
-	outputPath = filepath.Join(resourceBaseDir, "get_"+packageName+"_list.go")
-	if err := executeTemplate(getListHandlerTemplate, outputPath, handler); err != nil {
-		return err
-	}
-
-	outputPath = filepath.Join(resourceBaseDir, "post_"+packageName+".go")
-	if err := executeTemplate(postHandlerTemplate, outputPath, handler); err != nil {
-		return err
-	}
-
-	outputPath = filepath.Join(resourceBaseDir, "put_"+packageName+".go")
-	if err := executeTemplate(putHandlerTemplate, outputPath, handler); err != nil {
-		return err
-	}
-
-	outputPath = filepath.Join(resourceBaseDir, "delete_"+packageName+".go")
-	if err := executeTemplate(deleteHandlerTemplate, outputPath, handler); err != nil {
-		return err
+		outputPath := filepath.Join(resourceBaseDir, handlerConfig.filePrefix+packageName+handlerConfig.fileSuffix)
+		if err := executeTemplate(handlerConfig.template, outputPath, handler); err != nil {
+			return err
+		}
 	}
 
 	return nil

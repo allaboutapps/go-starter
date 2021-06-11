@@ -11,6 +11,7 @@ package tools
 // Other tooling may be installed as *static binary* directly within the Dockerfile
 
 import (
+	_ "allaboutapps.dev/aw/go-starter/scripts/scaffold/scaffold"
 	_ "github.com/rubenv/sql-migrate/sql-migrate"
 	_ "github.com/spf13/cobra/cobra"
 	_ "github.com/volatiletech/sqlboiler/v4"

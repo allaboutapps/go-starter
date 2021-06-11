@@ -18,6 +18,8 @@ var (
 	pathsPath       = "testdata/paths"
 	handlerPath     = "testdata/testresource"
 	modulePath      = filepath.Join(util.GetProjectRootDir(), "go.mod")
+
+	defaultMethods = []string{"get-all", "get", "post", "put", "delete"}
 )
 
 func TestParseModel_Success(t *testing.T) {
@@ -66,7 +68,7 @@ func TestGenerateHandlers_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Execute
-	err = scaffold.GenerateHandlers(resource, "testdata", modulePath)
+	err = scaffold.GenerateHandlers(resource, "testdata", modulePath, defaultMethods)
 
 	// Assert
 	require.NoError(t, err)
