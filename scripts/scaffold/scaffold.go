@@ -185,13 +185,6 @@ func fieldToProperty(field Field) Property {
 	}
 }
 
-/*
-   What do I need?
-   - Name
-   - Placeholder value
-   - Real value
-*/
-
 type HandlerField struct {
 	Name             string
 	Value            string
