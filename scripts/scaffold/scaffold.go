@@ -94,7 +94,7 @@ type SwaggerResource struct {
 	PayloadProperties []Property
 }
 
-func GenerateSwagger(resource *StorageResource, outputPath string) error {
+func GenerateSwagger(resource *StorageResource, outputPath string, force bool) error {
 	definitionsPath := filepath.Join(outputPath, "definitions")
 	pathsPath := filepath.Join(outputPath, "paths")
 	if err := createDirIfAbsent(definitionsPath); err != nil {
@@ -108,10 +108,10 @@ func GenerateSwagger(resource *StorageResource, outputPath string) error {
 	definitionsSpecPath := filepath.Join(definitionsPath, swaggerResource.URLName+".yml")
 	pathsSpecPath := filepath.Join(pathsPath, swaggerResource.URLName+".yml")
 
-	if err := executeTemplate(swaggerDefinitionsTemplate, definitionsSpecPath, swaggerResource); err != nil {
+	if err := executeTemplate(swaggerDefinitionsTemplate, definitionsSpecPath, swaggerResource, force); err != nil {
 		return err
 	}
-	if err := executeTemplate(swaggerPathsTemplate, pathsSpecPath, swaggerResource); err != nil {
+	if err := executeTemplate(swaggerPathsTemplate, pathsSpecPath, swaggerResource, force); err != nil {
 		return err
 	}
 
@@ -266,7 +266,7 @@ var configuredHandlers = map[string]handlerConfig{
 	"delete":  {"delete_", ".go", deleteHandlerTemplate},
 }
 
-func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath string, methods []string) error {
+func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath string, methods []string, force bool) error {
 	packageName := strings.ToLower(resource.Name)
 	resourceBaseDir := filepath.Join(handlerBaseDir, packageName)
 
@@ -294,7 +294,7 @@ func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath stri
 		}
 
 		outputPath := filepath.Join(resourceBaseDir, handlerConfig.filePrefix+packageName+handlerConfig.fileSuffix)
-		if err := executeTemplate(handlerConfig.template, outputPath, handler); err != nil {
+		if err := executeTemplate(handlerConfig.template, outputPath, handler, force); err != nil {
 			return err
 		}
 	}
@@ -302,8 +302,13 @@ func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath stri
 	return nil
 }
 
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
+}
+
 func createDirIfAbsent(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if !fileExists(path) {
 		if err := os.Mkdir(path, 0755); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", path, err)
 		}
@@ -312,10 +317,14 @@ func createDirIfAbsent(path string) error {
 	return nil
 }
 
-func executeTemplate(templateStr, outputPath string, data interface{}) error {
+func executeTemplate(templateStr, outputPath string, data interface{}, force bool) error {
 	templ := template.Template{}
 	if _, err := templ.Parse(templateStr); err != nil {
 		return fmt.Errorf("failed to parse template: %w", err)
+	}
+
+	if !force && fileExists(outputPath) {
+		return fmt.Errorf("file '%s' already exists; call with --force to overwrite", outputPath)
 	}
 
 	file, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)

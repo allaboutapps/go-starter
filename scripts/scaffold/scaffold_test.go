@@ -41,7 +41,7 @@ func TestGenerateSwagger_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Execute
-	err = scaffold.GenerateSwagger(resource, "testdata")
+	err = scaffold.GenerateSwagger(resource, "testdata", true)
 
 	// Assert
 	require.NoError(t, err)
@@ -64,11 +64,11 @@ func TestGenerateHandlers_Success(t *testing.T) {
 	// Setup
 	resource, err := scaffold.ParseModel(resourcePath)
 	require.NoError(t, err)
-	err = scaffold.GenerateSwagger(resource, "testdata")
+	err = scaffold.GenerateSwagger(resource, "testdata", true)
 	require.NoError(t, err)
 
 	// Execute
-	err = scaffold.GenerateHandlers(resource, "testdata", modulePath, defaultMethods)
+	err = scaffold.GenerateHandlers(resource, "testdata", modulePath, defaultMethods, true)
 
 	// Assert
 	require.NoError(t, err)

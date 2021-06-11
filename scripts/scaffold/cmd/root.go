@@ -42,6 +42,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd.Flags().StringSliceP(methodsFlag, "m", defaultMethods, "Specify HTTP methods to generate handlers for. Example: scaffold --methods get-all,get,delete")
+	rootCmd.Flags().BoolP(forceFlag, "f", false, "Forces the tool to overwrite existing files.")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -64,17 +65,22 @@ func generate(cmd *cobra.Command, args []string) {
 		log.Fatalf("Failed to read %s: %v", methodsFlag, err)
 	}
 
+	force, err := cmd.Flags().GetBool(forceFlag)
+	if err != nil {
+		log.Fatalf("Failed to read %s: %v", forceFlag, err)
+	}
+
 	resourcePath := filepath.Join(modelPath, resourceName+".go")
 	resource, err := scaffold.ParseModel(resourcePath)
 	if err != nil {
 		log.Fatalf("Failed to parse resource from model file: %v", err)
 	}
 
-	if err = scaffold.GenerateSwagger(resource, swaggerPath); err != nil {
+	if err = scaffold.GenerateSwagger(resource, swaggerPath, force); err != nil {
 		log.Fatalf("Failed to generate Swagger spec: %v", err)
 	}
 
-	if err = scaffold.GenerateHandlers(resource, handlerPath, modulePath, methods); err != nil {
+	if err = scaffold.GenerateHandlers(resource, handlerPath, modulePath, methods, force); err != nil {
 		log.Fatalf("Failed to generate handlers: %v", err)
 	}
 
