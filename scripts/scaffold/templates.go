@@ -67,7 +67,7 @@ parameters:
     required: true
 
 paths:
-  /api/v1/{{ .URLName }}:
+  /api/v1/{{ .URLName }}s:
     get:
       security:
         - Bearer: []
@@ -101,7 +101,7 @@ paths:
           schema:
             $ref: "../definitions/{{ .URLName }}.yml#/definitions/{{ .Name }}"
 
-  /api/v1/{{ .URLName }}/{id}:
+  /api/v1/{{ .URLName }}s/{id}:
     get:
       security:
         - Bearer: []
@@ -159,9 +159,9 @@ import (
     "net/http"
     "time"
 
-    "allaboutapps.dev/OK/onekey-backend/internal/api"
-    "allaboutapps.dev/OK/onekey-backend/internal/types"
-    "allaboutapps.dev/OK/onekey-backend/internal/util"
+    "{{ .Module }}/internal/api"
+    "{{ .Module }}/internal/types"
+    "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
     "github.com/go-openapi/strfmt/conv"
     "github.com/go-openapi/swag"
@@ -204,9 +204,9 @@ import (
     "net/http"
     "time"
 
-    "allaboutapps.dev/OK/onekey-backend/internal/api"
-    "allaboutapps.dev/OK/onekey-backend/internal/types"
-    "allaboutapps.dev/OK/onekey-backend/internal/util"
+    "{{ .Module }}/internal/api"
+    "{{ .Module }}/internal/types"
+    "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
     "github.com/go-openapi/strfmt/conv"
     "github.com/go-openapi/swag"
@@ -242,9 +242,9 @@ import (
     "net/http"
     "time"
 
-    "allaboutapps.dev/OK/onekey-backend/internal/api"
-    "allaboutapps.dev/OK/onekey-backend/internal/types"
-    "allaboutapps.dev/OK/onekey-backend/internal/util"
+    "{{ .Module }}/internal/api"
+    "{{ .Module }}/internal/types"
+    "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
     "github.com/go-openapi/strfmt/conv"
     "github.com/go-openapi/swag"
@@ -285,9 +285,9 @@ import (
     "net/http"
     "time"
 
-    "allaboutapps.dev/OK/onekey-backend/internal/api"
-    "allaboutapps.dev/OK/onekey-backend/internal/types"
-    "allaboutapps.dev/OK/onekey-backend/internal/util"
+    "{{ .Module }}/internal/api"
+    "{{ .Module }}/internal/types"
+    "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
     "github.com/go-openapi/strfmt/conv"
     "github.com/go-openapi/swag"
@@ -334,7 +334,7 @@ func put{{ .Resource.Name }}Handler(s *api.Server) echo.HandlerFunc {
 import (
     "net/http"
 
-    "allaboutapps.dev/OK/onekey-backend/internal/api"
+    "{{ .Module }}/internal/api"
     "github.com/labstack/echo/v4"
 )
 

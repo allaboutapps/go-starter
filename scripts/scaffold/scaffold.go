@@ -12,6 +12,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/swag"
+	"github.com/rogpeppe/go-internal/modfile"
 )
 
 type FieldType struct {
@@ -203,6 +204,7 @@ type HandlerResource struct {
 }
 
 type Handler struct {
+	Module   string
 	Package  string
 	Resource *HandlerResource
 }
@@ -223,7 +225,7 @@ func toHandlerResource(storageResource *StorageResource, swaggerResource *Swagge
 }
 
 func propertyToHandlerField(property Property) HandlerField {
-	placeholderValue := `swag.String("PLACEHOLDER")` // Fallback placeholder
+	placeholderValue := `swag.String("` + property.Name + `")` // Fallback placeholder
 
 	switch property.Type {
 	case "integer":
@@ -250,7 +252,7 @@ func propertyToHandlerField(property Property) HandlerField {
 	}
 }
 
-func GenerateHandlers(resource *StorageResource, handlerBaseDir string) error {
+func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath string) error {
 	packageName := strings.ToLower(resource.Name)
 	resourceBaseDir := filepath.Join(handlerBaseDir, packageName)
 
@@ -260,7 +262,13 @@ func GenerateHandlers(resource *StorageResource, handlerBaseDir string) error {
 		}
 	}
 
+	module, err := getModuleName(modulePath)
+	if err != nil {
+		return err
+	}
+
 	handler := Handler{
+		Module:   module,
 		Package:  packageName,
 		Resource: toHandlerResource(resource, toSwaggerResource(resource)),
 	}
@@ -331,4 +339,16 @@ func goToJSNaming(name string) string {
 		first := strings.ToLower(name[0:1])
 		return first + name[1:]
 	}
+}
+
+func getModuleName(absolutePathToGoMod string) (string, error) {
+	dat, err := os.ReadFile(absolutePathToGoMod)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to read go.mod: %w", err)
+	}
+
+	mod := modfile.ModulePath(dat)
+
+	return mod, nil
 }

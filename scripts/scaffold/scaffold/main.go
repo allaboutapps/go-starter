@@ -16,6 +16,7 @@ var (
 	modelPath   = filepath.Join(projectRoot, "internal/models")
 	swaggerPath = filepath.Join(projectRoot, "api")
 	handlerPath = filepath.Join(projectRoot, "internal/api/handlers")
+	modulePath  = filepath.Join(util.GetProjectRootDir(), "go.mod")
 )
 
 func main() {
@@ -38,7 +39,7 @@ func main() {
 		log.Fatalf("Failed generate Swagger spec: %v", err)
 	}
 
-	if err = scaffold.GenerateHandlers(resource, handlerPath); err != nil {
+	if err = scaffold.GenerateHandlers(resource, handlerPath, modulePath); err != nil {
 		log.Fatalf("Failed generate handlers: %v", err)
 	}
 }

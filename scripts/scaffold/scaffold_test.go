@@ -6,16 +6,18 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/scripts/scaffold"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const (
+var (
 	resourcePath    = "testdata/test_resource.txt"
 	definitionsPath = "testdata/definitions"
 	pathsPath       = "testdata/paths"
 	handlerPath     = "testdata/testresource"
+	modulePath      = filepath.Join(util.GetProjectRootDir(), "go.mod")
 )
 
 func TestParseModel_Success(t *testing.T) {
@@ -64,7 +66,7 @@ func TestGenerateHandlers_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Execute
-	err = scaffold.GenerateHandlers(resource, "testdata")
+	err = scaffold.GenerateHandlers(resource, "testdata", modulePath)
 
 	// Assert
 	require.NoError(t, err)
