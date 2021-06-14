@@ -169,9 +169,8 @@ COPY Makefile /app/Makefile
 COPY go.mod /app/go.mod
 COPY go.sum /app/go.sum
 RUN make modules
-COPY tools.go /app/tools.go
-RUN make tools
 COPY . /app/
+RUN make tools
 RUN make go-build
 
 ### -----------------------
