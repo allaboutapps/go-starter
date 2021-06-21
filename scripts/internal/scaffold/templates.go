@@ -1,3 +1,5 @@
+// +build scripts
+
 package scaffold
 
 const (

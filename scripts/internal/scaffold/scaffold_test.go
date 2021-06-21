@@ -1,3 +1,5 @@
+// +build scripts
+
 package scaffold_test
 
 import (
@@ -7,7 +9,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"allaboutapps.dev/aw/go-starter/scripts/scaffold"
+	"allaboutapps.dev/aw/go-starter/scripts/internal/scaffold"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

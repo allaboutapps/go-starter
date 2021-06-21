@@ -1,3 +1,5 @@
+// +build scripts
+
 package scaffold
 
 import (
@@ -14,6 +16,8 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/rogpeppe/go-internal/modfile"
 )
+
+// Scaffolding tool to auto-generate basic CRUD handlers for a given database model.
 
 type FieldType struct {
 	Name string

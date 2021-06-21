@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# This file is automatically soft linked to "/app/bin" (which is in our PATH) while running "make init".
+# Its sole purpose is to provide a handy short command for the following (all args are passed):
+go run -tags scripts scripts/main.go "$@"

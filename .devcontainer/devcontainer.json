@@ -36,6 +36,11 @@
 		"[sql]": {
 			"editor.formatOnSave": true
 		},
+		// There are handly utility scripts within /scripts that we invoke via go run.
+		// These scripts (and its dependencies) should never be consumed by the actual server directly
+		// Thus they are flagged to require the "scripts" build tag.
+		// We only inform gopls and the vscode go compiler here, that it has to set this build tag if it sees such a file.
+		"go.buildTags": "scripts",
 		"gopls": {
 			// Add parameter placeholders when completing a function.
 			"usePlaceholders": true,
