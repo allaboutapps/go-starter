@@ -23,7 +23,7 @@ info-db: ##- (opt) Prints info about spec db.
 
 info-handlers: ##- (opt) Prints info about handlers.
 	@echo "[handlers]" > tmp/.info-handlers
-	@./scripts/gsdev handlers check --print-only >> tmp/.info-handlers
+	@./scripts/gsdev handlers check --print-all >> tmp/.info-handlers
 	@echo "" >> tmp/.info-handlers
 	@cat tmp/.info-handlers
 

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	printOnlyFlag string = "print-only"
+	printAllFlag string = "print-all"
 )
 
 var handlersCheckCmd = &cobra.Command{
@@ -19,15 +19,15 @@ var handlersCheckCmd = &cobra.Command{
 	Long:  `Checks currently implemented handlers against swagger spec.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		printOnly, err := cmd.Flags().GetBool(printOnlyFlag)
+		printAll, err := cmd.Flags().GetBool(printAllFlag)
 		if err != nil {
 			log.Fatal(err)
 		}
-		handlers.GenHandlers(printOnly)
+		handlers.CheckHandlers(printAll)
 	},
 }
 
 func init() {
 	handlersCmd.AddCommand(handlersCheckCmd)
-	handlersCheckCmd.Flags().Bool(printOnlyFlag, false, "Print only print the current implemented handlers, do not generate the file.")
+	handlersCheckCmd.Flags().Bool(printAllFlag, false, "Print only print the current implemented handlers, do not generate the file.")
 }

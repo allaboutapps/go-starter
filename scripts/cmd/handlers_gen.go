@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	printAllFlag string = "print-all"
+	printOnlyFlag string = "print-only"
 )
 
 var handlersGenCmd = &cobra.Command{
@@ -19,15 +19,15 @@ var handlersGenCmd = &cobra.Command{
 	Long:  `Generates internal/api/handlers/handlers.go file based on the current implemented handlers.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		printAll, err := cmd.Flags().GetBool(printAllFlag)
+		printOnly, err := cmd.Flags().GetBool(printOnlyFlag)
 		if err != nil {
 			log.Fatal(err)
 		}
-		handlers.CheckHandlers(printAll)
+		handlers.GenHandlers(printOnly)
 	},
 }
 
 func init() {
 	handlersCmd.AddCommand(handlersGenCmd)
-	handlersGenCmd.Flags().Bool(printAllFlag, false, "Print all checked handlers regardless of errors.")
+	handlersGenCmd.Flags().Bool(printOnlyFlag, false, "Print all checked handlers regardless of errors.")
 }
