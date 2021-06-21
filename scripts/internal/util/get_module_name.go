@@ -1,6 +1,6 @@
 // +build scripts
 
-package scripts
+package util
 
 import (
 	"io/ioutil"

@@ -1,14 +1,14 @@
+// +build scripts
+
 package cmd
 
 import (
-	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"path/filepath"
 
-	"allaboutapps.dev/aw/go-starter/internal/util"
-	"allaboutapps.dev/aw/go-starter/scripts/scaffold"
+	"allaboutapps.dev/aw/go-starter/scripts/internal/scaffold"
+	"allaboutapps.dev/aw/go-starter/scripts/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -31,23 +31,17 @@ var (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+var scaffoldCmd = &cobra.Command{
 	Use:   "scaffold [resource name]",
 	Short: "Scaffolding tool for CRUD endpoints.",
 	Long:  "Scaffolding tool to generate CRUD endpoint stubs from sqlboiler model definitions.",
 	Run:   generate,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	rootCmd.Flags().StringSliceP(methodsFlag, "m", defaultMethods, "Specify HTTP methods to generate handlers for. Example: scaffold --methods get-all,get,delete")
-	rootCmd.Flags().BoolP(forceFlag, "f", false, "Forces the tool to overwrite existing files.")
-
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+func init() {
+	rootCmd.AddCommand(scaffoldCmd)
+	scaffoldCmd.Flags().StringSliceP(methodsFlag, "m", defaultMethods, "Specify HTTP methods to generate handlers for. Example: scaffold --methods get-all,get,delete")
+	scaffoldCmd.Flags().BoolP(forceFlag, "f", false, "Forces the tool to overwrite existing files.")
 }
 
 func generate(cmd *cobra.Command, args []string) {
