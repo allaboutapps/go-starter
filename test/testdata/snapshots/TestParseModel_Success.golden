@@ -1,0 +1,89 @@
+(*scaffold.StorageResource)({
+  Name: (string) (len=12) "TestResource",
+  Fields: ([]scaffold.Field) (len=14) {
+    (scaffold.Field) {
+      Name: (string) (len=2) "ID",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=6) "string"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=12) "NumericField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=13) "types.Decimal"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=16) "NumericNullField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=17) "types.NullDecimal"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=12) "IntegerField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=3) "int"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=16) "IntegerNullField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=8) "null.Int"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=9) "BoolField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=4) "bool"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=13) "BoolNullField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=9) "null.Bool"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=12) "DecimalField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=13) "types.Decimal"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=16) "DecimalNullField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=17) "types.NullDecimal"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=9) "TextField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=6) "string"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=13) "TextNullField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=11) "null.String"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=21) "TimtestamptzNullField",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=9) "null.Time"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=9) "CreatedAt",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=9) "time.Time"
+      }
+    },
+    (scaffold.Field) {
+      Name: (string) (len=9) "UpdatedAt",
+      Type: (scaffold.FieldType) {
+        Name: (string) (len=9) "time.Time"
+      }
+    }
+  }
+})

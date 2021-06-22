@@ -34,7 +34,7 @@ info-go: ##- (opt) Prints go.mod updates, module-name and current go version.
 	@go version >> tmp/.info-go
 	@cat tmp/.info-go
 
-lint: check-gen-dirs check-handlers check-embedded-modules-go-not go-lint  ##- Runs golangci-lint and make check-*.
+lint: check-gen-dirs check-script-dir check-handlers check-embedded-modules-go-not go-lint  ##- Runs golangci-lint and make check-*.
 
 # these recipies may execute in parallel
 build-pre: sql swagger ##- (opt) Runs pre-build related targets (sql, swagger, go-generate).
@@ -64,6 +64,10 @@ check-gen-dirs: ##- (opt) Ensures internal/models|types only hold generated file
 	@echo "make check-gen-dirs"
 	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/types/ && echo "Error: Non generated file(s) in ./internal/types!" && exit 1 || exit 0
 	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/models/ && echo "Error: Non generated file(s) in ./internal/models!" && && exit 1 || exit 0
+
+check-script-dir: ##- (opt) Ensures all scripts/**/*.go files have the "// +build scripts" build tag set.
+	@echo "make check-script-dir"
+	@grep -R --include=*.go -L '// +build scripts' ./scripts && echo "Error: Found unset '// +build scripts' in ./scripts/**/*.go!" && exit 1 || exit 0
 
 # https://github.com/gotestyourself/gotestsum#format 
 # w/o cache https://github.com/golang/go/issues/24573 - see "go help testflag"
@@ -100,17 +104,25 @@ get-go-outdated-modules: ##- (opt) Prints outdated (direct) go modules (from go.
 watch-tests: ##- Watches *.go files and runs package tests on modifications.
 	gotestsum --format testname --watch -- -race -count=1
 
+test-scripts: ##- (opt) Run scripts tests (gsdev), output by package, print coverage.
+	@$(MAKE) go-test-scripts-by-pkg
+	@printf "coverage "
+	@go tool cover -func=/tmp/coverage-scripts.out | tail -n 1 | awk '{$$1=$$1;print}'
+
+go-test-scripts-by-pkg: ##- (opt) Run scripts tests (gsdev), output by package.
+	gotestsum --format pkgname-and-test-fails --jsonfile /tmp/test.log -- $$(go list -tags scripts ./... | grep "${GO_MODULE_NAME}/scripts") -tags scripts -race -cover -count=1 -coverprofile=/tmp/coverage-scripts.out ./...
+
 ### -----------------------
 # --- Initializing
 ### -----------------------
 
-init: ##- Runs make modules, tools and tidy.
+init: ##- Runs make gsdev, modules, tools and tidy.
 	@$(MAKE) gsdev
 	@$(MAKE) modules
 	@$(MAKE) tools
 	@$(MAKE) tidy
 
-gsdev: ##- (opt) Symlink our go-starter script utility "gsdev" (/scripts) to /app/bin/gsdev
+gsdev: ##- (opt) Symlink our go-starter script utility "gsdev" (/scripts) to /app/bin/gsdev.
 	chmod +x /app/scripts/gsdev && ln -sf /app/scripts/gsdev /app/bin/gsdev
 
 # cache go modules (locally into .pkg)
