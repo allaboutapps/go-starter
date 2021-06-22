@@ -206,8 +206,7 @@ pipeline:
     environment: *TEST_ENV
     when:
       repo: AW/go-starter
-      branch: [master, mr/a3cloud, mr/liveness-probing]
-      event: [push, pull_request, tag]
+      event: *BUILD_EVENTS
 
   "git-compare-go-starter":
     group: test
