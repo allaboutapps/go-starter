@@ -7,6 +7,12 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-06-14
+### Changed
+- Internal scripts are no longer called via `go run [script]` but via the new helper Bash script `gsdev [script]` which gets copied to `bin` on `make init`.
+
+### Added
+- Scaffolding tool to quickly generate generic CRUD endpoint stubs. Usage: `gsdev scaffold [resource name] [flags]`
 ## 2021-05-26
 ### Changed
 - Scans for [CVE-2020-26160](https://nvd.nist.gov/vuln/detail/CVE-2020-26160) also match for our final `app` binary, however, we do not use `github.com/dgrijalva/jwt-go` as part of our auth logic. This dependency is mostly here because of child dependencies, that yet need to upgrade to `>=v4.0.0`. Therefore, we currently disable this CVE for scans in this project (via `.trivyignore`).

@@ -108,15 +108,15 @@ RUN curl -o /usr/local/bin/swagger -L'#' \
 # lichen: go license util 
 # TODO: Install from static binary as soon as it becomes available.
 # https://github.com/uw-labs/lichen/releases
-RUN go install github.com/uw-labs/lichen@v0.1.3
+RUN go install github.com/uw-labs/lichen@v0.1.4
 
 # watchexec
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/cli-v1.16.0/watchexec-1.16.0-x86_64-unknown-linux-gnu.tar.xz \
-    && tar xf watchexec-1.16.0-x86_64-unknown-linux-gnu.tar.xz \
-    && cp watchexec-1.16.0-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/cli-v1.16.1/watchexec-1.16.1-x86_64-unknown-linux-gnu.tar.xz \
+    && tar xf watchexec-1.16.1-x86_64-unknown-linux-gnu.tar.xz \
+    && cp watchexec-1.16.1-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # linux permissions / vscode support: Add user to avoid linux file permission issues

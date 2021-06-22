@@ -306,7 +306,7 @@ func fileExists(path string) bool {
 
 func createDirIfAbsent(path string) error {
 	if !fileExists(path) {
-		if err := os.Mkdir(path, 0755); err != nil {
+		if err := os.MkdirAll(path, 0755); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", path, err)
 		}
 	}

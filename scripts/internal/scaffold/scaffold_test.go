@@ -25,8 +25,6 @@ var (
 )
 
 func TestParseModel_Success(t *testing.T) {
-	t.Skip()
-
 	// Execute
 	resource, err := scaffold.ParseModel(resourcePath)
 
@@ -36,8 +34,6 @@ func TestParseModel_Success(t *testing.T) {
 }
 
 func TestGenerateSwagger_Success(t *testing.T) {
-	t.Skip()
-
 	// Setup
 	resource, err := scaffold.ParseModel(resourcePath)
 	require.NoError(t, err)
@@ -50,8 +46,8 @@ func TestGenerateSwagger_Success(t *testing.T) {
 
 	assert.DirExists(t, definitionsPath, "Should create the definitions directory")
 	assert.DirExists(t, pathsPath, "Should create the paths directory")
-	assert.FileExists(t, filepath.Join(definitionsPath, "test_resource.yml"), "Should generate the definition spec")
-	assert.FileExists(t, filepath.Join(pathsPath, "test_resource.yml"), "Should generate the paths spec")
+	assert.FileExists(t, filepath.Join(definitionsPath, "testresource.yml"), "Should generate the definition spec")
+	assert.FileExists(t, filepath.Join(pathsPath, "testresource.yml"), "Should generate the paths spec")
 
 	// Cleanup
 	err = os.RemoveAll(definitionsPath)
@@ -61,8 +57,6 @@ func TestGenerateSwagger_Success(t *testing.T) {
 }
 
 func TestGenerateHandlers_Success(t *testing.T) {
-	t.Skip()
-
 	// Setup
 	resource, err := scaffold.ParseModel(resourcePath)
 	require.NoError(t, err)
