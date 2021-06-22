@@ -197,6 +197,18 @@ pipeline:
     environment: *TEST_ENV
     <<: *WHEN_BUILD_EVENT
 
+  "test-scripts (gsdev, go-starter only)":
+    group: test
+    image: *IMAGE_BUILDER_ID
+    commands:
+      - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
+      - make test-scripts
+    environment: *TEST_ENV
+    when:
+      repo: AW/go-starter
+      branch: [master, mr/a3cloud, mr/liveness-probing]
+      event: [push, pull_request, tag]
+
   "git-compare-go-starter":
     group: test
     image: *IMAGE_BUILDER_ID
@@ -258,90 +270,90 @@ pipeline:
   # PUBLISH
   # ---------------------------------------------------------------------------
 
-#   # Built a allowed branch? Push to cloud registry
-#   "publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
-#     group: publish
-#     <<: *GCR_REGISTRY_SETTINGS
-#     tags:
-#       - build_${DRONE_BUILD_NUMBER}
-#       - ${DRONE_BRANCH/\//-}_${DRONE_COMMIT_SHA:0:10}
-#       - *IMAGE_DEPLOY_TAG
-#       - latest
-#       - ${DRONE_BRANCH/\//-}
-#       - '${DRONE_COMMIT_SHA:0:10}'
-#     when:
-#       branch: *GCR_PUBLISH_BRANCHES
-#       event: *BUILD_EVENTS
+  #   # Built a allowed branch? Push to cloud registry
+  #   "publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
+  #     group: publish
+  #     <<: *GCR_REGISTRY_SETTINGS
+  #     tags:
+  #       - build_${DRONE_BUILD_NUMBER}
+  #       - ${DRONE_BRANCH/\//-}_${DRONE_COMMIT_SHA:0:10}
+  #       - *IMAGE_DEPLOY_TAG
+  #       - latest
+  #       - ${DRONE_BRANCH/\//-}
+  #       - '${DRONE_COMMIT_SHA:0:10}'
+  #     when:
+  #       branch: *GCR_PUBLISH_BRANCHES
+  #       event: *BUILD_EVENTS
 
-#   # Built a tag? Push to cloud registry
-#   "publish tag_${DRONE_COMMIT_SHA:0:10}":
-#     group: publish
-#     <<: *GCR_REGISTRY_SETTINGS
-#     tags:
-#       - build_${DRONE_BUILD_NUMBER}
-#       - tag_${DRONE_COMMIT_SHA:0:10}
-#       - *IMAGE_DEPLOY_TAG
-#       - latest
-#       - ${DRONE_TAG}
-#       - ${DRONE_COMMIT_SHA:0:10}
-#     when:
-#       event: tag
+  #   # Built a tag? Push to cloud registry
+  #   "publish tag_${DRONE_COMMIT_SHA:0:10}":
+  #     group: publish
+  #     <<: *GCR_REGISTRY_SETTINGS
+  #     tags:
+  #       - build_${DRONE_BUILD_NUMBER}
+  #       - tag_${DRONE_COMMIT_SHA:0:10}
+  #       - *IMAGE_DEPLOY_TAG
+  #       - latest
+  #       - ${DRONE_TAG}
+  #       - ${DRONE_COMMIT_SHA:0:10}
+  #     when:
+  #       event: tag
 
-# ---------------------------------------------------------------------------
-# DEPLOYMENT
-# ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # DEPLOYMENT
+  # ---------------------------------------------------------------------------
 
-#   # autodeploy dev if it hits the branch
-#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (auto)":
-#     <<: *K8S_DEPLOY_SETTINGS
-#     namespace: ${K8S_DEPLOY_NS_DEV}
-#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_DEV}/app.deployment.yaml
-#     when:
-#       event: *BUILD_EVENTS
-#       branch: [dev]
+  #   # autodeploy dev if it hits the branch
+  #   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (auto)":
+  #     <<: *K8S_DEPLOY_SETTINGS
+  #     namespace: ${K8S_DEPLOY_NS_DEV}
+  #     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_DEV}/app.deployment.yaml
+  #     when:
+  #       event: *BUILD_EVENTS
+  #       branch: [dev]
 
-#   # promote dev through "drone deploy <repo> <build> dev"
-#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (promote)":
-#     <<: *K8S_DEPLOY_SETTINGS
-#     namespace: ${K8S_DEPLOY_NS_DEV}
-#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_DEV}/app.deployment.yaml
-#     when:
-#       environment: dev
-#       event: deployment
+  #   # promote dev through "drone deploy <repo> <build> dev"
+  #   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_DEV} (promote)":
+  #     <<: *K8S_DEPLOY_SETTINGS
+  #     namespace: ${K8S_DEPLOY_NS_DEV}
+  #     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_DEV}/app.deployment.yaml
+  #     when:
+  #       environment: dev
+  #       event: deployment
 
-#   # autodeploy staging if it hits the branch
-#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_STAGING} (auto)":
-#     <<: *K8S_DEPLOY_SETTINGS
-#     namespace: ${K8S_DEPLOY_NS_STAGING}
-#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_STAGING}/app.deployment.yaml
-#     when:
-#       event: *BUILD_EVENTS
-#       branch: [staging]
+  #   # autodeploy staging if it hits the branch
+  #   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_STAGING} (auto)":
+  #     <<: *K8S_DEPLOY_SETTINGS
+  #     namespace: ${K8S_DEPLOY_NS_STAGING}
+  #     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_STAGING}/app.deployment.yaml
+  #     when:
+  #       event: *BUILD_EVENTS
+  #       branch: [staging]
 
-#   # promote staging through "drone deploy <repo> <build> staging"
-#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_STAGING} (promote)":
-#     <<: *K8S_DEPLOY_SETTINGS
-#     namespace: ${K8S_DEPLOY_NS_STAGING}
-#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_STAGING}/app.deployment.yaml
-#     when:
-#       environment: staging
-#       event: deployment
+  #   # promote staging through "drone deploy <repo> <build> staging"
+  #   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_STAGING} (promote)":
+  #     <<: *K8S_DEPLOY_SETTINGS
+  #     namespace: ${K8S_DEPLOY_NS_STAGING}
+  #     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_STAGING}/app.deployment.yaml
+  #     when:
+  #       environment: staging
+  #       event: deployment
 
-#   # promote production through "drone deploy <repo> <build> production"
-#   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_PRODUCTION} (promote)":
-#     <<: *K8S_DEPLOY_SETTINGS
-#     namespace: ${K8S_DEPLOY_NS_PRODUCTION}
-#     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_PRODUCTION}/app.deployment.yaml
-#     when:
-#       environment: production
-#       event: deployment
+  #   # promote production through "drone deploy <repo> <build> production"
+  #   "deploy ${DRONE_COMMIT_SHA:0:10} to ${K8S_DEPLOY_NS_PRODUCTION} (promote)":
+  #     <<: *K8S_DEPLOY_SETTINGS
+  #     namespace: ${K8S_DEPLOY_NS_PRODUCTION}
+  #     mgmt_deployment_yaml: namespaces/${K8S_DEPLOY_NS_PRODUCTION}/app.deployment.yaml
+  #     when:
+  #       environment: production
+  #       event: deployment
 
-# ---------------------------------------------------------------------------
-# DEPLOYMENT go-starter
-# Purpose: go-starter drone specific publish and deployment steps
-# NOTE: you do not need to uncomment them for our customer projects
-# These steps won't be executed unless we work in the main "AW/go-starter" repo
-# ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # DEPLOYMENT go-starter
+  # Purpose: go-starter drone specific publish and deployment steps
+  # NOTE: you do not need to uncomment them for our customer projects
+  # These steps won't be executed unless we work in the main "AW/go-starter" repo
+  # ---------------------------------------------------------------------------
 
   "go-starter publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
     group: go-starter-publish
@@ -363,25 +375,25 @@ pipeline:
       - *IMAGE_DEPLOY_TAG
       - latest
       - ${DRONE_BRANCH/\//-}
-      - '${DRONE_COMMIT_SHA:0:10}'
+      - "${DRONE_COMMIT_SHA:0:10}"
     when:
       repo: AW/go-starter
       branch: [master, mr/a3cloud, mr/liveness-probing]
       event: [push, pull_request, tag]
 
-  "go-starter deploy ${DRONE_COMMIT_SHA:0:10} to allaboutapps-go-starter-dev (auto)":
-    group: go-starter-deploy
+  ? "go-starter deploy ${DRONE_COMMIT_SHA:0:10} to allaboutapps-go-starter-dev (auto)"
+  : group: go-starter-deploy
     image: eu.gcr.io/a3cloud-192413/aw/aaa-drone-kubernetes:latest
     pull: true
     secrets:
-    - source: AAA_K8S_SERVER
-      target: KUBERNETES_SERVER
-    - source: AAA_K8S_SERVICE_ACCOUNT_CRT
-      target: KUBERNETES_CERT
-    - source: AAA_K8S_SERVICE_ACCOUNT_TOKEN
-      target: KUBERNETES_TOKEN
-    - source: AAA_GCR_SERVICE_ACCOUNT_JSON
-      target: GCR_SERVICE_ACCOUNT
+      - source: AAA_K8S_SERVER
+        target: KUBERNETES_SERVER
+      - source: AAA_K8S_SERVICE_ACCOUNT_CRT
+        target: KUBERNETES_CERT
+      - source: AAA_K8S_SERVICE_ACCOUNT_TOKEN
+        target: KUBERNETES_TOKEN
+      - source: AAA_GCR_SERVICE_ACCOUNT_JSON
+        target: GCR_SERVICE_ACCOUNT
     deployment: app
     repo: eu.gcr.io/a3cloud-192413/${DRONE_REPO,,}
     container: [app]

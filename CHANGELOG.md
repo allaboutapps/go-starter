@@ -7,12 +7,20 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
-## 2021-06-14
+## 2021-06-22
 ### Changed
-- Internal scripts are no longer called via `go run [script]` but via the new helper Bash script `gsdev [script]` which gets copied to `bin` on `make init`.
+- Development scripts are no longer called via `go run [script]` but via `gsdev`:
+  - The `gsdev` cli is our new entrypoint for development workflow specific scripts, these scripts are not available in the final `app` binary.
+  - All previous `go run` scripts have been moved to their respective `/scripts/cmd` cli entrypoint + internal implementation within `/scripts/internal/**`.
+  - Please use `gsdev --help` to get an overview of available development specific commands.
+  - `gsdev` relys on a tiny helper bash script `scripts/gsdev` which gets symlinked to `/app/bin` on `make init`.
+  - Use `make test-scripts` to run tests regarding these internal scripts within `/scripts/**/*_test.go`.
+  - We now enforce that all `/scripts/**/*.go` files set the `// +build scripts` build tag. We do this to ensure these files are not directly depended upon from the actual `app` source-code within `/internal`.
+- VSCode's `.devcontainer/devcontainer.json` now defines that the go tooling must use the `scripts` build tag for its IntelliSense. This is neccessary to still get proper code-completion when modifying resources at `/scripts/**/*.go`. You may need to reattach VSCode and/or run `./docker-helper.sh --rebuild`.
 
 ### Added
-- Scaffolding tool to quickly generate generic CRUD endpoint stubs. Usage: `gsdev scaffold [resource name] [flags]`
+- Scaffolding tool to quickly generate generic CRUD endpoint stubs. Usage: `gsdev scaffold [resource name] [flags]`, also see `gsdev scaffold --help`.
+
 ## 2021-05-26
 ### Changed
 - Scans for [CVE-2020-26160](https://nvd.nist.gov/vuln/detail/CVE-2020-26160) also match for our final `app` binary, however, we do not use `github.com/dgrijalva/jwt-go` as part of our auth logic. This dependency is mostly here because of child dependencies, that yet need to upgrade to `>=v4.0.0`. Therefore, we currently disable this CVE for scans in this project (via `.trivyignore`).
