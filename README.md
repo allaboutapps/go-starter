@@ -218,6 +218,7 @@ Please make sure to update tests as appropriate.
 - [Nick Müller - @MorpheusXAUT](https://github.com/MorpheusXAUT)
 - [Mario Ranftl - @majodev](https://github.com/majodev)
 - [Manuel Wieser - @mwieser](https://github.com/mwieser)
+- [Dominic Aschauer - @eldelto](https://github.com/eldelto)
 
 ## License
 

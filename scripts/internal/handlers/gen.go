@@ -6,10 +6,9 @@
 // Supported args:
 // -print-only
 
-package main
+package handlers
 
 import (
-	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -21,7 +20,7 @@ import (
 	"strings"
 	"text/template"
 
-	"allaboutapps.dev/aw/go-starter/scripts"
+	"allaboutapps.dev/aw/go-starter/scripts/internal/util"
 )
 
 // https://blog.carlmjohnson.net/post/2016-11-27-how-to-use-go-generate/
@@ -29,7 +28,7 @@ import (
 var (
 	HANDLERS_PACKAGE = "/internal/api/handlers"
 
-	PATH_PROJECT_ROOT  = scripts.GetProjectRootDir()
+	PATH_PROJECT_ROOT  = util.GetProjectRootDir()
 	PATH_HANDLERS_ROOT = PATH_PROJECT_ROOT + HANDLERS_PACKAGE
 	PATH_MOD_FILE      = PATH_PROJECT_ROOT + "/go.mod"
 	PATH_HANDLERS_FILE = PATH_HANDLERS_ROOT + "/handlers.go"
@@ -76,14 +75,10 @@ type TempateData struct {
 
 // get all functions in above handler packages
 // that match <METHOD_PREFIXES>*<METHOD_SUFFIX>
-func main() {
-
-	printOnly := flag.Bool("print-only", false, "If specified, will only print our handlers without doing anything.")
-	flag.Parse()
-
+func GenHandlers(printOnly bool) {
 	funcs := []ResolvedFunction{}
 
-	baseModuleName, err := scripts.GetModuleName(PATH_MOD_FILE)
+	baseModuleName, err := util.GetModuleName(PATH_MOD_FILE)
 
 	if err != nil {
 		log.Fatal(err)
@@ -161,7 +156,7 @@ func main() {
 		}
 	}
 
-	if *printOnly == true {
+	if printOnly == true {
 		for _, function := range funcs {
 			fmt.Println(function.PackageNameFQDN, function.FunctionName)
 		}
@@ -182,5 +177,113 @@ func main() {
 		SubPkgs: subPkgs,
 		Funcs:   funcs,
 	})
-
 }
+
+// func main() {
+
+// 	printOnly := flag.Bool("print-only", false, "If specified, will only print our handlers without doing anything.")
+// 	flag.Parse()
+
+// 	funcs := []ResolvedFunction{}
+
+// 	baseModuleName, err := util.GetModuleName(PATH_MOD_FILE)
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	set := token.NewFileSet()
+
+// 	err = filepath.Walk(PATH_HANDLERS_ROOT, func(path string, f os.FileInfo, err error) error {
+
+// 		// ignore handler file to be generated
+// 		// ignore directories
+// 		// ignore non go files
+// 		// ignore test go files
+// 		if path == PATH_HANDLERS_FILE || f.IsDir() || strings.HasSuffix(path, ".go") == false || strings.HasSuffix(path, "test.go") {
+// 			return nil
+// 		}
+
+// 		gofile, err := parser.ParseFile(set, path, nil, 0)
+
+// 		if err != nil {
+// 			fmt.Println("Failed to parse package:", err)
+// 			os.Exit(1)
+// 		}
+
+// 		fileDir := filepath.Dir(path)
+// 		packageNameFQDN := strings.Replace(fileDir, PATH_PROJECT_ROOT, baseModuleName, 1)
+
+// 		for _, d := range gofile.Decls {
+
+// 			if fn, isFn := d.(*ast.FuncDecl); isFn {
+
+// 				fnName := fn.Name.String()
+
+// 				for _, prefix := range METHOD_PREFIXES {
+// 					if strings.HasPrefix(fnName, prefix) && strings.HasSuffix(fnName, METHOD_SUFFIX) {
+// 						funcs = append(funcs, ResolvedFunction{
+// 							FunctionName:    fnName,
+// 							PackageName:     gofile.Name.Name,
+// 							PackageNameFQDN: packageNameFQDN,
+// 						})
+// 					}
+// 				}
+// 			}
+// 		}
+
+// 		// fmt.Println(packageNameFQDN, path)
+
+// 		return nil
+// 	})
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	// stable sort the functions
+// 	// first PackageName then FunctionName
+// 	sort.Slice(funcs[:], func(i, j int) bool {
+// 		return funcs[i].PackageNameFQDN+funcs[i].FunctionName < funcs[j].PackageNameFQDN+funcs[j].FunctionName
+// 	})
+
+// 	// only add subPkg if there was actually a route within it found
+// 	subPkgs := []string{}
+// 	for _, fun := range funcs {
+
+// 		mustAppend := true
+
+// 		for _, a := range subPkgs {
+// 			if a == fun.PackageNameFQDN {
+// 				mustAppend = false
+// 			}
+// 		}
+
+// 		if mustAppend == true {
+// 			subPkgs = append(subPkgs, fun.PackageNameFQDN)
+// 		}
+// 	}
+
+// 	if *printOnly == true {
+// 		for _, function := range funcs {
+// 			fmt.Println(function.PackageNameFQDN, function.FunctionName)
+// 		}
+
+// 		// bailout
+// 		return
+// 	}
+
+// 	f, err := os.Create(PATH_HANDLERS_FILE)
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	defer f.Close()
+
+// 	PACKAGE_TEMPLATE.Execute(f, TempateData{
+// 		SubPkgs: subPkgs,
+// 		Funcs:   funcs,
+// 	})
+
+// }
