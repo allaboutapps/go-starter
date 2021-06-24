@@ -51,12 +51,13 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           push: false
-          tags: allaboutapps/go-starter:${{ github.sha }}
+          tags: allaboutapps.dev/aw/go-starter:builder-${{ github.sha }}
           target: builder
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
+          load: true # make the image available for local docker run commands
       - name: Create container
-        run: docker run -d --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" --name=builder -it allaboutapps/go-starter:${GITHUB_SHA}
+        run: docker run -d --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" --name=builder -it allaboutapps.dev/aw/go-starter:builder-${GITHUB_SHA}
       - name: make tidy
         run: docker exec builder make tidy
       - name: make build
