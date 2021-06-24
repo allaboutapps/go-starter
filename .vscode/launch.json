@@ -23,6 +23,17 @@
             "program": "${fileDirname}",
             "env": {},
             "args": []
+        },
+        {
+            "name": "Launch file and update snapshots",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "env": {
+                "TEST_UPDATE_GOLDEN": true
+            },
+            "args": []
         }
     ]
 }

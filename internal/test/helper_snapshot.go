@@ -67,7 +67,7 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 			t.Fatal(err)
 		}
 
-		t.Fatalf("Updating snapshot: '%s'", snapshotName)
+		t.Errorf("Updating snapshot: '%s'", snapshotName)
 	}
 
 	prevSnapBytes, err := ioutil.ReadFile(snapshotAbsPath)
@@ -99,6 +99,11 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 
 		t.Error(diff)
 	}
+}
+
+// SaveU is a short version for .Update(true).Save(...)
+func (s snapshoter) SaveU(t TestingT, data ...interface{}) {
+	s.Update(true).Save(t, data...)
 }
 
 // Skip creates a custom replace function using a regex, this will replace any
