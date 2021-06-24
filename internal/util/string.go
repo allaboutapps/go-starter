@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
+	"strings"
 )
 
 // GenerateRandomBytes returns n random bytes securely generated using the system's default CSPRNG.
@@ -49,4 +51,71 @@ func GenerateRandomHexString(n int) (string, error) {
 	}
 
 	return hex.EncodeToString(b), nil
+}
+
+type CharRange int
+
+const (
+	CharRangeNumeric CharRange = iota
+	CharRangeAlphaLowerCase
+	CharRangeAlphaUpperCase
+)
+
+// GenerateRandomString returns a string with n random bytes securely generated using the system's
+// default CSPRNG. The characters within the generated string will either be part of one ore more supplied
+// range of characters, or based on characters in the extra string supplied.
+//
+// An error will be returned if reading from the secure random number generator fails, at which point
+// the returned result should be discarded and not used any further.
+func GenerateRandomString(n int, ranges []CharRange, extra string) (string, error) {
+	var str strings.Builder
+
+	if len(ranges) == 0 && len(extra) == 0 {
+		return "", errors.New("Random string can only be created if set of characters or extra string characters supplied")
+	}
+
+	validateFn := func(c byte) bool {
+		// IndexByte(string, byte) is basically Contains(string, string) without casting
+		if strings.IndexByte(extra, c) >= 0 {
+			return true
+		}
+
+		for _, r := range ranges {
+			switch r {
+			case CharRangeNumeric:
+				if c >= '0' && c <= '9' {
+					return true
+				}
+			case CharRangeAlphaLowerCase:
+				if c >= 'a' && c <= 'z' {
+					return true
+				}
+			case CharRangeAlphaUpperCase:
+				if c >= 'A' && c <= 'Z' {
+					return true
+				}
+			}
+		}
+
+		return false
+	}
+
+	for str.Len() < n {
+
+		buf, err := GenerateRandomBytes(n)
+		if err != nil {
+			return "", err
+		}
+
+		for _, b := range buf {
+			if validateFn(b) {
+				str.WriteByte(b)
+			}
+			if str.Len() >= n {
+				break
+			}
+		}
+	}
+
+	return str.String(), nil
 }
