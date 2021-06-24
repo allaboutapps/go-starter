@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"allaboutapps.dev/aw/go-starter/scripts/internal/scaffold"
-	"allaboutapps.dev/aw/go-starter/scripts/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -18,11 +17,9 @@ const (
 )
 
 var (
-	projectRoot = util.GetProjectRootDir()
 	modelPath   = filepath.Join(projectRoot, "internal/models")
 	swaggerPath = filepath.Join(projectRoot, "api")
 	handlerPath = filepath.Join(projectRoot, "internal/api/handlers")
-	modulePath  = filepath.Join(util.GetProjectRootDir(), "go.mod")
 
 	makeSwaggerCmd    = exec.Command("make", "swagger")
 	makeGoGenerateCmd = exec.Command("make", "go-generate")

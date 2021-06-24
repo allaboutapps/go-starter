@@ -21,6 +21,8 @@
   - Bump golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a to v0.0.0-20210616213533-5ff15b29337e
   - Bump golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea to v0.0.0-20210616094352-59db8d763f22
   - Bump google.golang.org/api v0.47.0 to v0.49.0
+- Fixes linting within `/scripts/**/*.go`, now activated by default.
+
 ## 2021-06-22
 ### Changed
 - Development scripts are no longer called via `go run [script]` but via `gsdev`:
