@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/rs/zerolog/log"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -22,6 +24,7 @@ var (
 	ErrUnauthorizedLastAuthenticatedAtExceeded = httperrors.NewHTTPError(http.StatusUnauthorized, "LAST_AUTHENTICATED_AT_EXCEEDED", "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
 	ErrForbiddenUserDeactivated                = httperrors.NewHTTPError(http.StatusForbidden, "USER_DEACTIVATED", "User account is deactivated")
 	ErrForbiddenMissingScopes                  = httperrors.NewHTTPError(http.StatusForbidden, "MISSING_SCOPES", "User is missing required scopes")
+	ErrAuthTokenValidationFailed               = errors.New("auth token validation failed")
 )
 
 // Controls the type of authentication check performed for a specific route or group
@@ -152,6 +155,30 @@ func DefaultAuthTokenFormatValidator(token string) bool {
 	return strfmt.IsUUID4(token)
 }
 
+type AuthTokenValidator func(c echo.Context, config AuthConfig, token string) (auth.AuthenticationResult, error)
+
+func DefaultAuthTokenValidator(c echo.Context, config AuthConfig, token string) (auth.AuthenticationResult, error) {
+	accessToken, err := models.AccessTokens(
+		models.AccessTokenWhere.Token.EQ(token),
+		qm.Load(models.AccessTokenRels.User),
+	).One(c.Request().Context(), config.S.DB)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Trace().Err(err).Msg("Access token not found in database")
+			return auth.AuthenticationResult{}, ErrAuthTokenValidationFailed
+		}
+
+		log.Error().Err(err).Msg("Failed to query for access token in database, aborting request")
+		return auth.AuthenticationResult{}, echo.ErrInternalServerError
+	}
+
+	return auth.AuthenticationResult{
+		Token:      accessToken.Token,
+		User:       accessToken.R.User,
+		ValidUntil: accessToken.ValidUntil,
+	}, nil
+}
+
 var (
 	DefaultAuthConfig = AuthConfig{
 		Mode:            AuthModeRequired,
@@ -161,6 +188,8 @@ var (
 		Scheme:          "Bearer",
 		Skipper:         middleware.DefaultSkipper,
 		FormatValidator: DefaultAuthTokenFormatValidator,
+		TokenValidator:  DefaultAuthTokenValidator,
+		Scopes:          []string{auth.AuthScopeApp.String()},
 	}
 )
 
@@ -173,6 +202,7 @@ type AuthConfig struct {
 	Scheme          string                   // Sets required token scheme (default: "Bearer")
 	Skipper         middleware.Skipper       // Controls skipping of certain routes (default: no skipped routes)
 	FormatValidator AuthTokenFormatValidator // Validates the format of the token retrieved
+	TokenValidator  AuthTokenValidator       // Validates token retrieved and returns associated user (default: performs lookup in access_tokens table)
 	Scopes          []string                 // List of scopes required to access endpoint (default: none required)
 }
 
@@ -188,7 +218,7 @@ func (c AuthConfig) CheckLastAuthenticatedAt(user *models.User) bool {
 	return time.Since(user.LastAuthenticatedAt.Time).Seconds() <= c.S.Config.Auth.LastAuthenticatedAtThreshold.Seconds()
 }
 
-func (c AuthConfig) CheckScopes(user *models.User) bool {
+func (c AuthConfig) CheckUserScopes(user *models.User) bool {
 	if len(c.Scopes) == 0 {
 		return true
 	}
@@ -235,6 +265,10 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 		config.FormatValidator = DefaultAuthConfig.FormatValidator
 	}
 
+	if config.TokenValidator == nil {
+		config.TokenValidator = DefaultAuthConfig.TokenValidator
+	}
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			log := util.LogFromEchoContext(c).With().Str("middleware", "auth").Str("auth_mode", config.Mode.String()).Logger()
@@ -259,7 +293,7 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 					return ErrUnauthorizedLastAuthenticatedAtExceeded
 				}
 
-				if !config.CheckScopes(user) {
+				if !config.CheckUserScopes(user) {
 					log.Trace().
 						Strs("scopes", config.Scopes).
 						Strs("user_scopes", user.Scopes).
@@ -292,35 +326,36 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			accessToken, err := models.AccessTokens(
-				qm.Load(models.AccessTokenRels.User),
-				models.AccessTokenWhere.Token.EQ(token),
-			).One(c.Request().Context(), config.S.DB)
+			res, err := config.TokenValidator(c, config, token)
 			if err != nil {
-				if err == sql.ErrNoRows {
+				if errors.Is(err, ErrAuthTokenValidationFailed) {
 					if config.Mode == AuthModeTry {
-						log.Trace().Msg("Access token not found in database, but auth mode permits access, allowing request")
+						log.Trace().Msg("Auth token validation failed, but auth mode permits access, allowing request")
 						return next(c)
 					}
 
-					log.Trace().Msg("Access token not found in database, rejecting request")
+					log.Trace().Msg("Auth token validation failed, rejecting request")
 					return config.FailureMode.Error()
 				}
 
-				log.Trace().Err(err).Msg("Failed to query for access token in database, aborting request")
+				log.Trace().Err(err).Msg("Failed to validate auth token, aborting request")
 				return echo.ErrInternalServerError
 			}
 
-			user = accessToken.R.User
+			user = res.User
 
-			if time.Now().After(accessToken.ValidUntil) {
-				if config.Mode == AuthModeTry {
-					log.Trace().Time("valid_until", accessToken.ValidUntil).Str("user_id", user.ID).Msg("Access token is expired, but auth mode permits access, allowing request")
-					return next(c)
+			if res.ValidUntil.IsZero() {
+				log.Trace().Str("user_id", user.ID).Msg("Auth token has no expiry, allowing request")
+			} else {
+				if time.Now().After(res.ValidUntil) {
+					if config.Mode == AuthModeTry {
+						log.Trace().Time("valid_until", res.ValidUntil).Str("user_id", user.ID).Msg("Auth token is expired, but auth mode permits access, allowing request")
+						return next(c)
+					}
+
+					log.Trace().Time("valid_until", res.ValidUntil).Str("user_id", user.ID).Msg("Auth token is expired, rejecting request")
+					return config.FailureMode.Error()
 				}
-
-				log.Trace().Time("valid_until", accessToken.ValidUntil).Str("user_id", user.ID).Msg("Access token is expired, rejecting request")
-				return config.FailureMode.Error()
 			}
 
 			// ! User has been explicitly deactivated - we do not allow access here, even with AuthModeTry
@@ -337,17 +372,17 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 				return ErrUnauthorizedLastAuthenticatedAtExceeded
 			}
 
-			if !config.CheckScopes(user) {
+			if !config.CheckUserScopes(user) {
 				log.Trace().
-					Time("last_authenticated_at", user.LastAuthenticatedAt.Time).
-					Dur("last_authenticated_at_threshold", config.S.Config.Auth.LastAuthenticatedAtThreshold).
-					Msg("Authentication already performed, but last authenticated at time exceeds threshold, rejecting request")
+					Strs("scopes", config.Scopes).
+					Strs("user_scopes", user.Scopes).
+					Msg("Authentication already performed, but user does not have required scopes, rejecting request")
 				return ErrForbiddenMissingScopes
 			}
 
-			auth.EnrichEchoContextWithCredentials(c, user, accessToken)
+			auth.EnrichEchoContextWithCredentials(c, res)
 
-			log.Trace().Str("user_id", user.ID).Msg("Access token is valid, allowing request")
+			log.Trace().Str("user_id", user.ID).Msg("Auth token is valid, allowing request")
 
 			return next(c)
 		}
