@@ -31,6 +31,6 @@ require (
 	github.com/volatiletech/strmangle v0.0.1
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea
-	google.golang.org/api v0.47.0
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
+	google.golang.org/api v0.49.0
 )
