@@ -51,7 +51,7 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           push: false
-          tags: allaboutapps/go-starter:${GITHUB_SHA:8}
+          tags: allaboutapps/go-starter:${{ GITHUB_SHA:8 }}
           target: builder
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
