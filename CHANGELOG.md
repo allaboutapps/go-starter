@@ -10,6 +10,12 @@
 ## 2021-06-24
 ### Changed
 - Introduces GitHub Actions docker layer caching via docker buildx. For details see `.github/workflows/build-test.yml`.
+- Upgrades:
+  - Bump golang from 1.16.4 to [1.16.5](https://groups.google.com/g/golang-announce/c/RgCMkAEQjSI/m/r_EP-NlKBgAJ)
+  - golangci-lint@[v1.41.1](https://github.com/golangci/golangci-lint/releases/tag/v1.41.1)
+  - Bump github.com/rs/zerolog from 1.22.0 to [1.23.0](https://github.com/allaboutapps/go-starter/pull/92)
+  - Bump github.com/go-openapi/runtime from 0.19.28 to 0.19.29
+  - Bump github.com/volatiletech/sqlboiler/v4 from 4.5.0 to [4.6.0](https://github.com/volatiletech/sqlboiler/blob/HEAD/CHANGELOG.md#v460---2021-06-06)
 
 ## 2021-06-22
 ### Changed
