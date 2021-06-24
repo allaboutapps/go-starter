@@ -34,8 +34,29 @@ jobs:
         image: mailhog/mailhog
     steps:
       - uses: actions/checkout@v2.3.4
-      - name: Build the Docker image
-        run: docker build --target builder --file Dockerfile --tag allaboutapps/go-starter:${GITHUB_SHA:8} .
+      # Setup docker buildx caching and building
+      # based on: https://github.com/dtinth/github-actions-docker-layer-caching-poc/pull/1/files
+      # also see: 
+      # * https://github.com/actions/cache/issues/31
+      # * https://dev.to/dtinth/caching-docker-builds-in-github-actions-which-approach-is-the-fastest-a-research-18ei
+      # * https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      # * https://docs.docker.com/buildx/working-with-buildx/
+      - uses: docker/setup-buildx-action@v1
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - uses: docker/build-push-action@v2
+        with:
+          push: false
+          tags: allaboutapps/go-starter:${GITHUB_SHA:8}
+          target: builder
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      # - name: Build the Docker image
+      #   run: docker build --target builder --file Dockerfile --tag allaboutapps/go-starter:${GITHUB_SHA:8} .
       - name: Create container
         run: docker run -d --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" --name=builder -it allaboutapps/go-starter:${GITHUB_SHA:8}
       - name: make tidy
