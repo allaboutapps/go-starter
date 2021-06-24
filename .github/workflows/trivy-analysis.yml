@@ -31,11 +31,12 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-      - uses: docker/build-push-action@v2
+      - name: docker build (target app) from cache
+        uses: docker/build-push-action@v2
         with:
           push: false
           tags: allaboutapps.dev/aw/go-starter:${{ github.sha }}
-          target: builder
+          target: app
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           load: true # make the image available for local docker run commands
