@@ -17,14 +17,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2.3.4
 
-      - name: Build an image from Dockerfile
-        run: |
-          docker build -t docker.io/my-organization/my-app:${{ github.sha }} .
+      # Setup docker buildx caching and building
+      # based on: https://github.com/dtinth/github-actions-docker-layer-caching-poc/pull/1/files
+      # also see: 
+      # * https://github.com/actions/cache/issues/31
+      # * https://dev.to/dtinth/caching-docker-builds-in-github-actions-which-approach-is-the-fastest-a-research-18ei
+      # * https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+      # * https://docs.docker.com/buildx/working-with-buildx/
+      - uses: docker/setup-buildx-action@v1
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: docker build (target app) from cache
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          tags: allaboutapps.dev/aw/go-starter:${{ github.sha }}
+          target: app
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          load: true # make the image available for local docker run commands
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
+          image-ref: 'allaboutapps.dev/aw/go-starter:${{ github.sha }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'

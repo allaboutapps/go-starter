@@ -7,6 +7,10 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-06-24
+### Changed
+- Introduces GitHub Actions docker layer caching via docker buildx. For details see `.github/workflows/build-test.yml`.
+
 ## 2021-06-22
 ### Changed
 - Development scripts are no longer called via `go run [script]` but via `gsdev`:
