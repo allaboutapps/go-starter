@@ -9,7 +9,7 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gabriel-vasile/mimetype v1.3.0
 	github.com/go-openapi/errors v0.20.0
-	github.com/go-openapi/runtime v0.19.28
+	github.com/go-openapi/runtime v0.19.29
 	github.com/go-openapi/strfmt v0.20.1
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.2
@@ -20,17 +20,17 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/rogpeppe/go-internal v1.8.0
-	github.com/rs/zerolog v1.22.0
-	github.com/rubenv/sql-migrate v0.0.0-20210408115534-a32ed26c37ea
+	github.com/rs/zerolog v1.23.0
+	github.com/rubenv/sql-migrate v0.0.0-20210614095031-55d5740dbbcc
 	github.com/spf13/cobra v1.1.3
-	github.com/spf13/viper v1.7.1
+	github.com/spf13/viper v1.8.0
 	github.com/stretchr/testify v1.7.0
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/sqlboiler/v4 v4.5.0
+	github.com/volatiletech/sqlboiler/v4 v4.6.0
 	github.com/volatiletech/strmangle v0.0.1
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea
-	google.golang.org/api v0.47.0
+	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
+	google.golang.org/api v0.49.0
 )

@@ -1,3 +1,7 @@
+run:
+  # also lint files within /scripts. Those have "// +build scripts" set.
+  build-tags:
+    - scripts
 linters:
   enable:
     # https://github.com/golangci/golangci-lint#enabled-by-default-linters
