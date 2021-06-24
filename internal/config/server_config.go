@@ -28,6 +28,7 @@ type EchoServer struct {
 	EnableRequestIDMiddleware      bool
 	EnableTrailingSlashMiddleware  bool
 	EnableSecureMiddleware         bool
+	EnableCacheControlMiddleware   bool
 	SecureMiddleware               EchoServerSecureMiddleware
 }
 
@@ -133,6 +134,7 @@ func DefaultServiceConfigFromEnv() Server {
 				EnableRequestIDMiddleware:      util.GetEnvAsBool("SERVER_ECHO_ENABLE_REQUEST_ID_MIDDLEWARE", true),
 				EnableTrailingSlashMiddleware:  util.GetEnvAsBool("SERVER_ECHO_ENABLE_TRAILING_SLASH_MIDDLEWARE", true),
 				EnableSecureMiddleware:         util.GetEnvAsBool("SERVER_ECHO_ENABLE_SECURE_MIDDLEWARE", true),
+				EnableCacheControlMiddleware:   util.GetEnvAsBool("SERVER_ECHO_ENABLE_CACHE_CONTROL_MIDDLEWARE", true),
 				// see https://echo.labstack.com/middleware/secure
 				// see https://github.com/labstack/echo/blob/master/middleware/secure.go
 				SecureMiddleware: EchoServerSecureMiddleware{

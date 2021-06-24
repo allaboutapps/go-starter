@@ -12,6 +12,7 @@ const (
 	CTXKeyAccessToken   contextKey = "access_token"
 	CTXKeyRequestID     contextKey = "request_id"
 	CTXKeyDisableLogger contextKey = "disable_logger"
+	CTXKeyCacheControl  contextKey = "cache_control"
 )
 
 func RequestIDFromContext(ctx context.Context) (string, error) {
