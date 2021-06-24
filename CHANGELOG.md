@@ -16,7 +16,11 @@
   - Bump github.com/rs/zerolog from 1.22.0 to [1.23.0](https://github.com/allaboutapps/go-starter/pull/92)
   - Bump github.com/go-openapi/runtime from 0.19.28 to 0.19.29
   - Bump github.com/volatiletech/sqlboiler/v4 from 4.5.0 to [4.6.0](https://github.com/volatiletech/sqlboiler/blob/HEAD/CHANGELOG.md#v460---2021-06-06)
-
+  - Bump github.com/rubenv/sql-migrate v0.0.0-20210408115534-a32ed26c37ea to v0.0.0-20210614095031-55d5740dbbcc
+  - Bump github.com/spf13/viper v1.7.1 to v1.8.0
+  - Bump golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a to v0.0.0-20210616213533-5ff15b29337e
+  - Bump golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea to v0.0.0-20210616094352-59db8d763f22
+  - Bump google.golang.org/api v0.47.0 to v0.49.0
 ## 2021-06-22
 ### Changed
 - Development scripts are no longer called via `go run [script]` but via `gsdev`:
