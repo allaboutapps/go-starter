@@ -10,8 +10,19 @@ import (
 
 // LogFromContext returns a request-specific zerolog instance using the provided context.
 // The returned logger will have the request ID as well as some other value predefined.
+// If no logger is associated with the context provided, the global zerolog instance
+// will be returned instead - this function will _always_ return a valid (enabled) logger.
+// Should you ever need to force a disabled logger for a context, use `util.DisableLogger(ctx, true)`
+// and pass the context returned to other code/`LogFromContext`.
 func LogFromContext(ctx context.Context) *zerolog.Logger {
-	return log.Ctx(ctx)
+	l := log.Ctx(ctx)
+	if l.GetLevel() == zerolog.Disabled {
+		if ShouldDisableLogger(ctx) {
+			return l
+		}
+		l = &log.Logger
+	}
+	return l
 }
 
 // LogFromEchoContext returns a request-specific zerolog instance using the echo.Context of the request.
