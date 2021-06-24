@@ -12,7 +12,11 @@ import (
 type TxFn func(boil.ContextExecutor) error
 
 func WithTransaction(ctx context.Context, db *sql.DB, fn TxFn) error {
-	tx, err := db.BeginTx(ctx, nil)
+	return WithConfiguredTransaction(ctx, db, nil, fn)
+}
+
+func WithConfiguredTransaction(ctx context.Context, db *sql.DB, options *sql.TxOptions, fn TxFn) error {
+	tx, err := db.BeginTx(ctx, options)
 	if err != nil {
 		util.LogFromContext(ctx).Warn().Err(err).Msg("Failed to start transaction")
 		return err

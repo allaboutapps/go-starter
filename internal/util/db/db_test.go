@@ -9,6 +9,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	swaggerTypes "allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -169,13 +170,33 @@ func TestDBTypeConversions(t *testing.T) {
 }
 
 func TestSearchStringToTSQuery(t *testing.T) {
-	expected := "abcde:* & 12345:* & xyz:*"
-	in := "    abcde 12345 xyz   "
+	expected := "'abcde':* & '12345':* & 'xyz':*"
+	in := swag.String("    abcde 12345 xyz   ")
 	out := db.SearchStringToTSQuery(in)
 	assert.Equal(t, expected, out)
 
-	expected = "abcde:*"
-	in = "abcde"
+	expected = "'abcde':*"
+	in = swag.String("abcde")
+	out = db.SearchStringToTSQuery(in)
+	assert.Equal(t, expected, out)
+
+	expected = "'Hello':* & 'world':* & 'lorem':* & '12345':* & 'ipsum':* & 'abc':* & 'def':*"
+	in = swag.String("    Hello  world lorem 12345               ipsum  abc def  ")
+	out = db.SearchStringToTSQuery(in)
+	assert.Equal(t, expected, out)
+
+	expected = ""
+	in = nil
+	out = db.SearchStringToTSQuery(in)
+	assert.Equal(t, expected, out)
+
+	expected = ""
+	in = swag.String("")
+	out = db.SearchStringToTSQuery(in)
+	assert.Equal(t, expected, out)
+
+	expected = ""
+	in = swag.String("                ''   '    '    '      ")
 	out = db.SearchStringToTSQuery(in)
 	assert.Equal(t, expected, out)
 }
