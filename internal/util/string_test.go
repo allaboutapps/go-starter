@@ -26,4 +26,11 @@ func TestGenerateRandom(t *testing.T) {
 	res, err = hex.DecodeString(randString)
 	require.NoError(t, err)
 	assert.Len(t, res, 19)
+
+	randString, err = util.GenerateRandomString(19, []util.CharRange{util.CharRangeAlphaLowerCase}, "/%$")
+	require.NoError(t, err)
+	assert.Len(t, randString, 19)
+	for _, r := range randString {
+		assert.True(t, (r >= 'a' && r <= 'z') || r == '/' || r == '%' || r == '$')
+	}
 }

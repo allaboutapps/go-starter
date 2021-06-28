@@ -1,5 +1,6 @@
 package util
 
+// ContainsString checks whether the given string slice contains the string provided.
 func ContainsString(slice []string, s string) bool {
 	for _, v := range slice {
 		if v == s {
@@ -10,6 +11,7 @@ func ContainsString(slice []string, s string) bool {
 	return false
 }
 
+// ContainsAllString checks whether the given string slice contains all strings provided.
 func ContainsAllString(slice []string, sub ...string) bool {
 	contains := make(map[string]bool)
 	for _, v := range sub {
@@ -31,6 +33,7 @@ func ContainsAllString(slice []string, sub ...string) bool {
 	return true
 }
 
+// UniqueString takes the string slice provided and returns a new slice with all duplicates removed.
 func UniqueString(slice []string) []string {
 	seen := make(map[string]struct{})
 	res := make([]string, 0)
