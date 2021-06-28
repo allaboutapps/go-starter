@@ -1,0 +1,1 @@
+(string) (len=124) "SELECT * FROM \"users\" LEFT JOIN app_user_profiles ON app_user_profiles.user_id=users.id AND app_user_profiles.first_name=$1;"

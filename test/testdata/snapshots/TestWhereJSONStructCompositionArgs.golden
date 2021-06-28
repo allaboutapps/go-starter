@@ -1,0 +1,10 @@
+([]interface {}) (len=5) {
+  (string) (len=3) "Max",
+  (string) (len=6) "Muster",
+  (string) (len=7) "Austria",
+  (*pq.StringArray)((len=2) {
+    (string) (len=3) "app",
+    (string) (len=9) "user_info"
+  }),
+  (int) 42
+}

@@ -1,0 +1,1 @@
+(string) (len=88) "SELECT * FROM \"users\" LEFT JOIN app_user_profiles ON app_user_profiles.user_id=users.id;"

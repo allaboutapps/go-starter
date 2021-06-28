@@ -11,6 +11,7 @@ import (
 // declare and "implemented" it ourselves...
 type QueryMods []qm.QueryMod
 
+// Apply applies the query mods to the query provided
 func (m QueryMods) Apply(q *queries.Query) {
 	qm.Apply(q, m...)
 }
