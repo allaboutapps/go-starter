@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	// HTTPErrorTypeGeneric represents the generic error type returned as default for all HTTP errors without a type defined.
 	HTTPErrorTypeGeneric string = "generic"
 )
 

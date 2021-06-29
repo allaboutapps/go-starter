@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
+const (
 	verboseFlag string = "verbose"
 )
 

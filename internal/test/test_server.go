@@ -10,28 +10,29 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/config"
 )
 
-// Use this utility func to test with an full blown server (default server config)
+// WithTestServer returns a fully configured server (using the default server config).
 func WithTestServer(t *testing.T, closure func(s *api.Server)) {
 	t.Helper()
 	defaultConfig := config.DefaultServiceConfigFromEnv()
 	WithTestServerConfigurable(t, defaultConfig, closure)
 }
 
-// Use this utility func to test with an full blown server (default server config, database dump injectable)
+// WithTestServerFromDump returns a fully configured server (using the default server config) and allows for a database dump to be injected.
 func WithTestServerFromDump(t *testing.T, dumpConfig DatabaseDumpConfig, closure func(s *api.Server)) {
 	t.Helper()
 	defaultConfig := config.DefaultServiceConfigFromEnv()
 	WithTestServerConfigurableFromDump(t, defaultConfig, dumpConfig, closure)
 }
 
-// Use this utility func to test with an full blown server (server env configurable)
+// WithTestServerConfigurable returns a fully configured server, allowing for configuration using the provided server config.
 func WithTestServerConfigurable(t *testing.T, config config.Server, closure func(s *api.Server)) {
 	t.Helper()
 	ctx := context.Background()
 	WithTestServerConfigurableContext(ctx, t, config, closure)
 }
 
-// Use this utility func to test with an full blown server (server env configurable, context injectable).
+// WithTestServerConfigurableContext returns a fully configured server, allowing for configuration using the provided server config.
+// The provided context will be used during setup (instead of the default background context).
 func WithTestServerConfigurableContext(ctx context.Context, t *testing.T, config config.Server, closure func(s *api.Server)) {
 	t.Helper()
 	WithTestDatabaseContext(ctx, t, func(db *sql.DB) {
@@ -40,14 +41,15 @@ func WithTestServerConfigurableContext(ctx context.Context, t *testing.T, config
 	})
 }
 
-// Use this utility func to test with an full blown server (server env configurable, database dump injectable).
+// WithTestServerConfigurableFromDump returns a fully configured server, allowing for configuration using the provided server config and a database dump to be injected.
 func WithTestServerConfigurableFromDump(t *testing.T, config config.Server, dumpConfig DatabaseDumpConfig, closure func(s *api.Server)) {
 	t.Helper()
 	ctx := context.Background()
 	WithTestServerConfigurableFromDumpContext(ctx, t, config, dumpConfig, closure)
 }
 
-// Use this utility func to test with an full blown server (server env configurable, database dump injectable, context injectable).
+// WithTestServerConfigurableFromDumpContext returns a fully configured server, allowing for configuration using the provided server config and a database dump to be injected.
+// The provided context will be used during setup (instead of the default background context).
 func WithTestServerConfigurableFromDumpContext(ctx context.Context, t *testing.T, config config.Server, dumpConfig DatabaseDumpConfig, closure func(s *api.Server)) {
 	t.Helper()
 	WithTestDatabaseFromDump(t, dumpConfig, func(db *sql.DB) {

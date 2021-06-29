@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	DefaultSnapshotDirPathAbs string = filepath.Join(util.GetProjectRootDir(), "/test/testdata/snapshots")
-	UpdateGoldenGlobal        bool   = util.GetEnvAsBool("TEST_UPDATE_GOLDEN", false)
+	DefaultSnapshotDirPathAbs = filepath.Join(util.GetProjectRootDir(), "/test/testdata/snapshots")
+	UpdateGoldenGlobal        = util.GetEnvAsBool("TEST_UPDATE_GOLDEN", false)
 )
 
 var defaultReplacer = func(s string) string {
@@ -38,7 +38,7 @@ type snapshoter struct {
 	location string
 }
 
-var Snapshoter snapshoter = snapshoter{
+var Snapshoter = snapshoter{
 	update:   false,
 	label:    "",
 	replacer: defaultReplacer,

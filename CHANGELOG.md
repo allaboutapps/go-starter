@@ -7,6 +7,16 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## Unreleased
+### Changed
+- **BREAKING** Switched from [`golint`](https://github.com/golang/lint) to [`revive`](https://github.com/mgechev/revive)
+  - [`golint` is deprecated](https://github.com/golang/go/issues/38968).
+  - [`revive`](https://github.com/mgechev/revive) is considered to be a drop-in replacement for `golint`, however this change still might lead to breaking changes in your codebase.
+- **BREAKING** `make lint` no longer uses `--fast` when calling `golangci-lint`
+  - Up until now, `make lint` also ran `golangci-lint` using the `--fast` flag to remain consistent with the linting performed by VSCode automatically.
+  - As running only fast linters in both steps meant skipping quite a few validations (only 4/13 enabled linters are actually active), a decision has been made to break consistency between the two lint-steps and perform "full" linting during the build pipeline.
+  - This change could potentially bring up additional warnings and thus fail your build until fixed.
+
 ## 2021-06-24
 ### Changed
 - Introduces GitHub Actions docker layer caching via docker buildx. For details see `.github/workflows/build-test.yml`.

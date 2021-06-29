@@ -88,12 +88,16 @@ func GenHandlers(printOnly bool) {
 	set := token.NewFileSet()
 
 	err = filepath.Walk(pathHandlersRoot, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Printf("Failed to access path %q: %v\n", path, err)
+			os.Exit(1)
+		}
 
 		// ignore handler file to be generated
 		// ignore directories
 		// ignore non go files
 		// ignore test go files
-		if path == pathHandlersFile || f.IsDir() || strings.HasSuffix(path, ".go") == false || strings.HasSuffix(path, "test.go") {
+		if path == pathHandlersFile || f.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "test.go") {
 			return nil
 		}
 
@@ -152,12 +156,12 @@ func GenHandlers(printOnly bool) {
 			}
 		}
 
-		if mustAppend == true {
+		if mustAppend {
 			subPkgs = append(subPkgs, fun.PackageNameFQDN)
 		}
 	}
 
-	if printOnly == true {
+	if printOnly {
 		for _, function := range funcs {
 			fmt.Println(function.PackageNameFQDN, function.FunctionName)
 		}
@@ -174,8 +178,10 @@ func GenHandlers(printOnly bool) {
 
 	defer f.Close()
 
-	packageTemplate.Execute(f, TempateData{
+	if err = packageTemplate.Execute(f, TempateData{
 		SubPkgs: subPkgs,
 		Funcs:   funcs,
-	})
+	}); err != nil {
+		log.Fatal(err)
+	}
 }

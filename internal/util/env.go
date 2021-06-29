@@ -15,8 +15,6 @@ const (
 )
 
 var (
-	projectRootDir string
-	dirOnce        sync.Once
 	mgmtSecret     string
 	mgmtSecretOnce sync.Once
 )

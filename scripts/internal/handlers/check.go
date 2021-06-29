@@ -64,7 +64,7 @@ func CheckHandlers(printAll bool) {
 			if !ok {
 				fmt.Printf(warningLine, tt.Method+" "+tt.Path+"\n    WARNING: Missing swagger spec in api/swagger.yml!")
 			} else {
-				if printAll == true {
+				if printAll {
 					fmt.Println(tt.Method + " " + tt.Path)
 				}
 			}

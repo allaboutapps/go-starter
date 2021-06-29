@@ -38,6 +38,7 @@ type PprofServer struct {
 	RuntimeMutexProfileFraction int
 }
 
+// EchoServerSecureMiddleware represents a subset of echo's secure middleware config relevant to the app server.
 // https://github.com/labstack/echo/blob/master/middleware/secure.go
 type EchoServerSecureMiddleware struct {
 	XSSProtection         string
@@ -102,6 +103,8 @@ type Server struct {
 	FCMConfig  provider.FCMConfig
 }
 
+// DefaultServiceConfigFromEnv returns the server config as parsed from environment variables
+// and their respective defaults defined below.
 // We don't expect that ENV_VARs change while we are running our application or our tests
 // (and it would be a bad thing to do anyways with parallel testing).
 // Do NOT use os.Setenv / os.Unsetenv in tests utilizing DefaultServiceConfigFromEnv()!

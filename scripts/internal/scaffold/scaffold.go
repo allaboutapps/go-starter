@@ -39,7 +39,7 @@ func ParseModel(path string) (*StorageResource, error) {
 		return nil, err
 	}
 
-	regex, err := regexp.Compile("type ([^\\s]+) (struct {[^}]+})")
+	regex, err := regexp.Compile(`type ([^\\s]+) (struct {[^}]+})`)
 	if err != nil {
 		return nil, err
 	}
@@ -115,11 +115,8 @@ func GenerateSwagger(resource *StorageResource, outputPath string, force bool) e
 	if err := executeTemplate(swaggerDefinitionsTemplate, definitionsSpecPath, swaggerResource, force); err != nil {
 		return err
 	}
-	if err := executeTemplate(swaggerPathsTemplate, pathsSpecPath, swaggerResource, force); err != nil {
-		return err
-	}
 
-	return nil
+	return executeTemplate(swaggerPathsTemplate, pathsSpecPath, swaggerResource, force)
 }
 
 var payloadExcluded = []string{"ID", "CreatedAt", "UpdatedAt"}

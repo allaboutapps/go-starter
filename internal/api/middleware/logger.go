@@ -199,7 +199,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 			req = req.WithContext(l.WithContext(req.Context()))
 
 			if config.LogRequestBody && !config.RequestBodyLogSkipper(req) {
-				var reqBody []byte = nil
+				var reqBody []byte
 				var err error
 				if req.Body != nil {
 					reqBody, err = ioutil.ReadAll(req.Body)

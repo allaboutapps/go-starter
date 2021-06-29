@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
+const (
 	probeFlag   string = "probe"
 	migrateFlag string = "migrate"
 	seedFlag    string = "seed"
