@@ -14,7 +14,7 @@ Examples:
 
 Please note that this scripts are not available in a final product. Head to `../cmd` if you need to execute your script in live environments.
 
-The `gsdev` cli util describes all available commands that are available while developing a project locally.
+The `gsdev` cli util executes this `scripts/main.go` file here and also describes all available commands available while developing a project locally. `gsdev` is made available during the `Dockerfile`'s development stage.
 
 ### `/scripts/cmd/*.go`
 
@@ -30,7 +30,7 @@ go run -tags scripts scripts/main.go
 # go-starter development scripts
 # Utility commands while developing go-starter based projects.
 
-# Works
+# Works (same as above)
 gsdev
 # go-starter development scripts
 # Utility commands while developing go-starter based projects.

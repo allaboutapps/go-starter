@@ -7,6 +7,12 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## 2021-06-29
+### Changed
+- We now directly bake the `gsdev` cli "bridge" (it actually just runs `go run -tags scripts /app/scripts/main.go "$@"`) into the `development` stage of our `Dockerfile` and create it at `/usr/bin/gsdev` (requires `./docker-helper.sh --rebuild`).
+  - `gsdev` was previously symlinked to `/app/bin` from `/app/scripts/gsdev` (within the projects' workspace) and `chmod +x` via the `Makefile` during `init`.
+  - However this lead to problems with WSL2 VSCode related development setups (always dirty git workspaces as WSL2 tries to prevent `+x` flags). 
+
 ## 2021-06-24
 ### Changed
 - Introduces GitHub Actions docker layer caching via docker buildx. For details see `.github/workflows/build-test.yml`.

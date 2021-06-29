@@ -119,6 +119,11 @@ RUN mkdir -p /tmp/watchexec \
     && cp watchexec-1.16.1-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
+# gsdev
+# The sole purpose of the "gsdev" cli util is to provide a handy short command for the following (all args are passed):
+# go run -tags scripts /app/scripts/main.go "$@"
+RUN printf '#!/bin/bash\nset -Eeo pipefail\ncd /app && go run -tags scripts ./scripts/main.go "$@"' > /usr/bin/gsdev && chmod 755 /usr/bin/gsdev
+
 # linux permissions / vscode support: Add user to avoid linux file permission issues
 # Detail: Inside the container, any mounted files/folders will have the exact same permissions
 # as outside the container - including the owner user ID (UID) and group ID (GID). 

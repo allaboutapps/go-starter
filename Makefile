@@ -23,7 +23,7 @@ info-db: ##- (opt) Prints info about spec db.
 
 info-handlers: ##- (opt) Prints info about handlers.
 	@echo "[handlers]" > tmp/.info-handlers
-	@./scripts/gsdev handlers check --print-all >> tmp/.info-handlers
+	@gsdev handlers check --print-all >> tmp/.info-handlers
 	@echo "" >> tmp/.info-handlers
 	@cat tmp/.info-handlers
 
@@ -50,10 +50,10 @@ go-lint: ##- (opt) Runs golangci-lint.
 	golangci-lint run --fast --timeout 5m
 
 go-generate: ##- (opt) Generates the internal/api/handlers/handlers.go binding.
-	./scripts/gsdev handlers gen
+	gsdev handlers gen
 
 check-handlers: ##- (opt) Checks if implemented handlers match their spec (path).
-	./scripts/gsdev handlers check
+	gsdev handlers check
 
 # https://golang.org/pkg/cmd/go/internal/generate/
 # To convey to humans and machine tools that code is generated,
@@ -116,14 +116,10 @@ go-test-scripts-by-pkg: ##- (opt) Run scripts tests (gsdev), output by package.
 # --- Initializing
 ### -----------------------
 
-init: ##- Runs make gsdev, modules, tools and tidy.
-	@$(MAKE) gsdev
+init: ##- Runs make modules, tools and tidy.
 	@$(MAKE) modules
 	@$(MAKE) tools
 	@$(MAKE) tidy
-
-gsdev: ##- (opt) Symlink our go-starter script utility "gsdev" (/scripts) to /app/bin/gsdev.
-	chmod +x /app/scripts/gsdev && ln -sf /app/scripts/gsdev /app/bin/gsdev
 
 # cache go modules (locally into .pkg)
 modules: ##- (opt) Cache packages as specified in go.mod.
@@ -379,7 +375,7 @@ help-all: ##- Show all make targets.
 # go module name (as in go.mod)
 GO_MODULE_NAME = $(eval GO_MODULE_NAME := $$(shell \
 	(mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
-	|| (./scripts/gsdev modulename 2> /dev/null | tee tmp/.modulename) || echo "unknown" \
+	|| (gsdev modulename 2> /dev/null | tee tmp/.modulename) || echo "unknown" \
 ))$(GO_MODULE_NAME)
 
 # https://medium.com/the-go-journey/adding-version-information-to-go-binaries-e1b79878f6f2
