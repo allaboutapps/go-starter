@@ -39,7 +39,7 @@ func ParseModel(path string) (*StorageResource, error) {
 		return nil, err
 	}
 
-	regex, err := regexp.Compile(`type ([^\\s]+) (struct {[^}]+})`)
+	regex, err := regexp.Compile(`type ([^\s]+) (struct {[^}]+})`)
 	if err != nil {
 		return nil, err
 	}
