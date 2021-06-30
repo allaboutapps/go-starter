@@ -22,6 +22,28 @@
 - **BREAKING** `gosec` is now also applied to test packages
   - All linters are now applied to every source code file in this project, removing the previous exclusion of `gosec` from test files/packages
   - As `gosec` might (incorrectly) detect some hardcoded credentials in your tests (variable names such as `passwordResetLink` get flagged), this change might require some fixes after merging.
+- Extended auth middleware to allow for multiple auth token sources
+  - Default token validator uses access token table, maintaining previous behavior without any changes required.
+  - Token validator can be changed to e.g. use separate API keys for specific endpoints, allowing for more flexibility if so desired.
+- Changed `util.LogFromContext` to always return a valid logger
+  - Helper no longer returns a disabled logger if context provided did not have an associated logger set (e.g. by middleware). If you still need to disable the logger for a certain context/function, use `util.DisableLogger(ctx, true)` to force-disable it.
+  - Added request ID to context in logger middleware.
+- Extended DB query helpers
+  - Fixed TSQuery escaping, should now properly handle all type of user input.
+  - Implemented helper for JSONB queries (see `ExampleWhereJSON` for implementation details).
+  - Added `LeftOuterJoin` helper, similar to already existing `LeftJoin` variants.
+  - Managed transactions (via `WithTransaction`) can now have their options configured via `WithConfiguredTransaction`.
+  - Added util to combine query mods with `OR` expression.
+- Implemented middleware for parsing `Cache-Control` header
+  - Allows for cache handling in relevant services, parsed directive is stored in request context.
+  - New middleware is enabled by default, can be disabled via env var (`SERVER_ECHO_ENABLE_CACHE_CONTROL_MIDDLEWARE`).
+- Added extra misc. helpers
+  - Extra helpers for slice handling and generating random strings from a given character set have been included (`util.ContainsAllString`, `util.UniqueString`, `util.GenerateRandomString`).
+  - Added util to check whether current execution runs inside a test environment (`util.RunningInTest`).
+- Test and snapshot util improvements
+  - Added `snapshoter.SaveU` as a shorthand for updating a single test
+  - Implemented `GenericArrayPayload` with respective request helpers for array payloads in tests
+  - Added VScode launch task for updating all snapshots in a single test file
 
 ## 2021-06-29
 ### Changed
