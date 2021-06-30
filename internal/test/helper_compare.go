@@ -49,6 +49,8 @@ func CompareAllPayload(t *testing.T, base map[string]interface{}, toCheck map[st
 		}
 
 		strV := fmt.Sprintf("%v", v)
+		//revive:disable-next-line:var-naming
+		//nolint:revive
 		kConv := keyFunc(k)
 		compareStrV := fmt.Sprintf("%v", toCheck[kConv])
 

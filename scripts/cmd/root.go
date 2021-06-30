@@ -5,8 +5,15 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"allaboutapps.dev/aw/go-starter/scripts/internal/util"
 	"github.com/spf13/cobra"
+)
+
+var (
+	projectRoot = util.GetProjectRootDir()
+	modulePath  = filepath.Join(util.GetProjectRootDir(), "go.mod")
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -25,7 +32,3 @@ func Execute() {
 		os.Exit(1)
 	}
 }
-
-// func init() {
-// 	rootCmd.SetVersionTemplate(`{{printf "%s\n" .Version}}`)
-// }

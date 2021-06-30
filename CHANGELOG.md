@@ -7,6 +7,44 @@
 - All changes are solely **tracked by date**. 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
+## Unreleased
+### Changed
+
+## 2021-06-30
+### Changed
+- **BREAKING** Switched from [`golint`](https://github.com/golang/lint) to [`revive`](https://github.com/mgechev/revive)
+  - [`golint` is deprecated](https://github.com/golang/go/issues/38968).
+  - [`revive`](https://github.com/mgechev/revive) is considered to be a drop-in replacement for `golint`, however this change still might lead to breaking changes in your codebase.
+- **BREAKING** `make lint` no longer uses `--fast` when calling `golangci-lint`
+  - Up until now, `make lint` also ran `golangci-lint` using the `--fast` flag to remain consistent with the linting performed by VSCode automatically.
+  - As running only fast linters in both steps meant skipping quite a few validations (only 4/13 enabled linters are actually active), a decision has been made to break consistency between the two lint-steps and perform "full" linting during the build pipeline.
+  - This change could potentially bring up additional warnings and thus fail your build until fixed.
+- **BREAKING** `gosec` is now also applied to test packages
+  - All linters are now applied to every source code file in this project, removing the previous exclusion of `gosec` from test files/packages
+  - As `gosec` might (incorrectly) detect some hardcoded credentials in your tests (variable names such as `passwordResetLink` get flagged), this change might require some fixes after merging.
+
+## 2021-06-29
+### Changed
+- We now directly bake the `gsdev` cli "bridge" (it actually just runs `go run -tags scripts /app/scripts/main.go "$@"`) into the `development` stage of our `Dockerfile` and create it at `/usr/bin/gsdev` (requires `./docker-helper.sh --rebuild`).
+  - `gsdev` was previously symlinked to `/app/bin` from `/app/scripts/gsdev` (within the projects' workspace) and `chmod +x` via the `Makefile` during `init`.
+  - However this lead to problems with WSL2 VSCode related development setups (always dirty git workspaces as WSL2 tries to prevent `+x` flags). 
+
+## 2021-06-24
+### Changed
+- Introduces GitHub Actions docker layer caching via docker buildx. For details see `.github/workflows/build-test.yml`.
+- Upgrades:
+  - Bump golang from 1.16.4 to [1.16.5](https://groups.google.com/g/golang-announce/c/RgCMkAEQjSI/m/r_EP-NlKBgAJ)
+  - golangci-lint@[v1.41.1](https://github.com/golangci/golangci-lint/releases/tag/v1.41.1)
+  - Bump github.com/rs/zerolog from 1.22.0 to [1.23.0](https://github.com/allaboutapps/go-starter/pull/92)
+  - Bump github.com/go-openapi/runtime from 0.19.28 to 0.19.29
+  - Bump github.com/volatiletech/sqlboiler/v4 from 4.5.0 to [4.6.0](https://github.com/volatiletech/sqlboiler/blob/HEAD/CHANGELOG.md#v460---2021-06-06)
+  - Bump github.com/rubenv/sql-migrate v0.0.0-20210408115534-a32ed26c37ea to v0.0.0-20210614095031-55d5740dbbcc
+  - Bump github.com/spf13/viper v1.7.1 to v1.8.0
+  - Bump golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a to v0.0.0-20210616213533-5ff15b29337e
+  - Bump golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea to v0.0.0-20210616094352-59db8d763f22
+  - Bump google.golang.org/api v0.47.0 to v0.49.0
+- Fixes linting within `/scripts/**/*.go`, now activated by default.
+
 ## 2021-06-22
 ### Changed
 - Development scripts are no longer called via `go run [script]` but via `gsdev`:

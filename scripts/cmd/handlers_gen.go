@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	printOnlyFlag string = "print-only"
+const (
+	printOnlyFlag = "print-only"
 )
 
 var handlersGenCmd = &cobra.Command{

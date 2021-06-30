@@ -14,12 +14,12 @@ const (
 	HashedTestUserPassword = "$argon2id$v=19$m=65536,t=1,p=4$RFO8ulg2c2zloG0029pAUQ$2Po6NUIhVCMm9vivVDuzo7k5KVWfZzJJfeXzC+n+row" //nolint:gosec
 )
 
-// A common interface for all model instances so they may be inserted via the Inserts() func
+// Insertable represents a common interface for all model instances so they may be inserted via the Inserts() func
 type Insertable interface {
 	Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error
 }
 
-// The main definition which fixtures are available though Fixtures()
+// FixtureMap represents the main definition which fixtures are available though Fixtures()
 type FixtureMap struct {
 	User1                         *models.User
 	User1AppUserProfile           *models.AppUserProfile
@@ -37,8 +37,8 @@ type FixtureMap struct {
 	User1PushTokenAPN             *models.PushToken
 }
 
-// We return a function wrapping our fixtures, tests are allowed to manipulate those
-// each test (which may run concurrently) can use a fresh copy
+// Fixtures returns a function wrapping our fixtures, which tests are allowed to manipulate.
+// Each test (which may run concurrently) receives a fresh copy, preventing side effects between test runs.
 func Fixtures() FixtureMap {
 	now := time.Now()
 	f := FixtureMap{}
@@ -132,7 +132,7 @@ func Fixtures() FixtureMap {
 	return f
 }
 
-// This function defines the order in which the fixtures will be inserted
+// Inserts defines the order in which the fixtures will be inserted
 // into the test database
 func Inserts() []Insertable {
 	fixtures := Fixtures()

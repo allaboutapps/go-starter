@@ -27,7 +27,7 @@ var (
 	ErrAuthTokenValidationFailed               = errors.New("auth token validation failed")
 )
 
-// Controls the type of authentication check performed for a specific route or group
+// AuthMode controls the type of authentication check performed for a specific route or group
 type AuthMode int
 
 const (
@@ -98,7 +98,7 @@ const (
 	AuthTokenSourceHeader AuthTokenSource = iota
 	// AuthTokenSourceQuery retrieves the auth token from a query parameter, specified by TokenSourceKey
 	AuthTokenSourceQuery
-	// AuthTOkenSourceForm retrieves the auth token from a form parameter, specified by TokenSourceKey
+	// AuthTokenSourceForm retrieves the auth token from a form parameter, specified by TokenSourceKey
 	AuthTokenSourceForm
 )
 

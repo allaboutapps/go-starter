@@ -6,7 +6,7 @@ const (
 	DateFormat = "2006-01-02"
 )
 
-// Returns an instance of time.Time from a given string asuming RFC3339 format
+// TimeFromString returns an instance of time.Time from a given string asuming RFC3339 format
 func TimeFromString(timeString string) (time.Time, error) {
 	return time.Parse(time.RFC3339, timeString)
 }
@@ -33,7 +33,7 @@ func StartOfQuarter(d time.Time) time.Time {
 	return time.Date(d.Year(), time.Month(m), 1, 0, 0, 0, 0, d.Location())
 }
 
-// Returns the monday (assuming week starts at monday) of the week of the date
+// StartOfWeek returns the monday (assuming week starts at monday) of the week of the date
 func StartOfWeek(d time.Time) time.Time {
 	dayOffset := int(d.Weekday()) - 1
 

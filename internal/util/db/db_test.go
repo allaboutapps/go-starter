@@ -92,11 +92,8 @@ func TestWithTransactionWithError(t *testing.T) {
 				IsActive: true,
 				Username: null.StringFrom("test"),
 			}
-			if err := newUser2.Insert(ctx, tx, boil.Infer()); err != nil {
-				return err
-			}
 
-			return nil
+			return newUser2.Insert(ctx, tx, boil.Infer())
 		})
 		require.Error(t, err)
 
@@ -115,6 +112,7 @@ func TestWithTransactionWithPanic(t *testing.T) {
 		assert.Greater(t, count, int64(0))
 
 		panicFunc := func() {
+			//nolint:errcheck
 			_ = db.WithTransaction(ctx, sqlDB, func(tx boil.ContextExecutor) error {
 				newUser := models.User{
 					IsActive: true,

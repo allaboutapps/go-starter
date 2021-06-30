@@ -20,17 +20,12 @@ var moduleCmd = &cobra.Command{
 	},
 }
 
-var (
-	PROJECT_ROOT  = util.GetProjectRootDir()
-	PATH_MOD_FILE = PROJECT_ROOT + "/go.mod"
-)
-
 func init() {
 	rootCmd.AddCommand(moduleCmd)
 }
 
 func runModulename() {
-	baseModuleName, err := util.GetModuleName(PATH_MOD_FILE)
+	baseModuleName, err := util.GetModuleName(modulePath)
 
 	if err != nil {
 		log.Fatal(err)

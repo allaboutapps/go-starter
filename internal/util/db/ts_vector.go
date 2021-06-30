@@ -9,7 +9,7 @@ var (
 	tsQueryWhiteSpaceRegex = regexp.MustCompile(`\s+`)
 )
 
-// Returns a TSQuery string from user input.
+// SearchStringToTSQuery returns a TSQuery string from user input.
 // The resulting query will match if every word matches a beginning of a word in the row.
 // This function will trim all leading and trailing as well as consecutive whitespaces and remove all single quotes before
 // transforming the input into TSQuery syntax.
