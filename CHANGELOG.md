@@ -9,6 +9,9 @@
 
 ## Unreleased
 ### Changed
+
+## 2021-06-30
+### Changed
 - **BREAKING** Switched from [`golint`](https://github.com/golang/lint) to [`revive`](https://github.com/mgechev/revive)
   - [`golint` is deprecated](https://github.com/golang/go/issues/38968).
   - [`revive`](https://github.com/mgechev/revive) is considered to be a drop-in replacement for `golint`, however this change still might lead to breaking changes in your codebase.
@@ -16,6 +19,9 @@
   - Up until now, `make lint` also ran `golangci-lint` using the `--fast` flag to remain consistent with the linting performed by VSCode automatically.
   - As running only fast linters in both steps meant skipping quite a few validations (only 4/13 enabled linters are actually active), a decision has been made to break consistency between the two lint-steps and perform "full" linting during the build pipeline.
   - This change could potentially bring up additional warnings and thus fail your build until fixed.
+- **BREAKING** `gosec` is now also applied to test packages
+  - All linters are now applied to every source code file in this project, removing the previous exclusion of `gosec` from test files/packages
+  - As `gosec` might (incorrectly) detect some hardcoded credentials in your tests (variable names such as `passwordResetLink` get flagged), this change might require some fixes after merging.
 
 ## 2021-06-24
 ### Changed

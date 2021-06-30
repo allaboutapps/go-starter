@@ -13,6 +13,7 @@ import (
 func TestWithTestMailer(t *testing.T) {
 	ctx := context.Background()
 	fixtures := test.Fixtures()
+	//nolint:gosec
 	passwordResetLink := "http://localhost/password/reset/12345"
 
 	m1 := test.NewTestMailer(t)

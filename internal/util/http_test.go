@@ -24,6 +24,7 @@ import (
 
 func TestBindAndValidateSuccess(t *testing.T) {
 	e := echo.New()
+	//nolint:gosec
 	testToken := "a546daf5-c845-46a7-8fa6-3d94ae7e1424"
 	testResponse := &types.PostLoginResponse{
 		AccessToken:  conv.UUID4(strfmt.UUID4("afbcbc30-4794-48bd-93f1-08373a031fe3")),
