@@ -36,7 +36,7 @@ func GenerateRandomBase64String(n int) (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
-// GenerateRandomBase64String returns a string with n random bytes securely generated using the system's
+// GenerateRandomHexString returns a string with n random bytes securely generated using the system's
 // default CSPRNG in hexadecimal encoding. The resulting string might not be of length n as the encoding
 // for the raw bytes generated may vary.
 //

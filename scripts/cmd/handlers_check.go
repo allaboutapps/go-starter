@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	printAllFlag string = "print-all"
+const (
+	printAllFlag = "print-all"
 )
 
 var handlersCheckCmd = &cobra.Command{

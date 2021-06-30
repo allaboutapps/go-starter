@@ -47,7 +47,7 @@ go-build: ##- (opt) Runs go build.
 	go build -ldflags $(LDFLAGS) -o bin/app
 
 go-lint: ##- (opt) Runs golangci-lint.
-	golangci-lint run --fast --timeout 5m
+	golangci-lint run --timeout 5m
 
 go-generate: ##- (opt) Generates the internal/api/handlers/handlers.go binding.
 	gsdev handlers gen

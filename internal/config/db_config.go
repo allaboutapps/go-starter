@@ -19,7 +19,7 @@ type Database struct {
 	ConnMaxLifetime  time.Duration
 }
 
-// Generates a connection string to be passed to sql.Open or equivalents, assuming Postgres syntax
+// ConnectionString generates a connection string to be passed to sql.Open or equivalents, assuming Postgres syntax
 func (c Database) ConnectionString() string {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s", c.Host, c.Port, c.Username, c.Password, c.Database))

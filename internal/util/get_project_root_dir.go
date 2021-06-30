@@ -5,11 +5,17 @@ package util
 import (
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/rs/zerolog/log"
 )
 
-// GetProjectRootDir() Returns the path as string to the project_root for a **running application**.
+var (
+	projectRootDir string
+	dirOnce        sync.Once
+)
+
+// GetProjectRootDir returns the path as string to the project_root for a **running application**.
 // Note: This function should not be used for generation targets (go generate, make go-generate).
 // Thus it's explicitly excluded from the build tag scripts, see instead:
 // * /scripts/get_project_root_dir.go

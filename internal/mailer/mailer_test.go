@@ -16,6 +16,7 @@ func TestMailerSendPasswordReset(t *testing.T) {
 	fixtures := test.Fixtures()
 
 	m := test.NewTestMailer(t)
+	//nolint:gosec
 	passwordResetLink := "http://localhost/password/reset/12345"
 	err := m.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 	require.NoError(t, err)
@@ -40,6 +41,7 @@ func SkipTestMailerSendPasswordResetWithMailhog(t *testing.T) {
 
 	m := test.NewSMTPMailerFromDefaultEnv(t)
 
+	//nolint:gosec
 	passwordResetLink := "http://localhost/password/reset/12345"
 	err := m.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 	require.NoError(t, err)
@@ -53,6 +55,7 @@ func SkipTestMailerSendPasswordResetWithMailhogAndServer(t *testing.T) {
 	defaultConfig := config.DefaultServiceConfigFromEnv()
 	defaultConfig.Mailer.Transporter = config.MailerTransporterSMTP.String()
 	test.WithTestServerConfigurable(t, defaultConfig, func(s *api.Server) {
+		//nolint:gosec
 		passwordResetLink := "http://localhost/password/reset/12345"
 		err := s.Mailer.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 		require.NoError(t, err)

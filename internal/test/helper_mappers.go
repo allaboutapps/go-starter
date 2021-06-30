@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Returns a map of a given struct using a tag name as key and
+// GetMapFromStructByTag returns a map of a given struct using a tag name as key and
 // the string of the property value as value.
 // inspired by: https://stackoverflow.com/questions/55879028/golang-get-structs-field-name-by-json-tag
 func GetMapFromStructByTag(tag string, s interface{}) map[string]string {

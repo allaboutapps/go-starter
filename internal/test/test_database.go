@@ -44,14 +44,15 @@ func init() {
 	client = c
 }
 
-// Use this utility func to test with an isolated test database based on your current migrations and fixtures.
+// WithTestDatabase returns an isolated test database based on the current migrations and fixtures.
 func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	t.Helper()
 	ctx := context.Background()
 	WithTestDatabaseContext(ctx, t, closure)
 }
 
-// Use this utility func to test with an isolated test database based on your current migrations and fixtures (context injectable).
+// WithTestDatabaseContext returns an isolated test database based on the current migrations and fixtures.
+// The provided context will be used during setup (instead of the default background context).
 func WithTestDatabaseContext(ctx context.Context, t *testing.T, closure func(db *sql.DB)) {
 	t.Helper()
 
@@ -97,14 +98,15 @@ type DatabaseDumpConfig struct {
 	ApplyTestFixtures bool   // optional, default false
 }
 
-// Use this utility func to test with an isolated test database based on a dump file.
+// WithTestDatabaseFromDump returns an isolated test database based on a dump file.
 func WithTestDatabaseFromDump(t *testing.T, config DatabaseDumpConfig, closure func(db *sql.DB)) {
 	t.Helper()
 	ctx := context.Background()
 	WithTestDatabaseFromDumpContext(ctx, t, config, closure)
 }
 
-// Use this utility func to test with an isolated test database based on a dump file (context injectable).
+// WithTestDatabaseFromDumpContext returns an isolated test database based on a dump file.
+// The provided context will be used during setup (instead of the default background context).
 func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, config DatabaseDumpConfig, closure func(db *sql.DB)) {
 	t.Helper()
 
@@ -161,12 +163,15 @@ func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, config D
 	execClosureNewIntegresDatabase(ctx, t, getPoolHash(t, poolID), "WithTestDatabaseFromDump", closure)
 }
 
+// WithTestDatabaseEmpty returns an isolated test database with no migrations applied or fixtures inserted.
 func WithTestDatabaseEmpty(t *testing.T, closure func(db *sql.DB)) {
 	t.Helper()
 	ctx := context.Background()
 	WithTestDatabaseEmptyContext(ctx, t, closure)
 }
 
+// WithTestDatabaseEmptyContext returns an isolated test database with no migrations applied or fixtures inserted.
+// The provided context will be used during setup (instead of the default background context).
 func WithTestDatabaseEmptyContext(ctx context.Context, t *testing.T, closure func(db *sql.DB)) {
 	t.Helper()
 
@@ -281,7 +286,7 @@ func execClosureNewIntegresDatabase(ctx context.Context, t *testing.T, poolHash 
 	db = nil
 }
 
-// Applies all current database migrations to db
+// ApplyMigrations applies all current database migrations to db
 func ApplyMigrations(t *testing.T, db *sql.DB) (countMigrations int, err error) {
 	t.Helper()
 
@@ -294,7 +299,7 @@ func ApplyMigrations(t *testing.T, db *sql.DB) (countMigrations int, err error) 
 	return countMigrations, err
 }
 
-// Applies all current test fixtures (insert) to db
+// ApplyTestFixtures applies all current test fixtures (insert) to db
 func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixtures int, err error) {
 	t.Helper()
 
@@ -318,7 +323,7 @@ func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixt
 	return len(inserts), nil
 }
 
-// Applies dumpFile (absolute path to .sql file) to db
+// ApplyDump applies dumpFile (absolute path to .sql file) to db
 func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) error {
 	t.Helper()
 

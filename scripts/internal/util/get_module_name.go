@@ -9,6 +9,7 @@ import (
 	"github.com/rogpeppe/go-internal/modfile"
 )
 
+// GetModuleName returns the current go module's name as defined in the go.mod file.
 // https://stackoverflow.com/questions/53183356/api-to-get-the-module-name
 // https://github.com/rogpeppe/go-internal
 func GetModuleName(absolutePathToGoMod string) (string, error) {

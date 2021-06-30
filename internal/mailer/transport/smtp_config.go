@@ -9,9 +9,13 @@ import (
 type SMTPAuthType int
 
 const (
+	// SMTPAuthTypeNone indicates no SMTP authentication should be performed.
 	SMTPAuthTypeNone SMTPAuthType = iota
+	// SMTPAuthTypePlain indicates SMTP authentication should be performed using the "AUTH PLAIN" protocol.
 	SMTPAuthTypePlain
+	// SMTPAuthTypeCRAMMD5 indicates SMTP authentication should be performed using the "CRAM-MD5" protocol.
 	SMTPAuthTypeCRAMMD5
+	// SMTPAuthTypeLogin indicates SMTP authentication should be performed using the "LOGIN" protocol.
 	SMTPAuthTypeLogin
 )
 

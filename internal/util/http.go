@@ -115,7 +115,7 @@ func BindAndValidate(c echo.Context, v runtime.Validatable, vs ...runtime.Valida
 		return validatePayload(c, v)
 	}
 
-	var reqBody []byte = nil
+	var reqBody []byte
 	var err error
 	if c.Request().Body != nil {
 		reqBody, err = ioutil.ReadAll(c.Request().Body)
