@@ -33,4 +33,26 @@ func TestGenerateRandom(t *testing.T) {
 	for _, r := range randString {
 		assert.True(t, (r >= 'a' && r <= 'z') || r == '/' || r == '%' || r == '$')
 	}
+
+	randString, err = util.GenerateRandomString(19, []util.CharRange{util.CharRangeAlphaUpperCase}, "^\"")
+	require.NoError(t, err)
+	assert.Len(t, randString, 19)
+	for _, r := range randString {
+		assert.True(t, (r >= 'A' && r <= 'Z') || r == '^' || r == '"')
+	}
+
+	randString, err = util.GenerateRandomString(19, []util.CharRange{util.CharRangeNumeric}, "")
+	require.NoError(t, err)
+	assert.Len(t, randString, 19)
+	for _, r := range randString {
+		assert.True(t, (r >= '0' && r <= '9'))
+	}
+
+	_, err = util.GenerateRandomString(1, nil, "")
+	require.Error(t, err)
+
+	randString, err = util.GenerateRandomString(8, nil, "a")
+	require.NoError(t, err)
+	assert.Len(t, randString, 8)
+	assert.Equal(t, "aaaaaaaa", randString)
 }
