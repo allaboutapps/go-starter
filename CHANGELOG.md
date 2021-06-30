@@ -50,6 +50,13 @@
 - We now directly bake the `gsdev` cli "bridge" (it actually just runs `go run -tags scripts /app/scripts/main.go "$@"`) into the `development` stage of our `Dockerfile` and create it at `/usr/bin/gsdev` (requires `./docker-helper.sh --rebuild`).
   - `gsdev` was previously symlinked to `/app/bin` from `/app/scripts/gsdev` (within the projects' workspace) and `chmod +x` via the `Makefile` during `init`.
   - However this lead to problems with WSL2 VSCode related development setups (always dirty git workspaces as WSL2 tries to prevent `+x` flags). 
+  - **BREAKING** encountered at **2021-06-30**: Upgrading your project via `make git-merge-go-starter` if you already have installed our previous `gsdev` approach from **2021-06-22** may require additional steps:
+    - It might be necessary to unlink the current `gsdev` symlink residing at `/app/bin/gsdev` before merging up (as this symlinked file will no longer exist)!
+    - Do this by issuing `rm -f /app/bin/gsdev` which will remove the symlink which pointed to the previous (now gone bash script) at `/app/scripts/gsdev`.
+    - It might also be handy to install the newer variant directly into your container (without requiring a image rebuild). Do this by:
+      - `sudo su` to become root in the container,
+      - issuing the following command: `printf '#!/bin/bash\nset -Eeo pipefail\ncd /app && go run -tags scripts ./scripts/main.go "$@"' > /usr/bin/gsdev && chmod 755 /usr/bin/gsdev` (in sync with what we do in our `Dockerfile`) and
+      - `[CTRL + c]` to return to being the `development` user within your container.
 
 ## 2021-06-24
 ### Changed
