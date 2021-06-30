@@ -1,0 +1,1 @@
+(string) (len=171) "SELECT * FROM \"users\" INNER JOIN app_user_profiles ON app_user_profiles.user_id=users.id WHERE (users.username ILIKE $1) AND (users.app_user_profiles.first_name ILIKE $2);"

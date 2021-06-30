@@ -3,6 +3,7 @@ package middleware
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"net"
@@ -196,7 +197,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					Str("bytes_in", in),
 				).Logger()
 			le := l.WithLevel(config.Level)
-			req = req.WithContext(l.WithContext(req.Context()))
+			req = req.WithContext(l.WithContext(context.WithValue(req.Context(), util.CTXKeyRequestID, id)))
 
 			if config.LogRequestBody && !config.RequestBodyLogSkipper(req) {
 				var reqBody []byte

@@ -19,6 +19,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	HTTPHeaderCacheControl = "Cache-Control"
+)
+
 // BindAndValidateBody binds the request, parsing **only** its body (depending on the `Content-Type` request header) and performs validation
 // as enforced by the Swagger schema associated with the provided type.
 //

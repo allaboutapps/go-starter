@@ -112,11 +112,11 @@ func TestSnapshotWithUpdate(t *testing.T) {
 	tMock := new(mocks.TestingT)
 	tMock.On("Helper").Return()
 	tMock.On("Name").Return("TestSnapshotWithUpdate")
-	tMock.On("Fatalf", mock.Anything, mock.Anything).Return()
+	tMock.On("Errorf", mock.Anything, mock.Anything).Return()
 	test.Snapshoter.Update(true).Save(tMock, a, b)
 	tMock.AssertNotCalled(t, "Error")
 	tMock.AssertNotCalled(t, "Fatal")
-	tMock.AssertCalled(t, "Fatalf", mock.Anything, mock.Anything)
+	tMock.AssertCalled(t, "Errorf", mock.Anything, mock.Anything)
 }
 
 func TestSnapshotNotExists(t *testing.T) {

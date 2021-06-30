@@ -1,0 +1,1 @@
+(string) (len=275) "SELECT * FROM \"users\" WHERE (users.profile->>'firstName' = $1 AND users.profile->>'lastName' = $2 AND users.profile->>'country' = $3 AND users.profile->'scopes' <@ to_jsonb($4::text[]) AND users.profile->>'age' = $5 AND users.profile->'phoneNumbers' <@ to_jsonb($6::text[]));"

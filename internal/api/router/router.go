@@ -107,6 +107,12 @@ func Init(s *api.Server) {
 		log.Warn().Msg("Disabling CORS middleware due to environment config")
 	}
 
+	if s.Config.Echo.EnableCacheControlMiddleware {
+		s.Echo.Use(middleware.CacheControl())
+	} else {
+		log.Warn().Msg("Disabling cache control middleware due to environment config")
+	}
+
 	if s.Config.Pprof.Enable {
 
 		pprofAuthMiddleware := middleware.Noop()

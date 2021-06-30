@@ -1,0 +1,16 @@
+([]interface {}) (len=6) {
+  (string) (len=3) "Max",
+  (string) (len=6) "Muster",
+  (string) (len=7) "Austria",
+  (*pq.StringArray)((len=2) {
+    (string) (len=3) "app",
+    (string) (len=9) "user_info"
+  }),
+  (int) 42,
+  (pq.GenericArray) {
+    A: ([2]string) (len=2) {
+      (string) (len=15) "+1 206 555 0100",
+      (string) (len=16) "+44 113 496 0000"
+    }
+  }
+}
