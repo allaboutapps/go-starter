@@ -68,6 +68,8 @@ jobs:
       - name: git diff --exit-code
         # Note builder stage now includes .git, thus we rm it again to again diff with the original git workspace
         run: docker cp builder:/app ./post-build && rm -rf ./post-build/.git && git -C post-build diff --exit-code
+      - name: Upload coverage to Codecov
+        run: docker cp builder:/tmp/coverage.out ./coverage.out && bash <(curl -s https://codecov.io/bash)
       - name: Stop container
         if: ${{ always() }}
         run: docker stop builder
