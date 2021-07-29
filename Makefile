@@ -173,7 +173,7 @@ sql-boiler: ##- (opt) Runs sql-boiler introspects the spec db to generate intern
 
 sql-format: ##- (opt) Formats all *.sql files.
 	@echo "make sql-format"
-	@find ${PWD} -name ".*" -prune -o -type f -iname "*.sql" -print \
+	@find ${PWD} -path "*/tmp/*" -prune -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| grep --invert "/app/dumps/" \
 		| grep --invert "/app/test/" \
 		| xargs -i pg_format {} -o {}
@@ -184,7 +184,7 @@ sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt
 # https://stackoverflow.com/questions/8271606/postgresql-syntax-check-without-running-the-query
 sql-check-syntax: ##- (opt) Checks syntax of all *.sql files.
 	@echo "make sql-check-syntax"
-	@find ${PWD} -name ".*" -prune -path ./dumps -prune -false -o -type f -iname "*.sql" -print \
+	@find ${PWD} -path "*/tmp/*" -prune -name ".*" -prune -path ./dumps -prune -false -o -type f -iname "*.sql" -print \
 		| grep --invert "/app/dumps/" \
 		| grep --invert "/app/test/" \
 		| xargs -i sed '1s#^#DO $$SYNTAX_CHECK$$ BEGIN RETURN;#; $$aEND; $$SYNTAX_CHECK$$;' {} \
@@ -406,7 +406,7 @@ LDFLAGS = $(eval LDFLAGS := "\
 
 # https://unix.stackexchange.com/questions/153763/dont-stop-makeing-if-a-command-fails-but-check-exit-status
 # https://www.gnu.org/software/make/manual/html_node/One-Shell.html
-# required to ensure make fails if one recipe fails (even on parallel jobs)
+# required to ensure make fails if one recipe fails (even on parallel jobs) and on pipefails
 .ONESHELL:
 SHELL = /bin/bash
-.SHELLFLAGS = -ec
+.SHELLFLAGS = -cEeuo pipefail

@@ -10,6 +10,10 @@
 ## Unreleased
 ### Changed
 
+## 2021-07-29
+### Changed
+- Fixed `Makefile` has disregarded `pipefail`s in executed targets (e.g. `make sql-spec-migrate` previously returned exit code `0` even if there were migration errors as its output was piped internally). We now set `-cEeuo pipefail` for make's shell args, preventing these issues.
+
 ## 2021-06-30
 ### Changed
 - **BREAKING** Switched from [`golint`](https://github.com/golang/lint) to [`revive`](https://github.com/mgechev/revive)
