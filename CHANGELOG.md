@@ -10,6 +10,18 @@
 ## Unreleased
 ### Changed
 
+## 2021-07-30
+### Changed
+- Upgrades:
+  - Bump golang from 1.16.5 to [1.16.6](https://groups.google.com/g/golang-announce/c/n9FxMelZGAQ)
+  - Bump github.com/labstack/echo/v4 from 4.3.0 to [4.4.0](https://github.com/labstack/echo/blob/master/CHANGELOG.md) (adds `binder.BindHeaders` support, not affecting our goswagger `runtime.Validatable` bind helpers)
+  - Bump github.com/gabriel-vasile/mimetype from 1.3.0 to [1.3.1](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.3.1)
+  - Bump github.com/spf13/cobra from 1.1.3 to [1.2.1](https://github.com/spf13/cobra/releases/tag/v1.2.1) (and see all the big completion upgrades in [1.2.0](https://github.com/spf13/cobra/releases/tag/v1.2.0))
+  - Bump google.golang.org/api from 0.49.0 to [0.52.0](https://github.com/allaboutapps/go-starter/pull/106)
+  - Bump gotestsum to [1.7.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.7.0) (adds handy keybindings while you are in `make watch-tests` mode, see [While in watch mode, pressing some keys will perform an action](https://github.com/gotestyourself/gotestsum#run-tests-when-a-file-is-saved))
+  - Bump watchexec to [1.17.0](https://github.com/watchexec/watchexec/releases/tag/cli-v1.17.0)
+  - Bump golang.org/x/crypto to `v0.0.0-20210711020723-a769d52b0f97`
+
 ## 2021-07-29
 ### Changed
 - Fixed `Makefile` has disregarded `pipefail`s in executed targets (e.g. `make sql-spec-migrate` previously returned exit code `0` even if there were migration errors as its output was piped internally). We now set `-cEeuo pipefail` for make's shell args, preventing these issues.
