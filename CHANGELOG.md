@@ -9,6 +9,9 @@
 
 ## Unreleased
 ### Changed
+
+## 2021-07-30
+### Changed
 - Upgrades:
   - Bump golang from 1.16.5 to [1.16.6](https://groups.google.com/g/golang-announce/c/n9FxMelZGAQ)
   - Bump github.com/labstack/echo/v4 from 4.3.0 to [4.4.0](https://github.com/labstack/echo/blob/master/CHANGELOG.md) (adds `binder.BindHeaders` support, not affecting our goswagger `runtime.Validatable` bind helpers)
@@ -17,6 +20,7 @@
   - Bump google.golang.org/api from 0.49.0 to [0.52.0](https://github.com/allaboutapps/go-starter/pull/106)
   - Bump gotestsum to [1.7.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.7.0) (adds handy keybindings while you are in `make watch-tests` mode, see [While in watch mode, pressing some keys will perform an action](https://github.com/gotestyourself/gotestsum#run-tests-when-a-file-is-saved))
   - Bump watchexec to [1.17.0](https://github.com/watchexec/watchexec/releases/tag/cli-v1.17.0)
+  - Bump golang.org/x/crypto to `v0.0.0-20210711020723-a769d52b0f97`
 
 ## 2021-07-29
 ### Changed
