@@ -19,8 +19,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-var ()
-
 func PostRegisterRoute(s *api.Server) *echo.Route {
 	return s.Router.APIV1Auth.POST("/register", postRegisterHandler(s))
 }

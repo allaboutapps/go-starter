@@ -68,7 +68,7 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 
 	s := api.NewServer(config)
 
-	// attach the already initalized db
+	// attach the already initialized db
 	s.DB = db
 
 	if err := s.InitMailer(); err != nil {
