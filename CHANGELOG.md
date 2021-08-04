@@ -10,6 +10,18 @@
 ## Unreleased
 ### Changed
 
+## 2021-08-04
+### Changed
+- `README.md` badges for go-starter.
+- Fix some misspellings of English words within `internal/test/*.go` comments.
+- Upgrades
+  - Bump `github.com/labstack/echo/v4` from 4.4.0 to [4.5.0](https://github.com/labstack/echo/blob/master/CHANGELOG.md#v450---2021-08-01): 
+    - Switch from `github.com/dgrijalva/jwt-go` to [`github.com/golang-jwt/jwt`](https://github.com/golang-jwt/jwt) to mitigate [CVE-2020-26160](https://nvd.nist.gov/vuln/detail/CVE-2020-26160).
+    - Note that it might take some time until the former dep fully leaves our dependency graph, as it is also a transitive dependency of various versions of [`github.com/spf13/viper`](https://github.com/spf13/viper/issues/997).
+    - However, even though this functionality was never used by go-starter, this change fixes an important part: The original `github.com/dgrijalva/jwt-go` is no longer included in the **final `app` binary**, it is fully replaced by `github.com/golang-jwt/jwt`.
+    - Our `.trivyignore` still excludes [CVE-2020-26160](https://nvd.nist.gov/vuln/detail/CVE-2020-26160) as trivy cannot skip checking transitive dependencies.
+    - **Breaking**: If you have actually directly depended upon `github.com/dgrijalva/jwt-go`, please switch to `github.com/golang-jwt/jwt` via the following command: `find -type f -name "*.go" -exec sed -i "s/dgrijalva\/jwt-go/golang-jwt\/jwt/g" {} \;`
+
 ## 2021-07-30
 ### Changed
 - Upgrades:

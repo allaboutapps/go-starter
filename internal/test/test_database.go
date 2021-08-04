@@ -332,7 +332,7 @@ func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) e
 		return err
 	}
 
-	// we need to get the db name before beeing able to do anything.
+	// we need to get the db name before being able to do anything.
 	var targetDB string
 	if err := db.QueryRow("SELECT current_database();").Scan(&targetDB); err != nil {
 		return err
