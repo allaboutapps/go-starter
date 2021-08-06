@@ -85,6 +85,7 @@ func GetEnvAsBool(key string, defaultVal bool) bool {
 	return defaultVal
 }
 
+// GetEnvAsStringArr reads ENV and returns the values split by separator.
 func GetEnvAsStringArr(key string, defaultVal []string, separator ...string) []string {
 	strVal := GetEnv(key, "")
 
@@ -98,6 +99,17 @@ func GetEnvAsStringArr(key string, defaultVal []string, separator ...string) []s
 	}
 
 	return strings.Split(strVal, sep)
+}
+
+// GetEnvAsStringArrTrimmed reads ENV and returns the whitespace trimmed values split by separator.
+func GetEnvAsStringArrTrimmed(key string, defaultVal []string, separator ...string) []string {
+	slc := GetEnvAsStringArr(key, defaultVal, separator...)
+
+	for i := range slc {
+		slc[i] = strings.TrimSpace(slc[i])
+	}
+
+	return slc
 }
 
 func GetEnvAsURL(key string, defaultVal string) *url.URL {

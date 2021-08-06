@@ -150,6 +150,40 @@ func TestGetEnvAsStringArr(t *testing.T) {
 	os.Setenv(testVarKey, "")
 	res = util.GetEnvAsStringArr(testVarKey, testVal)
 	assert.Equal(t, testVal, res)
+
+	os.Setenv(testVarKey, "a, b, c")
+	res = util.GetEnvAsStringArr(testVarKey, testVal)
+	assert.Equal(t, []string{"a", " b", " c"}, res)
+
+	os.Setenv(testVarKey, "a|b|c")
+	res = util.GetEnvAsStringArr(testVarKey, testVal, "|")
+	assert.Equal(t, []string{"a", "b", "c"}, res)
+
+	os.Setenv(testVarKey, "a,b,c")
+	res = util.GetEnvAsStringArr(testVarKey, testVal, "|")
+	assert.Equal(t, []string{"a,b,c"}, res)
+
+	os.Setenv(testVarKey, "a||b||c")
+	res = util.GetEnvAsStringArr(testVarKey, testVal, "||")
+	assert.Equal(t, []string{"a", "b", "c"}, res)
+}
+
+func TestGetEnvAsStringArrTrimmed(t *testing.T) {
+	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_STRING_ARR_TRIMMED"
+	testVal := []string{"a", "b", "c"}
+
+	os.Setenv(testVarKey, "a, b, c")
+	defer os.Unsetenv(testVarKey)
+	res := util.GetEnvAsStringArrTrimmed(testVarKey, testVal)
+	assert.Equal(t, []string{"a", "b", "c"}, res)
+
+	os.Setenv(testVarKey, "a,   b,c    ")
+	res = util.GetEnvAsStringArrTrimmed(testVarKey, testVal)
+	assert.Equal(t, []string{"a", "b", "c"}, res)
+
+	os.Setenv(testVarKey, "  a || b  || c  ")
+	res = util.GetEnvAsStringArrTrimmed(testVarKey, testVal, "||")
+	assert.Equal(t, []string{"a", "b", "c"}, res)
 }
 
 func TestGetMgmtSecret(t *testing.T) {

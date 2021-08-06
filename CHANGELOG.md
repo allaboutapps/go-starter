@@ -10,6 +10,11 @@
 ## Unreleased
 ### Changed
 
+## 2021-08-06
+### Changed
+- Bump golang from 1.16.6 to [1.16.7](https://github.com/golang/go/issues?q=milestone%3AGo1.16.7+label%3ACherryPickApproved) (requires `./docker-helper.sh --rebuild`).
+- Adds `util.GetEnvAsStringArrTrimmed` and minor `util` test coverage upgrades.
+
 ## 2021-08-04
 ### Changed
 - `README.md` badges for go-starter.
