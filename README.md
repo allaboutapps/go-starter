@@ -8,6 +8,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/allaboutapps/go-starter)](https://goreportcard.com/report/github.com/allaboutapps/go-starter)
 [![Swagger Validator](https://img.shields.io/swagger/valid/3.0?specUrl=https%3A%2F%2Fraw.githubusercontent.com%2Fallaboutapps%2Fgo-starter%2Fmaster%2Fapi%2Fswagger.yml)](https://go-starter.allaboutapps.at/documentation/)
 ![GitHub contributors](https://img.shields.io/github/contributors/allaboutapps/go-starter)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 
 ![go starter overview](https://public.allaboutapps.at/go-starter-wiki/go-starter-main-overview.png)
 
