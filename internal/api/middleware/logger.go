@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -203,13 +202,13 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				var reqBody []byte
 				var err error
 				if req.Body != nil {
-					reqBody, err = ioutil.ReadAll(req.Body)
+					reqBody, err = io.ReadAll(req.Body)
 					if err != nil {
 						l.Error().Err(err).Msg("Failed to read body while logging request")
 						return err
 					}
 
-					req.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
+					req.Body = io.NopCloser(bytes.NewBuffer(reqBody))
 				}
 
 				le = le.Bytes("req_body", config.RequestBodyLogReplacer(reqBody))
