@@ -3,7 +3,6 @@ package test
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -70,7 +69,7 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 		t.Errorf("Updating snapshot: '%s'", snapshotName)
 	}
 
-	prevSnapBytes, err := ioutil.ReadFile(snapshotAbsPath)
+	prevSnapBytes, err := os.ReadFile(snapshotAbsPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			err = writeSnapshot(snapshotAbsPath, dump)
@@ -151,5 +150,5 @@ func (s snapshoter) Location(location string) snapshoter {
 }
 
 func writeSnapshot(absPath string, dump string) error {
-	return ioutil.WriteFile(absPath, []byte(dump), os.FileMode(0644))
+	return os.WriteFile(absPath, []byte(dump), os.FileMode(0644))
 }

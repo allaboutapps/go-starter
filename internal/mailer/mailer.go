@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"html/template"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
@@ -35,7 +35,7 @@ func New(config config.Mailer, transport transport.MailTransporter) *Mailer {
 }
 
 func (m *Mailer) ParseTemplates() error {
-	files, err := ioutil.ReadDir(m.Config.WebTemplatesEmailBaseDirAbs)
+	files, err := os.ReadDir(m.Config.WebTemplatesEmailBaseDirAbs)
 	if err != nil {
 		log.Error().Str("dir", m.Config.WebTemplatesEmailBaseDirAbs).Err(err).Msg("Failed to read email templates directory while parsing templates")
 		return err

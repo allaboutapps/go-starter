@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 
@@ -122,7 +121,7 @@ func BindAndValidate(c echo.Context, v runtime.Validatable, vs ...runtime.Valida
 	var reqBody []byte
 	var err error
 	if c.Request().Body != nil {
-		reqBody, err = ioutil.ReadAll(c.Request().Body)
+		reqBody, err = io.ReadAll(c.Request().Body)
 		if err != nil {
 			return err
 		}
@@ -216,7 +215,7 @@ func ParseFileUpload(c echo.Context, formNameFile string, allowedMIMETypes []str
 
 func restoreBindAndValidate(c echo.Context, reqBody []byte, v runtime.Validatable) error {
 	if reqBody != nil {
-		c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
+		c.Request().Body = io.NopCloser(bytes.NewBuffer(reqBody))
 	}
 
 	if err := defaultEchoBindAll(c, v); err != nil {
