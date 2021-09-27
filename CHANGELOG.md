@@ -27,7 +27,7 @@
 
 ### Changed
 
-- **Hotfix**: We will pin the `Dockerfile` development and builder stage to `golang:1.16.7-buster` (+ `-buster`) for now, as currently the [new debian bullseye release within the go official docker images](https://github.com/docker-library/golang/commit/48a7371ed6055a97a10adb0b75756192ad5f1c97) breaks some tooling. The upgrade to debian bullseye and Go 1.17 will happen simultaneously within go-starter in the following weeks. 
+- **Hotfix**: We will pin the `Dockerfile` development and builder stage to `golang:1.16.7-buster` (+ `-buster`) for now, as currently the [new debian bullseye release within the go official docker images](https://github.com/docker-library/golang/commit/48a7371ed6055a97a10adb0b75756192ad5f1c97) breaks some tooling. The upgrade to debian bullseye and Go 1.17 will happen ~simultaneously~ **separately** within go-starter in the following weeks. 
 
 ## 2021-08-16
 
