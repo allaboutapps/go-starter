@@ -11,6 +11,8 @@
 
 ### Changed
 
+- Added `make test-update-golden` for easily refreshing **all** golden files / snapshot tests (`y + ENTER` confirmation).
+
 ## 2021-08-17
 
 ### Changed
