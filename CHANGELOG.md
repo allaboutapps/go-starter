@@ -26,7 +26,6 @@
 - Bump github.com/spf13/viper from [1.8.1 to v1.9.0](https://github.com/spf13/viper/releases/tag/v1.9.0)
 - Bump github.com/labstack/echo from [4.5.0 to v4.6.1](https://github.com/labstack/echo/compare/v4.5.0...v4.6.1)
 - Update golang.org/x/crypto and golang.org/x/sys
-- Added `make test-update-golden` for easily refreshing **all** golden files / snapshot tests (`y + ENTER` confirmation).
 
 ## 2021-08-17
 
