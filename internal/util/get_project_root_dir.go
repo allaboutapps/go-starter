@@ -1,4 +1,4 @@
-// +build !scripts
+//go:build !scripts
 
 package util
 

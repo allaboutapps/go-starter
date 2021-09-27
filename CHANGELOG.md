@@ -11,6 +11,9 @@
 
 ### Changed
 
+- **BREAKING** Upgrades to [Go 1.17.1](https://golang.org/doc/go1.17) `golang:1.17.1-buster`
+  - Switch to `//go:build <tag>` from `// +build <tag>`.
+  - Migrates `go.mod` via `go mod tidy -go=1.17` (pruned module graphs).
 - Upgrades [golangci-lint](https://github.com/golangci/golangci-lint) from `v1.41.1` to [`v1.42.1`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.1) (for reference [`v1.42.0`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.0)).
 - Bump github.com/go-openapi/strfmt from [0.20.1 to 0.20.2](https://github.com/go-openapi/strfmt/compare/v0.20.1...v0.20.2)
 - Bump github.com/go-openapi/errors from [0.20.0 to 0.20.1](https://github.com/go-openapi/errors/compare/v0.20.0...v0.20.1)
