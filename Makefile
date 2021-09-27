@@ -83,6 +83,11 @@ test-by-name: ##- Run tests, output by testname, print coverage.
 	@$(MAKE) go-test-by-name
 	@$(MAKE) go-test-print-coverage
 
+test-update-golden: ##- Refreshes all golden files / snapshot tests by running tests, output by package.
+	@echo "Attempting to refresh all golden files / snapshot tests (TEST_UPDATE_GOLDEN=true)!"
+	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@TEST_UPDATE_GOLDEN=true gotestsum --hide-summary=skipped -- -race -count=1 ./...
+
 # note that we explicitly don't want to use a -coverpkg=./... option, per pkg coverage take precedence
 go-test-by-pkg: ##- (opt) Run tests, output by package.
 	gotestsum --format pkgname-and-test-fails --jsonfile /tmp/test.log -- -race -cover -count=1 -coverprofile=/tmp/coverage.out ./...

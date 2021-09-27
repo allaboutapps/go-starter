@@ -14,6 +14,12 @@
 - **BREAKING** Upgrades to [Go 1.17.1](https://golang.org/doc/go1.17) `golang:1.17.1-buster`
   - Switch to `//go:build <tag>` from `// +build <tag>`.
   - Migrates `go.mod` via `go mod tidy -go=1.17` (pruned module graphs).
+
+## 2021-09-27
+
+### Changed
+
+- Added `make test-update-golden` for easily refreshing **all** golden files / snapshot tests (`y + ENTER` confirmation).
 - Upgrades [golangci-lint](https://github.com/golangci/golangci-lint) from `v1.41.1` to [`v1.42.1`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.1) (for reference [`v1.42.0`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.0)).
 - Bump github.com/go-openapi/strfmt from [0.20.1 to 0.20.2](https://github.com/go-openapi/strfmt/compare/v0.20.1...v0.20.2)
 - Bump github.com/go-openapi/errors from [0.20.0 to 0.20.1](https://github.com/go-openapi/errors/compare/v0.20.0...v0.20.1)
@@ -24,7 +30,6 @@
 - Bump github.com/spf13/viper from [1.8.1 to v1.9.0](https://github.com/spf13/viper/releases/tag/v1.9.0)
 - Bump github.com/labstack/echo from [4.5.0 to v4.6.1](https://github.com/labstack/echo/compare/v4.5.0...v4.6.1)
 - Update golang.org/x/crypto and golang.org/x/sys
-
 
 ## 2021-08-17
 
