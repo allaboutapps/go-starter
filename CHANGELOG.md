@@ -11,11 +11,27 @@
 
 ### Changed
 
+## 2021-09-27
+
+### Changed
+
+- Added `make test-update-golden` for easily refreshing **all** golden files / snapshot tests (`y + ENTER` confirmation).
+- Upgrades [golangci-lint](https://github.com/golangci/golangci-lint) from `v1.41.1` to [`v1.42.1`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.1) (for reference [`v1.42.0`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.0)).
+- Bump github.com/go-openapi/strfmt from [0.20.1 to 0.20.2](https://github.com/go-openapi/strfmt/compare/v0.20.1...v0.20.2)
+- Bump github.com/go-openapi/errors from [0.20.0 to 0.20.1](https://github.com/go-openapi/errors/compare/v0.20.0...v0.20.1)
+- Bump github.com/go-openapi/runtime from [0.19.29 to 0.19.31](https://github.com/go-openapi/runtime/compare/v0.19.29...v0.19.31)
+- Bump github.com/rs/zerolog from [1.23.0 to 1.25.0](https://github.com/rs/zerolog/compare/v1.23.0...v1.25.0)
+- Bump google.golang.org/api from [0.52.0 to 0.57.0](https://github.com/allaboutapps/go-starter/pull/124)
+- Bump github.com/lib/pq from [v1.10.2 to v1.10.3](https://github.com/lib/pq/releases/tag/v1.10.3)
+- Bump github.com/spf13/viper from [1.8.1 to v1.9.0](https://github.com/spf13/viper/releases/tag/v1.9.0)
+- Bump github.com/labstack/echo from [4.5.0 to v4.6.1](https://github.com/labstack/echo/compare/v4.5.0...v4.6.1)
+- Update golang.org/x/crypto and golang.org/x/sys
+
 ## 2021-08-17
 
 ### Changed
 
-- **Hotfix**: We will pin the `Dockerfile` development and builder stage to `golang:1.16.7-buster` (+ `-buster`) for now, as currently the [new debian bullseye release within the go official docker images](https://github.com/docker-library/golang/commit/48a7371ed6055a97a10adb0b75756192ad5f1c97) breaks some tooling. The upgrade to debian bullseye and Go 1.17 will happen simultaneously within go-starter in the following weeks. 
+- **Hotfix**: We will pin the `Dockerfile` development and builder stage to `golang:1.16.7-buster` (+ `-buster`) for now, as currently the [new debian bullseye release within the go official docker images](https://github.com/docker-library/golang/commit/48a7371ed6055a97a10adb0b75756192ad5f1c97) breaks some tooling. The upgrade to debian bullseye and Go 1.17 will happen ~simultaneously~ **separately** within go-starter in the following weeks. 
 
 ## 2021-08-16
 
