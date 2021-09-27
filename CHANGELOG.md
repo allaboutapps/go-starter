@@ -16,6 +16,8 @@
 - Bump github.com/go-openapi/errors from [0.20.0 to 0.20.1](https://github.com/go-openapi/errors/compare/v0.20.0...v0.20.1)
 - Bump github.com/go-openapi/runtime from [0.19.29 to 0.19.31](https://github.com/go-openapi/runtime/compare/v0.19.29...v0.19.31)
 - Bump github.com/rs/zerolog from [1.23.0 to 1.25.0](https://github.com/rs/zerolog/compare/v1.23.0...v1.25.0)
+- Bump google.golang.org/api from [0.52.0 to 0.57.0](https://github.com/allaboutapps/go-starter/pull/124)
+
 
 ## 2021-08-17
 
