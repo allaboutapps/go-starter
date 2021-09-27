@@ -19,6 +19,7 @@
 - Bump google.golang.org/api from [0.52.0 to 0.57.0](https://github.com/allaboutapps/go-starter/pull/124)
 - Bump github.com/lib/pq from [v1.10.2 to v1.10.3](https://github.com/lib/pq/releases/tag/v1.10.3)
 - Bump github.com/spf13/viper from [1.8.1 to v1.9.0](https://github.com/spf13/viper/releases/tag/v1.9.0)
+- Bump github.com/labstack/echo from [4.5.0 to v4.6.1](https://github.com/labstack/echo/compare/v4.5.0...v4.6.1)
 - Update golang.org/x/crypto and golang.org/x/sys
 
 
