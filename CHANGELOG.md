@@ -12,6 +12,10 @@
 ### Changed
 
 - Upgrades [golangci-lint](https://github.com/golangci/golangci-lint) from `v1.41.1` to [`v1.42.1`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.1) (for reference [`v1.42.0`](https://github.com/golangci/golangci-lint/releases/tag/v1.42.0)).
+- Bump github.com/go-openapi/strfmt from [0.20.1 to 0.20.2](https://github.com/go-openapi/strfmt/compare/v0.20.1...v0.20.2)
+- Bump github.com/go-openapi/errors from [0.20.0 to 0.20.1](https://github.com/go-openapi/errors/compare/v0.20.0...v0.20.1)
+- Bump github.com/go-openapi/runtime from [0.19.29 to 0.19.31](https://github.com/go-openapi/runtime/compare/v0.19.29...v0.19.31)
+
 
 ## 2021-08-17
 
