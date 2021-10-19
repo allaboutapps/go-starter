@@ -275,7 +275,7 @@ swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 	@find internal/types -type f -exec grep -q '^// DELETE ME; DO NOT EDIT\.$$' {} \; -delete
 
 watch-swagger: ##- Watches *.yml|yaml|gotmpl files in /api and runs 'make swagger' on modifications.
-	@echo "Watching /api/**/*.yml|yaml|gotmpl. Use Ctrl-c to to stop a run or exit."
+	@echo "Watching /api/**/*.yml|yaml|gotmpl. Use Ctrl-c to stop a run or exit."
 	watchexec -p -w api -i tmp -i api/swagger.yml --exts yml,yaml,gotmpl $(MAKE) swagger
 
 ### -----------------------
