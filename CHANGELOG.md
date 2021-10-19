@@ -11,6 +11,10 @@
 
 ### Changed
 
+## 2021-10-19
+
+### Changed
+
 - **BREAKING** Upgrades to [Go 1.17.1](https://golang.org/doc/go1.17) `golang:1.17.1-buster`
   - Switch to `//go:build <tag>` from `// +build <tag>`.
   - Migrates `go.mod` via `go mod tidy -go=1.17` (pruned module graphs).
