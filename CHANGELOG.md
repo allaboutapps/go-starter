@@ -12,6 +12,11 @@
 ### Changed
 
 - Fixes minor `Makefile` typos.
+- You may now specify a **specific** tag/branch/commit from the upstream [go-starter](https://github.com/allaboutapps/go-starter) project while running `make git-fetch-go-starter`, `make git-compare-go-starter` and `make git-merge-go-starter`. This will especially come in handy if you want to do a multi-phased merge (for projects that haven't been updated in a long time):
+  - Merge with the latest: `make git-merge-go-starter`
+  - Merge with a specific tag, e.g. the tag [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19): `GIT_GO_STARTER_TARGET=go-starter-2021-10-19 make git-merge-go-starter`
+  - Merge with a specific branch, e.g. the branch [`mr/housekeeping`](https://github.com/allaboutapps/go-starter/tree/mr/housekeeping): `GIT_GO_STARTER_TARGET=go-starter/mr/housekeeping make git-merge-go-starter` (heads up! it's `go-starter/<branchname>`)
+  - Merge with a specific commit, e.g. the commit [`e85bedb94c3562602bc23d2bfd09fca3b13d1e02`](https://github.com/allaboutapps/go-starter/commit/e85bedb94c3562602bc23d2bfd09fca3b13d1e02): `GIT_GO_STARTER_TARGET=e85bedb94c3562602bc23d2bfd09fca3b13d1e02 make git-merge-go-starter`
 
 ## 2021-10-19
 
