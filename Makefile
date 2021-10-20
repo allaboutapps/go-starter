@@ -65,9 +65,9 @@ check-gen-dirs: ##- (opt) Ensures internal/models|types only hold generated file
 	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/types/ && echo "Error: Non generated file(s) in ./internal/types!" && exit 1 || exit 0
 	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/models/ && echo "Error: Non generated file(s) in ./internal/models!" && && exit 1 || exit 0
 
-check-script-dir: ##- (opt) Ensures all scripts/**/*.go files have the "// +build scripts" build tag set.
+check-script-dir: ##- (opt) Ensures all scripts/**/*.go files have the "//go:build scripts" build tag set.
 	@echo "make check-script-dir"
-	@grep -R --include=*.go -L '// +build scripts' ./scripts && echo "Error: Found unset '// +build scripts' in ./scripts/**/*.go!" && exit 1 || exit 0
+	@grep -R --include=*.go -L '//go:build scripts' ./scripts && echo "Error: Found unset '//go:build scripts' in ./scripts/**/*.go!" && exit 1 || exit 0
 
 # https://github.com/gotestyourself/gotestsum#format 
 # w/o cache https://github.com/golang/go/issues/24573 - see "go help testflag"

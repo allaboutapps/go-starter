@@ -20,9 +20,9 @@ The `gsdev` cli util executes this `scripts/main.go` file here and also describe
 
 `func`s may define shared logic used in `/scripts/internal/**/*.go`, the actual usable commands are defined within `/scripts/internal`.
 
-### `// +build scripts`
+### `//go:build scripts`
 
-Any `*.go` file in all subdirectories of `/scripts/**` should specify `// +build scripts` to signal that those files are not part of of our final product. To execute any script that has this build tag, you need to specify `-tags scripts`, otherwise you will run into an error like the following (also see our `Makefile` for a reference):
+Any `*.go` file in all subdirectories of `/scripts/**` should specify `//go:build scripts` to signal that those files are not part of of our final product. To execute any script that has this build tag, you need to specify `-tags scripts`, otherwise you will run into an error like the following (also see our `Makefile` for a reference):
 
 ```bash
 # Works

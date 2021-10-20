@@ -12,6 +12,27 @@
 ### Changed
 
 - Fixes minor `Makefile` typos.
+
+## 2021-10-19
+
+### Changed
+
+- **BREAKING** Upgrades to [Go 1.17.1](https://golang.org/doc/go1.17) `golang:1.17.1-buster`
+  - Switch to `//go:build <tag>` from `// +build <tag>`.
+  - Migrates `go.mod` via `go mod tidy -go=1.17` (pruned module graphs).
+  - Do the following to upgrade:
+    1. `make git-merge-go-starter`
+    2. `./docker-helper --rebuild`
+    3. Manually remove the new **second** `require` block (with all the `// indirect` modules) within your `go.mod`
+    4. Execute `go mod tidy -go=1.17` once so the **second** `require` block appears again.
+    5. Find `// +build <tag>` and replace it with `//go:build <tag>`.
+    6. `make all`.
+    7. Recheck your `go.mod` that the newly added `// indirect` transitive dependencies are the proper version as you were previously using (e.g. via the output from `make get-licenses` and `make get-embedded-modules`). Feel free to move any `// indirect` tagged dependencies in your **first** `require` block to the **second** block. This is where they should live.
+- **BREAKING** You now need to take special care when it comes to parsing **semicolons** (`;`) in **query strings** via `net/url` and `net/http` from Go >1.17!
+  - Anything before the semicolon will now be stripped. e.g. `example?a=1;b=2&c=3` would have returned `map[a:[1] b:[2] c:[3]]`, while now it returns `map[c:[3]]`
+  - See [Go 1.17 URL query parsing](https://golang.org/doc/go1.17#semicolons).
+  - You may need to manually migrate your handlers/tests regarding this new default handling.
+
 ## 2021-09-27
 
 ### Changed
