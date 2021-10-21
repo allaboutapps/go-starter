@@ -19,6 +19,7 @@
   - Merge with a specific tag, e.g. the tag [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19): `GIT_GO_STARTER_TARGET=go-starter-2021-10-19 make git-merge-go-starter`
   - Merge with a specific branch, e.g. the branch [`mr/housekeeping`](https://github.com/allaboutapps/go-starter/tree/mr/housekeeping): `GIT_GO_STARTER_TARGET=go-starter/mr/housekeeping make git-merge-go-starter` (heads up! it's `go-starter/<branchname>`)
   - Merge with a specific commit, e.g. the commit [`e85bedb94c3562602bc23d2bfd09fca3b13d1e02`](https://github.com/allaboutapps/go-starter/commit/e85bedb94c3562602bc23d2bfd09fca3b13d1e02): `GIT_GO_STARTER_TARGET=e85bedb94c3562602bc23d2bfd09fca3b13d1e02 make git-merge-go-starter`
+- Avoid `Build & Test` GitHub Action running twice (on `push` and on `pull_request`).
 
 ## 2021-10-19
 

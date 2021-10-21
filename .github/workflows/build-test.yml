@@ -3,8 +3,9 @@ name: Build & Test
 on:
   push:
     branches: "**"
-  pull_request:
-    branches: [master]
+  # pull_request:
+  #   branches: [master]
+  #   types: [opened, reopened] # avoid running twice (on push above), see https://github.com/open-telemetry/opentelemetry-python/issues/1370
 env:
   DOCKER_ENV_FILE: ".github/workflows/docker.env"
 jobs:
