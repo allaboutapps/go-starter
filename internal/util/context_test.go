@@ -47,7 +47,7 @@ func TestDetachContextWithCancel(t *testing.T) {
 }
 
 func TestDetachContextWithDeadline(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 	defer cancel()
 
 	var key contextKey = "test"
