@@ -46,6 +46,8 @@ func TestCurrencyConversion(t *testing.T) {
 			res = util.IntPtrWithCentsToFloat64Ptr(&inInt)
 			outInt := util.Float64PtrToIntPtrWithCents(res)
 			assert.Equal(t, inInt, *outInt)
+			outInt2 := util.Float64PToInt64WithCents(*res)
+			assert.Equal(t, int64(inInt), outInt2)
 		})
 	}
 }

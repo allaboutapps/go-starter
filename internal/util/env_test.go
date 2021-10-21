@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"testing"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/assert"
@@ -210,4 +211,21 @@ func TestGetMgmtSecretRandom(t *testing.T) {
 		val := util.GetMgmtSecret("DOES_NOT_EXIST_MGMT_SECRET")
 		assert.Equal(t, expectedVal, val)
 	}
+}
+
+func TestGetEnvAsLocation(t *testing.T) {
+	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_LOCATION"
+	res := util.GetEnvAsLocation(testVarKey, "UTC")
+	assert.Equal(t, time.UTC, res)
+
+	os.Setenv(testVarKey, "Local")
+	defer os.Unsetenv(testVarKey)
+	res = util.GetEnvAsLocation(testVarKey, "UTC")
+	assert.Equal(t, time.Local, res)
+
+	vienna, err := time.LoadLocation("Europe/Vienna")
+	require.NoError(t, err)
+	os.Setenv(testVarKey, "Europe/Vienna")
+	res = util.GetEnvAsLocation(testVarKey, "UTC")
+	assert.Equal(t, vienna, res)
 }

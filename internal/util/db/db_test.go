@@ -148,8 +148,8 @@ func TestWithTransactionWithPanic(t *testing.T) {
 }
 
 func TestDBTypeConversions(t *testing.T) {
-	i := int64(19)
-	res := db.NullIntFromInt64Ptr(&i)
+	i64 := int64(19)
+	res := db.NullIntFromInt64Ptr(&i64)
 	assert.Equal(t, 19, res.Int)
 	assert.True(t, res.Valid)
 
@@ -163,4 +163,21 @@ func TestDBTypeConversions(t *testing.T) {
 
 	res2 = db.NullFloat32FromFloat64Ptr(nil)
 	assert.False(t, res2.Valid)
+
+	i16 := int16(19)
+	res3 := db.NullIntFromInt16Ptr(&i16)
+	assert.Equal(t, 19, res3.Int)
+	assert.True(t, res3.Valid)
+
+	res4 := db.Int16PtrFromNullInt(res3)
+	require.NotEmpty(t, res4)
+	assert.Equal(t, i16, *res4)
+
+	res5 := db.Int16PtrFromNullInt(null.IntFromPtr(nil))
+	assert.Empty(t, res5)
+
+	i := 7
+	res6 := db.Int16PtrFromInt(i)
+	require.NotEmpty(t, res6)
+	assert.Equal(t, i, int(*res6))
 }

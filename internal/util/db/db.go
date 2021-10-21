@@ -63,3 +63,25 @@ func NullFloat32FromFloat64Ptr(f *float64) null.Float32 {
 	}
 	return null.NewFloat32(float32(*f), true)
 }
+
+func NullIntFromInt16Ptr(i *int16) null.Int {
+	if i == nil {
+		return null.NewInt(0, false)
+	}
+	return null.NewInt(int(*i), true)
+}
+
+func Int16PtrFromNullInt(i null.Int) *int16 {
+	if !i.Valid {
+		return nil
+	}
+
+	res := int16(i.Int)
+	return &res
+}
+
+func Int16PtrFromInt(i int) *int16 {
+	res := int16(i)
+
+	return &res
+}

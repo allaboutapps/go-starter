@@ -55,7 +55,7 @@ func TestBindAndValidateSuccess(t *testing.T) {
 
 	res := test.PerformRequest(t, s, "POST", "/?test=true", testBody, nil)
 
-	assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+	require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 	var response types.PostLoginResponse
 	test.ParseResponseAndValidate(t, res, &response)
@@ -154,7 +154,7 @@ func prepareFileUpload(t *testing.T, filePath string) (*bytes.Buffer, string) {
 	require.NoError(t, err)
 	defer src.Close()
 
-	dst, err := writer.CreateFormFile("file", src.Name())
+	dst, err := writer.CreateFormFile("file", filepath.Base(src.Name()))
 	require.NoError(t, err)
 
 	_, err = io.Copy(dst, src)
