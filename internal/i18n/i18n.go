@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	bundle  *i18n.Bundle
-	matcher language.Matcher
+	_bundle  *i18n.Bundle     = initBundle()
+	_matcher language.Matcher = initMatcher()
 )
 
-func init() {
+func initBundle() *i18n.Bundle {
 	config := config.DefaultServiceConfigFromEnv()
 	defaultLanguage, err := language.Parse(config.I18n.DefaultLanguage)
 	if err != nil {
@@ -25,8 +25,30 @@ func init() {
 		panic(err)
 	}
 
-	bundle = i18n.NewBundle(defaultLanguage)
+	bundle := i18n.NewBundle(defaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+
+	files, err := os.ReadDir(config.I18n.MessageFilesBaseDirAbs)
+	if err != nil {
+		log.Error().Str("dir", config.I18n.MessageFilesBaseDirAbs).Err(err).Msg("Failed to read messages directory on init")
+		return bundle
+	}
+
+	for _, file := range files {
+		if file.IsDir() || !strings.HasSuffix(file.Name(), ".toml") {
+			continue
+		}
+		_, err := bundle.LoadMessageFile(filepath.Join(config.I18n.MessageFilesBaseDirAbs, file.Name()))
+		if err != nil {
+			log.Error().Str("file", file.Name()).Err(err).Msg("Failed to load message file")
+		}
+	}
+
+	return bundle
+}
+
+func initMatcher() language.Matcher {
+	config := config.DefaultServiceConfigFromEnv()
 
 	tags := []language.Tag{}
 	for _, lang := range config.I18n.AvailableLanguages {
@@ -39,23 +61,7 @@ func init() {
 		tags = append(tags, t)
 	}
 
-	matcher = language.NewMatcher(tags)
-
-	files, err := os.ReadDir(config.I18n.MessageFilesBaseDirAbs)
-	if err != nil {
-		log.Error().Str("dir", config.I18n.MessageFilesBaseDirAbs).Err(err).Msg("Failed to read messages directory on init")
-		return
-	}
-
-	for _, file := range files {
-		if file.IsDir() || !strings.HasSuffix(file.Name(), ".toml") {
-			continue
-		}
-		_, err := bundle.LoadMessageFile(filepath.Join(config.I18n.MessageFilesBaseDirAbs, file.Name()))
-		if err != nil {
-			log.Error().Str("file", file.Name()).Err(err).Msg("Failed to load message file")
-		}
-	}
+	return language.NewMatcher(tags)
 }
 
 type Data map[string]string
@@ -66,7 +72,7 @@ type Data map[string]string
 // T will not fail if a template value is missing "<no value>" will be inserted instead.
 // T will also not fail if the key is not present. "" will be returned instead.
 func T(key string, lang language.Tag, data ...Data) string {
-	localizer := i18n.NewLocalizer(bundle, lang.String())
+	localizer := i18n.NewLocalizer(_bundle, lang.String())
 
 	localizeConfig := &i18n.LocalizeConfig{
 		MessageID: key,
@@ -96,7 +102,7 @@ func ParseAcceptLanguage(lang string) language.Tag {
 	if err != nil {
 		log.Err(err).Msg("Failed to parse accept language")
 	}
-	matchedTag, _, _ := matcher.Match(tags...)
+	matchedTag, _, _ := _matcher.Match(tags...)
 
 	return matchedTag
 }
@@ -110,7 +116,7 @@ func ParseLang(lang string) language.Tag {
 		log.Err(err).Msg("Failed to parse language")
 	}
 
-	matchedTag, _, _ := matcher.Match(t)
+	matchedTag, _, _ := _matcher.Match(t)
 
 	return matchedTag
 }

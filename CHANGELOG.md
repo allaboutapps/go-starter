@@ -10,6 +10,9 @@
 ## Unreleased
 
 ### Changed
+- Add wrapper for i18n package by nicksnyder.
+  - Allows parsing of Accept-Language header and language string.
+  - Support for templating using go templating language in message values.
 
 ## 2021-10-19
 
