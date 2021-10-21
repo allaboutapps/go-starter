@@ -2,9 +2,10 @@
 
 - All notable changes to this project will be documented in this file.
 - The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-- We **do not follow [semantic versioning](https://semver.org/)**.
-- There are **no git tags**.
-- All changes are solely **tracked by date**.
+- We do not follow [semantic versioning](https://semver.org/).
+- All changes are solely **tracked by date** and have a git tag available (from 2021-10-19 onwards):
+  - format `go-starter-YYYY-MM-DD`
+  - e.g. [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19) 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
 ## Unreleased
@@ -12,6 +13,7 @@
 ### Changed
 
 - Fixes minor `Makefile` typos.
+- New go-starter releases are now git tagged (starting from the previous release `go-starter-2021-10-19` onwards). See [FAQ: What's the process of a new go-starter release?](https://github.com/allaboutapps/go-starter/wiki/FAQ#whats-the-process-of-a-new-go-starter-release)
 - You may now specify a **specific** tag/branch/commit from the upstream [go-starter](https://github.com/allaboutapps/go-starter) project while running `make git-fetch-go-starter`, `make git-compare-go-starter` and `make git-merge-go-starter`. This will especially come in handy if you want to do a multi-phased merge (for projects that haven't been updated in a long time):
   - Merge with the latest: `make git-merge-go-starter`
   - Merge with a specific tag, e.g. the tag [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19): `GIT_GO_STARTER_TARGET=go-starter-2021-10-19 make git-merge-go-starter`
