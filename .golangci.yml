@@ -1,5 +1,5 @@
 run:
-  # also lint files within /scripts. Those have "// +build scripts" set.
+  # also lint files within /scripts. Those have "//go:build scripts" set.
   build-tags:
     - scripts
 linters:

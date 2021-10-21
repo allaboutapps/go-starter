@@ -1,4 +1,4 @@
-// +build scripts
+//go:build scripts
 
 // This program generates /internal/api/handlers.go.
 // It can be invoked by running go run -tags scripts scripts/handlers/gen_handlers.go

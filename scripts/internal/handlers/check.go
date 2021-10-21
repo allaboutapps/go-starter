@@ -1,4 +1,4 @@
-// +build scripts
+//go:build scripts
 
 // This program checks /internal/api/handlers.go and /internal/types/spec_handlers.go
 // It can be invoked by running go run -tags scripts scripts/handlers/check_handlers.go
