@@ -34,9 +34,14 @@ func NewSMTP(config SMTPMailTransportConfig) *SMTPMailTransport {
 }
 
 func (m *SMTPMailTransport) Send(mail *email.Email) error {
-	if m.config.UseTLS {
+	switch m.config.Encryption {
+	case SMTPEncryptionNone:
+		return mail.Send(m.addr, m.auth)
+	case SMTPEncryptionTLS:
 		return mail.SendWithTLS(m.addr, m.auth, m.config.TLSConfig)
+	case SMTPEncryptionStartTLS:
+		return mail.SendWithStartTLS(m.addr, m.auth, m.config.TLSConfig)
+	default:
+		return fmt.Errorf("invalid SMTP encryption %q", m.config.Encryption)
 	}
-
-	return mail.Send(m.addr, m.auth)
 }
