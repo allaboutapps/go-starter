@@ -1,0 +1,2 @@
+"Test.Body" = "This is a test"
+"Test.Welcome" = "Welcome {{.Name}}"
