@@ -157,6 +157,9 @@ func ContainsAll(str string, sub ...string) bool {
 
 	for _, marked := range str {
 		for i, r := range runes {
+			if len(r) == 0 {
+				contains[i] = true
+			}
 			if !contains[i] && marked == r[indices[i]] {
 				indices[i]++
 				if indices[i] >= len(r) {

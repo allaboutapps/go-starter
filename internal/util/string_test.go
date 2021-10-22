@@ -70,6 +70,9 @@ func TestContainsAll(t *testing.T) {
 	assert.False(t, util.ContainsAll("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", ".", "sit", "elit", "ipsum", " Lorem"))
 
 	assert.True(t, util.ContainsAll("Lorem ipsum dolor sit amet,  ÄÜiö consectetur adipiscing elit.", "ÄÜiö c"))
+
+	assert.False(t, util.ContainsAll("", "ÄÜiö c"))
+	assert.True(t, util.ContainsAll("Lorem ipsum dolor sit amet,  ÄÜiö consectetur adipiscing elit.", ""))
 }
 
 func TestEmptyIfNil(t *testing.T) {
