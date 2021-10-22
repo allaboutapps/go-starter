@@ -380,8 +380,8 @@ pipeline:
       branch: [master, mr/a3cloud, mr/liveness-probing]
       event: [push, pull_request, tag]
 
-  ? "go-starter deploy ${DRONE_COMMIT_SHA:0:10} to allaboutapps-go-starter-dev (auto)"
-  : group: go-starter-deploy
+  "go-starter deploy ${DRONE_COMMIT_SHA:0:10} to allaboutapps-go-starter-dev (auto)":
+    group: go-starter-deploy
     image: eu.gcr.io/a3cloud-192413/aw/aaa-drone-kubernetes:latest
     pull: true
     secrets:
