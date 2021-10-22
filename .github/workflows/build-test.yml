@@ -35,29 +35,6 @@ jobs:
         image: mailhog/mailhog
     steps:
       - uses: actions/checkout@v2.3.4
-      # Setup docker buildx caching and building
-      # based on: https://github.com/dtinth/github-actions-docker-layer-caching-poc/pull/1/files
-      # also see: 
-      # * https://github.com/actions/cache/issues/31
-      # * https://dev.to/dtinth/caching-docker-builds-in-github-actions-which-approach-is-the-fastest-a-research-18ei
-      # * https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
-      # * https://docs.docker.com/buildx/working-with-buildx/
-      # - uses: docker/setup-buildx-action@v1
-      # - uses: actions/cache@v2
-      #   with:
-      #     path: /tmp/.buildx-cache
-      #     key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-buildx-
-      # - name: docker build (target builder) from cache
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     push: false
-      #     tags: allaboutapps.dev/aw/go-starter:builder-${{ github.sha }}
-      #     target: builder
-      #     cache-from: type=local,src=/tmp/.buildx-cache
-      #     cache-to: type=local,dest=/tmp/.buildx-cache
-      #     load: true # make the image available for local docker run commands
       - name: docker build (target builder)
         run: docker build --target builder --file Dockerfile --tag allaboutapps.dev/aw/go-starter:builder-${GITHUB_SHA} .
       - name: docker build (target app)
@@ -71,15 +48,6 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-      - name: upload trivy scan results to GitHub security tab
-        # Currently limited to master because of the following:
-        # Workflows triggered by Dependabot on the "push" event run with read-only access. Uploading Code Scanning results requires write access.
-        # To use Code Scanning with Dependabot, please ensure you are using the "pull_request" event for this workflow and avoid triggering on the "push" event for Dependabot branches.
-        # See https://docs.github.com/en/code-security/secure-coding/configuring-code-scanning#scanning-on-push for more information on how to configure these events.
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }} 
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: 'trivy-results.sarif'
       - name: docker run (target builder)
         run: docker run -d --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" --name=builder -it allaboutapps.dev/aw/go-starter:builder-${GITHUB_SHA}
       - name: "build & diff"
@@ -88,20 +56,15 @@ jobs:
           docker exec builder make tidy
           docker exec builder make build
           docker cp builder:/app ./post-build && rm -rf ./post-build/.git && git -C post-build diff --exit-code
-      # - name: make tidy
-      #   run: docker exec builder make tidy
-      # - name: make build
-      #   run: docker exec builder make build
-      - name: info
-        run: docker exec builder make info
       - name: test
         run: docker exec builder make test
       - name: upload coverage to codecov
         run: docker cp builder:/tmp/coverage.out ./coverage.out && bash <(curl -s https://codecov.io/bash)
-      - name: test-scripts (gsdev, go-starter only) # TODO limit to go-starter repo only
+      - name: test-scripts (gsdev, go-starter only)
+        if: ${{ github.repository == 'allaboutapps/go-starter' }} 
         run: docker exec builder make test-scripts
-      - name: git-compare-go-starter
-        run: docker exec builder make git-compare-go-starter
+      - name: info
+        run: docker exec builder make info
       - name: "binary: deps"
         run: docker exec builder bash -c 'make get-embedded-modules-count && make get-embedded-modules'
       - name: "binary: licenses"
@@ -111,9 +74,15 @@ jobs:
           docker run --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" allaboutapps.dev/aw/go-starter:app-${GITHUB_SHA} help
           docker run --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" allaboutapps.dev/aw/go-starter:app-${GITHUB_SHA} -v
           docker run --env-file $DOCKER_ENV_FILE --network "${{ job.services.postgres.network }}" allaboutapps.dev/aw/go-starter:app-${GITHUB_SHA} env
-      # - name: git diff --exit-code
-      #   # Note builder stage now includes .git, thus we rm it again to again diff with the original git workspace
-      #   run: docker cp builder:/app ./post-build && rm -rf ./post-build/.git && git -C post-build diff --exit-code
+      - name: upload trivy scan results to GitHub security tab
+        # Currently limited to master because of the following:
+        # Workflows triggered by Dependabot on the "push" event run with read-only access. Uploading Code Scanning results requires write access.
+        # To use Code Scanning with Dependabot, please ensure you are using the "pull_request" event for this workflow and avoid triggering on the "push" event for Dependabot branches.
+        # See https://docs.github.com/en/code-security/secure-coding/configuring-code-scanning#scanning-on-push for more information on how to configure these events.
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }} 
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: 'trivy-results.sarif'
       - name: stop container
         if: ${{ always() }}
         run: docker stop builder
