@@ -87,7 +87,7 @@ func BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error {
 
 // BindAndValidate binds the request, parsing path+query+body and validating these structs.
 //
-// De pre ca ted (bad word, the linter will cry!): Use our dedicated BindAndValidate* mappers instead:
+// Deprecated: Use our dedicated BindAndValidate* mappers instead:
 //   BindAndValidateBody(c echo.Context, v runtime.Validatable) error // preferred
 //   BindAndValidatePathAndQueryParams(c echo.Context, v runtime.Validatable) error  // preferred
 //   BindAndValidatePathParams(c echo.Context, v runtime.Validatable) error // rare usecases
@@ -236,7 +236,7 @@ func validatePayload(c echo.Context, v runtime.Validatable) error {
 		case *errors.CompositeError:
 			LogFromEchoContext(c).Debug().Errs("validation_errors", ee.Errors).Msg("Payload did match schema, returning HTTP validation error")
 
-			valErrs := FormatValidationErrors(c.Request().Context(), ee)
+			valErrs := formatValidationErrors(c.Request().Context(), ee)
 
 			return httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
 		case *errors.Validation:
@@ -285,7 +285,7 @@ func defaultEchoBindAll(c echo.Context, v runtime.Validatable) (err error) {
 	return binder.BindBody(c, v)
 }
 
-func FormatValidationErrors(ctx context.Context, err *errors.CompositeError) []*types.HTTPValidationErrorDetail {
+func formatValidationErrors(ctx context.Context, err *errors.CompositeError) []*types.HTTPValidationErrorDetail {
 	valErrs := make([]*types.HTTPValidationErrorDetail, 0, len(err.Errors))
 	for _, e := range err.Errors {
 		switch ee := e.(type) {
@@ -296,7 +296,7 @@ func FormatValidationErrors(ctx context.Context, err *errors.CompositeError) []*
 				Error: swag.String(ee.Error()),
 			})
 		case *errors.CompositeError:
-			valErrs = append(valErrs, FormatValidationErrors(ctx, ee)...)
+			valErrs = append(valErrs, formatValidationErrors(ctx, ee)...)
 		default:
 			LogFromContext(ctx).Warn().Err(e).Str("err_type", fmt.Sprintf("%T", e)).Msg("Received unknown error type while validating payload, skipping")
 		}

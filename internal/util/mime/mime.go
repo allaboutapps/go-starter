@@ -1,5 +1,9 @@
 package mime
 
+import "github.com/gabriel-vasile/mimetype"
+
+var _ MIME = (*mimetype.MIME)(nil)
+
 // MIME interface enables to use either *mimetype.MIME or KnownMIME as mimetype.
 type MIME interface {
 	String() string

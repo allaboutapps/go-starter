@@ -7,7 +7,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/util"
 )
 
-func GetNewPKCECodeVerifier() (string, error) {
+func GetPKCECodeVerifier() (string, error) {
 
 	// for details regarding possible characters in verifier, see:
 	// https://tools.ietf.org/html/rfc7636#section-4.1

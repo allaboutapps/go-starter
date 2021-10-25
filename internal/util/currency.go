@@ -38,7 +38,7 @@ func Float64PtrToInt64WithCents(f *float64) int64 {
 	return int64(swag.Float64Value(f) * 100)
 }
 
-func Float64PToInt64WithCents(f float64) int64 {
+func Float64ToInt64WithCents(f float64) int64 {
 	return int64(f * 100)
 }
 
