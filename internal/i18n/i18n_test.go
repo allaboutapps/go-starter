@@ -11,7 +11,8 @@ import (
 )
 
 func TestI18NGlobal(t *testing.T) {
-	i18n.InitPackage()
+	config := config.DefaultServiceConfigFromEnv()
+	i18n.InitPackage(config.I18n)
 
 	msg := i18n.T("Test.Welcome", language.German, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Guten Tag Hans", msg)
@@ -63,7 +64,8 @@ func TestI18N(t *testing.T) {
 }
 
 func TestParseAcceptLanguageGlobal(t *testing.T) {
-	i18n.InitPackage()
+	config := config.DefaultServiceConfigFromEnv()
+	i18n.InitPackage(config.I18n)
 
 	tag := i18n.ParseAcceptLanguage("de,en-US;q=0.7,en;q=0.3")
 	assert.Equal(t, language.German, tag)
@@ -79,7 +81,8 @@ func TestParseAcceptLanguage(t *testing.T) {
 }
 
 func TestParseLangGlobal(t *testing.T) {
-	i18n.InitPackage()
+	config := config.DefaultServiceConfigFromEnv()
+	i18n.InitPackage(config.I18n)
 
 	tag := i18n.ParseLang("de")
 	assert.Equal(t, language.German, tag)

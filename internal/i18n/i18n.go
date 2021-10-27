@@ -28,17 +28,15 @@ type Matcher struct {
 }
 
 // InitPackage initializes the global bundle and matcher with the default values from the environment.
-func InitPackage() {
+func InitPackage(config config.I18n) {
 	_initOnce.Do(func() {
-		config := config.DefaultServiceConfigFromEnv()
-
 		var err error
-		_bundle, err = NewBundle(config.I18n)
+		_bundle, err = NewBundle(config)
 		if err != nil {
 			log.Err(err).Msg("Failed to initialize global i18n bundle")
 		}
 
-		_matcher, err = NewMatcher(config.I18n)
+		_matcher, err = NewMatcher(config)
 		if err != nil {
 			log.Err(err).Msg("Failed to initialize gloabl i18n matcher")
 		}
@@ -47,13 +45,7 @@ func InitPackage() {
 
 // NewBundle returns a new bundle with the settings of the given config.
 func NewBundle(config config.I18n) (*Bundle, error) {
-	defaultLanguage, err := language.Parse(config.DefaultLanguage)
-	if err != nil {
-		log.Err(err).Str("lang", config.DefaultLanguage).Msg("could not parse default language tag")
-		panic(err)
-	}
-
-	bundle := i18n.NewBundle(defaultLanguage)
+	bundle := i18n.NewBundle(config.DefaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	files, err := os.ReadDir(config.MessageFilesBaseDirAbs)
@@ -80,19 +72,8 @@ func NewBundle(config config.I18n) (*Bundle, error) {
 
 // NewBundle returns a new matcher with the settings of the given config.
 func NewMatcher(config config.I18n) (*Matcher, error) {
-	tags := []language.Tag{}
-	for _, lang := range config.AvailableLanguages {
-		t, err := language.Parse(lang)
-		if err != nil {
-			log.Err(err).Str("lang", lang).Msg("could not parse language tag")
-			return nil, err
-		}
-
-		tags = append(tags, t)
-	}
-
 	return &Matcher{
-		matcher: language.NewMatcher(tags),
+		matcher: language.NewMatcher(config.AvailableLanguages),
 	}, nil
 }
 

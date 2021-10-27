@@ -10,6 +10,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/push/provider"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/rs/zerolog"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -90,8 +91,8 @@ type LoggerServer struct {
 }
 
 type I18n struct {
-	DefaultLanguage        string
-	AvailableLanguages     []string
+	DefaultLanguage        language.Tag
+	AvailableLanguages     []language.Tag
 	MessageFilesBaseDirAbs string
 }
 
@@ -224,8 +225,8 @@ func DefaultServiceConfigFromEnv() Server {
 				ValidateOnly:                 util.GetEnvAsBool("SERVER_FCM_VALIDATE_ONLY", true),
 			},
 			I18n: I18n{
-				DefaultLanguage:        util.GetEnv("SERVER_I18N_DEFAULT_LANGUAGE", "en"),
-				AvailableLanguages:     util.GetEnvAsStringArr("SERVER_I18N_AVAILABLE_LANGUAGES", []string{"en", "de"}),
+				DefaultLanguage:        util.GetEnvAsLanguageTag("SERVER_I18N_DEFAULT_LANGUAGE", language.English),
+				AvailableLanguages:     util.GetEnvAsLanguageTagArr("SERVER_I18N_AVAILABLE_LANGUAGES", []language.Tag{language.English, language.German}),
 				MessageFilesBaseDirAbs: util.GetEnv("SERVER_I18N_MESSAGE_FILES_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/messages")), // /app/web/messages
 			},
 		}
