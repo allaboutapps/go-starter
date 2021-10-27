@@ -6,6 +6,7 @@ import (
 	"net/smtp"
 
 	"github.com/jordan-wright/email"
+	"github.com/rs/zerolog/log"
 )
 
 type SMTPMailTransport struct {
@@ -35,6 +36,7 @@ func NewSMTP(config SMTPMailTransportConfig) *SMTPMailTransport {
 
 func (m *SMTPMailTransport) Send(mail *email.Email) error {
 	if m.config.UseTLS {
+		log.Warn().Msg("Enabling TLS with the UseTLS flag is *DEPRECATED* and will be removed in future releases")
 		return mail.SendWithTLS(m.addr, m.auth, m.config.TLSConfig)
 	}
 

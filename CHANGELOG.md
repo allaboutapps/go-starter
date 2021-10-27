@@ -14,7 +14,8 @@
 - Add MIME interface to use *mimtype.MIME or an already KnownMIME.
 - Add function to detach context to avoid context cancelation. Can be used to pass context information to go routines without a deadline or cancel.
 - Add oauth2 helper for PKCE extention to generate verifier and challenge.
-- **DEPRECATED** Add starttls support to mailer. If you were using the `SERVER_SMTP_USE_TLS` flag before to enable TLS you need to change it to the `SERVER_SMTP_ENCRYPTION` setting and set it to `tls`.
+- Added starttls support to mailer
+- **DEPRECATED** If you were using the `SERVER_SMTP_USE_TLS` flag before to enable TLS, you'll need to migrate to the `SERVER_SMTP_ENCRYPTION` setting of `tls`. For the moment, both settings are supported (with a warning being printed when using `SERVER_SMTP_USE_TLS`, however support for the deprecated config might be dropped in a future release).
 - Extend mailer mock to support waiting for all expected mails to arrive to check asynchronously sent mails in tests.
 
 ## 2021-10-19
