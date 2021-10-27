@@ -275,7 +275,7 @@ swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 	@find internal/types -type f -exec grep -q '^// DELETE ME; DO NOT EDIT\.$$' {} \; -delete
 
 watch-swagger: ##- Watches *.yml|yaml|gotmpl files in /api and runs 'make swagger' on modifications.
-	@echo "Watching /api/**/*.yml|yaml|gotmpl. Use Ctrl-c to to stop a run or exit."
+	@echo "Watching /api/**/*.yml|yaml|gotmpl. Use Ctrl-c to stop a run or exit."
 	watchexec -p -w api -i tmp -i api/swagger.yml --exts yml,yaml,gotmpl $(MAKE) swagger
 
 ### -----------------------
@@ -302,25 +302,34 @@ check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin
 # --- Git related
 ### -----------------------
 
-git-fetch-go-starter: ##- (opt) Fetches upstream go-starter master (creating git remote 'go-starter').
-	@git config remote.go-starter.url >&- || git remote add go-starter https://github.com/allaboutapps/go-starter.git
-	@git fetch go-starter master
+# This is the default upstream go-starter branch we will use for our comparisons.
+# You may use a different tag/branch/commit like this:
+# - Merge with a specific tag, e.g. `go-starter-2021-10-19`: `GIT_GO_STARTER_TARGET=go-starter-2021-10-19 make git-merge-go-starter`
+# - Merge with a specific branch, e.g. `mr/housekeeping`: `GIT_GO_STARTER_TARGET=go-starter/mr/housekeeping make git-merge-go-starter` (heads up! it's `go-starter/<branchname>`)
+# - Merge with a specific commit, e.g. `e85bedb9`: `GIT_GO_STARTER_TARGET=e85bedb94c3562602bc23d2bfd09fca3b13d1e02 make git-merge-go-starter`
+GIT_GO_STARTER_TARGET ?= go-starter/master
+GIT_GO_STARTER_BASE ?= $(GIT_GO_STARTER_TARGET:go-starter/%=%)
 
-git-compare-go-starter: ##- (opt) Compare upstream go-starter master to HEAD displaying commits away and git log.
+git-fetch-go-starter: ##- (opt) Fetches upstream GIT_GO_STARTER_TARGET (creating git remote 'go-starter').
+	@echo "GIT_GO_STARTER_TARGET=${GIT_GO_STARTER_TARGET} GIT_GO_STARTER_BASE=${GIT_GO_STARTER_BASE}"
+	@git config remote.go-starter.url >&- || git remote add go-starter https://github.com/allaboutapps/go-starter.git
+	@git fetch go-starter ${GIT_GO_STARTER_BASE}
+
+git-compare-go-starter: ##- (opt) Compare upstream GIT_GO_STARTER_TARGET to HEAD displaying commits away and git log.
 	@$(MAKE) git-fetch-go-starter
-	@echo "Commits away from upstream go-starter master:"
-	git --no-pager rev-list --pretty=oneline --left-only --count go-starter/master...HEAD
+	@echo "Commits away from upstream go-starter ${GIT_GO_STARTER_TARGET}:"
+	git --no-pager rev-list --pretty=oneline --left-only --count ${GIT_GO_STARTER_TARGET}...HEAD
 	@echo ""
 	@echo "Git log:"
-	git --no-pager log --left-only --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --abbrev-commit --count go-starter/master...HEAD
+	git --no-pager log --left-only --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --abbrev-commit --count ${GIT_GO_STARTER_TARGET}...HEAD
 
-git-merge-go-starter: ##- Merges upstream go-starter master into current HEAD.
+git-merge-go-starter: ##- Merges upstream GIT_GO_STARTER_TARGET into current HEAD.
 	@$(MAKE) git-compare-go-starter
 	@(echo "" \
-		&& echo "Attempting to execute 'git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master' into your current HEAD." \
+		&& echo "Attempting to execute 'git merge --no-commit --no-ff --allow-unrelated-histories ${GIT_GO_STARTER_TARGET}' into your current HEAD." \
 		&& echo -n "Are you sure? [y/N]" \
 		&& read ans && [ $${ans:-N} = y ]) || exit 1
-	git merge --no-commit --no-ff --allow-unrelated-histories go-starter/master || true
+	git merge --no-commit --no-ff --allow-unrelated-histories ${GIT_GO_STARTER_TARGET} || true
 	@echo "Done. We recommend to run 'make force-module-name' to automatically fix all import paths."
 
 ### -----------------------
