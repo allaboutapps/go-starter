@@ -12,6 +12,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/i18n"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -84,6 +85,8 @@ func runServer() {
 			w.TimeFormat = "15:04:05"
 		}))
 	}
+
+	i18n.InitPackage()
 
 	s := api.NewServer(config)
 
