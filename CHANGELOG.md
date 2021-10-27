@@ -2,9 +2,10 @@
 
 - All notable changes to this project will be documented in this file.
 - The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-- We **do not follow [semantic versioning](https://semver.org/)**.
-- There are **no git tags**.
-- All changes are solely **tracked by date**.
+- We do not follow [semantic versioning](https://semver.org/).
+- All changes are solely **tracked by date** and have a git tag available (from 2021-10-19 onwards):
+  - format `go-starter-YYYY-MM-DD`
+  - e.g. [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19) 
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
 ## Unreleased
@@ -13,6 +14,22 @@
 - Add wrapper for i18n package by nicksnyder.
   - Allows parsing of Accept-Language header and language string.
   - Support for templating using go templating language in message values.
+
+## 2021-10-22
+
+### Changed
+
+- Fixes minor `Makefile` typos.
+- New go-starter releases are now git tagged (starting from the previous release `go-starter-2021-10-19` onwards). See [FAQ: What's the process of a new go-starter release?](https://github.com/allaboutapps/go-starter/wiki/FAQ#whats-the-process-of-a-new-go-starter-release)
+- You may now specify a **specific** tag/branch/commit from the upstream [go-starter](https://github.com/allaboutapps/go-starter) project while running `make git-fetch-go-starter`, `make git-compare-go-starter` and `make git-merge-go-starter`. This will especially come in handy if you want to do a multi-phased merge (for projects that haven't been updated in a long time):
+  - Merge with the latest: `make git-merge-go-starter`
+  - Merge with a specific tag, e.g. the tag [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19): `GIT_GO_STARTER_TARGET=go-starter-2021-10-19 make git-merge-go-starter`
+  - Merge with a specific branch, e.g. the branch [`mr/housekeeping`](https://github.com/allaboutapps/go-starter/tree/mr/housekeeping): `GIT_GO_STARTER_TARGET=go-starter/mr/housekeeping make git-merge-go-starter` (heads up! it's `go-starter/<branchname>`)
+  - Merge with a specific commit, e.g. the commit [`e85bedb94c3562602bc23d2bfd09fca3b13d1e02`](https://github.com/allaboutapps/go-starter/commit/e85bedb94c3562602bc23d2bfd09fca3b13d1e02): `GIT_GO_STARTER_TARGET=e85bedb94c3562602bc23d2bfd09fca3b13d1e02 make git-merge-go-starter`
+- The primary GitHub Action pipeline `.github/workflows/build-test.yml` has been synced to include most validation tasks from our internal `.drone.yml` pipeline. Furthermore:
+  - Avoid `Build & Test` GitHub Action running twice (on `push` and on `pull_request`).
+  - Add trivy scan to our base Build & Test pipeline (as we know also build and test the `app` target docker image).
+  - Our GitHub Action pipeline will no longer attempt to cache the previously built Docker images by other pipelines, as extracting/restoring from cache (docker buildx) typically takes **longer** than fully rebuilding the whole image. We will reinvestigate caching mechanisms in the future if GitHub Actions provides a speedier and official integration for Docker images.
 
 ## 2021-10-19
 
