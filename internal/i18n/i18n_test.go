@@ -37,6 +37,18 @@ func TestI18NGlobal(t *testing.T) {
 
 	msg = i18n.T("Test.Invalid.Key.Does.Not.Exist", language.English)
 	assert.Equal(t, "", msg)
+
+	msg = i18n.T("Test.String.DE.only", language.English)
+	assert.Equal(t, "", msg)
+
+	msg = i18n.T("Test.String.DE.only", language.German)
+	assert.Equal(t, "This key only exists in DE", msg)
+
+	msg = i18n.T("Test.String.EN.only", language.English)
+	assert.Equal(t, "This key only exists in EN", msg)
+
+	msg = i18n.T("Test.String.EN.only", language.German)
+	assert.Equal(t, "", msg)
 }
 
 func TestI18N(t *testing.T) {
@@ -66,6 +78,18 @@ func TestI18N(t *testing.T) {
 	assert.Equal(t, "This is a test", msg)
 
 	msg = bundle.T("Test.Invalid.Key.Does.Not.Exist", language.English)
+	assert.Equal(t, "", msg)
+
+	msg = bundle.T("Test.String.DE.only", language.English)
+	assert.Equal(t, "", msg)
+
+	msg = bundle.T("Test.String.DE.only", language.German)
+	assert.Equal(t, "This key only exists in DE", msg)
+
+	msg = bundle.T("Test.String.EN.only", language.English)
+	assert.Equal(t, "This key only exists in EN", msg)
+
+	msg = bundle.T("Test.String.EN.only", language.German)
 	assert.Equal(t, "", msg)
 }
 

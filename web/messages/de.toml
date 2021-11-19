@@ -1,2 +1,3 @@
 "Test.Body" = "Das ist ein Test"
 "Test.Welcome" = "Guten Tag {{.Name}}"
+"Test.String.DE.only" = "This key only exists in DE"
