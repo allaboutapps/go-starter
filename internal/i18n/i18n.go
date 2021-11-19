@@ -28,7 +28,7 @@ type Matcher struct {
 }
 
 // InitPackage initializes the global bundle and matcher with the default values from the environment.
-func InitPackage(config config.I18n) {
+func InitGlobalBundleMatcher(config config.I18n) {
 	_initOnce.Do(func() {
 		var err error
 		_bundle, err = NewBundle(config)
@@ -38,7 +38,7 @@ func InitPackage(config config.I18n) {
 
 		_matcher, err = NewMatcher(config)
 		if err != nil {
-			log.Err(err).Msg("Failed to initialize gloabl i18n matcher")
+			log.Err(err).Msg("Failed to initialize global i18n matcher")
 		}
 	})
 }
@@ -121,7 +121,7 @@ func (m *Matcher) ParseAcceptLanguage(lang string) language.Tag {
 	// additionally, we don't really care about the q-factor weighting or confidence, the first match will be picked (with a fallback to English)
 	tags, _, err := language.ParseAcceptLanguage(lang)
 	if err != nil {
-		log.Err(err).Msg("Failed to parse accept language")
+		log.Err(err).Str("lang", lang).Msg("Failed to parse accept language")
 	}
 	matchedTag, _, _ := m.matcher.Match(tags...)
 

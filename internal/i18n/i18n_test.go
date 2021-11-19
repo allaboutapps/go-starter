@@ -12,7 +12,7 @@ import (
 
 func TestI18NGlobal(t *testing.T) {
 	config := config.DefaultServiceConfigFromEnv()
-	i18n.InitPackage(config.I18n)
+	i18n.InitGlobalBundleMatcher(config.I18n)
 
 	msg := i18n.T("Test.Welcome", language.German, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Guten Tag Hans", msg)
@@ -34,6 +34,9 @@ func TestI18NGlobal(t *testing.T) {
 
 	msg = i18n.T("Test.Body", language.Spanish)
 	assert.Equal(t, "This is a test", msg)
+
+	msg = i18n.T("Test.Invalid.Key.Does.Not.Exist", language.English)
+	assert.Equal(t, "", msg)
 }
 
 func TestI18N(t *testing.T) {
@@ -61,11 +64,14 @@ func TestI18N(t *testing.T) {
 
 	msg = bundle.T("Test.Body", language.Spanish)
 	assert.Equal(t, "This is a test", msg)
+
+	msg = bundle.T("Test.Invalid.Key.Does.Not.Exist", language.English)
+	assert.Equal(t, "", msg)
 }
 
 func TestParseAcceptLanguageGlobal(t *testing.T) {
 	config := config.DefaultServiceConfigFromEnv()
-	i18n.InitPackage(config.I18n)
+	i18n.InitGlobalBundleMatcher(config.I18n)
 
 	tag := i18n.ParseAcceptLanguage("de,en-US;q=0.7,en;q=0.3")
 	assert.Equal(t, language.German, tag)
@@ -82,7 +88,7 @@ func TestParseAcceptLanguage(t *testing.T) {
 
 func TestParseLangGlobal(t *testing.T) {
 	config := config.DefaultServiceConfigFromEnv()
-	i18n.InitPackage(config.I18n)
+	i18n.InitGlobalBundleMatcher(config.I18n)
 
 	tag := i18n.ParseLang("de")
 	assert.Equal(t, language.German, tag)
@@ -95,4 +101,47 @@ func TestParseLang(t *testing.T) {
 
 	tag := matcher.ParseLang("de")
 	assert.Equal(t, language.German, tag)
+}
+
+func TestParseLangGlobalWellFormedUnknownLangTag(t *testing.T) {
+	config := config.DefaultServiceConfigFromEnv()
+	i18n.InitGlobalBundleMatcher(config.I18n)
+
+	tag := i18n.ParseLang("xx")
+	assert.Equal(t, config.I18n.DefaultLanguage, tag)
+
+	msg := i18n.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	assert.Equal(t, "Welcome Hans", msg)
+}
+
+func TestParseLangGlobalInvalidLangTag(t *testing.T) {
+	config := config.DefaultServiceConfigFromEnv()
+	i18n.InitGlobalBundleMatcher(config.I18n)
+
+	tag := i18n.ParseLang("§$%/%&/(/&%/)(")
+	assert.Equal(t, config.I18n.DefaultLanguage, tag)
+
+	msg := i18n.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	assert.Equal(t, "Welcome Hans", msg)
+}
+
+func TestParseAcceptLanguageWellFormedUnknownLangTag(t *testing.T) {
+	config := config.DefaultServiceConfigFromEnv()
+	i18n.InitGlobalBundleMatcher(config.I18n)
+
+	tag := i18n.ParseAcceptLanguage("xx,en-US;q=0.7,en;q=0.3")
+	assert.Equal(t, config.I18n.DefaultLanguage, tag)
+
+	msg := i18n.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	assert.Equal(t, "Welcome Hans", msg)
+}
+func TestParseAcceptLanguageGlobalInvalidLangTag(t *testing.T) {
+	config := config.DefaultServiceConfigFromEnv()
+	i18n.InitGlobalBundleMatcher(config.I18n)
+
+	tag := i18n.ParseAcceptLanguage("§$%/%&/(/&%/)(")
+	assert.Equal(t, config.I18n.DefaultLanguage, tag)
+
+	msg := i18n.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	assert.Equal(t, "Welcome Hans", msg)
 }

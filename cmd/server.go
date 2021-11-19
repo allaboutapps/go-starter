@@ -86,7 +86,7 @@ func runServer() {
 		}))
 	}
 
-	i18n.InitPackage(config.I18n)
+	i18n.InitGlobalBundleMatcher(config.I18n)
 
 	s := api.NewServer(config)
 

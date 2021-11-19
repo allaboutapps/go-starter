@@ -67,7 +67,7 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 	// You may use port 0 to indicate you're not specifying an exact port but you want a free, available port selected by the system
 	config.Echo.ListenAddress = ":0"
 
-	i18n.InitPackage(config.I18n)
+	i18n.InitGlobalBundleMatcher(config.I18n)
 
 	s := api.NewServer(config)
 
