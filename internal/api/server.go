@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/i18n"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/push"
@@ -27,22 +28,24 @@ type Router struct {
 }
 
 type Server struct {
-	Config config.Server
-	DB     *sql.DB
-	Echo   *echo.Echo
-	Router *Router
-	Mailer *mailer.Mailer
-	Push   *push.Service
+	Config   config.Server
+	DB       *sql.DB
+	Echo     *echo.Echo
+	Router   *Router
+	Mailer   *mailer.Mailer
+	Push     *push.Service
+	Messages *i18n.Messages
 }
 
 func NewServer(config config.Server) *Server {
 	s := &Server{
-		Config: config,
-		DB:     nil,
-		Echo:   nil,
-		Router: nil,
-		Mailer: nil,
-		Push:   nil,
+		Config:   config,
+		DB:       nil,
+		Echo:     nil,
+		Router:   nil,
+		Mailer:   nil,
+		Push:     nil,
+		Messages: nil,
 	}
 
 	return s
@@ -53,7 +56,8 @@ func (s *Server) Ready() bool {
 		s.Echo != nil &&
 		s.Router != nil &&
 		s.Mailer != nil &&
-		s.Push != nil
+		s.Push != nil &&
+		s.Messages != nil
 }
 
 func (s *Server) InitDB(ctx context.Context) error {
@@ -115,6 +119,18 @@ func (s *Server) InitPush() error {
 	if s.Push.GetProviderCount() < 1 {
 		log.Warn().Msg("No providers registered for push service")
 	}
+
+	return nil
+}
+
+func (s *Server) InitMessages() error {
+	messages, err := i18n.New(s.Config.I18n)
+
+	if err != nil {
+		return err
+	}
+
+	s.Messages = messages
 
 	return nil
 }
