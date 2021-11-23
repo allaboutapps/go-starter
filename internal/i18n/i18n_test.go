@@ -49,6 +49,10 @@ func TestServerProvidedMessages(t *testing.T) {
 	})
 }
 
+// Note that all following tests use a special message directory within /internal/i18n/testdata.
+// We do this to ensure we don't depend on your project specific i18n messages/configuration,
+// that you would typically store within /web/messages.
+
 func TestMessages(t *testing.T) {
 	// Messages from /internal/i18n/testdata/messages
 	messages, err := i18n.New(config.I18n{

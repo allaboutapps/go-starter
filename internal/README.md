@@ -20,6 +20,10 @@ Anything data related (e.g. mappers, DAOs, DTOs, ...), may be especially relevan
 
 May hold live db fixture data (for `app db seed`).
 
+### `/internal/i18n`
+
+Our implementation for i18n/l10n, as available via `api.Server.Messages`. Your own localized messages should live within **`/web/messages`**.
+
 ### `/internal/mailer`
 
 Email handling sub-service.

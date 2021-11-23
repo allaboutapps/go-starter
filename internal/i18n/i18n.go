@@ -13,15 +13,19 @@ import (
 	"golang.org/x/text/language"
 )
 
-// TODO txt regarding assuption all i18n keys are available in all languages and no fallback if key in one language is not available.
-// TODO txt regarding strict naming convention of messages files.
+// i18n implementation assumptions:
+//   Your messages should live within /web/messages and are named according to their supported locale e.g. en.toml, de.toml or en-uk.toml, en-us.toml
+//   All message files hold the same keys (there are no unique keys on a single message file)
+//   The Messages object is created and owned by the api.Server (s.Messages), you typically don't want to create your own object.
 
+// Messages is your convience object to call T (Translate) and match languages according to your loaded message bundle and its supported languages/locales.
 type Messages struct {
 	bundle  *i18n.Bundle
 	matcher language.Matcher
 }
 
 // New returns a new Messages struct holding bundle and matcher with the settings of the given config
+// Note that messages is typically created and owned by the api.Server (use it via s.Messages)
 func New(config config.I18n) (*Messages, error) {
 
 	bundle := i18n.NewBundle(config.DefaultLanguage)
@@ -121,7 +125,7 @@ func (m *Messages) ParseLang(lang string) language.Tag {
 	return matchedTag
 }
 
-// Tags returns the parsed and priority ordered []language.Tag (config.DefaultLanguage will be on position 0)
+// Tags returns the parsed and priority ordered []language.Tag (your config.DefaultLanguage will be on position 0)
 func (m *Messages) Tags() []language.Tag {
 	return m.bundle.LanguageTags()
 }
