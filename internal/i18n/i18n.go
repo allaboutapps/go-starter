@@ -13,7 +13,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-// TODO rename package to messages?
 // TODO txt regarding assuption all i18n keys are available in all languages and no fallback if key in one language is not available.
 // TODO txt regarding strict naming convention of messages files.
 
@@ -31,7 +30,7 @@ func New(config config.I18n) (*Messages, error) {
 	// Load all message files in each language...
 	files, err := os.ReadDir(config.MessageFilesBaseDirAbs)
 	if err != nil {
-		log.Err(err).Str("dir", config.MessageFilesBaseDirAbs).Msg("Failed to read messages directory on init")
+		log.Err(err).Str("dir", config.MessageFilesBaseDirAbs).Msg("Failed to read messages directory")
 		return nil, err
 	}
 
@@ -54,7 +53,9 @@ func New(config config.I18n) (*Messages, error) {
 	for tagIndex, tag := range tags {
 		// Undetermined languages are disallowed in our bundle.
 		if tag == language.Und {
-			return nil, fmt.Errorf("undetermined language at pos %v in message bundle", tagIndex)
+			err := fmt.Errorf("undetermined language at index %v in message bundle: %v", tagIndex, tags)
+			log.Err(err).Int("index", tagIndex).Str("tags", fmt.Sprintf("%v", tags))
+			return nil, err
 		}
 	}
 

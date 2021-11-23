@@ -1,6 +1,7 @@
 package i18n_test
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -140,7 +141,7 @@ func TestMessagesEmpty(t *testing.T) {
 		MessageFilesBaseDirAbs: filepath.Join(util.GetProjectRootDir(), "/internal/i18n/testdata/messages-empty"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, 1, len(messages.Tags()))
+	assert.Equal(t, 1, len(messages.Tags())) // the DefaultLanguage should still be set!
 	assert.Equal(t, language.Italian, messages.Tags()[0])
 
 	tag := messages.ParseAcceptLanguage("de,en-US;q=0.7,en;q=0.3")
@@ -187,6 +188,7 @@ func TestMessagesUndetermined(t *testing.T) {
 	})
 
 	require.Error(t, err)
+	assert.Equal(t, err, errors.New("undetermined language at index 1 in message bundle: [en und]"))
 }
 
 func TestMessagesUndeterminedDefaultLanguage(t *testing.T) {
@@ -196,11 +198,12 @@ func TestMessagesUndeterminedDefaultLanguage(t *testing.T) {
 	})
 
 	require.Error(t, err)
+	assert.Equal(t, err, errors.New("undetermined language at index 0 in message bundle: [und de en]"))
 }
 
 func TestMessagesInvalidToml(t *testing.T) {
 	_, err := i18n.New(config.I18n{
-		DefaultLanguage:        language.English, // Undetermined is disallowed
+		DefaultLanguage:        language.English,
 		MessageFilesBaseDirAbs: filepath.Join(util.GetProjectRootDir(), "/internal/i18n/testdata/messages-invalid"),
 	})
 
