@@ -1,3 +1,3 @@
-"Test.Body" = "This is a test"
-"Test.Welcome" = "Welcome {{.Name}}"
-"Test.String.EN.only" = "This key only exists in EN"
+# https://github.com/toml-lang/toml/wiki
+# https://github.com/nicksnyder/go-i18n
+# You may add additional files like de.toml (or specialized language forms like en-uk.toml) to add other languages

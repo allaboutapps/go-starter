@@ -1,0 +1,4 @@
+[Test]
+Body = "Das ist ein Test"
+Welcome = "Guten Tag {{.Name}}"
+"String.DE.only" = "This key only exists in DE"

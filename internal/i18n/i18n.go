@@ -19,7 +19,6 @@ import (
 
 type Messages struct {
 	bundle  *i18n.Bundle
-	tags    []language.Tag
 	matcher language.Matcher
 }
 
@@ -41,7 +40,7 @@ func New(config config.I18n) (*Messages, error) {
 			continue
 		}
 
-		// bundle.LoadMessageFile automatically guesses the language.Tag based on the filename it encounters
+		// bundle.LoadMessageFile automatically guesses the language.Tag based on the filenames it encounters
 		_, err := bundle.LoadMessageFile(filepath.Join(config.MessageFilesBaseDirAbs, file.Name()))
 		if err != nil {
 			log.Err(err).Str("file", file.Name()).Msg("Failed to load message file")
@@ -50,36 +49,17 @@ func New(config config.I18n) (*Messages, error) {
 
 	}
 
-	// Build up the language priority array and check the set default language was loaded from the messages files.
-	parsedTags := bundle.LanguageTags()
+	tags := bundle.LanguageTags()
 
-	tags := []language.Tag{config.DefaultLanguage}
-	defaultLanguageLoaded := false
-
-	for _, tag := range parsedTags {
-
-		if tag == config.DefaultLanguage {
-			defaultLanguageLoaded = true
-			continue
+	for tagIndex, tag := range tags {
+		// Undetermined languages are disallowed in our bundle.
+		if tag == language.Und {
+			return nil, fmt.Errorf("undetermined language at pos %v in message bundle", tagIndex)
 		}
-
-		// push next language priorities
-		tags = append(tags, tag)
-	}
-
-	if !defaultLanguageLoaded {
-		err = fmt.Errorf("default language '%v' is missing in messages", config.DefaultLanguage.String())
-
-		log.Err(err).
-			Str("DefaultLanguage", config.DefaultLanguage.String()).
-			Str("MessageFilesBaseDirAbs", config.MessageFilesBaseDirAbs).
-			Msg("Failed to find or load default language within MessageFilesBaseDirAbs dir")
-		return nil, err
 	}
 
 	return &Messages{
 		bundle:  bundle,
-		tags:    tags,
 		matcher: language.NewMatcher(tags),
 	}, nil
 }
@@ -138,4 +118,9 @@ func (m *Messages) ParseLang(lang string) language.Tag {
 	matchedTag, _, _ := m.matcher.Match(t)
 
 	return matchedTag
+}
+
+// Tags returns the parsed and priority ordered []language.Tag (config.DefaultLanguage will be on position 0)
+func (m *Messages) Tags() []language.Tag {
+	return m.bundle.LanguageTags()
 }
