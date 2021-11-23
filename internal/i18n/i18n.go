@@ -78,11 +78,15 @@ type Data map[string]string
 // T will also not fail if the key is not present. key will be returned instead.
 func (m *Messages) T(key string, lang language.Tag, data ...Data) string {
 
+	// Note we benchmarked precaching i18n.NewLocalizer during initialization,
+	// but it doesn't make a significant difference even with 10000 concurrent * 8 .T() calls.
+	// Thus we take the easy route and initialize a new localizer with each .T call.
 	localizer := i18n.NewLocalizer(m.bundle, lang.String())
 
 	localizeConfig := &i18n.LocalizeConfig{
 		MessageID: key,
 	}
+
 	if len(data) > 0 {
 		localizeConfig.TemplateData = data[0]
 	}

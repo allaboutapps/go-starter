@@ -2,9 +2,11 @@ package i18n_test
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -74,6 +76,9 @@ func TestMessages(t *testing.T) {
 	msg = messages.T("Test.Welcome", language.Spanish, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Welcome Hans", msg)
 
+	msg = messages.T("Test.Welcome", language.English, i18n.Data{"Name": "Franz"})
+	assert.Equal(t, "Welcome Franz", msg)
+
 	msg = messages.T("Test.Welcome", language.English)
 	assert.Equal(t, "Welcome <no value>", msg)
 
@@ -109,6 +114,48 @@ func TestMessages(t *testing.T) {
 	assert.NotEqual(t, language.German, deAt)
 	msg = messages.T("Test.Body", deAt)
 	assert.Equal(t, "Das ist ein Test", msg)
+}
+
+func TestMessagesConcurrentUsage(t *testing.T) {
+	messages, err := i18n.New(config.I18n{
+		DefaultLanguage:        language.English,
+		MessageFilesBaseDirAbs: filepath.Join(util.GetProjectRootDir(), "/internal/i18n/testdata/messages"),
+	})
+	require.NoError(t, err)
+
+	wg := sync.WaitGroup{}
+	wg.Add(100)
+
+	for i := 0; i < 100; i++ {
+		go func(index int) {
+			msg := messages.T("Test.Welcome", language.German, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			assert.Equal(t, fmt.Sprintf("Guten Tag %v", index), msg)
+
+			msg = messages.T("Test.Welcome", language.English, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			assert.Equal(t, fmt.Sprintf("Welcome %v", index), msg)
+
+			msg = messages.T("Test.Welcome", language.Spanish, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			assert.Equal(t, fmt.Sprintf("Welcome %v", index), msg)
+
+			msg = messages.T("Test.Welcome", language.English, i18n.Data{"Name": "Franz"})
+			assert.Equal(t, "Welcome Franz", msg)
+
+			msg = messages.T("Test.Welcome", language.English)
+			assert.Equal(t, "Welcome <no value>", msg)
+
+			msg = messages.T("Test.Body", language.German)
+			assert.Equal(t, "Das ist ein Test", msg)
+
+			msg = messages.T("Test.Body", language.English)
+			assert.Equal(t, "This is a test", msg)
+
+			msg = messages.T("Test.Body", language.Spanish)
+			assert.Equal(t, "This is a test", msg)
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
 }
 
 func TestMessagesOtherDefault(t *testing.T) {
