@@ -46,7 +46,7 @@ func TestServerProvidedMessages(t *testing.T) {
 			assert.Equal(t, len(s.Messages.Tags()), msgFilesCount)
 		}
 
-		msg := s.Messages.T("this.key.will.never.exist", s.Config.I18n.DefaultLanguage)
+		msg := s.Messages.Translate("this.key.will.never.exist", s.Config.I18n.DefaultLanguage)
 		assert.Equal(t, "this.key.will.never.exist", msg)
 	})
 }
@@ -67,52 +67,52 @@ func TestMessages(t *testing.T) {
 	assert.Equal(t, language.German, messages.Tags()[1])
 	assert.Equal(t, 2, len(messages.Tags()))
 
-	msg := messages.T("Test.Welcome", language.German, i18n.Data{"Name": "Hans"})
+	msg := messages.Translate("Test.Welcome", language.German, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Guten Tag Hans", msg)
 
-	msg = messages.T("Test.Welcome", language.English, i18n.Data{"Name": "Hans"})
+	msg = messages.Translate("Test.Welcome", language.English, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Welcome Hans", msg)
 
-	msg = messages.T("Test.Welcome", language.Spanish, i18n.Data{"Name": "Hans"})
+	msg = messages.Translate("Test.Welcome", language.Spanish, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Welcome Hans", msg)
 
-	msg = messages.T("Test.Welcome", language.English, i18n.Data{"Name": "Franz"})
+	msg = messages.Translate("Test.Welcome", language.English, i18n.Data{"Name": "Franz"})
 	assert.Equal(t, "Welcome Franz", msg)
 
-	msg = messages.T("Test.Welcome", language.English)
+	msg = messages.Translate("Test.Welcome", language.English)
 	assert.Equal(t, "Welcome <no value>", msg)
 
-	msg = messages.T("Test.Body", language.German)
+	msg = messages.Translate("Test.Body", language.German)
 	assert.Equal(t, "Das ist ein Test", msg)
 
-	msg = messages.T("Test.Body", language.English)
+	msg = messages.Translate("Test.Body", language.English)
 	assert.Equal(t, "This is a test", msg)
 
-	msg = messages.T("Test.Body", language.Spanish)
+	msg = messages.Translate("Test.Body", language.Spanish)
 	assert.Equal(t, "This is a test", msg)
 
-	msg = messages.T("Test.Invalid.Key.Does.Not.Exist", language.English)
+	msg = messages.Translate("Test.Invalid.Key.Does.Not.Exist", language.English)
 	assert.Equal(t, "Test.Invalid.Key.Does.Not.Exist", msg)
 
-	msg = messages.T("Test.Invalid.Key.Does.Not.Exist", language.German)
+	msg = messages.Translate("Test.Invalid.Key.Does.Not.Exist", language.German)
 	assert.Equal(t, "Test.Invalid.Key.Does.Not.Exist", msg)
 
-	msg = messages.T("Test.String.DE.only", language.English)
+	msg = messages.Translate("Test.String.DE.only", language.English)
 	assert.Equal(t, "Test.String.DE.only", msg)
 
-	msg = messages.T("Test.String.DE.only", language.German)
+	msg = messages.Translate("Test.String.DE.only", language.German)
 	assert.Equal(t, "This key only exists in DE", msg)
 
-	msg = messages.T("Test.String.EN.only", language.English)
+	msg = messages.Translate("Test.String.EN.only", language.English)
 	assert.Equal(t, "This key only exists in EN", msg)
 
-	msg = messages.T("Test.String.EN.only", language.German)
+	msg = messages.Translate("Test.String.EN.only", language.German)
 	assert.Equal(t, "Test.String.EN.only", msg)
 
 	// ensure language subvariants are supported
 	deAt := messages.ParseLang("de-AT")
 	assert.NotEqual(t, language.German, deAt)
-	msg = messages.T("Test.Body", deAt)
+	msg = messages.Translate("Test.Body", deAt)
 	assert.Equal(t, "Das ist ein Test", msg)
 }
 
@@ -128,28 +128,28 @@ func TestMessagesConcurrentUsage(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		go func(index int) {
-			msg := messages.T("Test.Welcome", language.German, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			msg := messages.Translate("Test.Welcome", language.German, i18n.Data{"Name": fmt.Sprintf("%v", index)})
 			assert.Equal(t, fmt.Sprintf("Guten Tag %v", index), msg)
 
-			msg = messages.T("Test.Welcome", language.English, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			msg = messages.Translate("Test.Welcome", language.English, i18n.Data{"Name": fmt.Sprintf("%v", index)})
 			assert.Equal(t, fmt.Sprintf("Welcome %v", index), msg)
 
-			msg = messages.T("Test.Welcome", language.Spanish, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			msg = messages.Translate("Test.Welcome", language.Spanish, i18n.Data{"Name": fmt.Sprintf("%v", index)})
 			assert.Equal(t, fmt.Sprintf("Welcome %v", index), msg)
 
-			msg = messages.T("Test.Welcome", language.English, i18n.Data{"Name": "Franz"})
+			msg = messages.Translate("Test.Welcome", language.English, i18n.Data{"Name": "Franz"})
 			assert.Equal(t, "Welcome Franz", msg)
 
-			msg = messages.T("Test.Welcome", language.English)
+			msg = messages.Translate("Test.Welcome", language.English)
 			assert.Equal(t, "Welcome <no value>", msg)
 
-			msg = messages.T("Test.Body", language.German)
+			msg = messages.Translate("Test.Body", language.German)
 			assert.Equal(t, "Das ist ein Test", msg)
 
-			msg = messages.T("Test.Body", language.English)
+			msg = messages.Translate("Test.Body", language.English)
 			assert.Equal(t, "This is a test", msg)
 
-			msg = messages.T("Test.Body", language.Spanish)
+			msg = messages.Translate("Test.Body", language.Spanish)
 			assert.Equal(t, "This is a test", msg)
 			wg.Done()
 		}(i)
@@ -198,10 +198,10 @@ func TestMessagesEmpty(t *testing.T) {
 	tag := messages.ParseAcceptLanguage("de,en-US;q=0.7,en;q=0.3")
 	assert.Equal(t, language.Italian, tag)
 
-	msg := messages.T("no.test.key.exists", tag)
+	msg := messages.Translate("no.test.key.exists", tag)
 	assert.Equal(t, "no.test.key.exists", msg)
 
-	msg = messages.T("no.test.key.exists", language.Ukrainian)
+	msg = messages.Translate("no.test.key.exists", language.Ukrainian)
 	assert.Equal(t, "no.test.key.exists", msg)
 }
 
@@ -215,22 +215,173 @@ func TestMessagesSpecialized(t *testing.T) {
 	assert.Equal(t, 4, len(messages.Tags())) // specialized subvariant is default
 	assert.Equal(t, language.AmericanEnglish, messages.Tags()[0])
 
-	msg := messages.T("test.punchline", language.AmericanEnglish)
+	msg := messages.Translate("test.punchline", language.AmericanEnglish)
 	assert.Equal(t, "I can has HUMOR?", msg)
 
-	msg = messages.T("test.punchline", language.BritishEnglish)
+	msg = messages.Translate("test.punchline", language.BritishEnglish)
 	assert.Equal(t, "I can has HUMOUR?", msg)
 
-	msg = messages.T("test.punchline", language.English)
+	msg = messages.Translate("test.punchline", language.English)
 	assert.Equal(t, "I can has HUMOR?", msg) // fall back to default
 
-	msg = messages.T("test.punchline", language.German)
+	msg = messages.Translate("test.punchline", language.German)
 	assert.Equal(t, "Habe ich Humor?", msg) // jump to parsed Austrian German
 
 	tag := messages.ParseAcceptLanguage("de-at,en-US;q=0.7,en;q=0.3") // explicit Austrian tag
-	msg = messages.T("test.punchline", tag)
+	msg = messages.Translate("test.punchline", tag)
 	assert.Equal(t, "Koan i Humor?", msg) // jump to parsed Austrian German
 }
+
+func TestReservedKeywordsResolve(t *testing.T) {
+	// "reserved" keys:
+	// "id", "description", "hash", "leftdelim", "rightdelim", "zero", "one", "two", "few", "many", "other"
+	// see https://github.com/nicksnyder/go-i18n/blob/2180cd9f35b3e125cfe3773a6bf3ea483347f060/v2/i18n/message.go#L181
+
+	messages, err := i18n.New(config.I18n{
+		DefaultLanguage:        language.English,
+		MessageFilesBaseDirAbs: filepath.Join(util.GetProjectRootDir(), "/internal/i18n/testdata/messages-reserved"),
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, 2, len(messages.Tags()))
+
+	// english: single reserved word
+	msg := messages.Translate("reserved1.zero", language.English)
+	assert.Equal(t, "Zero", msg)
+
+	msg = messages.Translate("reserved2.one", language.English)
+	assert.Equal(t, "One", msg)
+
+	msg = messages.Translate("reserved3.two", language.English)
+	assert.Equal(t, "Two", msg)
+
+	msg = messages.Translate("reserved4.few", language.English)
+	assert.Equal(t, "Few", msg)
+
+	msg = messages.Translate("reserved5.many", language.English)
+	assert.Equal(t, "Many", msg)
+
+	msg = messages.Translate("reserved6.other", language.English)
+	assert.Equal(t, "Other", msg)
+
+	msg = messages.Translate("reserved7.id", language.English)
+	assert.Equal(t, "id", msg)
+
+	msg = messages.Translate("reserved8.description", language.English)
+	assert.Equal(t, "Description", msg)
+
+	// german: single reserved word
+	msg = messages.Translate("reserved1.zero", language.German)
+	assert.Equal(t, "Null", msg)
+
+	msg = messages.Translate("reserved2.one", language.German)
+	assert.Equal(t, "Eins", msg)
+
+	msg = messages.Translate("reserved3.two", language.German)
+	assert.Equal(t, "Zwei", msg)
+
+	msg = messages.Translate("reserved4.few", language.German)
+	assert.Equal(t, "Wenig", msg)
+
+	msg = messages.Translate("reserved5.many", language.German)
+	assert.Equal(t, "Mehr", msg)
+
+	msg = messages.Translate("reserved6.other", language.German)
+	assert.Equal(t, "Andere", msg)
+
+	msg = messages.Translate("reserved7.id", language.German)
+	assert.Equal(t, "ID", msg)
+
+	msg = messages.Translate("reserved8.description", language.German)
+	assert.Equal(t, "Beschreibung", msg)
+
+	// combined toml map: all reserved words
+	msg = messages.Translate("reservedMap.zero", language.English)
+	assert.Equal(t, "Zero", msg)
+
+	msg = messages.Translate("reservedMap.one", language.English)
+	assert.Equal(t, "One", msg)
+
+	msg = messages.Translate("reservedMap.two", language.English)
+	assert.Equal(t, "Two", msg)
+
+	msg = messages.Translate("reservedMap.few", language.English)
+	assert.Equal(t, "Few", msg)
+
+	msg = messages.Translate("reservedMap.many", language.English)
+	assert.Equal(t, "Many", msg)
+
+	msg = messages.Translate("reservedMap.other", language.English)
+	assert.Equal(t, "Other", msg)
+
+	// plain toml: all reserved words
+	msg = messages.Translate("reserved.plain.zero", language.English)
+	assert.Equal(t, "Zero", msg)
+
+	msg = messages.Translate("reserved.plain.one", language.English)
+	assert.Equal(t, "One", msg)
+
+	msg = messages.Translate("reserved.plain.two", language.English)
+	assert.Equal(t, "Two", msg)
+
+	msg = messages.Translate("reserved.plain.few", language.English)
+	assert.Equal(t, "Few", msg)
+
+	msg = messages.Translate("reserved.plain.many", language.English)
+	assert.Equal(t, "Many", msg)
+
+	msg = messages.Translate("reserved.plain.other", language.English)
+	assert.Equal(t, "Other", msg)
+
+	msg = messages.Translate("reserved.plain2.id", language.English)
+	assert.Equal(t, "id", msg)
+
+	msg = messages.Translate("reserved.plain2.description", language.English)
+	assert.Equal(t, "Description", msg)
+
+}
+
+// func TestMessagesConditionalCount(t *testing.T) {
+// 	messages, err := i18n.New(config.I18n{
+// 		DefaultLanguage:        language.English,
+// 		MessageFilesBaseDirAbs: filepath.Join(util.GetProjectRootDir(), "/internal/i18n/testdata/messages-plural"),
+// 	})
+
+// 	require.NoError(t, err)
+// 	assert.Equal(t, 2, len(messages.Tags()))
+
+// 	msg := messages.TranslateConditionalCount("cats", 0, language.AmericanEnglish)
+// 	assert.Equal(t, "I don't have a cat.", msg)
+
+// 	msg = messages.TranslateConditionalCount("cats", 1, language.BritishEnglish)
+// 	assert.Equal(t, "I've one cat.", msg)
+
+// 	msg = messages.TranslateConditionalCount("cats", 2, language.English)
+// 	assert.Equal(t, "I've 2 cats.", msg)
+
+// 	msg = messages.TranslateConditionalCount("cats", 8, language.English)
+// 	assert.Equal(t, "I've 8 cats.", msg)
+
+// 	// overwrite Count
+// 	msg = messages.TranslateConditionalCount("cats", 8, language.English, i18n.Data{"Count": "too many"})
+// 	assert.Equal(t, "I've too many cats.", msg)
+
+// 	msg = messages.TranslateConditionalCount("cats", 0, language.German)
+// 	assert.Equal(t, "Ich habe keine Katze.", msg)
+
+// 	msg = messages.TranslateConditionalCount("cats", 1, language.German)
+// 	assert.Equal(t, "Ich habe eine Katze.", msg)
+
+// 	msg = messages.TranslateConditionalCount("cats", 2, language.German)
+// 	assert.Equal(t, "Ich habe 2 Katzen.", msg)
+
+// 	msg = messages.TranslateConditionalCount("cats", 8, language.German)
+// 	assert.Equal(t, "Ich habe 8 Katzen.", msg)
+
+// 	// overwrite Count
+// 	msg = messages.TranslateConditionalCount("cats", 8, language.German, i18n.Data{"Count": "zu viele"})
+// 	assert.Equal(t, "Ich habe zu viele Katzen.", msg)
+// }
 
 func TestMessagesUndetermined(t *testing.T) {
 	_, err := i18n.New(config.I18n{
@@ -287,18 +438,18 @@ func TestParseAcceptLanguage(t *testing.T) {
 	// unknown language header
 	tag = messages.ParseAcceptLanguage("xx,en-US;q=0.7,en;q=0.3")
 	assert.Equal(t, language.English, tag)
-	msg := messages.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	msg := messages.Translate("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Welcome Hans", msg)
 
 	// invalid specialized language string
 	tag = messages.ParseAcceptLanguage("de-xx,en-US;q=0.7,en;q=0.3")
-	msg = messages.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	msg = messages.Translate("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Guten Tag Hans", msg)
 
 	// invalid language header
 	tag = messages.ParseAcceptLanguage("§$%/%&/(/&%/)(")
 	assert.Equal(t, language.English, tag)
-	msg = messages.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	msg = messages.Translate("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Welcome Hans", msg)
 }
 
@@ -316,17 +467,17 @@ func TestParseLanguage(t *testing.T) {
 	// unknown language string
 	tag = messages.ParseLang("xx")
 	assert.Equal(t, language.English, tag)
-	msg := messages.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	msg := messages.Translate("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Welcome Hans", msg)
 
 	// invalid specialized language string
 	tag = messages.ParseLang("de-xx")
-	msg = messages.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	msg = messages.Translate("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Guten Tag Hans", msg) // fall back to German
 
 	// invalid language string
 	tag = messages.ParseLang("§$%/%&/(/&%/)(")
 	assert.Equal(t, language.English, tag)
-	msg = messages.T("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
+	msg = messages.Translate("Test.Welcome", tag, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Welcome Hans", msg)
 }
