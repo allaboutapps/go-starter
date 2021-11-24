@@ -10,7 +10,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/runtime v0.19.31
-	github.com/go-openapi/strfmt v0.20.2
+	github.com/go-openapi/strfmt v0.21.1
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.2
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
@@ -97,7 +97,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	go.mongodb.org/mongo-driver v1.5.1 // indirect
+	go.mongodb.org/mongo-driver v1.7.5 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
