@@ -29,6 +29,8 @@ type Messages struct {
 // Note that Messages is typically created and owned by the api.Server (use it via s.Messages)
 func New(config config.I18n) (*Messages, error) {
 
+	// TODO manually resolve the tomls as we potentially want to have a list of keys and work with them directly!
+
 	bundle := i18n.NewBundle(config.DefaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 

@@ -252,6 +252,9 @@ func TestReservedKeywordsResolve(t *testing.T) {
 	msg = messages.Translate("reserved2.one", language.English)
 	assert.Equal(t, "One", msg)
 
+	msg = messages.Translate("reserved2", language.English)
+	assert.Equal(t, "One", msg)
+
 	msg = messages.Translate("reserved3.two", language.English)
 	assert.Equal(t, "Two", msg)
 
@@ -338,6 +341,15 @@ func TestReservedKeywordsResolve(t *testing.T) {
 
 	msg = messages.Translate("reserved.plain2.description", language.English)
 	assert.Equal(t, "Description", msg)
+
+	msg = messages.Translate("reserved.plain3.id", language.English)
+	assert.Equal(t, "id", msg)
+
+	msg = messages.Translate("reserved.plain3.description", language.English)
+	assert.Equal(t, "Description", msg)
+
+	msg = messages.Translate("reserved.plain3.test", language.English)
+	assert.Equal(t, "Test", msg)
 
 }
 

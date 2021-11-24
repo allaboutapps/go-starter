@@ -28,3 +28,7 @@ other="Andere"
 
 "reserved.plain2.id"="ID"
 "reserved.plain2.description"="Beschreibung"
+
+"reserved.plain3.id"="ID"
+"reserved.plain3.description"="Beschreibung"
+"reserved.plain3.test"="Test" # can i see this non-reserved one by FQDN?
