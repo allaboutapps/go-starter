@@ -28,24 +28,24 @@ type Router struct {
 }
 
 type Server struct {
-	Config   config.Server
-	DB       *sql.DB
-	Echo     *echo.Echo
-	Router   *Router
-	Mailer   *mailer.Mailer
-	Push     *push.Service
-	Messages *i18n.Messages
+	Config config.Server
+	DB     *sql.DB
+	Echo   *echo.Echo
+	Router *Router
+	Mailer *mailer.Mailer
+	Push   *push.Service
+	I18n   *i18n.Service
 }
 
 func NewServer(config config.Server) *Server {
 	s := &Server{
-		Config:   config,
-		DB:       nil,
-		Echo:     nil,
-		Router:   nil,
-		Mailer:   nil,
-		Push:     nil,
-		Messages: nil,
+		Config: config,
+		DB:     nil,
+		Echo:   nil,
+		Router: nil,
+		Mailer: nil,
+		Push:   nil,
+		I18n:   nil,
 	}
 
 	return s
@@ -57,7 +57,7 @@ func (s *Server) Ready() bool {
 		s.Router != nil &&
 		s.Mailer != nil &&
 		s.Push != nil &&
-		s.Messages != nil
+		s.I18n != nil
 }
 
 func (s *Server) InitDB(ctx context.Context) error {
@@ -123,14 +123,14 @@ func (s *Server) InitPush() error {
 	return nil
 }
 
-func (s *Server) InitMessages() error {
-	messages, err := i18n.New(s.Config.I18n)
+func (s *Server) InitI18n() error {
+	i18nService, err := i18n.New(s.Config.I18n)
 
 	if err != nil {
 		return err
 	}
 
-	s.Messages = messages
+	s.I18n = i18nService
 
 	return nil
 }

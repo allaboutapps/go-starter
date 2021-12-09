@@ -13,31 +13,35 @@ import (
 	"golang.org/x/text/language"
 )
 
-// i18n implementation assumptions:
-//   Your messages should live within /web/messages and are named according to their supported locale e.g. en.toml, de.toml or en-uk.toml, en-us.toml
-//   All message files hold the same keys (there are no unique keys on a single message file)
-//   The Messages object is created and owned by the api.Server (s.Messages), you typically don't want to create your own object.
+// i18n, we expect the following:
+// Your translation toml files should live within /web/i18n and are named according to their supported locale e.g. en.toml, de.toml or en-uk.toml, en-us.toml.
+//
+// All translation files should hold the same keys (there are no unique keys on a single bundle locale, apart from pluralization).
+//
+// The Service object is created and owned by the api.Server (s.I18n), you typically don't want to create your own object.
+//
+// Pluralization obeys to CLDR rules (https://cldr.unicode.org/index/cldr-spec/plural-rules).
+// Some keywords are reserved for CLDR behaviour, templating and documentation: id, description, hash, leftdelim, rightdelim, zero, one, two, few, many, other
+// See
 
-// Messages is your convenience object to call T (Translate) and match languages according to your loaded message bundle and its supported languages/locales.
-type Messages struct {
+// Service is your convenience object to call Translate/TranslatePlural and match languages according to your loaded translation bundle and its supported languages/locales.
+type Service struct {
 	bundle  *i18n.Bundle
 	matcher language.Matcher
 }
 
-// New returns a new Messages struct holding bundle and matcher with the settings of the given config
+// New returns a new Service struct holding bundle and matcher with the settings of the given config
 //
-// Note that Messages is typically created and owned by the api.Server (use it via s.Messages)
-func New(config config.I18n) (*Messages, error) {
-
-	// TODO manually resolve the tomls as we potentially want to have a list of keys and work with them directly!
+// Note that Service is typically created and owned by the api.Server (use it via s.I18n)
+func New(config config.I18n) (*Service, error) {
 
 	bundle := i18n.NewBundle(config.DefaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
-	// Load all message files in each language...
-	files, err := os.ReadDir(config.MessageFilesBaseDirAbs)
+	// Load all translation files in each language...
+	files, err := os.ReadDir(config.BundleDirAbs)
 	if err != nil {
-		log.Err(err).Str("dir", config.MessageFilesBaseDirAbs).Msg("Failed to read messages directory")
+		log.Err(err).Str("dir", config.BundleDirAbs).Msg("Failed to read i18n bundle directory")
 		return nil, err
 	}
 
@@ -47,9 +51,9 @@ func New(config config.I18n) (*Messages, error) {
 		}
 
 		// bundle.LoadMessageFile automatically guesses the language.Tag based on the filenames it encounters
-		_, err := bundle.LoadMessageFile(filepath.Join(config.MessageFilesBaseDirAbs, file.Name()))
+		_, err := bundle.LoadMessageFile(filepath.Join(config.BundleDirAbs, file.Name()))
 		if err != nil {
-			log.Err(err).Str("file", file.Name()).Msg("Failed to load message file")
+			log.Err(err).Str("file", file.Name()).Msg("Failed to load i18n message file")
 			return nil, err
 		}
 
@@ -60,13 +64,13 @@ func New(config config.I18n) (*Messages, error) {
 	for tagIndex, tag := range tags {
 		// Undetermined languages are disallowed in our bundle.
 		if tag == language.Und {
-			err := fmt.Errorf("undetermined language at index %v in message bundle: %v", tagIndex, tags)
-			log.Err(err).Int("index", tagIndex).Str("tags", fmt.Sprintf("%v", tags)).Msg("Invalid message bundle or default language.")
+			err := fmt.Errorf("undetermined language at index %v in i18n message bundle: %v", tagIndex, tags)
+			log.Err(err).Int("index", tagIndex).Str("tags", fmt.Sprintf("%v", tags)).Msg("Invalid i18n message bundle or default language.")
 			return nil, err
 		}
 	}
 
-	return &Messages{
+	return &Service{
 		bundle:  bundle,
 		matcher: language.NewMatcher(tags),
 	}, nil
@@ -81,9 +85,8 @@ type Data map[string]string
 // Additional data for templated strings can be passed as key value pairs with by passing an optional data map.
 //
 // Translate will not fail if a template value is missing "<no value>" will be inserted instead.
-// Translate will also not fail if the key is not present. key will be returned instead.
-func (m *Messages) Translate(key string, lang language.Tag, data ...Data) string {
-	localizer := m.getLocalizer(lang)
+// Translate will also not fail if the key is not present. "{{key}}" will be returned instead.
+func (m *Service) Translate(key string, lang language.Tag, data ...Data) string {
 
 	localizeConfig := &i18n.LocalizeConfig{
 		MessageID: key,
@@ -93,89 +96,72 @@ func (m *Messages) Translate(key string, lang language.Tag, data ...Data) string
 		localizeConfig.TemplateData = data[0]
 	}
 
-	msg, err := localizer.Localize(localizeConfig)
+	msg, err := m.TranslateConfigurable(lang, localizeConfig)
 	if err != nil {
-		log.Err(err).Str("key", key).Str("lang", lang.String()).Msg("Failed to localize message")
+		log.Err(err).Str("key", key).Str("lang", lang.String()).Msg("Failed to translate")
 		return key
 	}
 
 	return msg
 }
 
-// // TranslateConditionalCount translates a pluralized zeroOneOtherParentKey into a localized string.
-// //
-// // TranslateConditionalCount makes a lookup for the oneOtherParentKey (a base key holding the child keys "zero", "one" and "other") in the current bundle with the specified language.
-// // This function should be used to conditionally show the pluralized form, controlled by the pluralCount param.
-// // If a language translation is not available the default language will be used.
-// // Additional data for templated strings can be passed as key value pairs with by passing an optional data map.
-// //
-// // TranslateConditionalCount will not fail if a template value is missing "<no value>" will be inserted instead.
-// // TranslateConditionalCount will also not fail if the key is not present. key will be returned instead.
-// func (m *Messages) TranslateConditionalCount(zeroOneOtherParentKey string, count uint, lang language.Tag, data ...Data) string {
-// 	localizer := m.getLocalizer(lang)
-// 	localizeConfig := &i18n.LocalizeConfig{}
+// TranslatePlural translates a pluralized cldrKey into a localized string.
+//
+// TranslatePlural makes a lookup for the cldrKey (a base key holding CLDR keys like "one" and "other") in the current bundle with the specified language.
+// This function should be used to conditionally show the pluralized form, controlled by the count param and according to the CLDR rules.
+//
+// Note that English and German only support .one and .other CLDR plural rules.
+// See https://cldr.unicode.org/index/cldr-spec/plural-rules and https://www.unicode.org/cldr/cldr-aux/charts/28/supplemental/language_plural_rules.html
+//
+// If a language translation is not available the default language will be used.
+// Additional data for templated strings can be passed as key value pairs with by passing an optional data map.
+// The count param is automatically injected into this data map as stringified {{.Count}} and may be overwritten.
+//
+// TranslatePlural will not fail if a template value is missing "<no value>" will be inserted instead.
+// TranslatePlural will also not fail if the cldrKey is not present. "{{cldrKey}} (count={{count}})" will be returned instead.
+func (m *Service) TranslatePlural(cldrKey string, count interface{}, lang language.Tag, data ...Data) string {
 
-// 	switch count {
-// 	case 0:
-// 		localizeConfig.MessageID = fmt.Sprintf("%s.zero", zeroOneOtherParentKey)
+	localizeConfig := &i18n.LocalizeConfig{
+		MessageID:   cldrKey,
+		PluralCount: count,
+	}
 
-// 	case 1:
-// 		localizeConfig.MessageID = fmt.Sprintf("%s.one", zeroOneOtherParentKey)
+	// We inject Count by default into our template data (for rare usecases you may overwrite it)
+	templateData := make(Data)
+	templateData["Count"] = fmt.Sprintf("%v", count)
 
-// 	default:
-// 		localizeConfig.MessageID = fmt.Sprintf("%s.other", zeroOneOtherParentKey)
-// 	}
+	// If optional data was provided, merge them into the templateData map
+	if len(data) > 0 {
+		for k, v := range data[0] {
+			templateData[k] = v
+		}
+	}
 
-// 	fmt.Println(localizeConfig.MessageID)
+	localizeConfig.TemplateData = templateData
 
-// 	// We inject Count by default into our template data (for rare usecases you may overwrite it)
-// 	templateData := make(Data)
-// 	templateData["Count"] = fmt.Sprintf("%d", count)
-
-// 	// If optional data was provided, merge them into the templateData map
-// 	if len(data) > 0 {
-// 		for k, v := range data[0] {
-// 			templateData[k] = v
-// 		}
-// 	}
-
-// 	localizeConfig.TemplateData = templateData
-
-// 	msg, err := localizer.Localize(localizeConfig)
-// 	if err != nil {
-// 		log.Err(err).Uint("count", count).Str("key", localizeConfig.MessageID).Str("lang", lang.String()).Msg("Failed to localize conditional count message")
-// 		return localizeConfig.MessageID
-// 	}
-
-// 	return msg
-// }
-
-// TranslateConfigurable exposes the real i18n.LocalizeConfig used internally
-// and allows for fully configurable translations according to its semantics.
-func (m *Messages) TranslateConfigurable(lang language.Tag, localizeConfig *i18n.LocalizeConfig) string {
-	localizer := m.getLocalizer(lang)
-
-	msg, err := localizer.Localize(localizeConfig)
+	msg, err := m.TranslateConfigurable(lang, localizeConfig)
 	if err != nil {
-		log.Err(err).Str("localizeConfig.MessageID", localizeConfig.MessageID).Str("lang", lang.String()).Msg("Failed to localize configured message")
-		return localizeConfig.MessageID
+		log.Err(err).Str("count", fmt.Sprintf("%v", count)).Str("key", localizeConfig.MessageID).Str("lang", lang.String()).Msg("Failed to translate plural")
+		return fmt.Sprintf("%s (count=%v)", cldrKey, count)
 	}
 
 	return msg
 }
 
-// getLocalizer is a helper to return a new localizer for a potentially unknown language tag (best match from m.bundle.LanguageTags())
-func (m *Messages) getLocalizer(lang language.Tag) *i18n.Localizer {
+// TranslateConfigurable exposes the real i18n.LocalizeConfig used internally incl. error handling
+// and allows for fully configurable translations according to our configured language precedence semantics.
+func (m *Service) TranslateConfigurable(lang language.Tag, localizeConfig *i18n.LocalizeConfig) (string, error) {
 
-	// We benchmarked precaching i18n.NewLocalizer during initialization,
+	// We benchmarked precaching all known []i18n.NewLocalizer during initialization,
 	// but it doesn't make a significant difference even with 10000 concurrent * 8 .Translate calls.
-	// Thus we take the easy route and initialize a new localizer with each .Translate or .TranslateConditionalCount call.
-	return i18n.NewLocalizer(m.bundle, lang.String())
+	// Thus we take the easy route and initialize a new localizer with each .Translate or .TranslatePlural call.
+	localizer := i18n.NewLocalizer(m.bundle, lang.String())
+	return localizer.Localize(localizeConfig)
 }
 
 // ParseAcceptLanguage takes the value of the Accept-Language header and returns
 // the best matched language using the matcher.
-func (m *Messages) ParseAcceptLanguage(lang string) language.Tag {
+func (m *Service) ParseAcceptLanguage(lang string) language.Tag {
 
 	// we deliberately ignore the error returned here, as it will be nil and the matcher will simply pick the default language
 	// this allows us to skip any malformed Accept-Language headers without returning 500 errors to the client
@@ -191,7 +177,7 @@ func (m *Messages) ParseAcceptLanguage(lang string) language.Tag {
 
 // ParseLang parses the string as language tag and returns
 // the best matched language using the matcher.
-func (m *Messages) ParseLang(lang string) language.Tag {
+func (m *Service) ParseLang(lang string) language.Tag {
 	t, err := language.Parse(lang)
 	if err != nil {
 		log.Err(err).Str("lang", lang).Msg("Failed to parse language")
@@ -203,6 +189,6 @@ func (m *Messages) ParseLang(lang string) language.Tag {
 }
 
 // Tags returns the parsed and priority ordered []language.Tag (your config.DefaultLanguage will be on position 0)
-func (m *Messages) Tags() []language.Tag {
+func (m *Service) Tags() []language.Tag {
 	return m.bundle.LanguageTags()
 }

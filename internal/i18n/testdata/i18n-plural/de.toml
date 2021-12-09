@@ -1,4 +1,4 @@
-# {{.Count}} is injected by default while using messages.TP 
+# {{.Count}} is injected by default while using service.TranslatePlural 
 
 # pluralized structured format
 [cats]

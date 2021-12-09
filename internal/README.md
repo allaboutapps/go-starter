@@ -22,7 +22,7 @@ May hold live db fixture data (for `app db seed`).
 
 ### `/internal/i18n`
 
-Our implementation for i18n/l10n, as available via `api.Server.Messages`. Your own localized messages should live within **`/web/messages`**.
+Our implementation for i18n/l10n, as available via `api.Server.I18n`. Your own localized i18n translation bundles should live within **`/web/i18n`**.
 
 ### `/internal/mailer`
 

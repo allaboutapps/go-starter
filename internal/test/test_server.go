@@ -78,8 +78,8 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 	// attach any other mocks
 	s.Push = NewTestPusher(t, db)
 
-	if err := s.InitMessages(); err != nil {
-		t.Fatalf("Failed to init messages (i18n): %v", err)
+	if err := s.InitI18n(); err != nil {
+		t.Fatalf("Failed to init i18n service: %v", err)
 	}
 
 	router.Init(s)

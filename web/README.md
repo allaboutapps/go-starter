@@ -4,7 +4,7 @@ Web application specific components: static web assets, server side templates an
 
 https://github.com/golang-standards/project-layout/tree/master/web
 
-### `/web/messages`
+### `/web/i18n`
 
 Please name your translation files according to the locale (e.g. `de.toml`, `en.toml` or `en-uk.toml` and `en-us.toml`). We assume that any translation file hold all keys (no key mixing between locales)!
 
