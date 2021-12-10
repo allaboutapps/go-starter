@@ -91,9 +91,8 @@ type LoggerServer struct {
 }
 
 type I18n struct {
-	DefaultLanguage        language.Tag
-	AvailableLanguages     []language.Tag
-	MessageFilesBaseDirAbs string
+	DefaultLanguage language.Tag
+	BundleDirAbs    string
 }
 
 type Server struct {
@@ -225,9 +224,8 @@ func DefaultServiceConfigFromEnv() Server {
 				ValidateOnly:                 util.GetEnvAsBool("SERVER_FCM_VALIDATE_ONLY", true),
 			},
 			I18n: I18n{
-				DefaultLanguage:        util.GetEnvAsLanguageTag("SERVER_I18N_DEFAULT_LANGUAGE", language.English),
-				AvailableLanguages:     util.GetEnvAsLanguageTagArr("SERVER_I18N_AVAILABLE_LANGUAGES", []language.Tag{language.English, language.German}),
-				MessageFilesBaseDirAbs: util.GetEnv("SERVER_I18N_MESSAGE_FILES_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/messages")), // /app/web/messages
+				DefaultLanguage: util.GetEnvAsLanguageTag("SERVER_I18N_DEFAULT_LANGUAGE", language.English),
+				BundleDirAbs:    util.GetEnv("SERVER_I18N_BUNDLE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/i18n")), // /app/web/i18n
 			},
 		}
 

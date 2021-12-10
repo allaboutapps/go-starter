@@ -1,0 +1,34 @@
+# "reserved" keys:
+# "id", "description", "hash", "leftdelim", "rightdelim", "zero", "one", "two", "few", "many", "other"
+# see https://github.com/nicksnyder/go-i18n/blob/2180cd9f35b3e125cfe3773a6bf3ea483347f060/v2/i18n/message.go#L181
+
+"reserved1.zero"="Zero"
+"reserved2.one"="One"
+"reserved3.two"="Two"
+"reserved4.few"="Few"
+"reserved5.many"="Many"
+"reserved6.other"="Other"
+"reserved7.id"="id"
+"reserved8.description"="Description"
+
+[reservedMap]
+zero="Zero"
+one="One"
+two="Two"
+few="Few"
+many="Many"
+other="Other"
+
+"reserved.plain.zero"="Zero"
+"reserved.plain.one"="One"
+"reserved.plain.two"="Two"
+"reserved.plain.few"="Few"
+"reserved.plain.many"="Many"
+"reserved.plain.other"="Other"
+
+"reserved.plain2.id"="id"
+"reserved.plain2.description"="Description"
+
+"reserved.plain3.id"="id"
+"reserved.plain3.description"="Description"
+"reserved.plain3.test"="Test" # can i see this non-reserved one by FQDN?

@@ -8,7 +8,6 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"allaboutapps.dev/aw/go-starter/internal/config"
-	"allaboutapps.dev/aw/go-starter/internal/i18n"
 )
 
 // WithTestServer returns a fully configured server (using the default server config).
@@ -67,8 +66,6 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 	// You may use port 0 to indicate you're not specifying an exact port but you want a free, available port selected by the system
 	config.Echo.ListenAddress = ":0"
 
-	i18n.InitPackage(config.I18n)
-
 	s := api.NewServer(config)
 
 	// attach the already initialized db
@@ -80,6 +77,10 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 
 	// attach any other mocks
 	s.Push = NewTestPusher(t, db)
+
+	if err := s.InitI18n(); err != nil {
+		t.Fatalf("Failed to init i18n service: %v", err)
+	}
 
 	router.Init(s)
 

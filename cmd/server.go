@@ -12,7 +12,6 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"allaboutapps.dev/aw/go-starter/internal/config"
-	"allaboutapps.dev/aw/go-starter/internal/i18n"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -86,8 +85,6 @@ func runServer() {
 		}))
 	}
 
-	i18n.InitPackage(config.I18n)
-
 	s := api.NewServer(config)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -103,6 +100,10 @@ func runServer() {
 
 	if err := s.InitPush(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize push service")
+	}
+
+	if err := s.InitI18n(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
 	}
 
 	router.Init(s)
