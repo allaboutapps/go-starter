@@ -30,6 +30,9 @@ type Service struct {
 	matcher language.Matcher
 }
 
+// Data should be used to pass your template data
+type Data map[string]string
+
 // New returns a new Service struct holding bundle and matcher with the settings of the given config
 //
 // Note that Service is typically created and owned by the api.Server (use it via s.I18n)
@@ -76,8 +79,6 @@ func New(config config.I18n) (*Service, error) {
 	}, nil
 }
 
-type Data map[string]string
-
 // Translate your key into a localized string.
 //
 // Translate makes a lookup for the key in the current bundle with the specified language.
@@ -87,6 +88,21 @@ type Data map[string]string
 // Translate will not fail if a template value is missing "<no value>" will be inserted instead.
 // Translate will also not fail if the key is not present. "{{key}}" will be returned instead.
 func (m *Service) Translate(key string, lang language.Tag, data ...Data) string {
+	msg, err := m.TranslateMaybe(key, lang, data...)
+
+	if err != nil {
+		log.Err(err).Str("key", key).Str("lang", lang.String()).Msg("Failed to translate")
+		return key
+	}
+
+	return msg
+}
+
+// TranslateMaybe has the same sematics as Translate with the following exceptions:
+// It exposes encountered errors (does not automatically log this error) and encountered errors may result in an empty "" string!
+//
+// This method may be useful for conditional translation rendering (if key is available, use that, else...).
+func (m *Service) TranslateMaybe(key string, lang language.Tag, data ...Data) (string, error) {
 
 	localizeConfig := &i18n.LocalizeConfig{
 		MessageID: key,
@@ -96,13 +112,7 @@ func (m *Service) Translate(key string, lang language.Tag, data ...Data) string 
 		localizeConfig.TemplateData = data[0]
 	}
 
-	msg, err := m.TranslateConfigurable(lang, localizeConfig)
-	if err != nil {
-		log.Err(err).Str("key", key).Str("lang", lang.String()).Msg("Failed to translate")
-		return key
-	}
-
-	return msg
+	return m.translateConfigurable(lang, localizeConfig)
 }
 
 // TranslatePlural translates a pluralized cldrKey into a localized string.
@@ -120,6 +130,20 @@ func (m *Service) Translate(key string, lang language.Tag, data ...Data) string 
 // TranslatePlural will not fail if a template value is missing "<no value>" will be inserted instead.
 // TranslatePlural will also not fail if the cldrKey is not present. "{{cldrKey}} (count={{count}})" will be returned instead.
 func (m *Service) TranslatePlural(cldrKey string, count interface{}, lang language.Tag, data ...Data) string {
+	msg, err := m.TranslatePluralMaybe(cldrKey, count, lang, data...)
+	if err != nil {
+		log.Err(err).Str("count", fmt.Sprintf("%v", count)).Str("cldrKey", cldrKey).Str("lang", lang.String()).Msg("Failed to translate plural")
+		return fmt.Sprintf("%s (count=%v)", cldrKey, count)
+	}
+
+	return msg
+}
+
+// TranslatePluralMaybe uses the same sematics as TranslatePlural with the following exceptions:
+// It exposes encountered errors (does not automatically log this error) and encountered errors may result in an empty "" string!
+//
+// This method may be useful for conditional plural translation rendering (if key is available, use that, else...).
+func (m *Service) TranslatePluralMaybe(cldrKey string, count interface{}, lang language.Tag, data ...Data) (string, error) {
 
 	localizeConfig := &i18n.LocalizeConfig{
 		MessageID:   cldrKey,
@@ -139,18 +163,11 @@ func (m *Service) TranslatePlural(cldrKey string, count interface{}, lang langua
 
 	localizeConfig.TemplateData = templateData
 
-	msg, err := m.TranslateConfigurable(lang, localizeConfig)
-	if err != nil {
-		log.Err(err).Str("count", fmt.Sprintf("%v", count)).Str("key", localizeConfig.MessageID).Str("lang", lang.String()).Msg("Failed to translate plural")
-		return fmt.Sprintf("%s (count=%v)", cldrKey, count)
-	}
-
-	return msg
+	return m.translateConfigurable(lang, localizeConfig)
 }
 
-// TranslateConfigurable exposes the real i18n.LocalizeConfig used internally incl. error handling
-// and allows for fully configurable translations according to our configured language precedence semantics.
-func (m *Service) TranslateConfigurable(lang language.Tag, localizeConfig *i18n.LocalizeConfig) (string, error) {
+// translateConfigurable is used internally for fully configurable translations according to our configured language precedence semantics (new Localizer per call).
+func (m *Service) translateConfigurable(lang language.Tag, localizeConfig *i18n.LocalizeConfig) (string, error) {
 
 	// We benchmarked precaching all known []i18n.NewLocalizer during initialization,
 	// but it doesn't make a significant difference even with 10000 concurrent * 8 .Translate calls.

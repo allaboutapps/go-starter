@@ -102,11 +102,26 @@ func TestI18n(t *testing.T) {
 	msg = srv.Translate("Test.String.DE.only", language.German)
 	assert.Equal(t, "This key only exists in DE", msg)
 
+	msg, err = srv.TranslateMaybe("Test.String.DE.only", language.English)
+	assert.Error(t, err)
+	assert.Equal(t, "", msg) // no fallback!
+
 	msg = srv.Translate("Test.String.EN.only", language.English)
 	assert.Equal(t, "This key only exists in EN", msg)
 
+	msg, err = srv.TranslateMaybe("Test.String.EN.only", language.German)
+	assert.Error(t, err)
+	assert.Equal(t, "This key only exists in EN", msg) // fallback (but error)
+
 	msg = srv.Translate("Test.String.EN.only", language.German)
 	assert.Equal(t, "Test.String.EN.only", msg)
+
+	msg = srv.Translate("", language.German) // empty key
+	assert.Equal(t, "", msg)
+
+	msg, err = srv.TranslateMaybe("", language.German) // empty key
+	assert.Error(t, err)
+	assert.Equal(t, "", msg)
 
 	// ensure language subvariants are supported
 	deAt := srv.ParseLang("de-AT")
@@ -197,8 +212,16 @@ func TestI18nEmpty(t *testing.T) {
 	msg := srv.Translate("no.test.key.exists", tag)
 	assert.Equal(t, "no.test.key.exists", msg)
 
+	msg, err = srv.TranslateMaybe("no.test.key.exists", tag)
+	assert.Error(t, err)
+	assert.Equal(t, "", msg)
+
 	msg = srv.Translate("no.test.key.exists", language.Ukrainian)
 	assert.Equal(t, "no.test.key.exists", msg)
+
+	msg, err = srv.TranslateMaybe("no.test.key.exists", language.Ukrainian)
+	assert.Error(t, err)
+	assert.Equal(t, "", msg)
 }
 
 func TestI18nSpecialized(t *testing.T) {
@@ -393,6 +416,17 @@ func TestI18nPlural(t *testing.T) {
 	msg = srv.TranslatePlural("cats", -2, language.English) // negative and positive scales behave the same!
 	assert.Equal(t, "I've -2 cats.", msg)
 
+	msg, err = srv.TranslatePluralMaybe("cats", -2, language.English)
+	assert.NoError(t, err)
+	assert.Equal(t, "I've -2 cats.", msg)
+
+	msg = srv.TranslatePlural("cats", nil, language.English)
+	assert.Equal(t, "I've <nil> cats.", msg) // invalid count
+
+	msg, err = srv.TranslatePluralMaybe("cats", nil, language.English)
+	assert.NoError(t, err)
+	assert.Equal(t, "I've <nil> cats.", msg) // invalid count
+
 	msg = srv.TranslatePlural("cats", "many", language.English)
 	assert.Equal(t, "cats (count=many)", msg) // internal failed to translate plural!
 
@@ -415,6 +449,10 @@ func TestI18nPlural(t *testing.T) {
 	msg = srv.TranslatePlural("cats", "viele", language.German)
 	assert.Equal(t, "cats (count=viele)", msg) // internal failed to translate plural!
 
+	msg, err = srv.TranslatePluralMaybe("cats", "viele", language.German)
+	assert.Error(t, err)
+	assert.Equal(t, "", msg) // empty string for errors!
+
 	// overwrite Count
 	msg = srv.TranslatePlural("cats", 8, language.German, i18n.Data{"Count": "zu viele"})
 	assert.Equal(t, "Ich habe zu viele Katzen.", msg)
@@ -435,6 +473,14 @@ func TestI18nPlural(t *testing.T) {
 	assert.Equal(t, language.English, tag)
 	msg = srv.TranslatePlural("cats", 8, tag)
 	assert.Equal(t, "I've 8 cats.", msg) // fall back to English
+
+	// unknown
+	msg = srv.TranslatePlural("this.key.will.never.exist", nil, language.English)
+	assert.Equal(t, "this.key.will.never.exist (count=<nil>)", msg)
+
+	msg, err = srv.TranslatePluralMaybe("this.key.will.never.exist", nil, language.English)
+	assert.Error(t, err)
+	assert.Equal(t, "", msg) // empty string for errors!
 }
 
 func TestI18nUndetermined(t *testing.T) {
