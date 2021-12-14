@@ -15,6 +15,12 @@
   - Allows parsing of Accept-Language header and language string.
   - Support for templating using go templating language in message values.
 
+## 2021-11-29
+
+### Changed
+
+- The `integresql` service previously bound its port (`5000`) to the host machine. As this conflicts with newer macOS releases and is not necessary for the development workflow, the port is now only exposed to the linked services.
+
 ## 2021-10-22
 
 ### Changed
