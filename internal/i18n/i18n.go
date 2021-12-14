@@ -91,7 +91,7 @@ func (m *Service) Translate(key string, lang language.Tag, data ...Data) string 
 	msg, err := m.TranslateMaybe(key, lang, data...)
 
 	if err != nil {
-		log.Err(err).Str("key", key).Str("lang", lang.String()).Msg("Failed to translate")
+		log.Debug().Err(err).Str("key", key).Str("lang", lang.String()).Msg("Failed to translate")
 		return key
 	}
 
@@ -132,7 +132,7 @@ func (m *Service) TranslateMaybe(key string, lang language.Tag, data ...Data) (s
 func (m *Service) TranslatePlural(cldrKey string, count interface{}, lang language.Tag, data ...Data) string {
 	msg, err := m.TranslatePluralMaybe(cldrKey, count, lang, data...)
 	if err != nil {
-		log.Err(err).Str("count", fmt.Sprintf("%v", count)).Str("cldrKey", cldrKey).Str("lang", lang.String()).Msg("Failed to translate plural")
+		log.Debug().Err(err).Str("count", fmt.Sprintf("%v", count)).Str("cldrKey", cldrKey).Str("lang", lang.String()).Msg("Failed to translate plural")
 		return fmt.Sprintf("%s (count=%v)", cldrKey, count)
 	}
 
