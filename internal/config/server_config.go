@@ -10,6 +10,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/push/provider"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/rs/zerolog"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -89,6 +90,11 @@ type LoggerServer struct {
 	PrettyPrintConsole bool
 }
 
+type I18n struct {
+	DefaultLanguage language.Tag
+	BundleDirAbs    string
+}
+
 type Server struct {
 	Database   Database
 	Echo       EchoServer
@@ -102,6 +108,7 @@ type Server struct {
 	Logger     LoggerServer
 	Push       PushService
 	FCMConfig  provider.FCMConfig
+	I18n       I18n
 }
 
 // DefaultServiceConfigFromEnv returns the server config as parsed from environment variables
@@ -215,6 +222,10 @@ func DefaultServiceConfigFromEnv() Server {
 				GoogleApplicationCredentials: util.GetEnv("GOOGLE_APPLICATION_CREDENTIALS", ""),
 				ProjectID:                    util.GetEnv("SERVER_FCM_PROJECT_ID", "no-fcm-project-id-set"),
 				ValidateOnly:                 util.GetEnvAsBool("SERVER_FCM_VALIDATE_ONLY", true),
+			},
+			I18n: I18n{
+				DefaultLanguage: util.GetEnvAsLanguageTag("SERVER_I18N_DEFAULT_LANGUAGE", language.English),
+				BundleDirAbs:    util.GetEnv("SERVER_I18N_BUNDLE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/i18n")), // /app/web/i18n
 			},
 		}
 

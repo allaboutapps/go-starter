@@ -10,7 +10,17 @@
 
 ## Unreleased
 
+
+## 2021-12-14
+
 ### Changed
+- Add i18n service wrapping `go-i18n` package by nicksnyder.
+  - Allows parsing of Accept-Language header and language string.
+  - Support for templating using go templating language in message values.
+  - Support for [CLDR plural keys](https://cldr.unicode.org/index/cldr-spec/plural-rules)
+  - Added environment variables to configure i18n service
+    - `SERVER_I18N_DEFAULT_LANGUAGE` - set default language for i18n service
+    - `SERVER_I18N_BUNDLE_DIR_ABS` - set directory of i81n messages, available languages are automatically configured by the files present in the folder
 
 ## 2021-11-29
 

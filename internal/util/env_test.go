@@ -9,6 +9,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/text/language"
 )
 
 func TestGetEnv(t *testing.T) {
@@ -200,6 +201,41 @@ func TestGetMgmtSecret(t *testing.T) {
 		val := util.GetMgmtSecret(key)
 		assert.Equal(t, expectedVal, val)
 	}
+}
+
+func TestGetEnvAsLanguageTag(t *testing.T) {
+	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_LANG"
+	res := util.GetEnvAsLanguageTag(testVarKey, language.German)
+	assert.Equal(t, language.German, res)
+
+	os.Setenv(testVarKey, "en")
+	defer os.Unsetenv(testVarKey)
+	res = util.GetEnvAsLanguageTag(testVarKey, language.German)
+	assert.Equal(t, language.English, res)
+}
+
+func TestGetEnvAsLanguageTagArr(t *testing.T) {
+	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_LANG_ARR"
+	testVal := []language.Tag{language.German, language.English, language.Spanish}
+	res := util.GetEnvAsLanguageTagArr(testVarKey, testVal)
+	assert.Equal(t, testVal, res)
+
+	os.Setenv(testVarKey, "de,en")
+	defer os.Unsetenv(testVarKey)
+	res = util.GetEnvAsLanguageTagArr(testVarKey, testVal)
+	assert.Equal(t, []language.Tag{language.German, language.English}, res)
+
+	os.Setenv(testVarKey, "")
+	res = util.GetEnvAsLanguageTagArr(testVarKey, testVal)
+	assert.Equal(t, testVal, res)
+
+	os.Setenv(testVarKey, "en|es")
+	res = util.GetEnvAsLanguageTagArr(testVarKey, testVal, "|")
+	assert.Equal(t, []language.Tag{language.English, language.Spanish}, res)
+
+	os.Setenv(testVarKey, "en||es")
+	res = util.GetEnvAsLanguageTagArr(testVarKey, testVal, "||")
+	assert.Equal(t, []language.Tag{language.English, language.Spanish}, res)
 }
 
 func TestGetMgmtSecretRandom(t *testing.T) {

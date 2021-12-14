@@ -102,6 +102,10 @@ func runServer() {
 		log.Fatal().Err(err).Msg("Failed to initialize push service")
 	}
 
+	if err := s.InitI18n(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
+	}
+
 	router.Init(s)
 
 	go func() {

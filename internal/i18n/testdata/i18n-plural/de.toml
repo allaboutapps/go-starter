@@ -1,0 +1,13 @@
+# {{.Count}} is injected by default while using service.TranslatePlural 
+
+# pluralized structured format
+[cats]
+zero="Ich habe keine Katze."
+one="Ich habe eine Katze."
+other="Ich habe {{.Count}} Katzen."
+
+# pluralized single line format
+"dogs.zero"="Ich habe keinen Hund."
+"dogs.one"="Ich habe einen Hund."
+"dogs.other"="Ich habe {{.Count}} Hunde."
+
