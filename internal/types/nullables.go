@@ -164,6 +164,8 @@ func (m *Nullables) validateNullableBool(formats strfmt.Registry) error {
 	if err := m.NullableBool.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableBool")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableBool")
 		}
 		return err
 	}
@@ -179,6 +181,8 @@ func (m *Nullables) validateNullableBoolSlice(formats strfmt.Registry) error {
 	if err := m.NullableBoolSlice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableBoolSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableBoolSlice")
 		}
 		return err
 	}
@@ -194,6 +198,8 @@ func (m *Nullables) validateNullableFloat(formats strfmt.Registry) error {
 	if err := m.NullableFloat.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat")
 		}
 		return err
 	}
@@ -209,6 +215,8 @@ func (m *Nullables) validateNullableFloat32(formats strfmt.Registry) error {
 	if err := m.NullableFloat32.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat32")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat32")
 		}
 		return err
 	}
@@ -224,6 +232,8 @@ func (m *Nullables) validateNullableFloat32Slice(formats strfmt.Registry) error 
 	if err := m.NullableFloat32Slice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat32Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat32Slice")
 		}
 		return err
 	}
@@ -239,6 +249,8 @@ func (m *Nullables) validateNullableFloat64(formats strfmt.Registry) error {
 	if err := m.NullableFloat64.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat64")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat64")
 		}
 		return err
 	}
@@ -254,6 +266,8 @@ func (m *Nullables) validateNullableFloat64Slice(formats strfmt.Registry) error 
 	if err := m.NullableFloat64Slice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat64Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat64Slice")
 		}
 		return err
 	}
@@ -269,6 +283,8 @@ func (m *Nullables) validateNullableFloatSlice(formats strfmt.Registry) error {
 	if err := m.NullableFloatSlice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloatSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloatSlice")
 		}
 		return err
 	}
@@ -284,6 +300,8 @@ func (m *Nullables) validateNullableInt(formats strfmt.Registry) error {
 	if err := m.NullableInt.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt")
 		}
 		return err
 	}
@@ -299,6 +317,8 @@ func (m *Nullables) validateNullableInt16(formats strfmt.Registry) error {
 	if err := m.NullableInt16.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt16")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt16")
 		}
 		return err
 	}
@@ -314,6 +334,8 @@ func (m *Nullables) validateNullableInt16Slice(formats strfmt.Registry) error {
 	if err := m.NullableInt16Slice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt16Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt16Slice")
 		}
 		return err
 	}
@@ -329,6 +351,8 @@ func (m *Nullables) validateNullableInt32(formats strfmt.Registry) error {
 	if err := m.NullableInt32.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt32")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt32")
 		}
 		return err
 	}
@@ -344,6 +368,8 @@ func (m *Nullables) validateNullableInt32Slice(formats strfmt.Registry) error {
 	if err := m.NullableInt32Slice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt32Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt32Slice")
 		}
 		return err
 	}
@@ -359,6 +385,8 @@ func (m *Nullables) validateNullableInt64(formats strfmt.Registry) error {
 	if err := m.NullableInt64.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt64")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt64")
 		}
 		return err
 	}
@@ -374,6 +402,8 @@ func (m *Nullables) validateNullableInt64Slice(formats strfmt.Registry) error {
 	if err := m.NullableInt64Slice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt64Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt64Slice")
 		}
 		return err
 	}
@@ -389,6 +419,8 @@ func (m *Nullables) validateNullableIntSlice(formats strfmt.Registry) error {
 	if err := m.NullableIntSlice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableIntSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableIntSlice")
 		}
 		return err
 	}
@@ -404,6 +436,8 @@ func (m *Nullables) validateNullableString(formats strfmt.Registry) error {
 	if err := m.NullableString.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableString")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableString")
 		}
 		return err
 	}
@@ -419,6 +453,8 @@ func (m *Nullables) validateNullableStringSlice(formats strfmt.Registry) error {
 	if err := m.NullableStringSlice.Validate(formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableStringSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableStringSlice")
 		}
 		return err
 	}
@@ -513,6 +549,8 @@ func (m *Nullables) contextValidateNullableBool(ctx context.Context, formats str
 	if err := m.NullableBool.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableBool")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableBool")
 		}
 		return err
 	}
@@ -525,6 +563,8 @@ func (m *Nullables) contextValidateNullableBoolSlice(ctx context.Context, format
 	if err := m.NullableBoolSlice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableBoolSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableBoolSlice")
 		}
 		return err
 	}
@@ -537,6 +577,8 @@ func (m *Nullables) contextValidateNullableFloat(ctx context.Context, formats st
 	if err := m.NullableFloat.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat")
 		}
 		return err
 	}
@@ -549,6 +591,8 @@ func (m *Nullables) contextValidateNullableFloat32(ctx context.Context, formats 
 	if err := m.NullableFloat32.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat32")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat32")
 		}
 		return err
 	}
@@ -561,6 +605,8 @@ func (m *Nullables) contextValidateNullableFloat32Slice(ctx context.Context, for
 	if err := m.NullableFloat32Slice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat32Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat32Slice")
 		}
 		return err
 	}
@@ -573,6 +619,8 @@ func (m *Nullables) contextValidateNullableFloat64(ctx context.Context, formats 
 	if err := m.NullableFloat64.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat64")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat64")
 		}
 		return err
 	}
@@ -585,6 +633,8 @@ func (m *Nullables) contextValidateNullableFloat64Slice(ctx context.Context, for
 	if err := m.NullableFloat64Slice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloat64Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloat64Slice")
 		}
 		return err
 	}
@@ -597,6 +647,8 @@ func (m *Nullables) contextValidateNullableFloatSlice(ctx context.Context, forma
 	if err := m.NullableFloatSlice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableFloatSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableFloatSlice")
 		}
 		return err
 	}
@@ -609,6 +661,8 @@ func (m *Nullables) contextValidateNullableInt(ctx context.Context, formats strf
 	if err := m.NullableInt.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt")
 		}
 		return err
 	}
@@ -621,6 +675,8 @@ func (m *Nullables) contextValidateNullableInt16(ctx context.Context, formats st
 	if err := m.NullableInt16.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt16")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt16")
 		}
 		return err
 	}
@@ -633,6 +689,8 @@ func (m *Nullables) contextValidateNullableInt16Slice(ctx context.Context, forma
 	if err := m.NullableInt16Slice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt16Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt16Slice")
 		}
 		return err
 	}
@@ -645,6 +703,8 @@ func (m *Nullables) contextValidateNullableInt32(ctx context.Context, formats st
 	if err := m.NullableInt32.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt32")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt32")
 		}
 		return err
 	}
@@ -657,6 +717,8 @@ func (m *Nullables) contextValidateNullableInt32Slice(ctx context.Context, forma
 	if err := m.NullableInt32Slice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt32Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt32Slice")
 		}
 		return err
 	}
@@ -669,6 +731,8 @@ func (m *Nullables) contextValidateNullableInt64(ctx context.Context, formats st
 	if err := m.NullableInt64.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt64")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt64")
 		}
 		return err
 	}
@@ -681,6 +745,8 @@ func (m *Nullables) contextValidateNullableInt64Slice(ctx context.Context, forma
 	if err := m.NullableInt64Slice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableInt64Slice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableInt64Slice")
 		}
 		return err
 	}
@@ -693,6 +759,8 @@ func (m *Nullables) contextValidateNullableIntSlice(ctx context.Context, formats
 	if err := m.NullableIntSlice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableIntSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableIntSlice")
 		}
 		return err
 	}
@@ -705,6 +773,8 @@ func (m *Nullables) contextValidateNullableString(ctx context.Context, formats s
 	if err := m.NullableString.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableString")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableString")
 		}
 		return err
 	}
@@ -717,6 +787,8 @@ func (m *Nullables) contextValidateNullableStringSlice(ctx context.Context, form
 	if err := m.NullableStringSlice.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("nullableStringSlice")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("nullableStringSlice")
 		}
 		return err
 	}

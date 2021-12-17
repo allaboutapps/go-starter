@@ -19,6 +19,11 @@ import (
 // swagger:model orderDir
 type OrderDir string
 
+func NewOrderDir(value OrderDir) *OrderDir {
+	v := value
+	return &v
+}
+
 const (
 
 	// OrderDirAsc captures enum value "asc"

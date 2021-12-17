@@ -105,6 +105,8 @@ func (m *PublicHTTPValidationError) validateValidationErrors(formats strfmt.Regi
 			if err := m.ValidationErrors[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("validationErrors" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("validationErrors" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -142,6 +144,8 @@ func (m *PublicHTTPValidationError) contextValidateValidationErrors(ctx context.
 			if err := m.ValidationErrors[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("validationErrors" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("validationErrors" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
