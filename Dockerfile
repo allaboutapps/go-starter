@@ -119,6 +119,15 @@ RUN mkdir -p /tmp/watchexec \
     && cp watchexec-1.17.0-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
+# yq
+# https://github.com/mikefarah/yq/releases
+RUN mkdir -p /tmp/yq \
+    && cd /tmp/yq \
+    && wget https://github.com/mikefarah/yq/releases/download/v4.16.2/yq_linux_amd64.tar.gz \
+    && tar xzf yq_linux_amd64.tar.gz \
+    && cp yq_linux_amd64 /usr/local/bin/yq \
+    && rm -rf /tmp/yq 
+
 # gsdev
 # The sole purpose of the "gsdev" cli util is to provide a handy short command for the following (all args are passed):
 # go run -tags scripts /app/scripts/main.go "$@"
