@@ -233,7 +233,7 @@ watch-sql: ##- Watches *.sql files in /migrations and runs 'make sql-regenerate'
 # --- Swagger
 ### -----------------------
 
-swagger: ##- Runs make swagger-concat and swagger-server.
+swagger: ##- Runs make swagger-lint-ref-siblings, swagger-concat and swagger-server.
 	@$(MAKE) swagger-lint-ref-siblings
 	@$(MAKE) swagger-concat
 	@$(MAKE) swagger-server
@@ -250,7 +250,7 @@ swagger-lint-ref-siblings: ##- (opt) Checks api/**/*.[yml|yaml] for invalid usag
 				ref_siblings=$$(yq e '.. | select(has("$$ref") and length != 1)' $$ymlfile); \
 				([[ -z "$$ref_siblings" ]] \
 					|| (echo "Error: Found invalid \$$ref siblings within $$ymlfile:" \
-						&& (yq e '.. | select(has("$$ref") and length != 1)' $$ymlfile) \
+						&& (yq -P e '[.. | select(has("$$ref") and length != 1)]' $$ymlfile) \
 						&& (echo $$ymlfile >> /tmp/swagger-lint-ref-siblings-errors.log))); \
 			done \
 		};
