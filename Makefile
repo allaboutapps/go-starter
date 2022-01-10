@@ -255,7 +255,7 @@ swagger-lint-ref-siblings: ##- (opt) Checks api/**/*.[yml|yaml] for invalid usag
 			done \
 		};
 	@[[ "$$(cat /tmp/swagger-lint-ref-siblings-errors.log | wc -l)" -eq "0" ]] \
-		|| (echo "Error: $$(cat /tmp/swagger-lint-ref-siblings-errors.log | wc -l) \$$ref(s) have siblings!" \
+		|| (echo "Error: $$(cat /tmp/swagger-lint-ref-siblings-errors.log | wc -l) files have \$$ref(s) with siblings!" \
 			&& false)
 
 # https://goswagger.io/usage/mixin.html
