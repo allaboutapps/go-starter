@@ -10,6 +10,23 @@
 
 ## Unreleased
 
+## 2022-02-02
+
+### Changed
+
+- Upgrades to [go-swagger](https://github.com/go-swagger/go-swagger) from to v0.26.1 to [v0.29.0](https://github.com/go-swagger/go-swagger/releases/tag/v0.29.0) (development stage only, requires `./docker-helper.sh --rebuild`). Includes the following `go.mod` upgrades:
+  - [github.com/go-openapi/runtime](https://github.com/go-openapi/runtime) from v0.19.31 to v0.22.0
+  - [github.com/go-openapi/strfmt](https://github.com/go-openapi/strfmt) from v0.20.2 to v0.21.1
+  - [github.com/go-openapi/validate](https://github.com/go-openapi/validate) from v0.20.2 to v0.20.3
+  - [github.com/go-openapi/errors](https://github.com/go-openapi/errors) from v0.20.1 to v0.20.2
+  - [github.com/go-openapi/swag](https://github.com/go-openapi/swag) from v0.19.15 to v0.21.1
+- Adds `yq` ([yq: a lightweight and portable command-line YAML processor](https://github.com/mikefarah/yq)) to our `Dockerfile` (development stage only, requires `./docker-helper.sh --rebuild`).
+- Adds `make swagger-lint-ref-siblings` which is now executed as part of the `make build` (and `make swagger`) pipeline.
+  - Any sibling elements of a Swagger `$ref` are ignored.
+  - We have seen several misuses of `$ref` in our projects causing weird merge/flatten behaviors, thus we now lint for this case explicitly.
+  - Having `$ref` and sibling elements (e.g. `required`, `example`, ...) is unsupported by [OpenAPI v2: $ref and Sibling Elements](https://swagger.io/docs/specification/using-ref/) itself and the [JSON Reference specification](https://datatracker.ietf.org/doc/html/rfc3986) itself.
+  - To mitigate these errors, either expand the referenced element (fully remove `$ref`) or create a new element including your custom siblings elements and `$ref` this new one.
+- Fix schema visualization generation guide in `docs/schemacrawler/README.md`
 
 ## 2021-12-14
 

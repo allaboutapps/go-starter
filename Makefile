@@ -233,9 +233,30 @@ watch-sql: ##- Watches *.sql files in /migrations and runs 'make sql-regenerate'
 # --- Swagger
 ### -----------------------
 
-swagger: ##- Runs make swagger-concat and swagger-server.
+swagger: ##- Runs make swagger-lint-ref-siblings, swagger-concat and swagger-server.
+	@$(MAKE) swagger-lint-ref-siblings
 	@$(MAKE) swagger-concat
 	@$(MAKE) swagger-server
+
+# Any sibling elements of a $ref are ignored. This is because $ref works by replacing itself and everything on its level with the definition it is pointing at.
+# https://swagger.io/docs/specification/using-ref/
+swagger-lint-ref-siblings: ##- (opt) Checks api/**/*.[yml|yaml] for invalid usage of $ref (no siblings).
+	@echo "make swagger-lint-ref-siblings"
+	@rm -f /tmp/swagger-lint-ref-siblings-errors.log && touch /tmp/swagger-lint-ref-siblings-errors.log
+	@find api -type f -name "*.yml" -o -name "*.yaml" \
+		| { \
+			while read ymlfile; \
+			do \
+				ref_siblings=$$(yq e '.. | select(has("$$ref") and length != 1)' $$ymlfile); \
+				([[ -z "$$ref_siblings" ]] \
+					|| (echo "Error: Found invalid \$$ref siblings within $$ymlfile:" \
+						&& (yq -P e '[.. | select(has("$$ref") and length != 1)]' $$ymlfile) \
+						&& (echo $$ymlfile >> /tmp/swagger-lint-ref-siblings-errors.log))); \
+			done \
+		};
+	@[[ "$$(cat /tmp/swagger-lint-ref-siblings-errors.log | wc -l)" -eq "0" ]] \
+		|| (echo "Error: $$(cat /tmp/swagger-lint-ref-siblings-errors.log | wc -l) files have \$$ref(s) with siblings!" \
+			&& false)
 
 # https://goswagger.io/usage/mixin.html
 # https://goswagger.io/usage/flatten.html
