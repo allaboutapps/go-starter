@@ -10,6 +10,8 @@
 
 ## Unreleased
 
+## 2022-02-02
+
 ### Changed
 
 - Upgrades to [go-swagger](https://github.com/go-swagger/go-swagger) from to v0.26.1 to [v0.28.0](https://github.com/go-swagger/go-swagger/releases/tag/v0.28.0) (development stage only, requires `./docker-helper.sh --rebuild`). Includes the following `go.mod` upgrades:
