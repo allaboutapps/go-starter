@@ -24,6 +24,7 @@
   - We have seen several misuses of `$ref` in our projects causing weird merge/flatten behaviors, thus we now lint for this case explicitly.
   - Having `$ref` and sibling elements (e.g. `required`, `example`, ...) is unsupported by [OpenAPI v2: $ref and Sibling Elements](https://swagger.io/docs/specification/using-ref/) itself and the [JSON Reference specification](https://datatracker.ietf.org/doc/html/rfc3986) itself.
   - To mitigate these errors, either expand the referenced element (fully remove `$ref`) or create a new element including your custom siblings elements and `$ref` this new one.
+- Fix schema visualization generation guide in `docs/schemacrawler/README.md`
 
 ## 2021-12-14
 
