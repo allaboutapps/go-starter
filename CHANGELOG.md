@@ -14,10 +14,12 @@
 
 ### Changed
 
-- Upgrades to [go-swagger](https://github.com/go-swagger/go-swagger) from to v0.26.1 to [v0.28.0](https://github.com/go-swagger/go-swagger/releases/tag/v0.28.0) (development stage only, requires `./docker-helper.sh --rebuild`). Includes the following `go.mod` upgrades:
-  - [github.com/go-openapi/runtime](https://github.com/go-openapi/runtime) from v0.19.31 to v0.21.0
+- Upgrades to [go-swagger](https://github.com/go-swagger/go-swagger) from to v0.26.1 to [v0.29.0](https://github.com/go-swagger/go-swagger/releases/tag/v0.29.0) (development stage only, requires `./docker-helper.sh --rebuild`). Includes the following `go.mod` upgrades:
+  - [github.com/go-openapi/runtime](https://github.com/go-openapi/runtime) from v0.19.31 to v0.22.0
   - [github.com/go-openapi/strfmt](https://github.com/go-openapi/strfmt) from v0.20.2 to v0.21.1
   - [github.com/go-openapi/validate](https://github.com/go-openapi/validate) from v0.20.2 to v0.20.3
+  - [github.com/go-openapi/errors](https://github.com/go-openapi/errors) from v0.20.1 to v0.20.2
+  - [github.com/go-openapi/swag](https://github.com/go-openapi/swag) from v0.19.15 to v0.21.1
 - Adds `yq` ([yq: a lightweight and portable command-line YAML processor](https://github.com/mikefarah/yq)) to our `Dockerfile` (development stage only, requires `./docker-helper.sh --rebuild`).
 - Adds `make swagger-lint-ref-siblings` which is now executed as part of the `make build` (and `make swagger`) pipeline.
   - Any sibling elements of a Swagger `$ref` are ignored.
