@@ -233,9 +233,9 @@ watch-sql: ##- Watches *.sql files in /migrations and runs 'make sql-regenerate'
 # --- Swagger
 ### -----------------------
 
-swagger: ##- Runs make swagger-lint-ref-siblings, swagger-concat and swagger-server.
-	@$(MAKE) swagger-lint-ref-siblings
+swagger: ##- Runs make swagger-concat, swagger-lint-ref-siblings, and swagger-server.
 	@$(MAKE) swagger-concat
+	@$(MAKE) swagger-lint-ref-siblings
 	@$(MAKE) swagger-server
 
 # Any sibling elements of a $ref are ignored. This is because $ref works by replacing itself and everything on its level with the definition it is pointing at.

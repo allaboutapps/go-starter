@@ -10,6 +10,12 @@
 
 ## Unreleased
 
+## 2022-02-03
+
+### Changed
+
+- Changed order of make targets in the `make swagger` pipeline. `make swagger-lint-ref-siblings` will now run after `make swagger-concat`, always linting the current version of our swagger file. This helps avoid errors regarding an invalid `swagger.yml` when resolving merge conflicts as those are often resolved by running `make swagger` and generating a fresh `swagger.yml`.
+ 
 ## 2022-02-02
 
 ### Changed
