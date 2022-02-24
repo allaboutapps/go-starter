@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -12,6 +13,8 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt/conv"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -29,6 +32,9 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 		if err := util.BindAndValidateBody(c, &body); err != nil {
 			return err
 		}
+
+		// enforce lowercase usernames, trim whitespaces
+		body.Username = conv.Email(strfmt.Email(strings.TrimSpace(strings.ToLower(body.Username.String()))))
 
 		log := util.LogFromContext(ctx).With().Str("username", body.Username.String()).Logger()
 

@@ -3,6 +3,7 @@ package auth
 import (
 	"database/sql"
 	"net/http"
+	"strings"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -37,6 +38,9 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 		if err := util.BindAndValidateBody(c, &body); err != nil {
 			return err
 		}
+
+		// enforce lowercase usernames, trim whitespaces
+		body.Username = conv.Email(strfmt.Email(strings.TrimSpace(strings.ToLower(body.Username.String()))))
 
 		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(body.Username.String()))).One(ctx, s.DB)
 		if err != nil {
