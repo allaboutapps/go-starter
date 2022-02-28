@@ -119,3 +119,8 @@ func GenerateRandomString(n int, ranges []CharRange, extra string) (string, erro
 
 	return str.String(), nil
 }
+
+// Lowercases a string and trims whitespace from the beginning and end of the string
+func ToUsernameFormat(s string) string {
+	return strings.TrimSpace(strings.ToLower(s))
+}

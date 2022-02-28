@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -13,8 +12,6 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
-	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/strfmt/conv"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -34,18 +31,18 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 		}
 
 		// enforce lowercase usernames, trim whitespaces
-		body.Username = conv.Email(strfmt.Email(strings.TrimSpace(strings.ToLower(body.Username.String()))))
+		username := util.ToUsernameFormat(body.Username.String())
 
-		log := util.LogFromContext(ctx).With().Str("username", body.Username.String()).Logger()
+		log := util.LogFromContext(ctx).With().Str("username", username).Logger()
 
-		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(body.Username.String()))).One(ctx, s.DB)
+		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(username))).One(ctx, s.DB)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				log.Debug().Str("username", body.Username.String()).Err(err).Msg("User not found")
+				log.Debug().Str("username", username).Err(err).Msg("User not found")
 				return c.NoContent(http.StatusNoContent)
 			}
 
-			log.Debug().Str("username", body.Username.String()).Err(err).Msg("Failed to load user")
+			log.Debug().Str("username", username).Err(err).Msg("Failed to load user")
 			return err
 		}
 
