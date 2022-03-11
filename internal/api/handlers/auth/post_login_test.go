@@ -2,7 +2,9 @@ package auth_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -273,5 +275,29 @@ func TestPostLoginEmptyPassword(t *testing.T) {
 		assert.Equal(t, "password", *response.ValidationErrors[0].Key)
 		assert.Equal(t, "body", *response.ValidationErrors[0].In)
 		assert.Equal(t, "password in body should be at least 1 chars long", *response.ValidationErrors[0].Error)
+	})
+}
+
+func TestPostLoginSuccessLowercaseTrimWhitespaces(t *testing.T) {
+	test.WithTestServer(t, func(s *api.Server) {
+		fixtures := test.Fixtures()
+		payload := test.GenericPayload{
+			"username": fmt.Sprintf(" %s ", strings.ToUpper(fixtures.User1.Username.String)),
+			"password": test.PlainTestUserPassword,
+		}
+
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+
+		var response types.PostLoginResponse
+		test.ParseResponseAndValidate(t, res, &response)
+
+		assert.NotEmpty(t, response.AccessToken)
+		assert.NotEqual(t, fixtures.User1AccessToken1.Token, response.AccessToken)
+		assert.NotEmpty(t, response.RefreshToken)
+		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, response.RefreshToken)
+		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response.ExpiresIn)
+		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 	})
 }

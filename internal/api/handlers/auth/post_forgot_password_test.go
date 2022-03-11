@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -215,5 +216,26 @@ func TestPostForgotPasswordInvalidUsername(t *testing.T) {
 
 		mail := getLastSentMail(t, s.Mailer)
 		assert.Nil(t, mail)
+	})
+}
+
+func TestPostForgotPasswordSuccessLowercaseTrimWhitespaces(t *testing.T) {
+	test.WithTestServer(t, func(s *api.Server) {
+		ctx := context.Background()
+		fixtures := test.Fixtures()
+		payload := test.GenericPayload{
+			"username": fmt.Sprintf(" %s ", strings.ToUpper(fixtures.User1.Username.String)),
+		}
+
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
+
+		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
+
+		passwordResetToken, err := fixtures.User1.PasswordResetTokens().One(ctx, s.DB)
+		require.NoError(t, err)
+
+		mail := getLastSentMail(t, s.Mailer)
+		require.NotNil(t, mail)
+		assert.Contains(t, string(mail.HTML), fmt.Sprintf("http://localhost:3000/set-new-password?token=%s", passwordResetToken.Token))
 	})
 }
