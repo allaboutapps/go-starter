@@ -15,8 +15,13 @@
 ### Changed
 
 - **BREAKING** Username format change in auth handlers
-  - Added the `util.ToUsernameFormat` helper function, which will lowercase and trim whitespaces, and use it to format usernames in the login, register, and forgot-password handlers. This prevents user duplication (e.g. two accounts registered with the same email address with different casing) and cases where users would inadvertently register with specific casing or a trailing whitespace after their username, and subsequently struggle to log into their account.  
-  - This effectively locks existing users whose username contains uppercase characters and/or whitespaces out of their accounts. Before rolling out this change, check whether any existing users are affected and migrate their usernames to a format that is compatible with this change. Be aware that this may cause conflicts in regard to the uniqueness constraint of usernames and therefore need to be resolved manually, which is why we are not including a database migration to automatically migrate existing usernames to the new format.
+  - Added the `util.ToUsernameFormat` helper function, which will **lowercase** and **trim whitespaces**. We use it to format usernames in the login, register, and forgot-password handlers.
+    - This prevents user duplication (e.g. two accounts registered with the same email address with different casing) and 
+    - cases where users would inadvertently register with specific casing or a trailing whitespace after their username, and subsequently struggle to log into their account.  
+  - **This effectively locks existing users whose username contains uppercase characters and/or whitespaces out of their accounts.** 
+    - Before rolling out this change, check whether any existing users are affected and migrate their usernames to a format that is compatible with this change.
+    - Be aware that this may cause conflicts in regard to the uniqueness constraint of usernames and therefore need to be resolved manually, which is why we are not including a database migration to automatically migrate existing usernames to the new format.
+  - For more information and a possible manual database migration flow please see this special WIKI page: https://github.com/allaboutapps/go-starter/wiki/2022-02-28
 
 ## 2022-02-03
 
