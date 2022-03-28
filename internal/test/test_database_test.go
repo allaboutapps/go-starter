@@ -3,11 +3,13 @@ package test_test
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
 
+	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/require"
@@ -144,6 +146,48 @@ func TestWithTestDatabaseFromDumpAutoMigrateAndTestFixtures(t *testing.T) {
 				require.NotEqual(t, db2Hash, db0Hash)
 			})
 		})
+	})
+}
+
+func TestWithTestDatabaseFromDumpGorp(t *testing.T) {
+	dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/uuid_extension_only.sql")
+
+	// migrate transforms gorp_migratons to migrations
+	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true}, func(db *sql.DB) {
+
+		// check that we properly renamed the "gorp_migrations" migration tracking table to config.DatabaseMigrationTable
+		var migrationsTableName string
+		if err := db.QueryRow(fmt.Sprintf("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s';", config.DatabaseMigrationTable)).Scan(&migrationsTableName); err != nil {
+			t.Fatal(err)
+		}
+
+		require.Equal(t, config.DatabaseMigrationTable, migrationsTableName)
+
+		// check that gorp_migrations does not exist!
+		var gorp string
+		err := db.QueryRow("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gorp_migrations';").Scan(&gorp)
+
+		require.Error(t, err)
+
+		// we can expect that the '20200428064736-install-extension-uuid.sql' migration within the uuid_extension_only.sql is a very stable migrations.
+		// let's check if other migrations were applied...
+		var migrationsCount int
+		err = db.QueryRow("SELECT COUNT(table_name) FROM information_schema.tables WHERE table_schema = 'public';").Scan(&migrationsCount)
+		require.NoError(t, err)
+
+		require.Greater(t, migrationsCount, 1)
+	})
+
+	// with no migrate, gorp_migrations still exists:
+	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: false}, func(db *sql.DB) {
+
+		// check that "gorp_migrations" migration tracking table still exists (as we have not set ApplyMigrations to true!)
+		var migrationsTableName string
+		if err := db.QueryRow("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gorp_migrations';").Scan(&migrationsTableName); err != nil {
+			t.Fatal(err)
+		}
+
+		require.Equal(t, "gorp_migrations", migrationsTableName)
 	})
 }
 

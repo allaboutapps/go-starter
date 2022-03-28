@@ -15,6 +15,11 @@
   - [`github.com/spf13/cobra@v1.4.0`](https://github.com/spf13/cobra/releases/tag/v1.4.0) split into `cobra` (the lib) and [`github.com/spf13/cobra-cli`](https://github.com/spf13/cobra-cli/releases) (the generator / scaffolding tool)
   - We'll now depend on `cobra-cli` directly in our `Dockerfile`, while the core `cobra` dependency stays unchanged within our `go.mod`.
   - Bumps [`github.com/spf13/cobra`](https://github.com/spf13/cobra) from v1.3.0 to [v1.4.0](https://github.com/spf13/cobra/releases/tag/v1.4.0)
+- Fixed `test.ApplyMigrations` when combined with the import SQL dump mechanics in the testing context.
+  - Previously, we did still use the default [sql-migrate](https://github.com/rubenv/sql-migrate) `gorp_migrations` table to track applied migrations in our test databases, not our typical `migrations` table used everywhere else.
+  - This especially lead to problems when importing (production / live) SQL dumps via `test.WithTestDatabaseFromDump*`, `test.WithTestServerFromDump*` or `test.WithTestServerConfigurableFromDump` as our implementation tried to apply **all migrations** every time, regardless if a partial migration set was already applied previously (as the already applied migrations were not tracked within the `migrations` table (but within `gorp_migrations`) we did not notice).
+  - We now initialize this pipeline correctly in the test context (similar to our usage within `cmd/db_migrate.go` or `app db migrate`) and explicitly set these globals through `config.DatabaseMigrationTable` and `config.DatabaseMigrationFolder`.
+  - If you encounter problems after the upgrade, please execute `make sql-drop-all` in your local environment to reset the IntegreSQL test databases, then run `make sql-reset && make sql-spec-reset && make sql-spec-migrate && make all` to rebuild and test.
 
 
 ## 2022-02-28
