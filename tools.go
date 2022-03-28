@@ -12,7 +12,6 @@ package tools
 
 import (
 	_ "github.com/rubenv/sql-migrate/sql-migrate"
-	_ "github.com/spf13/cobra-cli"
 	_ "github.com/volatiletech/sqlboiler/v4"
 	_ "github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql"
 )

@@ -110,6 +110,11 @@ RUN curl -o /usr/local/bin/swagger -L'#' \
 # https://github.com/uw-labs/lichen/releases
 RUN go install github.com/uw-labs/lichen@v0.1.4
 
+# cobra-cli: cobra cmd scaffolding generator
+# TODO: Install from static binary as soon as it becomes available.
+# https://github.com/spf13/cobra-cli/releases
+RUN go install github.com/spf13/cobra-cli@v1.3.0
+
 # watchexec
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
