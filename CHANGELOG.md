@@ -10,6 +10,8 @@
 
 ## Unreleased
 
+- Merged [#165: Allow use of db.join* methods more than once](https://github.com/allaboutapps/go-starter/pull/165), thx [danut007ro](https://github.com/danut007ro).
+
 ## 2022-02-28
 
 ### Changed
