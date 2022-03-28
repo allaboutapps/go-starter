@@ -32,7 +32,8 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
     - [Uninstall](#uninstall)
   - [Additional resources](#additional-resources)
   - [Contributing](#contributing)
-  - [Maintainers](#maintainers)
+  - [Current maintainers](#current-maintainers)
+    - [Previous maintainers](#previous-maintainers)
   - [License](#license)
 
 ## Features
@@ -49,7 +50,7 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
 - Comes with fully implemented `auth` package, an OAuth2 RESTful JSON API ready to be extended according to your requirements.
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
-- CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to add additional sub-commands.
+- CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to [add additional sub-commands via `cobra-cli`](https://github.com/spf13/cobra-cli/blob/main/README.md#add-commands-to-a-project).
 - Comes with an initial [PostgreSQL](https://www.postgresql.org/) database structure (see [/migrations](https://github.com/allaboutapps/go-starter/tree/master/migrations)), covering: 
   - auth tokens (access-, refresh-, password-reset-tokens),
   - a generic auth-related `user` model
@@ -220,14 +221,17 @@ Pull requests are welcome. For major changes, please [open an issue](https://git
 
 Please make sure to update tests as appropriate.
 
-## Maintainers
+## Current maintainers
 
 - [Michael Farkas - @farkmi](https://github.com/farkmi)
-- [Nick Müller - @MorpheusXAUT](https://github.com/MorpheusXAUT)
 - [Mario Ranftl - @majodev](https://github.com/majodev)
 - [Manuel Wieser - @mwieser](https://github.com/mwieser)
+
+### Previous maintainers
+
 - [Dominic Aschauer - @eldelto](https://github.com/eldelto)
+- [Nick Müller - @MorpheusXAUT](https://github.com/MorpheusXAUT)
 
 ## License
 
-[MIT](LICENSE) © 2021 aaa – all about apps GmbH | Michael Farkas | Nick Müller | Mario Ranftl | Manuel Wieser and the "go-starter" project contributors
+[MIT](LICENSE)
