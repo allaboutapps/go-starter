@@ -10,6 +10,8 @@
 
 ## Unreleased
 
+## 2022-03-28
+
 - Merged [#165: Allow use of db.join* methods more than once](https://github.com/allaboutapps/go-starter/pull/165), thx [danut007ro](https://github.com/danut007ro).
 - Merged [#169: Switch to standalone cobra-cli dependency](https://github.com/allaboutapps/go-starter/pull/169), thx [liggitt](https://github.com/liggitt) (requires `./docker-helper.sh --rebuild`).
   - [`github.com/spf13/cobra@v1.4.0`](https://github.com/spf13/cobra/releases/tag/v1.4.0) split into `cobra` (the lib) and [`github.com/spf13/cobra-cli`](https://github.com/spf13/cobra-cli/releases) (the generator / scaffolding tool)
