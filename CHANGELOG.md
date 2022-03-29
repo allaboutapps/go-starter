@@ -3,10 +3,10 @@
 - All notable changes to this project will be documented in this file.
 - The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - We do not follow [semantic versioning](https://semver.org/).
-- All changes are solely **tracked by date** and have a git tag available (from 2021-10-19 onwards):
-  - format `go-starter-YYYY-MM-DD`
-  - e.g. [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19) 
-- The latest `master` is considered **stable** and should be periodically merged into our customer projects.
+- All changes are solely **tracked by date** and have a **git tag** available (from 2021-10-19 onwards):
+  - Git tags are formatted like `go-starter-YYYY-MM-DD`. See [GitHub tags](https://github.com/allaboutapps/go-starter/tags) for all available go-starter git tags.
+  - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
+- Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
 - Switch [from Go 1.17.1 to Go 1.17.8](https://go.dev/doc/devel/release#go1.17.minor) (requires `./docker-helper.sh --rebuild`).
