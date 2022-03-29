@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.17.1-buster AS development
+FROM golang:1.17.8-buster AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -57,6 +57,7 @@ RUN apt-get update \
     xz-utils \
     postgresql-client-12 \
     icu-devtools \
+    tmux \
     # --- END DEVELOPMENT ---
     # 
     && apt-get clean \
@@ -77,9 +78,9 @@ ENV LANG en_US.UTF-8
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v5.0.tar.gz \
-    && tar xzf v5.0.tar.gz \
-    && cd pgFormatter-5.0 \
+    && wget https://github.com/darold/pgFormatter/archive/v5.2.tar.gz \
+    && tar xzf v5.2.tar.gz \
+    && cd pgFormatter-5.2 \
     && perl Makefile.PL \
     && make && make install \
     && rm -rf /tmp/pgFormatter 
@@ -97,7 +98,7 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.42.1
+    | sh -s -- -b $(go env GOPATH)/bin v1.45.2
 
 # go swagger: (this package should NOT be installed via go get) 
 # https://github.com/go-swagger/go-swagger/releases
@@ -107,8 +108,8 @@ RUN curl -o /usr/local/bin/swagger -L'#' \
 
 # lichen: go license util 
 # TODO: Install from static binary as soon as it becomes available.
-# https://github.com/uw-labs/lichen/releases
-RUN go install github.com/uw-labs/lichen@v0.1.4
+# https://github.com/uw-labs/lichen/tags
+RUN go install github.com/uw-labs/lichen@v0.1.5
 
 # cobra-cli: cobra cmd scaffolding generator
 # TODO: Install from static binary as soon as it becomes available.
@@ -119,16 +120,16 @@ RUN go install github.com/spf13/cobra-cli@v1.3.0
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/cli-v1.17.0/watchexec-1.17.0-x86_64-unknown-linux-gnu.tar.xz \
-    && tar xf watchexec-1.17.0-x86_64-unknown-linux-gnu.tar.xz \
-    && cp watchexec-1.17.0-x86_64-unknown-linux-gnu/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/cli-v1.18.11/watchexec-1.18.11-x86_64-unknown-linux-musl.tar.xz \
+    && tar xf watchexec-1.18.11-x86_64-unknown-linux-musl.tar.xz \
+    && cp watchexec-1.18.11-x86_64-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # yq
 # https://github.com/mikefarah/yq/releases
 RUN mkdir -p /tmp/yq \
     && cd /tmp/yq \
-    && wget https://github.com/mikefarah/yq/releases/download/v4.16.2/yq_linux_amd64.tar.gz \
+    && wget https://github.com/mikefarah/yq/releases/download/v4.24.2/yq_linux_amd64.tar.gz \
     && tar xzf yq_linux_amd64.tar.gz \
     && cp yq_linux_amd64 /usr/local/bin/yq \
     && rm -rf /tmp/yq 

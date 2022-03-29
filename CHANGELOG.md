@@ -9,6 +9,20 @@
 - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 
 ## Unreleased
+- Switch [from Go 1.17.1 to Go 1.17.8](https://go.dev/doc/devel/release#go1.17.minor) (requires `./docker-helper.sh --rebuild`).
+- Add [`tenv`](https://github.com/sivchari/tenv) linter to our default `.golangci.yml` configuration. We switch from `os.Setenv` to [`t.Setenv`](https://pkg.go.dev/testing#T.Setenv) within our own test code.
+  - **BREAKING**: If you have used `os.Setenv` within your `*_test.go` code previously, simply replace those calls by `t.Setenv`.
+- Prevent VSCode window closes or reloads to stop the Docker container via [`shutdownAction: "none"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
+  - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.
+- `Dockerfile` development stage changes (requires `./docker-helper.sh --rebuild`):
+  - Bump [golang](https://hub.docker.com/_/golang) base image from `golang:1.17.1-buster` to **`golang:1.17.8-buster`**.
+  - Bump [pgFormatter](https://github.com/darold/pgFormatter) from v5.0 to [v5.2](https://github.com/darold/pgFormatter/releases/tag/v5.2)
+  - Bump [golangci-lint](https://github.com/golangci/golangci-lint) from v1.42.1 to [v1.45.2](https://github.com/golangci/golangci-lint/blob/master/CHANGELOG.md#v1452)
+  - Bump [lichen](https://github.com/uw-labs/lichen) from v0.1.4 to [v0.1.5](https://github.com/uw-labs/lichen/compare/v0.1.4...v0.1.5)
+  - Bump [watchexec](https://github.com/watchexec/watchexec) from v1.17.0 to [v1.18.11](https://github.com/watchexec/watchexec/releases/tag/cli-v1.18.11) (+ switch from gnu to musl)
+  - Bump [yq](https://github.com/mikefarah/yq) from v4.16.2 to [v4.24.2](https://github.com/mikefarah/yq/releases/tag/v4.24.2)
+  - Adds [tmux](https://github.com/tmux/tmux) (debian apt managed)
+
 
 ## 2022-03-28
 

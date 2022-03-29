@@ -181,7 +181,7 @@ sql-format: ##- (opt) Formats all *.sql files.
 	@find ${PWD} -path "*/tmp/*" -prune -name ".*" -prune -o -type f -iname "*.sql" -print \
 		| grep --invert "/app/dumps/" \
 		| grep --invert "/app/test/" \
-		| xargs -i pg_format {} -o {}
+		| xargs -i pg_format --inplace {}
 
 sql-check-files: sql-check-syntax sql-check-migrations-unnecessary-null ##- (opt) Check syntax and unnecessary use of NULL keyword.
 
