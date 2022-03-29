@@ -21,7 +21,8 @@
   - Bump [yq](https://github.com/mikefarah/yq) from v4.16.2 to [v4.24.2](https://github.com/mikefarah/yq/releases/tag/v4.24.2)
   - Adds [tmux](https://github.com/tmux/tmux) (debian apt managed)
 - `go.mod` changes:
-  - Bump [github.com/volatiletech/sqlboiler/v4](https://github.com/volatiletech/sqlboiler) from v4.6.0 to [v4.8.6](https://github.com/volatiletech/sqlboiler/blob/master/CHANGELOG.md#v486---2022-01-29)
+  - Merged [#156: Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to 4.8.6](https://github.com/allaboutapps/go-starter/pull/156) (your generated model might slightly change, minor changes).
+  - Merged [#178: Bump github.com/labstack/echo/v4 from 4.6.1 to 4.7.2](https://github.com/allaboutapps/go-starter/pull/178) (support for HEAD method query params binding, minor changes).
 - Prevent VSCode window closes or reloads to stop the Docker container via [`shutdownAction: "none"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
   - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.
 
