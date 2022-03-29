@@ -2,6 +2,7 @@ package auth
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -38,7 +39,7 @@ func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 			qm.Load(models.RefreshTokenRels.User),
 		).One(ctx, s.DB)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if errors.Is(err, sql.ErrNoRows) {
 				log.Debug().Err(err).Msg("Refresh token not found")
 				return echo.ErrUnauthorized
 			}

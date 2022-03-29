@@ -2,6 +2,7 @@ package auth
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -41,7 +42,7 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 			qm.Load(models.PasswordResetTokenRels.User),
 		).One(ctx, s.DB)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if errors.Is(err, sql.ErrNoRows) {
 				log.Debug().Err(err).Msg("Password reset token not found")
 				return httperrors.ErrNotFoundTokenNotFound
 			}

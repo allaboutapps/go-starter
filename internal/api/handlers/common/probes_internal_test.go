@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -34,7 +35,7 @@ func TestProbeDatabasePingableDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probeDatabasePingable(ctx, &sql.DB{})
-	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
+	assert.Truef(t, errors.Is(err, util.ErrWaitTimeout) || errors.Is(err, context.DeadlineExceeded), "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
@@ -42,7 +43,7 @@ func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probeDatabaseNextHealthSequence(ctx, &sql.DB{})
-	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
+	assert.Truef(t, errors.Is(err, util.ErrWaitTimeout) || errors.Is(err, context.DeadlineExceeded), "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
@@ -50,7 +51,7 @@ func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probePathWriteablePermission(ctx, "/any/thing")
-	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
+	assert.Truef(t, errors.Is(err, util.ErrWaitTimeout) || errors.Is(err, context.DeadlineExceeded), "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
@@ -58,7 +59,7 @@ func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
 	defer cancel()
 
 	_, err := probePathWriteableTouch(ctx, "/any/thing", ".touch")
-	assert.Truef(t, err == util.ErrWaitTimeout || err == context.DeadlineExceeded, "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
+	assert.Truef(t, errors.Is(err, util.ErrWaitTimeout) || errors.Is(err, context.DeadlineExceeded), "err must be util.ErrWaitTimeout or context.DeadlineExceeded but is %v", err)
 }
 
 func TestProbePathWriteableTouchInaccessable(t *testing.T) {

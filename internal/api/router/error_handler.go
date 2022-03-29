@@ -2,6 +2,7 @@ package router
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -31,47 +32,51 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 		var code int64
 		var he error
 
-		switch e := err.(type) {
-		case *httperrors.HTTPError:
-			code = *e.Code
-			he = e
+		var httpError *httperrors.HTTPError
+		var httpValidationError *httperrors.HTTPValidationError
+		var echoHTTPError *echo.HTTPError
+
+		switch {
+		case errors.As(err, &httpError):
+			code = *httpError.Code
+			he = httpError
 
 			if code == http.StatusInternalServerError && config.HideInternalServerErrorDetails {
-				if e.Internal == nil {
-					e.Internal = fmt.Errorf("%s", e.Error())
+				if httpError.Internal == nil {
+					httpError.Internal = fmt.Errorf("Internal Error: %w", httpError)
 				}
 
-				e.Title = swag.String(http.StatusText(http.StatusInternalServerError))
+				httpError.Title = swag.String(http.StatusText(http.StatusInternalServerError))
 			}
-		case *httperrors.HTTPValidationError:
-			code = *e.Code
-			he = e
+		case errors.As(err, &httpValidationError):
+			code = *httpValidationError.Code
+			he = httpValidationError
 
 			if code == http.StatusInternalServerError && config.HideInternalServerErrorDetails {
-				if e.Internal == nil {
-					e.Internal = fmt.Errorf("%s", e.Error())
+				if httpValidationError.Internal == nil {
+					httpValidationError.Internal = fmt.Errorf("Internal Error: %w", httpValidationError)
 				}
 
-				e.Title = swag.String(http.StatusText(http.StatusInternalServerError))
+				httpValidationError.Title = swag.String(http.StatusText(http.StatusInternalServerError))
 			}
-		case *echo.HTTPError:
-			code = int64(e.Code)
+		case errors.As(err, &echoHTTPError):
+			code = int64(echoHTTPError.Code)
 
 			if code == http.StatusInternalServerError && config.HideInternalServerErrorDetails {
-				if e.Internal == nil {
-					e.Internal = fmt.Errorf("%s", e.Error())
+				if echoHTTPError.Internal == nil {
+					echoHTTPError.Internal = fmt.Errorf("Internal Error: %w", echoHTTPError)
 				}
 
 				he = &httperrors.HTTPError{
 					PublicHTTPError: types.PublicHTTPError{
-						Code:  swag.Int64(int64(e.Code)),
+						Code:  swag.Int64(int64(echoHTTPError.Code)),
 						Title: swag.String(http.StatusText(http.StatusInternalServerError)),
 						Type:  swag.String(httperrors.HTTPErrorTypeGeneric),
 					},
-					Internal: e.Internal,
+					Internal: echoHTTPError.Internal,
 				}
 			} else {
-				msg, ok := e.Message.(string)
+				msg, ok := echoHTTPError.Message.(string)
 				if !ok {
 					if m, errr := json.Marshal(msg); err == nil {
 						msg = string(m)
@@ -82,11 +87,11 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 
 				he = &httperrors.HTTPError{
 					PublicHTTPError: types.PublicHTTPError{
-						Code:  swag.Int64(int64(e.Code)),
+						Code:  swag.Int64(int64(echoHTTPError.Code)),
 						Title: &msg,
 						Type:  swag.String(httperrors.HTTPErrorTypeGeneric),
 					},
-					Internal: e.Internal,
+					Internal: echoHTTPError.Internal,
 				}
 			}
 		default:
@@ -99,7 +104,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 						Type:  swag.String(httperrors.HTTPErrorTypeGeneric),
 					},
 
-					Internal: e,
+					Internal: err,
 				}
 			} else {
 				he = &httperrors.HTTPError{

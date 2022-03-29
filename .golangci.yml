@@ -26,3 +26,8 @@ linters:
     # https://github.com/sivchari/tenv
     # prefer t.Setenv instead of os.Setenv within test code.
     - tenv
+
+    # ---
+    # https://github.com/polyfloyd/go-errorlint
+    # ensure we are comparing errors via errors.Is, types/values via errors.As and wrap errors with %w.
+    - errorlint

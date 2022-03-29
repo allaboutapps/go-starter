@@ -10,8 +10,17 @@
 
 ## Unreleased
 - Switch [from Go 1.17.1 to Go 1.17.8](https://go.dev/doc/devel/release#go1.17.minor) (requires `./docker-helper.sh --rebuild`).
-- Add [`tenv`](https://github.com/sivchari/tenv) linter to our default `.golangci.yml` configuration. We switch from `os.Setenv` to [`t.Setenv`](https://pkg.go.dev/testing#T.Setenv) within our own test code.
-  - **BREAKING**: If you have used `os.Setenv` within your `*_test.go` code previously, simply replace those calls by `t.Setenv`.
+- **BREAKING** Add [`tenv`](https://github.com/sivchari/tenv) and [`errorlint`](https://github.com/polyfloyd/go-errorlint) linter to our default `.golangci.yml` configuration.
+  - We switch from `os.Setenv` to [`t.Setenv`](https://pkg.go.dev/testing#T.Setenv) within our own test code.
+  - **NOTE**: If you have used `os.Setenv` within your `*_test.go` code previously, simply replace those calls by `t.Setenv`.
+  - **NOTE**: The go-starter base code now properly uses `errors.Is` and `errors.As` for comparisons (and `%w` wrapping where really needed). For a good overview regarding error handling see [Effective Error Handling in Golang](https://earthly.dev/blog/golang-errors/). For example, if you receive linting errors, you'll need to change your code like this:
+    - Wrong: `if err == sql.ErrNoRows {`
+      - Valid: `if errors.Is(err, sql.ErrNoRows) {`
+    - Wrong: `if err != sql.ErrConnDone {`
+      - Valid:  `if !errors.Is(err, sql.ErrConnDone) {`
+    - Wrong: `gErr := err.(*googleapi.Error)`, Valid:
+      - `var gErr *googleapi.Error`
+      - `ok := errors.As(err, &gErr)`
 - `Dockerfile` development stage changes (requires `./docker-helper.sh --rebuild`):
   - Bump [golang](https://hub.docker.com/_/golang) base image from `golang:1.17.1-buster` to **`golang:1.17.8-buster`**.
   - Bump [pgFormatter](https://github.com/darold/pgFormatter) from v5.0 to [v5.2](https://github.com/darold/pgFormatter/releases/tag/v5.2)
@@ -22,6 +31,7 @@
   - Adds [tmux](https://github.com/tmux/tmux) (debian apt managed)
 - `go.mod` changes:
   - Merged [#156: Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to 4.8.6](https://github.com/allaboutapps/go-starter/pull/156) (your generated model might slightly change, minor changes).
+    - Note that v5 will prefer wrapping errors (e.g. `sql.ErrNoRows`) to retain the stack trace, thus it's about time for us to start to enforce proper `errors.Is` checks in our codebase (see above). 
   - Merged [#178: Bump github.com/labstack/echo/v4 from 4.6.1 to 4.7.2](https://github.com/allaboutapps/go-starter/pull/178) (support for HEAD method query params binding, minor changes).
 - Prevent VSCode window closes or reloads to stop the Docker container via [`shutdownAction: "none"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
   - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.

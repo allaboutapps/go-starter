@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"allaboutapps.dev/aw/go-starter/internal/push"
@@ -55,9 +56,12 @@ func (p *FCM) Send(token string, title string, message string) push.ProviderSend
 	_, err := p.service.Projects.Messages.Send("projects/"+p.Config.ProjectID, messageRequest).Do()
 	valid := true
 	if err != nil {
+
 		// convert to original error and determine if the token was at fault
-		gErr := err.(*googleapi.Error)
-		valid = !(gErr.Code == http.StatusNotFound || gErr.Code == http.StatusBadRequest)
+		var gErr *googleapi.Error
+		if errors.As(err, &gErr) {
+			valid = !(gErr.Code == http.StatusNotFound || gErr.Code == http.StatusBadRequest)
+		}
 	}
 
 	return push.ProviderSendResponse{
