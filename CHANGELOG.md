@@ -33,6 +33,7 @@
   - Merged [#156: Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to 4.8.6](https://github.com/allaboutapps/go-starter/pull/156) (your generated model might slightly change, minor changes).
     - Note that v5 will prefer wrapping errors (e.g. `sql.ErrNoRows`) to retain the stack trace, thus it's about time for us to start to enforce proper `errors.Is` checks in our codebase (see above). 
   - Merged [#178: Bump github.com/labstack/echo/v4 from 4.6.1 to 4.7.2](https://github.com/allaboutapps/go-starter/pull/178) (support for HEAD method query params binding, minor changes).
+  - Merged [#160: Bump github.com/rs/zerolog from 1.25.0 to 1.26.1](https://github.com/allaboutapps/go-starter/pull/160) (minor changes).
 - Prevent VSCode window closes or reloads to stop the Docker container via [`shutdownAction: "none"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
   - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.
 
