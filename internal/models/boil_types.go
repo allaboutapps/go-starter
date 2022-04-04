@@ -53,6 +53,13 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 
 // Enum values for ProviderType
 const (
-	ProviderTypeFCM = "fcm"
-	ProviderTypeApn = "apn"
+	ProviderTypeFCM string = "fcm"
+	ProviderTypeApn string = "apn"
 )
+
+func AllProviderType() []string {
+	return []string{
+		ProviderTypeFCM,
+		ProviderTypeApn,
+	}
+}

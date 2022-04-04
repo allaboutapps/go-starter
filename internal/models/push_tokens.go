@@ -151,7 +151,7 @@ func (q pushTokenQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Pu
 
 	err := q.Bind(ctx, exec, o)
 	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
 		return nil, errors.Wrap(err, "models: failed to execute a one query for push_tokens")
@@ -383,7 +383,7 @@ func FindPushToken(ctx context.Context, exec boil.ContextExecutor, iD string, se
 
 	err := q.Bind(ctx, exec, pushTokenObj)
 	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
 		return nil, errors.Wrap(err, "models: unable to select from push_tokens")
@@ -709,7 +709,7 @@ func (o *PushToken) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 	}
 	if len(cache.retMapping) != 0 {
 		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {

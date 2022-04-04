@@ -30,11 +30,23 @@
   - Bump [yq](https://github.com/mikefarah/yq) from v4.16.2 to [v4.24.2](https://github.com/mikefarah/yq/releases/tag/v4.24.2)
   - Adds [tmux](https://github.com/tmux/tmux) (debian apt managed)
 - `go.mod` changes:
-  - Merged [#156: Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to 4.8.6](https://github.com/allaboutapps/go-starter/pull/156) (your generated model might slightly change, minor changes).
+  - Major: [Bump `github.com/rubenv/sql-migrate` from v0.0.0-20210614095031-55d5740dbbcc to v1.1.1](https://github.com/rubenv/sql-migrate/compare/55d5740dbbccbaa4934009263b37ba52d837241f...v1.1.1) (though this should not lead to any major changes)
+  - Merged [#156: Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to v4.9.0](https://github.com/allaboutapps/go-starter/pull/181) (your generated model might slightly change, minor changes).
     - Note that v5 will prefer wrapping errors (e.g. `sql.ErrNoRows`) to retain the stack trace, thus it's about time for us to start to enforce proper `errors.Is` checks in our codebase (see above). 
   - Merged [#178: Bump github.com/labstack/echo/v4 from 4.6.1 to 4.7.2](https://github.com/allaboutapps/go-starter/pull/178) (support for HEAD method query params binding, minor changes).
   - Merged [#160: Bump github.com/rs/zerolog from 1.25.0 to 1.26.1](https://github.com/allaboutapps/go-starter/pull/160) (minor changes).
   - Merged [#179: Bump github.com/nicksnyder/go-i18n/v2 from 2.1.2 to 2.2.0](https://github.com/allaboutapps/go-starter/pull/179) (minor changes).
+  - Minor: [Bump `github.com/gabriel-vasile/mimetype` from v1.3.1 to v1.4.0](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.0)
+  - Minor: [Bump `github.com/go-openapi/runtime` from v0.22.0 to v0.23.3](https://github.com/go-openapi/runtime/compare/v0.22.0...v0.23.3)
+  - Patch: [Bump `github.com/go-openapi/strfmt` from v0.21.1 to v0.21.2](https://github.com/go-openapi/strfmt/compare/v0.21.1...v0.21.2)
+  - Patch: [Bump `github.com/go-openapi/validate` from v0.20.3 to v0.21.0](https://github.com/go-openapi/validate/compare/v0.20.3...v0.21.0)
+  - Patch: [Bump `github.com/lib/pq` from v1.10.3 to v1.10.4](https://github.com/lib/pq/releases/tag/v1.10.4)
+  - Patch: [Bump `github.com/rogpeppe/go-internal` from v1.8.0 to v1.8.1](https://github.com/rogpeppe/go-internal/releases/tag/v1.8.1)
+  - Patch: [Bump `github.com/stretchr/testify` from v1.7.0 to v1.7.1](https://github.com/stretchr/testify/compare/v1.7.0...v1.7.1)
+  - Patch: [Bump `github.com/volatiletech/strmangle` from v0.0.1 to v0.0.2](https://github.com/volatiletech/strmangle/compare/v0.0.1...v0.0.2)
+  - Minor: [Bump `google.golang.org/api` from v0.63.0 to v0.74.0](https://github.com/googleapis/google-api-go-client/compare/v0.63.0...v0.74.0)
+  - Bump `golang.org/x/crypto` from v0.0.0-20211215165025-cf75a172585e to v0.0.0-20220331220935-ae2d96664a29
+  - Bump `golang.org/x/sys` from v0.0.0-20211210111614-af8b64212486 to v0.0.0-20220403205710-6acee93ad0eb
 - Prevent VSCode window closes or reloads to stop the Docker container via [`shutdownAction: "none"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
   - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.
 
