@@ -49,7 +49,10 @@
   - Bump `golang.org/x/sys` from v0.0.0-20211210111614-af8b64212486 to v0.0.0-20220403205710-6acee93ad0eb
 - Prevent VSCode window closes or reloads to stop the Docker container via [`shutdownAction: "none"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
   - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.
-
+- We now support overriding `ENV` variables during **local** development through a `.env.local` dotenv file.
+  - This does not require a development container restart.
+  - We override the env within the app process through `config.DefaultServiceConfigFromEnv()`, so this does not mess with the container ENV.
+  - See `.env.local.sample` for further instructions to use this.
 
 ## 2022-03-28
 

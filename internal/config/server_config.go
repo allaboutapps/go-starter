@@ -119,6 +119,10 @@ type Server struct {
 // We can optimize here to do ENV_VAR parsing only once.
 func DefaultServiceConfigFromEnv() Server {
 	configOnce.Do(func() {
+
+		// An `.env.local` file in your project root can override the currently set ENV variables!
+		overrideEnv(filepath.Join(util.GetProjectRootDir(), ".env.local"))
+
 		config = Server{
 			Database: Database{
 				Host:     util.GetEnv("PGHOST", "postgres"),
