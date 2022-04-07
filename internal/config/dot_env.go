@@ -4,8 +4,8 @@ import (
 	"errors"
 	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
+	"github.com/subosito/gotenv"
 )
 
 // overrideEnv forcefully overrides ENV variables through the supplied .env file.
@@ -17,12 +17,12 @@ import (
 // If we successfully apply an ENV file, we will log a warning.
 // If there are any other errors, we will panic!
 func overrideEnv(absolutePathToEnvFile string) {
-	err := godotenv.Overload(absolutePathToEnvFile)
+	err := gotenv.OverLoad(absolutePathToEnvFile)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			log.Panic().Err(err).Str("envFile", absolutePathToEnvFile).Msg("dotenv parse error!")
+			log.Panic().Err(err).Str("envFile", absolutePathToEnvFile).Msg(".env parse error!")
 		}
 	} else {
-		log.Warn().Str("envFile", absolutePathToEnvFile).Msg("dotenv overrides env variables!")
+		log.Warn().Str("envFile", absolutePathToEnvFile).Msg(".env overrides ENV variables!")
 	}
 }

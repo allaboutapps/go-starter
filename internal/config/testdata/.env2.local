@@ -1,0 +1,2 @@
+IS_THIS_A_TEST_ENV="yes still"
+PSQL_USER="${ORIGINAL_PSQL_USER}" # reset back to proper env
