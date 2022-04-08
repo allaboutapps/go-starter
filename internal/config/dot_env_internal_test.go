@@ -44,4 +44,6 @@ func TestPanicsOnEnvMalform(t *testing.T) {
 	assert.Panics(t, assert.PanicTestFunc(func() {
 		overrideEnv(filepath.Join(util.GetProjectRootDir(), "/internal/config/testdata/.env.local.malformed"))
 	}), "does panic on file malform")
+
+	SetEnvFromFile(filepath.Join(util.GetProjectRootDir(), "/internal/config/testdata/.env.does.not.exist"), t.Setenv)
 }

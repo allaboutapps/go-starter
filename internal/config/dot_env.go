@@ -26,3 +26,35 @@ func overrideEnv(absolutePathToEnvFile string) {
 		log.Warn().Str("envFile", absolutePathToEnvFile).Msg(".env overrides ENV variables!")
 	}
 }
+
+// SetEnvFromFile loads a dotenv file and executes the passed setEnvFn per ENV key/value.
+// When running in test and you simply want to override the current ENV, simply pass:
+//
+// SetEnvFromFile("/path/tp/my.test.env.local", t.SetEnv)
+//
+// This ensures the ENV vars will reset to their original state after your test is finished.
+func SetEnvFromFile(absolutePathToEnvFile string, setEnvFn func(key string, val string)) error {
+
+	file, err := os.Open(absolutePathToEnvFile)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	envs, err := gotenv.StrictParse(file)
+
+	if err != nil {
+		return err
+	}
+
+	for key, val := range envs {
+		// if err := setEnvFn(key, val); err != nil {
+		// 	return err
+		// }
+		setEnvFn(key, val)
+	}
+
+	return nil
+}

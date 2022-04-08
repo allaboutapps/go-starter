@@ -51,7 +51,8 @@
   - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.
 - We now support overriding `ENV` variables during **local** development through a `.env.local` dotenv file.
   - This does not require a development container restart.
-  - We override the env within the app process through `config.DefaultServiceConfigFromEnv()`, so this does not mess with the container ENV.
+  - We override the env within the app process through `config.DefaultServiceConfigFromEnv()`, so this does not mess with the actual container ENV.
+  - `.env.local` is **NOT** applied during test runs!
   - See `.env.local.sample` for further instructions to use this.
 
 ## 2022-03-28
