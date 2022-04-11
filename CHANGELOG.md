@@ -47,8 +47,9 @@
   - Minor: [Bump `google.golang.org/api` from v0.63.0 to v0.74.0](https://github.com/googleapis/google-api-go-client/compare/v0.63.0...v0.74.0)
   - Bump `golang.org/x/crypto` from v0.0.0-20211215165025-cf75a172585e to v0.0.0-20220331220935-ae2d96664a29
   - Bump `golang.org/x/sys` from v0.0.0-20211210111614-af8b64212486 to v0.0.0-20220403205710-6acee93ad0eb
-- Prevent VSCode window closes or reloads to stop the Docker container via [`shutdownAction: "none"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
-  - Please use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly.
+- VSCode windows closes now explicitly stop Docker containers via [`shutdownAction: "stopCompose"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
+  - Use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly instead.
+- Drone CI specific (minor): Fix multiline ENV variables were messing up our `.hostenv` for `docker run` command testing of the final image.
 
 
 ## 2022-03-28
