@@ -50,8 +50,8 @@
 - We now support overriding `ENV` variables during **local** development through a `.env.local` dotenv file.
   - This does not require a development container restart.
   - We override the env within the app process through `config.DefaultServiceConfigFromEnv()`, so this does not mess with the actual container ENV.
-  - `.env.local` is **NOT** applied during test runs!
   - See `.env.local.sample` for further instructions to use this.
+  - Note that `.env.local` is **NEVER automatically** applied during **test runs**. If you really need that, use the specialized `test.DotEnvLoadLocalOrSkipTest` helper before loading up your server within that very test! This ensures that this test is automatically skipped if the `.env.local` file is no longer available. 
 - VSCode windows closes now explicitly stop Docker containers via [`shutdownAction: "stopCompose"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
   - Use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly instead.
 - Drone CI specific (minor): Fix multiline ENV variables were messing up our `.hostenv` for `docker run` command testing of the final image.

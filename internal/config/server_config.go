@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -114,13 +115,15 @@ func DefaultServiceConfigFromEnv() Server {
 
 	// An `.env.local` file in your project root can override the currently set ENV variables.
 	//
-	// We never automatically apply `.env.local` when running go testas these ENV variables
+	// We never automatically apply `.env.local` when running "go test" as these ENV variables
 	// may be sensitive (e.g. secrets to external APIs) and applying them modifies the process
-	// global os.Env state (it should use t.SetEnv instead).
+	// global "os.Env" state (it should be applied via t.SetEnv instead).
 	//
-	// Please use our special test.OverrideEnv to do that.
+	// If you need dotenv ENV variables available in a test, do that explicitly within that
+	// test before executing DefaultServiceConfigFromEnv (or test.WithTestServer).
+	// See /internal/test/helper_dot_env.go: test.DotEnvLoadLocalOrSkipTest(t)
 	if !util.RunningInTest() {
-		overrideEnv(filepath.Join(util.GetProjectRootDir(), ".env.local"))
+		DotEnvTryLoad(filepath.Join(util.GetProjectRootDir(), ".env.local"), os.Setenv)
 	}
 
 	return Server{
