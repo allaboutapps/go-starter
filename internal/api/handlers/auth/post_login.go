@@ -2,6 +2,7 @@ package auth
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -43,7 +44,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 
 		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(username))).One(ctx, s.DB)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if errors.Is(err, sql.ErrNoRows) {
 				log.Debug().Err(err).Msg("User not found")
 			} else {
 				log.Debug().Err(err).Msg("Failed to load user")

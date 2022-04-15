@@ -2,6 +2,7 @@ package auth
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"net/url"
 	"path"
@@ -37,7 +38,7 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 
 		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(username))).One(ctx, s.DB)
 		if err != nil {
-			if err == sql.ErrNoRows {
+			if errors.Is(err, sql.ErrNoRows) {
 				log.Debug().Str("username", username).Err(err).Msg("User not found")
 				return c.NoContent(http.StatusNoContent)
 			}
@@ -61,7 +62,7 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 				models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(time.Minute*1)),
 			).One(ctx, tx)
 			if err != nil {
-				if err == sql.ErrNoRows {
+				if errors.Is(err, sql.ErrNoRows) {
 					log.Debug().Err(err).Msg("No valid password reset token exists, creating new one")
 
 					passwordResetToken = &models.PasswordResetToken{

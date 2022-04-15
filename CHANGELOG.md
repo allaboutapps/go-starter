@@ -3,12 +3,63 @@
 - All notable changes to this project will be documented in this file.
 - The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - We do not follow [semantic versioning](https://semver.org/).
-- All changes are solely **tracked by date** and have a git tag available (from 2021-10-19 onwards):
-  - format `go-starter-YYYY-MM-DD`
-  - e.g. [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19) 
-- The latest `master` is considered **stable** and should be periodically merged into our customer projects.
+- All changes are solely **tracked by date** and have a **git tag** available (from 2021-10-19 onwards):
+  - Git tags are formatted like `go-starter-YYYY-MM-DD`. See [GitHub tags](https://github.com/allaboutapps/go-starter/tags) for all available go-starter git tags.
+  - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
+- Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
+- ...
+
+## 2022-04-15
+- Switch [from Go 1.17.1 to Go 1.17.9](https://go.dev/doc/devel/release#go1.17.minor) (requires `./docker-helper.sh --rebuild`).
+- **BREAKING** Add [`tenv`](https://github.com/sivchari/tenv) and [`errorlint`](https://github.com/polyfloyd/go-errorlint) linter to our default `.golangci.yml` configuration.
+  - We switch from `os.Setenv` to [`t.Setenv`](https://pkg.go.dev/testing#T.Setenv) within our own test code.
+  - **NOTE**: If you have used `os.Setenv` within your `*_test.go` code previously, simply replace those calls by `t.Setenv`.
+  - **NOTE**: The go-starter base code now properly uses `errors.Is` and `errors.As` for comparisons (and `%w` wrapping where really needed). For a good overview regarding error handling see [Effective Error Handling in Golang](https://earthly.dev/blog/golang-errors/). For example, if you receive linting errors, you'll need to change your code like this:
+    - Wrong: `if err == sql.ErrNoRows {`
+      - Valid: `if errors.Is(err, sql.ErrNoRows) {`
+    - Wrong: `if err != sql.ErrConnDone {`
+      - Valid:  `if !errors.Is(err, sql.ErrConnDone) {`
+    - Wrong: `gErr := err.(*googleapi.Error)`, Valid:
+      - `var gErr *googleapi.Error`
+      - `ok := errors.As(err, &gErr)`
+- `Dockerfile` development stage changes (requires `./docker-helper.sh --rebuild`):
+  - Bump [golang](https://hub.docker.com/_/golang) base image from `golang:1.17.1-buster` to **`golang:1.17.8-buster`**.
+  - Bump [pgFormatter](https://github.com/darold/pgFormatter) from v5.0 to [v5.2](https://github.com/darold/pgFormatter/releases/tag/v5.2)
+  - Bump [golangci-lint](https://github.com/golangci/golangci-lint) from v1.42.1 to [v1.45.2](https://github.com/golangci/golangci-lint/blob/master/CHANGELOG.md#v1452)
+  - Bump [lichen](https://github.com/uw-labs/lichen) from v0.1.4 to [v0.1.5](https://github.com/uw-labs/lichen/compare/v0.1.4...v0.1.5)
+  - Bump [watchexec](https://github.com/watchexec/watchexec) from v1.17.0 to [v1.18.11](https://github.com/watchexec/watchexec/releases/tag/cli-v1.18.11) (+ switch from gnu to musl)
+  - Bump [yq](https://github.com/mikefarah/yq) from v4.16.2 to [v4.24.2](https://github.com/mikefarah/yq/releases/tag/v4.24.2)
+  - Bump [gotestsum](https://github.com/gotestyourself/gotestsum) from v1.7.0 to [v1.8.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.8.0)
+  - Adds [tmux](https://github.com/tmux/tmux) (debian apt managed)
+- `go.mod` changes:
+  - Major: [Bump `github.com/rubenv/sql-migrate` from v0.0.0-20210614095031-55d5740dbbcc to v1.1.1](https://github.com/rubenv/sql-migrate/compare/55d5740dbbccbaa4934009263b37ba52d837241f...v1.1.1) (though this should not lead to any major changes)
+  - Minor: [Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to v4.9.2](https://github.com/volatiletech/sqlboiler/blob/v4.9.2/CHANGELOG.md#v492---2022-04-11) (your generated model might slightly change, minor changes).
+    - Note that v5 will prefer wrapping errors (e.g. `sql.ErrNoRows`) to retain the stack trace, thus it's about time for us to start to enforce proper `errors.Is` checks in our codebase (see above). 
+  - Minor: [#178: Bump github.com/labstack/echo/v4 from 4.6.1 to 4.7.2](https://github.com/allaboutapps/go-starter/pull/178) (support for HEAD method query params binding, minor changes).
+  - Minor: [#160: Bump github.com/rs/zerolog from 1.25.0 to 1.26.1](https://github.com/allaboutapps/go-starter/pull/160) (minor changes).
+  - Minor: [#179: Bump github.com/nicksnyder/go-i18n/v2 from 2.1.2 to 2.2.0](https://github.com/allaboutapps/go-starter/pull/179) (minor changes).
+  - Minor: [Bump `github.com/gabriel-vasile/mimetype` from v1.3.1 to v1.4.0](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.0)
+  - Minor: [Bump `github.com/go-openapi/runtime` from v0.22.0 to v0.23.3](https://github.com/go-openapi/runtime/compare/v0.22.0...v0.23.3)
+  - Patch: [Bump `github.com/go-openapi/strfmt` from v0.21.1 to v0.21.2](https://github.com/go-openapi/strfmt/compare/v0.21.1...v0.21.2)
+  - Patch: [Bump `github.com/go-openapi/validate` from v0.20.3 to v0.21.0](https://github.com/go-openapi/validate/compare/v0.20.3...v0.21.0)
+  - Patch: [Bump `github.com/lib/pq` from v1.10.3 to v1.10.5](https://github.com/lib/pq/compare/v1.10.3...v1.10.5)
+  - Patch: [Bump `github.com/rogpeppe/go-internal` from v1.8.0 to v1.8.1](https://github.com/rogpeppe/go-internal/releases/tag/v1.8.1)
+  - Patch: [Bump `github.com/stretchr/testify` from v1.7.0 to v1.7.1](https://github.com/stretchr/testify/compare/v1.7.0...v1.7.1)
+  - Patch: [Bump `github.com/volatiletech/strmangle` from v0.0.1 to v0.0.2](https://github.com/volatiletech/strmangle/compare/v0.0.1...v0.0.2)
+  - Minor: [Bump `google.golang.org/api` from v0.63.0 to v0.74.0](https://github.com/googleapis/google-api-go-client/compare/v0.63.0...v0.74.0)
+  - Minor: [Bump `github.com/BurntSushi/toml` from v1.0.0 to v1.1.0](https://github.com/BurntSushi/toml/releases/tag/v1.1.0)
+  - Bump `golang.org/x/crypto` from v0.0.0-20211215165025-cf75a172585e to v0.0.0-20220411220226-7b82a4e95df4
+  - Bump `golang.org/x/sys` from v0.0.0-20211210111614-af8b64212486 to v0.0.0-20220412211240-33da011f77ad
+- We now support overriding `ENV` variables during **local** development through a `.env.local` dotenv file.
+  - This does not require a development container restart.
+  - We override the env within the app process through `config.DefaultServiceConfigFromEnv()`, so this does not mess with the actual container ENV.
+  - See `.env.local.sample` for further instructions to use this.
+  - Note that `.env.local` is **NEVER automatically** applied during **test runs**. If you really need that, use the specialized `test.DotEnvLoadLocalOrSkipTest` helper before loading up your server within that very test! This ensures that this test is automatically skipped if the `.env.local` file is no longer available. 
+- VSCode windows closes now explicitly stop Docker containers via [`shutdownAction: "stopCompose"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
+  - Use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly instead.
+- Drone CI specific (minor): Fix multiline ENV variables were messing up our `.hostenv` for `docker run` command testing of the final image.
 
 ## 2022-03-28
 

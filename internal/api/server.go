@@ -149,7 +149,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	if s.DB != nil {
 		log.Debug().Msg("Closing database connection")
 
-		if err := s.DB.Close(); err != nil && err != sql.ErrConnDone {
+		if err := s.DB.Close(); err != nil && !errors.Is(err, sql.ErrConnDone) {
 			log.Error().Err(err).Msg("Failed to close database connection")
 		}
 	}
