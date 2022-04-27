@@ -161,7 +161,7 @@ sql-drop-all: ##- Wizard to drop ALL databases: spec, development and tracked by
 
 sql-drop-integresql: ##- Wizard to drop ALL integresql and spec databases
 	@echo "DROP ALL:"
-	TO_DROP=$$(psql -qtz0 -d postgres -c "SELECT 'DROP DATABASE \"' || datname || '\";' FROM pg_database WHERE datistemplate = FALSE AND datname != 'postgres' AND datname != 'tpa-portal-local-db';")
+	TO_DROP=$$(psql -qtz0 -d postgres -c "SELECT 'DROP DATABASE \"' || datname || '\";' FROM pg_database WHERE datistemplate = FALSE AND datname != 'postgres' AND datname != 'development';")
 	@echo "$$TO_DROP"
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 	@echo "Resetting integresql..."
