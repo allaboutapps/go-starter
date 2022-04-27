@@ -159,6 +159,20 @@ sql-drop-all: ##- Wizard to drop ALL databases: spec, development and tracked by
 	echo $$TO_DROP | psql -tz0 -d postgres
 	@echo "Done. Please run 'make sql-reset && make sql-spec-reset && make sql-spec-migrate' to reinitialize."
 
+sql-drop-integresql: ##- Wizard to drop ALL integresql and spec databases
+	@echo "DROP ALL:"
+	TO_DROP=$$(psql -qtz0 -d postgres -c "SELECT 'DROP DATABASE \"' || datname || '\";' FROM pg_database WHERE datistemplate = FALSE AND datname != 'postgres' AND datname != 'tpa-portal-local-db';")
+	@echo "$$TO_DROP"
+	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
+	@echo "Resetting integresql..."
+	curl --fail -X DELETE http://integresql:5000/api/v1/admin/templates
+	@echo "Drop databases..."
+	echo $$TO_DROP | psql -tz0 -d postgres
+	@echo "Reinitializing spec database..."
+	@$(MAKE) sql-spec-reset
+	@$(MAKE) sql-spec-migrate
+	@echo "Done."
+
 # This step is only required to be executed when the "migrations" folder has changed!
 sql: ##- Runs sql format, all sql related checks and finally generates internal/models/*.go.
 	@$(MAKE) sql-format
