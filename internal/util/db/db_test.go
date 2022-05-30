@@ -180,4 +180,12 @@ func TestDBTypeConversions(t *testing.T) {
 	res6 := db.Int16PtrFromInt(i)
 	require.NotEmpty(t, res6)
 	assert.Equal(t, i, int(*res6))
+
+	res7 := db.NullStringIfEmpty("")
+	assert.False(t, res7.Valid)
+
+	s := "foo"
+	res8 := db.NullStringIfEmpty(s)
+	assert.True(t, res8.Valid)
+	assert.Equal(t, s, res8.String)
 }

@@ -85,3 +85,11 @@ func Int16PtrFromInt(i int) *int16 {
 
 	return &res
 }
+
+func NullStringIfEmpty(s string) null.String {
+	if len(s) == 0 {
+		return null.String{}
+	}
+
+	return null.StringFrom(s)
+}
