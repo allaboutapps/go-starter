@@ -263,4 +263,16 @@ func TestGetEnvAsLocation(t *testing.T) {
 	t.Setenv(testVarKey, "Europe/Vienna")
 	res = util.GetEnvAsLocation(testVarKey, "UTC")
 	assert.Equal(t, vienna, res)
+
+	panicFunc := func() {
+		t.Setenv(testVarKey, "")
+		_ = util.GetEnvAsLocation(testVarKey, "not-valud")
+	}
+	assert.Panics(t, panicFunc)
+
+	panicFunc = func() {
+		t.Setenv(testVarKey, "not-valid")
+		_ = util.GetEnvAsLocation(testVarKey, "UTC")
+	}
+	assert.Panics(t, panicFunc)
 }

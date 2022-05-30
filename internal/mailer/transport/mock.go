@@ -13,6 +13,7 @@ type MockMailTransport struct {
 	mails      []*email.Email
 	OnMailSent func(mail email.Email) // non pointer to prevent concurrent read errors
 	wg         sync.WaitGroup
+	expected   int
 }
 
 func NewMock() *MockMailTransport {
@@ -29,6 +30,10 @@ func (m *MockMailTransport) Send(mail *email.Email) error {
 
 	m.mails = append(m.mails, mail)
 	m.OnMailSent(*mail)
+
+	if m.expected > 0 {
+		m.wg.Done()
+	}
 
 	return nil
 }
@@ -51,13 +56,10 @@ func (m *MockMailTransport) GetSentMails() []*email.Email {
 	return m.mails
 }
 
-// Expect adds the mailCnt to a waitgroup and sets the OnMailSent callback
-// to call wg.Done()
+// Expect adds the mailCnt to a waitgroup. Done() is called by Send
 func (m *MockMailTransport) Expect(mailCnt int) {
+	m.expected = mailCnt
 	m.wg.Add(mailCnt)
-	m.OnMailSent = func(email.Email) {
-		m.wg.Done()
-	}
 }
 
 // Wait until all expected mails have arrived
