@@ -33,20 +33,23 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 			return err
 		}
 
-		exists, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(body.Username.String()))).Exists(ctx, s.DB)
+		// enforce lowercase usernames, trim whitespaces
+		username := util.ToUsernameFormat(body.Username.String())
+
+		exists, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(username))).Exists(ctx, s.DB)
 		if err != nil {
-			log.Debug().Err(err).Str("username", body.Username.String()).Msg("Failed to check whether user exists")
+			log.Debug().Err(err).Str("username", username).Msg("Failed to check whether user exists")
 			return err
 		}
 
 		if exists {
-			log.Debug().Str("username", body.Username.String()).Msg("User with given username already exists")
+			log.Debug().Str("username", username).Msg("User with given username already exists")
 			return httperrors.ErrConflictUserAlreadyExists
 		}
 
 		hash, err := hashing.HashPassword(*body.Password, hashing.DefaultArgon2Params)
 		if err != nil {
-			log.Debug().Str("username", body.Username.String()).Err(err).Msg("Failed to hash user password")
+			log.Debug().Str("username", username).Err(err).Msg("Failed to hash user password")
 			return httperrors.ErrBadRequestInvalidPassword
 		}
 
@@ -57,7 +60,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
 			user := &models.User{
-				Username:            null.StringFrom(body.Username.String()),
+				Username:            null.StringFrom(username),
 				Password:            null.StringFrom(hash),
 				LastAuthenticatedAt: null.TimeFrom(time.Now()),
 				IsActive:            true,

@@ -19,7 +19,9 @@ var migrateCmd = &cobra.Command{
 
 func init() {
 	dbCmd.AddCommand(migrateCmd)
-	migrate.SetTable("migrations")
+
+	// pin migrate to use the globally defined `migrations` table identifier
+	migrate.SetTable(config.DatabaseMigrationTable)
 }
 
 func migrateCmdFunc(cmd *cobra.Command, args []string) {
@@ -34,8 +36,8 @@ func migrateCmdFunc(cmd *cobra.Command, args []string) {
 
 func applyMigrations() (int, error) {
 	ctx := context.Background()
-	config := config.DefaultServiceConfigFromEnv()
-	db, err := sql.Open("postgres", config.Database.ConnectionString())
+	serviceConfig := config.DefaultServiceConfigFromEnv()
+	db, err := sql.Open("postgres", serviceConfig.Database.ConnectionString())
 	if err != nil {
 		return 0, err
 	}
@@ -45,14 +47,14 @@ func applyMigrations() (int, error) {
 		return 0, err
 	}
 
-	// In case an old migration table exists we rename it to the new name equivalent
-	// to the settings in dbconfig.yml
-	if _, err := db.Exec("ALTER TABLE IF EXISTS gorp_migrations RENAME TO migrations;"); err != nil {
+	// In case an old default sql-migrate migration table (named "gorp_migrations") still exists we rename it to the new name equivalent
+	// in sync with the settings in dbconfig.yml and config.DatabaseMigrationTable.
+	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
 		return 0, err
 	}
 
 	migrations := &migrate.FileMigrationSource{
-		Dir: "migrations",
+		Dir: config.DatabaseMigrationFolder,
 	}
 	n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
 	if err != nil {

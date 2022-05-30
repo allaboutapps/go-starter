@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -11,7 +12,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/gabriel-vasile/mimetype"
-	"github.com/go-openapi/errors"
+	oerrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -232,29 +233,33 @@ func restoreBindAndValidate(c echo.Context, reqBody []byte, v runtime.Validatabl
 
 func validatePayload(c echo.Context, v runtime.Validatable) error {
 	if err := v.Validate(strfmt.Default); err != nil {
-		switch ee := err.(type) {
-		case *errors.CompositeError:
-			LogFromEchoContext(c).Debug().Errs("validation_errors", ee.Errors).Msg("Payload did match schema, returning HTTP validation error")
 
-			valErrs := formatValidationErrors(c.Request().Context(), ee)
+		var compositeError *oerrors.CompositeError
+		if errors.As(err, &compositeError) {
+			LogFromEchoContext(c).Debug().Errs("validation_errors", compositeError.Errors).Msg("Payload did match schema, returning HTTP validation error")
+
+			valErrs := formatValidationErrors(c.Request().Context(), compositeError)
 
 			return httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
-		case *errors.Validation:
-			LogFromEchoContext(c).Debug().AnErr("validation_error", ee).Msg("Payload did match schema, returning HTTP validation error")
+		}
+
+		var validationError *oerrors.Validation
+		if errors.As(err, &validationError) {
+			LogFromEchoContext(c).Debug().AnErr("validation_error", validationError).Msg("Payload did match schema, returning HTTP validation error")
 
 			valErrs := []*types.HTTPValidationErrorDetail{
 				{
-					Key:   &ee.Name,
-					In:    &ee.In,
-					Error: swag.String(ee.Error()),
+					Key:   &validationError.Name,
+					In:    &validationError.In,
+					Error: swag.String(validationError.Error()),
 				},
 			}
 
 			return httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
-		default:
-			LogFromEchoContext(c).Error().Err(err).Msg("Failed to validate payload, returning generic HTTP error")
-			return err
 		}
+
+		LogFromEchoContext(c).Error().Err(err).Msg("Failed to validate payload, returning generic HTTP error")
+		return err
 	}
 
 	return nil
@@ -285,21 +290,27 @@ func defaultEchoBindAll(c echo.Context, v runtime.Validatable) (err error) {
 	return binder.BindBody(c, v)
 }
 
-func formatValidationErrors(ctx context.Context, err *errors.CompositeError) []*types.HTTPValidationErrorDetail {
+func formatValidationErrors(ctx context.Context, err *oerrors.CompositeError) []*types.HTTPValidationErrorDetail {
 	valErrs := make([]*types.HTTPValidationErrorDetail, 0, len(err.Errors))
 	for _, e := range err.Errors {
-		switch ee := e.(type) {
-		case *errors.Validation:
+
+		var validationError *oerrors.Validation
+		if errors.As(e, &validationError) {
 			valErrs = append(valErrs, &types.HTTPValidationErrorDetail{
-				Key:   &ee.Name,
-				In:    &ee.In,
-				Error: swag.String(ee.Error()),
+				Key:   &validationError.Name,
+				In:    &validationError.In,
+				Error: swag.String(validationError.Error()),
 			})
-		case *errors.CompositeError:
-			valErrs = append(valErrs, formatValidationErrors(ctx, ee)...)
-		default:
-			LogFromContext(ctx).Warn().Err(e).Str("err_type", fmt.Sprintf("%T", e)).Msg("Received unknown error type while validating payload, skipping")
+			continue
 		}
+
+		var compositeError *oerrors.CompositeError
+		if errors.As(e, &compositeError) {
+			valErrs = append(valErrs, formatValidationErrors(ctx, compositeError)...)
+			continue
+		}
+
+		LogFromContext(ctx).Warn().Err(e).Str("err_type", fmt.Sprintf("%T", e)).Msg("Received unknown error type while validating payload, skipping")
 	}
 
 	return valErrs

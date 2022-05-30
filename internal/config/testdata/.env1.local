@@ -1,0 +1,3 @@
+IS_THIS_A_TEST_ENV="yes"
+ORIGINAL_PSQL_USER="${PSQL_USER}"
+PSQL_USER="dotenv_override_psql_user"

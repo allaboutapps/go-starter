@@ -14,7 +14,7 @@ func InnerJoinWithFilter(baseTable string, baseColumn string, joinTable string, 
 		filterTable = optFilterTable[0]
 	}
 
-	return qm.InnerJoin(fmt.Sprintf("%s ON %s.%s=%s.%s AND %s.%s=$1",
+	return qm.InnerJoin(fmt.Sprintf("%s ON %s.%s=%s.%s AND %s.%s=?",
 		joinTable,
 		joinTable,
 		joinColumn,
@@ -52,7 +52,7 @@ func LeftOuterJoinWithFilter(baseTable string, baseColumn string, joinTable stri
 		filterTable = optFilterTable[0]
 	}
 
-	return qm.LeftOuterJoin(fmt.Sprintf("%s ON %s.%s=%s.%s AND %s.%s=$1",
+	return qm.LeftOuterJoin(fmt.Sprintf("%s ON %s.%s=%s.%s AND %s.%s=?",
 		joinTable,
 		joinTable,
 		joinColumn,

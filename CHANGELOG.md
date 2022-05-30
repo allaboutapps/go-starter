@@ -3,14 +3,12 @@
 - All notable changes to this project will be documented in this file.
 - The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - We do not follow [semantic versioning](https://semver.org/).
-- All changes are solely **tracked by date** and have a git tag available (from 2021-10-19 onwards):
-  - format `go-starter-YYYY-MM-DD`
-  - e.g. [`go-starter-2021-10-19`](https://github.com/allaboutapps/go-starter/releases/tag/go-starter-2021-10-19) 
-- The latest `master` is considered **stable** and should be periodically merged into our customer projects.
+- All changes are solely **tracked by date** and have a **git tag** available (from 2021-10-19 onwards):
+  - Git tags are formatted like `go-starter-YYYY-MM-DD`. See [GitHub tags](https://github.com/allaboutapps/go-starter/tags) for all available go-starter git tags.
+  - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
+- Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
-
-### Changed
 - Extend util package with additional helper functions.
 - Add MIME interface to use *mimtype.MIME or an already KnownMIME.
 - Add function to detach context to avoid context cancelation. Can be used to pass context information to go routines without a deadline or cancel.
@@ -18,6 +16,124 @@
 - Added starttls support to mailer
 - **DEPRECATED** If you were using the `SERVER_SMTP_USE_TLS` flag before to enable TLS, you'll need to migrate to the `SERVER_SMTP_ENCRYPTION` setting of `tls`. For the moment, both settings are supported (with a warning being printed when using `SERVER_SMTP_USE_TLS`, however support for the deprecated config might be dropped in a future release).
 - Extend mailer mock to support waiting for all expected mails to arrive to check asynchronously sent mails in tests.
+
+## 2022-04-15
+- Switch [from Go 1.17.1 to Go 1.17.9](https://go.dev/doc/devel/release#go1.17.minor) (requires `./docker-helper.sh --rebuild`).
+- **BREAKING** Add [`tenv`](https://github.com/sivchari/tenv) and [`errorlint`](https://github.com/polyfloyd/go-errorlint) linter to our default `.golangci.yml` configuration.
+  - We switch from `os.Setenv` to [`t.Setenv`](https://pkg.go.dev/testing#T.Setenv) within our own test code.
+  - **NOTE**: If you have used `os.Setenv` within your `*_test.go` code previously, simply replace those calls by `t.Setenv`.
+  - **NOTE**: The go-starter base code now properly uses `errors.Is` and `errors.As` for comparisons (and `%w` wrapping where really needed). For a good overview regarding error handling see [Effective Error Handling in Golang](https://earthly.dev/blog/golang-errors/). For example, if you receive linting errors, you'll need to change your code like this:
+    - Wrong: `if err == sql.ErrNoRows {`
+      - Valid: `if errors.Is(err, sql.ErrNoRows) {`
+    - Wrong: `if err != sql.ErrConnDone {`
+      - Valid:  `if !errors.Is(err, sql.ErrConnDone) {`
+    - Wrong: `gErr := err.(*googleapi.Error)`, Valid:
+      - `var gErr *googleapi.Error`
+      - `ok := errors.As(err, &gErr)`
+- `Dockerfile` development stage changes (requires `./docker-helper.sh --rebuild`):
+  - Bump [golang](https://hub.docker.com/_/golang) base image from `golang:1.17.1-buster` to **`golang:1.17.8-buster`**.
+  - Bump [pgFormatter](https://github.com/darold/pgFormatter) from v5.0 to [v5.2](https://github.com/darold/pgFormatter/releases/tag/v5.2)
+  - Bump [golangci-lint](https://github.com/golangci/golangci-lint) from v1.42.1 to [v1.45.2](https://github.com/golangci/golangci-lint/blob/master/CHANGELOG.md#v1452)
+  - Bump [lichen](https://github.com/uw-labs/lichen) from v0.1.4 to [v0.1.5](https://github.com/uw-labs/lichen/compare/v0.1.4...v0.1.5)
+  - Bump [watchexec](https://github.com/watchexec/watchexec) from v1.17.0 to [v1.18.11](https://github.com/watchexec/watchexec/releases/tag/cli-v1.18.11) (+ switch from gnu to musl)
+  - Bump [yq](https://github.com/mikefarah/yq) from v4.16.2 to [v4.24.2](https://github.com/mikefarah/yq/releases/tag/v4.24.2)
+  - Bump [gotestsum](https://github.com/gotestyourself/gotestsum) from v1.7.0 to [v1.8.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.8.0)
+  - Adds [tmux](https://github.com/tmux/tmux) (debian apt managed)
+- `go.mod` changes:
+  - Major: [Bump `github.com/rubenv/sql-migrate` from v0.0.0-20210614095031-55d5740dbbcc to v1.1.1](https://github.com/rubenv/sql-migrate/compare/55d5740dbbccbaa4934009263b37ba52d837241f...v1.1.1) (though this should not lead to any major changes)
+  - Minor: [Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to v4.9.2](https://github.com/volatiletech/sqlboiler/blob/v4.9.2/CHANGELOG.md#v492---2022-04-11) (your generated model might slightly change, minor changes).
+    - Note that v5 will prefer wrapping errors (e.g. `sql.ErrNoRows`) to retain the stack trace, thus it's about time for us to start to enforce proper `errors.Is` checks in our codebase (see above). 
+  - Minor: [#178: Bump github.com/labstack/echo/v4 from 4.6.1 to 4.7.2](https://github.com/allaboutapps/go-starter/pull/178) (support for HEAD method query params binding, minor changes).
+  - Minor: [#160: Bump github.com/rs/zerolog from 1.25.0 to 1.26.1](https://github.com/allaboutapps/go-starter/pull/160) (minor changes).
+  - Minor: [#179: Bump github.com/nicksnyder/go-i18n/v2 from 2.1.2 to 2.2.0](https://github.com/allaboutapps/go-starter/pull/179) (minor changes).
+  - Minor: [Bump `github.com/gabriel-vasile/mimetype` from v1.3.1 to v1.4.0](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.0)
+  - Minor: [Bump `github.com/go-openapi/runtime` from v0.22.0 to v0.23.3](https://github.com/go-openapi/runtime/compare/v0.22.0...v0.23.3)
+  - Patch: [Bump `github.com/go-openapi/strfmt` from v0.21.1 to v0.21.2](https://github.com/go-openapi/strfmt/compare/v0.21.1...v0.21.2)
+  - Patch: [Bump `github.com/go-openapi/validate` from v0.20.3 to v0.21.0](https://github.com/go-openapi/validate/compare/v0.20.3...v0.21.0)
+  - Patch: [Bump `github.com/lib/pq` from v1.10.3 to v1.10.5](https://github.com/lib/pq/compare/v1.10.3...v1.10.5)
+  - Patch: [Bump `github.com/rogpeppe/go-internal` from v1.8.0 to v1.8.1](https://github.com/rogpeppe/go-internal/releases/tag/v1.8.1)
+  - Patch: [Bump `github.com/stretchr/testify` from v1.7.0 to v1.7.1](https://github.com/stretchr/testify/compare/v1.7.0...v1.7.1)
+  - Patch: [Bump `github.com/volatiletech/strmangle` from v0.0.1 to v0.0.2](https://github.com/volatiletech/strmangle/compare/v0.0.1...v0.0.2)
+  - Minor: [Bump `google.golang.org/api` from v0.63.0 to v0.74.0](https://github.com/googleapis/google-api-go-client/compare/v0.63.0...v0.74.0)
+  - Minor: [Bump `github.com/BurntSushi/toml` from v1.0.0 to v1.1.0](https://github.com/BurntSushi/toml/releases/tag/v1.1.0)
+  - Bump `golang.org/x/crypto` from v0.0.0-20211215165025-cf75a172585e to v0.0.0-20220411220226-7b82a4e95df4
+  - Bump `golang.org/x/sys` from v0.0.0-20211210111614-af8b64212486 to v0.0.0-20220412211240-33da011f77ad
+- We now support overriding `ENV` variables during **local** development through a `.env.local` dotenv file.
+  - This does not require a development container restart.
+  - We override the env within the app process through `config.DefaultServiceConfigFromEnv()`, so this does not mess with the actual container ENV.
+  - See `.env.local.sample` for further instructions to use this.
+  - Note that `.env.local` is **NEVER automatically** applied during **test runs**. If you really need that, use the specialized `test.DotEnvLoadLocalOrSkipTest` helper before loading up your server within that very test! This ensures that this test is automatically skipped if the `.env.local` file is no longer available. 
+- VSCode windows closes now explicitly stop Docker containers via [`shutdownAction: "stopCompose"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
+  - Use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly instead.
+- Drone CI specific (minor): Fix multiline ENV variables were messing up our `.hostenv` for `docker run` command testing of the final image.
+
+## 2022-03-28
+
+- Merged [#165: Allow use of db.join* methods more than once](https://github.com/allaboutapps/go-starter/pull/165), thx [danut007ro](https://github.com/danut007ro).
+- Merged [#169: Switch to standalone cobra-cli dependency](https://github.com/allaboutapps/go-starter/pull/169), thx [liggitt](https://github.com/liggitt) (requires `./docker-helper.sh --rebuild`).
+  - [`github.com/spf13/cobra@v1.4.0`](https://github.com/spf13/cobra/releases/tag/v1.4.0) split into `cobra` (the lib) and [`github.com/spf13/cobra-cli`](https://github.com/spf13/cobra-cli/releases) (the generator / scaffolding tool)
+  - We'll now depend on `cobra-cli` directly in our `Dockerfile`, while the core `cobra` dependency stays unchanged within our `go.mod`.
+  - Bumps [`github.com/spf13/cobra`](https://github.com/spf13/cobra) from v1.3.0 to [v1.4.0](https://github.com/spf13/cobra/releases/tag/v1.4.0)
+- Fixed `test.ApplyMigrations` when combined with the import SQL dump mechanics in the testing context.
+  - Previously, we did still use the default [sql-migrate](https://github.com/rubenv/sql-migrate) `gorp_migrations` table to track applied migrations in our test databases, not our typical `migrations` table used everywhere else.
+  - This especially lead to problems when importing (production / live) SQL dumps via `test.WithTestDatabaseFromDump*`, `test.WithTestServerFromDump*` or `test.WithTestServerConfigurableFromDump` as our implementation tried to apply **all migrations** every time, regardless if a partial migration set was already applied previously (as the already applied migrations were not tracked within the `migrations` table (but within `gorp_migrations`) we did not notice).
+  - We now initialize this pipeline correctly in the test context (similar to our usage within `cmd/db_migrate.go` or `app db migrate`) and explicitly set these globals through `config.DatabaseMigrationTable` and `config.DatabaseMigrationFolder`.
+  - If you encounter problems after the upgrade, please execute `make sql-drop-all` in your local environment to reset the IntegreSQL test databases, then run `make sql-reset && make sql-spec-reset && make sql-spec-migrate && make all` to rebuild and test.
+
+
+## 2022-02-28
+
+### Changed
+
+- **BREAKING** Username format change in auth handlers
+  - Added the `util.ToUsernameFormat` helper function, which will **lowercase** and **trim whitespaces**. We use it to format usernames in the login, register, and forgot-password handlers.
+    - This prevents user duplication (e.g. two accounts registered with the same email address with different casing) and 
+    - cases where users would inadvertently register with specific casing or a trailing whitespace after their username, and subsequently struggle to log into their account.  
+  - **This effectively locks existing users whose username contains uppercase characters and/or whitespaces out of their accounts.** 
+    - Before rolling out this change, check whether any existing users are affected and migrate their usernames to a format that is compatible with this change.
+    - Be aware that this may cause conflicts in regard to the uniqueness constraint of usernames and therefore need to be resolved manually, which is why we are not including a database migration to automatically migrate existing usernames to the new format.
+  - For more information and a possible manual database migration flow please see this special WIKI page: https://github.com/allaboutapps/go-starter/wiki/2022-02-28
+
+## 2022-02-03
+
+### Changed
+
+- Changed order of make targets in the `make swagger` pipeline. `make swagger-lint-ref-siblings` will now run after `make swagger-concat`, always linting the current version of our swagger file. This helps avoid errors regarding an invalid `swagger.yml` when resolving merge conflicts as those are often resolved by running `make swagger` and generating a fresh `swagger.yml`.
+ 
+## 2022-02-02
+
+### Changed
+
+- Upgrades to [go-swagger](https://github.com/go-swagger/go-swagger) from to v0.26.1 to [v0.29.0](https://github.com/go-swagger/go-swagger/releases/tag/v0.29.0) (development stage only, requires `./docker-helper.sh --rebuild`). Includes the following `go.mod` upgrades:
+  - [github.com/go-openapi/runtime](https://github.com/go-openapi/runtime) from v0.19.31 to v0.22.0
+  - [github.com/go-openapi/strfmt](https://github.com/go-openapi/strfmt) from v0.20.2 to v0.21.1
+  - [github.com/go-openapi/validate](https://github.com/go-openapi/validate) from v0.20.2 to v0.20.3
+  - [github.com/go-openapi/errors](https://github.com/go-openapi/errors) from v0.20.1 to v0.20.2
+  - [github.com/go-openapi/swag](https://github.com/go-openapi/swag) from v0.19.15 to v0.21.1
+- Adds `yq` ([yq: a lightweight and portable command-line YAML processor](https://github.com/mikefarah/yq)) to our `Dockerfile` (development stage only, requires `./docker-helper.sh --rebuild`).
+- Adds `make swagger-lint-ref-siblings` which is now executed as part of the `make build` (and `make swagger`) pipeline.
+  - Any sibling elements of a Swagger `$ref` are ignored.
+  - We have seen several misuses of `$ref` in our projects causing weird merge/flatten behaviors, thus we now lint for this case explicitly.
+  - Having `$ref` and sibling elements (e.g. `required`, `example`, ...) is unsupported by [OpenAPI v2: $ref and Sibling Elements](https://swagger.io/docs/specification/using-ref/) itself and the [JSON Reference specification](https://datatracker.ietf.org/doc/html/rfc3986) itself.
+  - To mitigate these errors, either expand the referenced element (fully remove `$ref`) or create a new element including your custom siblings elements and `$ref` this new one.
+- Fix schema visualization generation guide in `docs/schemacrawler/README.md`
+
+## 2021-12-14
+
+### Changed
+- Add i18n service wrapping `go-i18n` package by nicksnyder.
+  - Allows parsing of Accept-Language header and language string.
+  - Support for templating using go templating language in message values.
+  - Support for [CLDR plural keys](https://cldr.unicode.org/index/cldr-spec/plural-rules)
+  - Added environment variables to configure i18n service
+    - `SERVER_I18N_DEFAULT_LANGUAGE` - set default language for i18n service
+    - `SERVER_I18N_BUNDLE_DIR_ABS` - set directory of i81n messages, available languages are automatically configured by the files present in the folder
+
+## 2021-11-29
+
+### Changed
+
+- The `integresql` service previously bound its port (`5000`) to the host machine. As this conflicts with newer macOS releases and is not necessary for the development workflow, the port is now only exposed to the linked services.
 
 ## 2021-10-22
 

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -102,11 +103,15 @@ func runServer() {
 		log.Fatal().Err(err).Msg("Failed to initialize push service")
 	}
 
+	if err := s.InitI18n(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
+	}
+
 	router.Init(s)
 
 	go func() {
 		if err := s.Start(); err != nil {
-			if err == http.ErrServerClosed {
+			if errors.Is(err, http.ErrServerClosed) {
 				log.Info().Msg("Server closed")
 			} else {
 				log.Fatal().Err(err).Msg("Failed to start server")
@@ -121,7 +126,7 @@ func runServer() {
 	ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := s.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+	if err := s.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal().Err(err).Msg("Failed to gracefully shut down server")
 	}
 }

@@ -14,9 +14,10 @@
 	// The optional 'workspaceFolder' property is the path VS Code should open by default when
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
 	"workspaceFolder": "/app",
+	// All containers should stop if we close / reload the VSCode window. 
+	"shutdownAction": "stopCompose",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
-		"terminal.integrated.shell.linux": null,
 		// https://github.com/golang/tools/blob/master/gopls/doc/vscode.md#vscode 
 		"go.useLanguageServer": true,
 		"[go]": {

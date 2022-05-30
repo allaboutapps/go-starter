@@ -2,6 +2,7 @@ package auth
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"net/url"
 	"path"
@@ -30,16 +31,19 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 			return err
 		}
 
-		log := util.LogFromContext(ctx).With().Str("username", body.Username.String()).Logger()
+		// enforce lowercase usernames, trim whitespaces
+		username := util.ToUsernameFormat(body.Username.String())
 
-		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(body.Username.String()))).One(ctx, s.DB)
+		log := util.LogFromContext(ctx).With().Str("username", username).Logger()
+
+		user, err := models.Users(models.UserWhere.Username.EQ(null.StringFrom(username))).One(ctx, s.DB)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				log.Debug().Str("username", body.Username.String()).Err(err).Msg("User not found")
+			if errors.Is(err, sql.ErrNoRows) {
+				log.Debug().Str("username", username).Err(err).Msg("User not found")
 				return c.NoContent(http.StatusNoContent)
 			}
 
-			log.Debug().Str("username", body.Username.String()).Err(err).Msg("Failed to load user")
+			log.Debug().Str("username", username).Err(err).Msg("Failed to load user")
 			return err
 		}
 
@@ -58,7 +62,7 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 				models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(time.Minute*1)),
 			).One(ctx, tx)
 			if err != nil {
-				if err == sql.ErrNoRows {
+				if errors.Is(err, sql.ErrNoRows) {
 					log.Debug().Err(err).Msg("No valid password reset token exists, creating new one")
 
 					passwordResetToken = &models.PasswordResetToken{

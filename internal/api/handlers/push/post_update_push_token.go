@@ -42,10 +42,11 @@ func postUpdatePushTokenHandler(s *api.Server) echo.HandlerFunc {
 			log.Debug().Str("user_id", user.ID).Err(err).Msg("Failed to insert push token.")
 
 			// check for unique_violation on token column, 23505 == unique_violation
-			e := errors.Cause(err)
-			pqErr := e.(*pq.Error)
-			if pqErr.Code == "23505" && pqErr.Constraint == "push_tokens_token_key" {
-				return httperrors.ErrConflictPushToken
+			var pqErr *pq.Error
+			if errors.As(err, &pqErr) {
+				if pqErr.Code == "23505" && pqErr.Constraint == "push_tokens_token_key" {
+					return httperrors.ErrConflictPushToken
+				}
 			}
 
 			return err
@@ -56,7 +57,7 @@ func postUpdatePushTokenHandler(s *api.Server) echo.HandlerFunc {
 			oldToken, err := models.PushTokens(models.PushTokenWhere.Token.EQ(*body.OldToken), models.PushTokenWhere.UserID.EQ(user.ID)).One(ctx, s.DB)
 			if err != nil {
 				log.Debug().Str("user_id", user.ID).Err(err).Msg("Old token to delete not found or not assigned to user.")
-				if err == sql.ErrNoRows {
+				if errors.Is(err, sql.ErrNoRows) {
 					return httperrors.ErrNotFoundOldPushToken
 				}
 
