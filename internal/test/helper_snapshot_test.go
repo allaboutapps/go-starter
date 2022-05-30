@@ -271,6 +271,6 @@ func TestSaveResponseAndValidate(t *testing.T) {
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 		var response types.GetUserInfoResponse
-		test.Snapshoter.Redact("Email").SaveResponseAndValidate(t, res, &response)
+		test.Snapshoter.Redact("Email", "UpdatedAt", "updated_at").SaveResponseAndValidate(t, res, &response)
 	})
 }
