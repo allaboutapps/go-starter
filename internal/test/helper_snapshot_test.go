@@ -1,13 +1,16 @@
 package test_test
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"testing"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/test/mocks"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/mock"
@@ -147,10 +150,11 @@ func TestSnapshotNotExists(t *testing.T) {
 	tMock.On("Fatalf", mock.Anything, mock.Anything).Return()
 	tMock.On("Fatal", mock.Anything).Return()
 	tMock.On("Error", mock.Anything).Return()
+	tMock.On("Errorf", mock.Anything, mock.Anything).Return()
 	test.Snapshoter.Save(tMock, a, b)
 	tMock.AssertNotCalled(t, "Error")
-	tMock.AssertNotCalled(t, "Fatalf")
-	tMock.AssertCalled(t, "Fatalf", mock.Anything, mock.Anything)
+	tMock.AssertNotCalled(t, "Fatal")
+	tMock.AssertCalled(t, "Errorf", mock.Anything, mock.Anything)
 }
 
 func TestSnapshotSkipFields(t *testing.T) {
@@ -174,6 +178,43 @@ func TestSnapshotSkipFields(t *testing.T) {
 	}
 
 	test.Snapshoter.Skip([]string{"ID"}).Save(t, a)
+}
+
+func TestSnapshotSkipMultilineFields(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+	randID, err := util.GenerateRandomBase64String(20)
+	require.NoError(t, err)
+	a := struct {
+		ID string
+		A  string
+		B  int
+		C  bool
+		D  interface{}
+		E  []string
+		F  map[string]int
+	}{
+		ID: randID,
+		A:  "foo",
+		B:  1,
+		C:  true,
+		D: struct {
+			Foo string
+			Bar int
+		}{
+			Foo: "skip me",
+			Bar: 3,
+		},
+		E: []string{"skip me", "skip me too"},
+		F: map[string]int{
+			"skip me":       1,
+			"skip me too":   2,
+			"skip me three": 3,
+		},
+	}
+
+	test.Snapshoter.Skip([]string{"ID", "D", "E", "F"}).Save(t, a)
 }
 
 func TestSnapshotWithLabel(t *testing.T) {
@@ -216,4 +257,20 @@ func TestSnapshotWithLocation(t *testing.T) {
 
 	location := filepath.Join(util.GetProjectRootDir(), "/internal/test/testdata")
 	test.Snapshoter.Location(location).Save(t, a)
+}
+
+func TestSaveResponseAndValidate(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+
+	test.WithTestServer(t, func(s *api.Server) {
+		fixtures := test.Fixtures()
+
+		res := test.PerformRequest(t, s, "GET", "/api/v1/auth/userinfo", nil, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+		require.Equal(t, http.StatusOK, res.Result().StatusCode)
+
+		var response types.GetUserInfoResponse
+		test.Snapshoter.Redact("Email").SaveResponseAndValidate(t, res, &response)
+	})
 }

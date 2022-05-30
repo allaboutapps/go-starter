@@ -9,7 +9,8 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
-- ...
+- Added new features to the test snapshot helper. The snapshoter can now be used to save the json response body and the parsed and validated go-swagger type.
+  - The replacer function of `Skip` and `Redact` now supports multiline skips for maps or slices.
 
 ## 2022-04-15
 - Switch [from Go 1.17.1 to Go 1.17.9](https://go.dev/doc/devel/release#go1.17.minor) (requires `./docker-helper.sh --rebuild`).
