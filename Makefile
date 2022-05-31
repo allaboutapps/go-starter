@@ -7,6 +7,7 @@ build: ##- Default 'make' target: sql, swagger, go-generate, go-format, go-build
 	@$(MAKE) build-pre
 	@$(MAKE) go-format
 	@$(MAKE) go-build
+	@$(MAKE) build-linters
 	@$(MAKE) lint
 
 # useful to ensure that everything gets resetuped from scratch
@@ -352,6 +353,22 @@ git-merge-go-starter: ##- Merges upstream GIT_GO_STARTER_TARGET into current HEA
 		&& read ans && [ $${ans:-N} = y ]) || exit 1
 	git merge --no-commit --no-ff --allow-unrelated-histories ${GIT_GO_STARTER_TARGET} || true
 	@echo "Done. We recommend to run 'make force-module-name' to automatically fix all import paths."
+
+### -----------------------
+# --- Linters
+### -----------------------
+build-linters:
+	@$(MAKE) build-secrets-linter
+
+build-secrets-linter:
+	@echo "make build-secrets-linter"
+	@cd lint/secrets && go build \
+		-o bin/ \
+		-mod=mod \
+		-modfile=go.mod \
+		-buildmode=plugin \
+		secrets.go
+		 
 
 ### -----------------------
 # --- Helpers

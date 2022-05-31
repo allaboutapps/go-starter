@@ -31,3 +31,13 @@ linters:
     # https://github.com/polyfloyd/go-errorlint
     # ensure we are comparing errors via errors.Is, types/values via errors.As and wrap errors with %w.
     - errorlint
+
+    # custom linter for secrets in our server config 
+    - secrets
+linters-settings:
+  custom:
+    secrets:
+      path: /app/lint/secrets/bin/secrets.so
+      description: Checks that no secret is hardcoded in code
+      original-url: allaboutapps.dev/aw/secrets-linter
+
