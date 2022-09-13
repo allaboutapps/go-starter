@@ -11,6 +11,9 @@
 ## Unreleased
 - ...
 
+## 2022-09-13
+- Hotfix: Previously there was a chance of recursive error wrapping within our [`internal/api/router/error_handler.go`](https://github.com/allaboutapps/go-starter/blob/master/internal/api/router/error_handler.go) in combination with `*echo.HTTPError`. We currently disable this wrapping (as not used anyways) and will schedule a cleaner update regarding this error augmentation approach.
+
 ## 2022-04-15
 - Switch [from Go 1.17.1 to Go 1.17.9](https://go.dev/doc/devel/release#go1.17.minor) (requires `./docker-helper.sh --rebuild`).
 - **BREAKING** Add [`tenv`](https://github.com/sivchari/tenv) and [`errorlint`](https://github.com/polyfloyd/go-errorlint) linter to our default `.golangci.yml` configuration.

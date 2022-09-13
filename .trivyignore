@@ -1,2 +1,4 @@
 # Allow https://nvd.nist.gov/vuln/detail/CVE-2020-26160 (JWT unused, still waiting for child deps upgrade)
 CVE-2020-26160
+# https://avd.aquasec.com/nvd/2022/cve-2022-27664/ golang.org/x/net is a peer dep of many of our dependencies, require Go 1.18.6+
+CVE-2022-27664
