@@ -105,7 +105,7 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/i
 # https://github.com/go-swagger/go-swagger/releases
 RUN ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
     && curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.30.3/swagger_linux_${ARCH}" \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.29.0/swagger_linux_${ARCH}" \
     && chmod +x /usr/local/bin/swagger
 
 # lichen: go license util 
@@ -132,7 +132,7 @@ RUN mkdir -p /tmp/watchexec \
 RUN mkdir -p /tmp/yq \
     && cd /tmp/yq \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/mikefarah/yq/releases/download/v4.30.4/yq_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/mikefarah/yq/releases/download/v4.30.5/yq_linux_${ARCH}.tar.gz" \
     && tar xzf "yq_linux_${ARCH}.tar.gz" \
     && cp "yq_linux_${ARCH}" /usr/local/bin/yq \
     && rm -rf /tmp/yq 

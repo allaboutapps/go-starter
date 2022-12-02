@@ -9,7 +9,40 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
-- ...
+- Switch [from Go 1.17.9 to Go 1.19.3](https://go.dev/doc/devel/release#go1.19) (requires `./docker-helper.sh --rebuild`).
+  - Major: Update base docker image from debian buster to bullseye
+  - Minor: [Bump github.com/darold/pgFormatter from 5.2 to 5.3](https://github.com/darold/pgFormatter/releases/tag/v5.3)
+  - Minor: [Bump github.com/gotestyourself/gotestsum from 1.8.0 to 1.8.2](https://github.com/gotestyourself/gotestsum/releases/tag/v1.8.2)
+  - Minor: [Bump github.com/golangci/golangci-lint from 1.45.2 to 1.50.1](https://github.com/golangci/golangci-lint/releases/tag/v1.50.1)
+  - Minor: [Bump github.com/uw-labs/lichen from 0.1.5 to 0.1.7](https://github.com/uw-labs/lichen/releases/tag/v0.1.7)
+  - Minor: [Bump github.com/watchexec/watchexec from 1.18.11 to 1.20.6](https://github.com/watchexec/watchexec/releases/tag/v1.20.6)
+  - Minor: [Bump github.com/mikefarah/yq from 4.24.2 to 4.30.5](https://github.com/mikefarah/yq/releases/tag/v4.30.5)
+- Major: Upgrade distroless app image from base-debian10 to base-debian11
+- Major: Dockerfile is now build to support amd64 and arm64 architecture
+- `go.mod` changes:
+  - Minor: [Bump github.com/BurntSushi/toml from 1.1.0 to 1.2.1](https://github.com/BurntSushi/toml/releases/tag/v1.2.1)
+  - Minor: [Bump github.com/gabriel-vasile/mimetype from 1.4.0 to 1.4.1](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.1)
+  - Minor: [Bump github.com/go-openapi/errors from 0.20.2 to 0.20.3](https://github.com/go-openapi/errors/releases/tag/v0.20.3)
+  - Minor: [Bump github.com/go-openapi/runtime from 0.23.3 to 0.25.0](https://github.com/go-openapi/runtime)
+  - Minor: [Bump github.com/go-openapi/strfmt from 0.21.2 to 0.21.3](https://github.com/go-openapi/strfmt/releases/tag/v0.21.3)
+  - Minor: [Bump github.com/go-openapi/swag from 0.21.1 to 0.22.3](https://github.com/go-openapi/swag/releases/tag/v0.22.3)
+  - Minor: [Bump github.com/go-openapi/validate from 0.21.0 to 0.22.0](https://github.com/go-openapi/validate/releases/tag/v0.22.0)
+  - Minor: [Bump github.com/labstack/echo/v4 from 4.7.2 to 4.9.1](https://github.com/labstack/echo/releases/tag/v4.9.1) (Fixing CVE-2022-40083)
+  - Minor: [Bump github.com/lib/pq from 1.10.5 to 1.10.7](https://github.com/lib/pq/releases/tag/v1.10.7)
+  - Minor: [Bump github.com/nicksnyder/go-i18n/v2 from 2.2.0 to 2.2.1](https://github.com/nicksnyder/go-i18n/releases/tag/v2.2.1)
+  - Minor: [Bump github.com/rogpeppe/go-internal from 1.8.1 to 1.9.0](https://github.com/rogpeppe/go-internal/releases/tag/v1.9.0)
+  - Minor: [Bump github.com/rs/zerolog from 1.26.1 to 1.28.0](https://github.com/rs/zerolog/releases/tag/v1.28.0)
+  - Minor: [Bump github.com/rubenv/sql-migrate from 1.1.1 to 1.2.0](https://github.com/rubenv/sql-migrate/releases/tag/v1.2.0)
+  - Minor: [Bump github.com/spf13/cobra from 1.4.0 to 1.6.1](https://github.com/spf13/cobra/releases/tag/v1.6.1)
+  - Minor: [Bump github.com/spf13/viper from 1.10.1 to 1.14.0](https://github.com/spf13/viper/releases/tag/v1.14.0)
+  - Minor: [Bump github.com/stretchr/testify from 1.7.1 to 1.8.1](https://github.com/stretchr/testify/releases/tag/v1.8.1)
+  - Minor: [Bump github.com/subosito/gotenv from 1.2.0 to 1.4.1](https://github.com/subosito/gotenv/releases/tag/v1.4.1)
+  - Minor: [Bump github.com/volatiletech/sqlboiler/v4 from 4.9.2 to v4.13.0](https://github.com/volatiletech/sqlboiler/blob/master/CHANGELOG.md#v4130---2022-08-28)
+  - Minor: [Bump github.com/volatiletech/strmangle from 0.0.2 to 0.0.4](https://github.com/volatiletech/strmangle/releases/tag/v0.0.4) (changes in enum generation might require manual changes, minor changes)
+  - Minor: [Bump golang.org/x/crypto from v0.0.0-20220411220226-7b82a4e95df4 to 0.3.0](https://cs.opensource.google/go/x/crypto)
+  - Minor: [Bump golang.org/x/sys from v0.0.0-20220412211240-33da011f77ad to 0.2.0](https://cs.opensource.google/go/x/sys)
+  - Minor: [Bump golang.org/x/text from 0.3.7 to 0.4.0](https://cs.opensource.google/go/x/text) (Fixing CVE-2022-32149)
+  - Minor: [Bump google.golang.org/api from 0.74.0 to 0.103.0](https://github.com/googleapis/google-api-go-client/compare/v0.80.0...v0.103.0)
 
 ## 2022-09-13
 - Hotfix: Previously there was a chance of recursive error wrapping within our [`internal/api/router/error_handler.go`](https://github.com/allaboutapps/go-starter/blob/master/internal/api/router/error_handler.go) in combination with `*echo.HTTPError`. We currently disable this wrapping (as not used anyways) and will schedule a cleaner update regarding this error augmentation approach.
