@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.17.9-buster AS development
+FROM golang:1.19.3-bullseye AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,8 +15,8 @@ ENV MAKEFLAGS "-j 8 --no-print-directory"
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
 # https://wiki.postgresql.org/wiki/Apt
 # run lsb_release -c inside the container to pick the proper repository flavor
-# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" \
+# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" \
     | tee /etc/apt/sources.list.d/pgdg.list \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
     | apt-key add -
@@ -78,9 +78,9 @@ ENV LANG en_US.UTF-8
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v5.2.tar.gz \
-    && tar xzf v5.2.tar.gz \
-    && cd pgFormatter-5.2 \
+    && wget https://github.com/darold/pgFormatter/archive/v5.3.tar.gz \
+    && tar xzf v5.3.tar.gz \
+    && cd pgFormatter-5.3 \
     && perl Makefile.PL \
     && make && make install \
     && rm -rf /tmp/pgFormatter 
@@ -89,8 +89,9 @@ RUN mkdir -p /tmp/pgFormatter \
 # https://github.com/gotestyourself/gotestsum/releases
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
-    && wget https://github.com/gotestyourself/gotestsum/releases/download/v1.8.0/gotestsum_1.8.0_linux_amd64.tar.gz \
-    && tar xzf gotestsum_1.8.0_linux_amd64.tar.gz \
+    && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.8.2/gotestsum_1.8.2_linux_${ARCH}.tar.gz" \
+    && tar xzf "gotestsum_1.8.2_linux_${ARCH}.tar.gz" \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum 
 
@@ -98,18 +99,19 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+    | sh -s -- -b $(go env GOPATH)/bin v1.50.1
 
 # go swagger: (this package should NOT be installed via go get) 
 # https://github.com/go-swagger/go-swagger/releases
-RUN curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.29.0/swagger_linux_amd64" \
+RUN ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && curl -o /usr/local/bin/swagger -L'#' \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.30.3/swagger_linux_${ARCH}" \
     && chmod +x /usr/local/bin/swagger
 
 # lichen: go license util 
 # TODO: Install from static binary as soon as it becomes available.
 # https://github.com/uw-labs/lichen/tags
-RUN go install github.com/uw-labs/lichen@v0.1.5
+RUN go install github.com/uw-labs/lichen@v0.1.7
 
 # cobra-cli: cobra cmd scaffolding generator
 # TODO: Install from static binary as soon as it becomes available.
@@ -120,18 +122,19 @@ RUN go install github.com/spf13/cobra-cli@v1.3.0
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/cli-v1.18.11/watchexec-1.18.11-x86_64-unknown-linux-musl.tar.xz \
-    && tar xf watchexec-1.18.11-x86_64-unknown-linux-musl.tar.xz \
-    && cp watchexec-1.18.11-x86_64-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/v1.20.6/watchexec-1.20.6-$(arch)-unknown-linux-musl.tar.xz \
+    && tar xf watchexec-1.20.6-$(arch)-unknown-linux-musl.tar.xz \
+    && cp watchexec-1.20.6-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # yq
 # https://github.com/mikefarah/yq/releases
 RUN mkdir -p /tmp/yq \
     && cd /tmp/yq \
-    && wget https://github.com/mikefarah/yq/releases/download/v4.24.2/yq_linux_amd64.tar.gz \
-    && tar xzf yq_linux_amd64.tar.gz \
-    && cp yq_linux_amd64 /usr/local/bin/yq \
+    && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && wget "https://github.com/mikefarah/yq/releases/download/v4.30.4/yq_linux_${ARCH}.tar.gz" \
+    && tar xzf "yq_linux_${ARCH}.tar.gz" \
+    && cp "yq_linux_${ARCH}" /usr/local/bin/yq \
     && rm -rf /tmp/yq 
 
 # gsdev
@@ -205,7 +208,7 @@ RUN make go-build
 # https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
 # The :debug image provides a busybox shell to enter (base-debian10 only, not static).
 # https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian10:debug as app
+FROM gcr.io/distroless/base-debian11:debug as app
 
 # FROM debian:buster-slim as app
 # RUN apt-get update \

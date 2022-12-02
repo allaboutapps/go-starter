@@ -11,7 +11,8 @@ BEGIN
         /* list of key column names in order */
         string_agg(a.attname, ',' ORDER BY x.n) AS columns,
         pg_catalog.pg_size_pretty(pg_catalog.pg_relation_size(c.conrelid)) AS size,
-        c.conname AS constraint, c.confrelid::regclass AS referenced_table
+        c.conname AS constraint,
+        c.confrelid::regclass AS referenced_table
     FROM
         pg_catalog.pg_constraint c
         /* enumerated key column numbers per foreign key */

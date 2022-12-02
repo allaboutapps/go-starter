@@ -62,12 +62,12 @@ check-handlers: ##- (opt) Checks if implemented handlers match their spec (path)
 #    ^// Code generated .* DO NOT EDIT\.$
 check-gen-dirs: ##- (opt) Ensures internal/models|types only hold generated files.
 	@echo "make check-gen-dirs"
-	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/types/ && echo "Error: Non generated file(s) in ./internal/types!" && exit 1 || exit 0
-	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$' --exclude ".DS_Store" ./internal/models/ && echo "Error: Non generated file(s) in ./internal/models!" && && exit 1 || exit 0
+	@find ./internal/types -type f | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' --exclude ".DS_Store" || (echo "Error: Non generated file(s) in ./internal/types!" && exit 1)
+	@find ./internal/models -type f | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' --exclude ".DS_Store" || (echo "Error: Non generated file(s) in ./internal/models!" && exit 1)
 
 check-script-dir: ##- (opt) Ensures all scripts/**/*.go files have the "//go:build scripts" build tag set.
 	@echo "make check-script-dir"
-	@grep -R --include=*.go -L '//go:build scripts' ./scripts && echo "Error: Found unset '//go:build scripts' in ./scripts/**/*.go!" && exit 1 || exit 0
+	@find ./scripts -type f -name '*.go' | xargs -L1 grep -L '//go:build scripts' || (echo "Error: Found unset '//go:build scripts' in ./scripts/**/*.go!" && exit 1)
 
 # https://github.com/gotestyourself/gotestsum#format 
 # w/o cache https://github.com/golang/go/issues/24573 - see "go help testflag"
@@ -132,7 +132,7 @@ modules: ##- (opt) Cache packages as specified in go.mod.
 
 # https://marcofranssen.nl/manage-go-tools-via-go-modules/
 tools: ##- (opt) Install packages as specified in tools.go.
-	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -P $$(nproc) -L 1 -tI % go install %
+	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -P $$(nproc) -tI % go install %
 
 tidy: ##- (opt) Tidy our go.sum file.
 	go mod tidy
@@ -282,8 +282,8 @@ swagger-concat: ##- (opt) Regenerates api/swagger.yml based on api/paths/*.
 # --keep-spec-order is broken (/tmp spec resolving): https://github.com/go-swagger/go-swagger/issues/2216
 swagger-server: ##- (opt) Regenerates internal/types based on api/swagger.yml.
 	@echo "make swagger-server"
-	@grep -R -L '^// Code generated .* DO NOT EDIT\.$$$$' ./internal/types \
-		| xargs sed -i '1s#^#// DELETE ME; DO NOT EDIT.\n#'
+	@find internal/types -type f \
+		| xargs sed -i '1i // DELETE ME; DO NOT EDIT.'
 	@swagger generate server \
 		--allow-template-override \
 		--template-dir=api/templates \
