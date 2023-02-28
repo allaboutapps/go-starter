@@ -189,7 +189,9 @@ tasks:
 
   get-go-outdated-modules:
     cmds:
-      - ((go list -u -m -f '{{if and .Update (not .Indirect)}}{{.}}{{end}}' all) 2>/dev/null | grep " ") || echo "go modules are up-to-date."
+      - |-
+        (go list -u -m -f '{{`{{if and .Update (not .Indirect)}}{{.}}{{end}}`}}' all 2>/dev/null | grep " ") \
+          || echo "go modules are up-to-date."
 
   watch-tests:
     cmds:
