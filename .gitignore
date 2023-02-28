@@ -40,3 +40,11 @@ __debug_bin
 # we support overloading ENV vars by parsing a dotenv formatted file
 # this file can be used for local testing (secrets!) but should never be commited into git
 .env.local
+
+# https://taskfile.dev
+.task
+# The main file is Taskfile.dist.yaml
+# The intention of having the .dist variants is to allow projects to have one committed version (.dist) 
+# while still allowing individual users to override the Taskfile by adding an additional Taskfile.yml 
+# (which would be on .gitignore).
+Taskfile.yml

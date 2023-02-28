@@ -72,6 +72,10 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 
 ENV LANG en_US.UTF-8
 
+# task: We use task (Taskfile.dist.yaml) for all our development related scripts
+# https://github.com/go-task/task/releases
+RUN go install github.com/go-task/task/v3/cmd/task@v3.21.0
+
 # sql pgFormatter: Integrates with vscode-pgFormatter (we pin pgFormatter.pgFormatterPath for the extension to this version)
 # requires perl to be installed
 # https://github.com/bradymholt/vscode-pgFormatter/commits/master
@@ -188,14 +192,14 @@ ENV PATH $PATH:$GOBIN
 
 FROM development as builder
 WORKDIR /app
-COPY Makefile /app/Makefile
+COPY Taskfile.dist.yaml /app/Taskfile.dist.yaml
 COPY go.mod /app/go.mod
 COPY go.sum /app/go.sum
-RUN make modules
+RUN task modules
 COPY tools.go /app/tools.go
-RUN make tools
+RUN task tools
 COPY . /app/
-RUN make go-build
+RUN task go-build
 
 ### -----------------------
 # --- Stage: app

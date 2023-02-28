@@ -1,0 +1,534 @@
+# https://taskfile.dev
+version: '3'
+output: interleaved
+
+vars:
+
+  GO_MODULE_NAME:
+    sh: |-
+      (mkdir -p tmp 2> /dev/null && cat tmp/.modulename 2> /dev/null) \
+      || (gsdev modulename 2> /dev/null | tee tmp/.modulename) \
+      || echo "unknown"
+
+  ARG_COMMIT:
+    sh: (git rev-list -1 HEAD 2> /dev/null) || (echo "unknown")
+
+  ARG_BUILD_DATE:
+    sh: (date -Is 2> /dev/null || date 2> /dev/null || echo "unknown")
+
+  LDFLAGS: |-
+    -X '{{.GO_MODULE_NAME}}/internal/config.ModuleName={{.GO_MODULE_NAME}}'
+    -X '{{.GO_MODULE_NAME}}/internal/config.Commit={{.ARG_COMMIT}}'
+    -X '{{.GO_MODULE_NAME}}/internal/config.BuildDate={{.ARG_BUILD_DATE}}'
+
+tasks:
+
+  default:
+    cmds:
+      - task: build
+
+  build:
+    cmds:
+      - task: build-pre
+      - task: go-format
+      - task: go-build
+      - task: lint
+
+  all:
+    cmds:
+      - task: init
+      - task: build
+      - task: test
+
+  info:
+    deps: [info-db, info-handlers, info-go]
+    cmds:
+      - cat tmp/.info-db
+      - cat tmp/.info-handlers
+      - cat tmp/.info-go
+
+  info-db:
+    cmds:
+      - echo "[spec DB]" > tmp/.info-db
+      - cat scripts/sql/info.sql | psql -q -d "${PSQL_DBNAME}" >> tmp/.info-db
+      # - cat tmp/.info-db
+    sources:
+      - "**/*.sql"
+    generates:
+      - tmp/.info-db
+
+  info-handlers:
+    cmds:
+      - echo "[handlers]" > tmp/.info-handlers
+      - gsdev handlers check --print-all >> tmp/.info-handlers
+      - echo "" >> tmp/.info-handlers
+      # - cat tmp/.info-handlers
+    sources:
+      - /usr/bin/gsdev
+      - "**/*.go"
+    generates:
+      - tmp/.info-handlers
+
+  info-go:
+    cmds:
+      - echo "[go.mod]" > tmp/.info-go
+      - task --silent get-go-outdated-modules >> tmp/.info-go
+      - task --silent info-module-name >> tmp/.info-go
+      - go version >> tmp/.info-go
+      # - cat tmp/.info-go
+    sources:
+      - go.mod
+      - go.sum
+      - tmp/.modulename
+    generates:
+      - tmp/.info-go
+
+  lint:
+    deps: [check-gen-dirs, check-script-dir, check-handlers, check-embedded-modules-go-not, go-lint]
+
+  build-pre:
+    deps: [sql, swagger]
+    cmds:
+      - task: go-generate
+
+  go-format:
+    cmds:
+      - go fmt ./...
+    sources:
+      - "**/*.go"
+    generates:
+      - "**/*.go"
+
+  go-build:
+    cmds:
+      - go build -ldflags "{{.LDFLAGS}}" -o bin/app
+    sources:
+      - /usr/local/go/bin/go
+      - go.mod
+      - go.sum
+      - "**/*.go"
+    generates:
+      - bin/app
+
+  go-lint:
+    cmds:
+      - golangci-lint run --timeout 5m
+    sources:
+      - /go/bin/golangci-lint
+      - "**/*.go"
+
+  go-generate:
+    cmds:
+      - gsdev handlers gen
+    sources:
+      - /usr/bin/gsdev
+      - "scripts/**/*.go"
+      - internal/api/handlers/**/*.go
+    generates:
+      - internal/api/handlers/handlers.go
+
+  check-handlers:
+    cmds:
+      - gsdev handlers check
+    sources:
+      - /usr/bin/gsdev
+      - "scripts/**/*.go"
+      - internal/api/handlers/**/*.go
+
+  check-gen-dirs:
+    cmds:
+      - |-
+        find ./internal/types -type f | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' --exclude ".DS_Store" || (echo "Error: Non generated file(s) in ./internal/types!" && exit 1)
+      - |-
+        find ./internal/models -type f | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' --exclude ".DS_Store" || (echo "Error: Non generated file(s) in ./internal/models!" && exit 1)
+    sources:
+      - internal/types/**/*.go
+      - internal/models/**/*.go
+
+  check-script-dir:
+    cmds:
+      - |-
+        find ./scripts -type f -name '*.go' | xargs -L1 grep -L '//go:build scripts' || (echo "Error: Found unset '//go:build scripts' in ./scripts/**/*.go!" && exit 1)
+    sources:
+      - scripts/**/*.go
+
+  test:
+    cmds:
+      - task: go-test-by-pkg
+      - task: go-test-print-coverage
+
+  test-by-name:
+    cmds:
+      - task: go-test-by-name
+      - task: go-test-print-coverage
+
+  test-update-golden:
+    cmds:
+      - echo "Attempting to refresh all golden files / snapshot tests (TEST_UPDATE_GOLDEN=true)!"
+      - echo -n "Are you sure? [y/N]" && read ans && [ ${ans:-N} = y ]
+      - TEST_UPDATE_GOLDEN=true gotestsum --hide-summary=skipped -- -race -count=1 ./...
+
+  go-test-by-pkg:
+    cmds:
+      - gotestsum --format pkgname-and-test-fails --jsonfile /tmp/test.log -- -race -cover -count=1 -coverprofile=/tmp/coverage.out ./...
+  
+  go-test-by-name:
+    cmds:
+      - gotestsum --format testname --jsonfile /tmp/test.log -- -race -cover -count=1 -coverprofile=/tmp/coverage.out ./...
+
+  go-test-print-coverage:
+    cmds:
+      - cmd: printf "coverage "
+        silent: true
+      - cmd: go tool cover -func=/tmp/coverage.out | tail -n 1 | awk '{$1=$1;print}'
+        silent: true
+
+  go-test-print-slowest:
+    cmds:
+      - gotestsum tool slowest --jsonfile /tmp/test.log --threshold 2s
+
+  get-go-outdated-modules:
+    cmds:
+      - ((go list -u -m -f '{{if and .Update (not .Indirect)}}{{.}}{{end}}' all) 2>/dev/null | grep " ") || echo "go modules are up-to-date."
+
+  watch-tests:
+    cmds:
+      - gotestsum --format testname --watch -- -race -count=1
+
+  test-scripts:
+    cmds:
+      - task: go-test-scripts-by-pkg
+      - cmd: printf "coverage "
+        silent: true
+      - cmd: go tool cover -func=/tmp/coverage-scripts.out | tail -n 1 | awk '{$1=$1;print}'
+        silent: true
+
+  go-test-scripts-by-pkg:
+    cmds:
+      - gotestsum --format pkgname-and-test-fails --jsonfile /tmp/test.log -- $(go list -tags scripts ./... | grep "{{.GO_MODULE_NAME}}/scripts") -tags scripts -race -cover -count=1 -coverprofile=/tmp/coverage-scripts.out ./...
+
+  init:
+    cmds:
+      - task: modules
+      - task: tools
+      - task: tidy
+
+  modules:
+    cmds:
+      - go mod download
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+
+  tools:
+    cmds:
+      - cat tools.go | grep _ | awk -F'"' '{print $2}' | xargs -P $(nproc) -tI % go install %
+    sources:
+      - tools.go
+      - go.mod
+      - go.sum
+
+  tidy:
+    cmds:
+      - go mod tidy
+    sources:
+      - go.mod
+      - go.sum
+    generates:
+      - go.sum
+
+  sql-reset:
+    cmds:
+      - echo "DROP & CREATE database:"
+      - echo "  PGHOST=${PGHOST} PGDATABASE=${PGDATABASE}" PGUSER=${PGUSER}
+      - echo -n "Are you sure? [y/N] " && read ans && [ ${ans:-N} = y ]
+      - psql -d postgres -c "DROP DATABASE IF EXISTS "${PGDATABASE}";"
+      - psql -d postgres -c "CREATE DATABASE "${PGDATABASE}" WITH OWNER ${PGUSER} TEMPLATE "template0";"
+
+  sql-drop-all:
+    cmds:
+      - |-
+        echo "DROP ALL:" \
+        && TO_DROP=$(psql -qtz0 -d postgres -c "SELECT 'DROP DATABASE \"' || datname || '\";' FROM pg_database WHERE datistemplate = FALSE AND datname != 'postgres';") \
+        && echo "${TO_DROP}" \
+        && echo -n "Are you sure? [y/N] " && read ans && [ ${ans:-N} = y ] \
+        && echo "Resetting integresql..." \
+        && curl --fail -X DELETE http://integresql:5000/api/v1/admin/templates \
+        && echo "Drop databases..." \
+        && echo $TO_DROP | psql -tz0 -d postgres
+      - cmd: echo "Done. Please run 'task sql-reset && task sql-regenerate -f' to reinitialize."
+        silent: true
+
+  sql:
+    cmds:
+      - task: sql-format
+      - task: sql-regenerate
+
+  sql-regenerate:
+    cmds:
+      - task: sql-check-files
+      - task: sql-spec-reset
+      - task: sql-spec-migrate
+      - task: sql-check-and-generate
+
+  sql-check-and-generate:
+    deps: [sql-check-structure, sql-boiler]
+
+  sql-boiler:
+    cmds:
+      - sqlboiler psql
+    sources:
+      - "migrations/**/*.sql"
+      - "/app/bin/sqlboiler"
+    generates:
+      - "internal/models/**/*.go"
+
+  sql-format:
+    cmds:
+      - |-
+        find ${PWD} -path "*/tmp/*" -prune -name ".*" -prune -o -type f -iname "*.sql" -print \
+        | grep --invert "/app/dumps/" \
+        | grep --invert "/app/test/" \
+        | xargs -i pg_format --inplace {}
+    sources:
+      - /usr/local/bin/pg_format
+      - "**/*.sql"
+    generates:
+      - "**/*.sql"
+
+  sql-check-files:
+    deps: [sql-check-syntax, sql-check-migrations-unnecessary-null]
+
+  sql-check-syntax:
+    cmds:
+      - |-
+        find ${PWD} -path "*/tmp/*" -prune -name ".*" -prune -path ./dumps -prune -false -o -type f -iname "*.sql" -print \
+        | grep --invert "/app/dumps/" \
+        | grep --invert "/app/test/" \
+        | xargs -i sed '1s#^#DO $SYNTAX_CHECK$ BEGIN RETURN;#; $aEND; $SYNTAX_CHECK$;' {} \
+        | psql -d postgres --quiet -v ON_ERROR_STOP=1
+    sources:
+      - "**/*.sql"
+
+  sql-check-migrations-unnecessary-null:
+    cmds:
+      - |-
+        (grep -R "NULL" ./migrations/ \
+          | grep --invert "DEFAULT NULL" \
+          | grep --invert "NOT NULL" \
+          | grep --invert "WITH NULL" \
+          | grep --invert "NULL, " \
+          | grep --invert ", NULL" \
+          | grep --invert "RETURN NULL" \
+          | grep --invert "SET NULL") \
+        && exit 1 || exit 0
+    sources:
+      - "migrations/**/*.sql"
+
+  sql-spec-reset:
+    cmds:
+      - psql --quiet -d postgres -c "DROP DATABASE IF EXISTS "${PSQL_DBNAME}";"
+      - psql --quiet -d postgres -c "CREATE DATABASE "${PSQL_DBNAME}" WITH OWNER "${PSQL_USER}" TEMPLATE "template0";"
+    sources:
+      # must be in sync with sql-spec-migrate
+      - "migrations/**/*.sql"
+
+  sql-spec-migrate:
+    cmds:
+      - sql-migrate up -env spec | xargs -i echo "[spec DB]" {}
+    sources:
+      # must be in sync with sql-spec-reset
+      - "migrations/**/*.sql"
+      - "/app/bin/sql-migrate"
+
+  sql-check-structure:
+    deps: [sql-check-structure-fk-missing-index, sql-check-structure-default-zero-values]
+
+  sql-check-structure-fk-missing-index:
+    cmds:
+      - cat scripts/sql/fk_missing_index.sql | psql -qtz0 --no-align -d  "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+    sources:
+      - "**/*.sql"
+
+  sql-check-structure-default-zero-values:
+    cmds:
+      - cat scripts/sql/default_zero_values.sql | psql -qtz0 --no-align -d "${PSQL_DBNAME}" -v ON_ERROR_STOP=1
+    sources:
+      - "**/*.sql"
+
+  sql-dump:
+    vars:
+      timestamp:
+        sh: date '+%Y-%m-%d-%H-%M-%S'
+      dumpfile: "/app/dumps/development_{{.timestamp}}.sql"
+    cmds:
+      - mkdir -p /app/dumps
+      - pg_dump development --format=p --clean --if-exists > {{.dumpfile}}
+      - echo "Dumped '{{.dumpfile}}'. Use 'cat {{.dumpfile}} | psql' to restore"
+
+  watch-sql:
+    cmds:
+      - watchexec -p -w migrations --exts sql task sql-regenerate
+
+
+  swagger:
+    cmds:
+      - task: swagger-concat
+      - task: swagger-lint-ref-siblings
+      - task: swagger-server
+
+  swagger-lint-ref-siblings:
+    silent: true
+    cmds:
+      - rm -f /tmp/swagger-lint-ref-siblings-errors.log && touch /tmp/swagger-lint-ref-siblings-errors.log
+      - |-
+        find api -type f -name "*.yml" -o -name "*.yaml" \
+          | { \
+            while read ymlfile; \
+            do \
+              ref_siblings=$(yq e '.. | select(has("$ref") and length != 1)' $ymlfile); \
+              ([[ -z "$ref_siblings" ]] \
+                || (echo "Error: Found invalid \$ref siblings within $ymlfile:" \
+                  && (yq -P e '[.. | select(has("$ref") and length != 1)]' $ymlfile) \
+                  && (echo $ymlfile >> /tmp/swagger-lint-ref-siblings-errors.log))); \
+            done \
+          };
+      - |-
+        [[ "$(cat /tmp/swagger-lint-ref-siblings-errors.log | wc -l)" -eq "0" ]] \
+          || (echo "Error: $(cat /tmp/swagger-lint-ref-siblings-errors.log | wc -l) files have \$ref(s) with siblings!" \
+            && false)
+    sources:
+      - /usr/local/bin/yq
+      - "api/**/*.yml"
+      - "api/**/*.yaml"
+
+  swagger-concat:
+    cmds:
+      - rm -rf api/tmp
+      - mkdir -p api/tmp
+      - |-
+        swagger mixin \
+          --output=api/tmp/tmp.yml \
+          --format=yaml \
+          --keep-spec-order \
+          api/config/main.yml api/paths/* \
+          -q
+      - |-
+        swagger flatten api/tmp/tmp.yml \
+          --output=api/swagger.yml \
+          --format=yaml \
+          -q
+      - sed -i '1s@^@# // Code generated by "make swagger"; DO NOT EDIT.\n@' api/swagger.yml
+    sources:
+      - /app/bin/swagger
+      - "api/**/*.yml"
+      - "api/**/*.yaml"
+    generates:
+      - "api/tmp/tmp.yml"
+      - "api/swagger.yml"
+
+  swagger-server:
+    cmds:
+      - |-
+        find internal/types -type f \
+          | xargs sed -i '1i // DELETE ME; DO NOT EDIT.'
+      - |-
+        swagger generate server \
+          --allow-template-override \
+          --template-dir=api/templates \
+          --spec=api/swagger.yml \
+          --server-package=internal/types \
+          --model-package=internal/types \
+          --exclude-main \
+          --config-file=api/config/go-swagger-config.yml \
+          -q
+      - find internal/types -type f -exec grep -q '^// DELETE ME; DO NOT EDIT\.$' {} \; -delete
+    sources:
+      - /app/bin/swagger
+      - api/swagger.yml
+      - api/config/go-swagger-config.yml
+      - "api/templates/**/*.gotmpl"
+      - "internal/types/**/*.go"
+    generates:
+      - "internal/types/**/*.go"
+
+  watch-swagger:
+    cmds:
+      - echo "Watching /api/**/*.yml|yaml|gotmpl. Use Ctrl-c to stop a run or exit."
+      - watchexec -p -w api -i tmp -i api/swagger.yml --exts yml,yaml,gotmpl task swagger
+
+  get-licenses:
+    cmds:
+      - lichen bin/app
+  
+  get-embedded-modules:
+    cmds:
+      - go version -m -v bin/app
+
+  get-embedded-modules-count:
+    cmds:
+      - go version -m -v bin/app | grep $'\tdep' | wc -l
+
+  check-embedded-modules-go-not:
+    silent: true
+    cmds:
+      - (mkdir -p tmp 2> /dev/null && go version -m -v bin/app > tmp/.modules)
+      - |-
+          grep -f go.not -F tmp/.modules \
+          && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) \
+          || exit 0
+    sources:
+      - bin/app
+      - go.not
+    generates:
+      - tmp/.modules
+
+  # TODO
+  # git-fetch-go-starter
+  # git-compare-go-starter
+  # git-merge-go-starter
+
+  clean:
+    cmds:
+      - rm -rf tmp 2> /dev/null
+      - rm -rf api/tmp 2> /dev/null
+      - rm -rf .task 2> /dev/null
+
+  get-module-name:
+    cmds:
+      - echo "{{.GO_MODULE_NAME}}"
+
+  info-module-name:
+    cmds:
+      - |-
+        echo "go module-name: '{{.GO_MODULE_NAME}}'"
+
+  set-module-name:
+    cmds:
+      - rm -f tmp/.modulename
+      - task: info-module-name
+      - |-
+        echo "Enter new go module-name:" \
+          && read new_module_name \
+          && echo "new go module-name: '${new_module_name}'" \
+          && echo -n "Are you sure? [y/N]" \
+          && read ans && [ ${ans:-N} = y ] \
+          && echo -n "Please wait..." \
+          && find . -not -path '*/\.*' -not -path './Makefile' -type f -exec sed -i "s|{{.GO_MODULE_NAME}}|${new_module_name}|g" {} \; \
+          && echo "new go module-name: '${new_module_name}'!"
+      - rm -f tmp/.modulename
+    generates:
+      - tmp/.modulename
+
+  force-module-name:
+    cmds:
+      - find . -not -path '*/\.*' -not -path './Makefile' -type f -exec sed -i "s|allaboutapps.dev/aw/go-starter|{{.GO_MODULE_NAME}}|g" {} \;
+
+  get-go-ldflags:
+    cmds:
+      - echo "{{.LDFLAGS}}"
+
+  # TODO
+  # help
+  # help-all
