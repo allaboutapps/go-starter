@@ -62,8 +62,10 @@ check-handlers: ##- (opt) Checks if implemented handlers match their spec (path)
 #    ^// Code generated .* DO NOT EDIT\.$
 check-gen-dirs: ##- (opt) Ensures internal/models|types only hold generated files.
 	@echo "make check-gen-dirs"
-	@find ./internal/types -type f | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' --exclude ".DS_Store" || (echo "Error: Non generated file(s) in ./internal/types!" && exit 1)
-	@find ./internal/models -type f | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' --exclude ".DS_Store" || (echo "Error: Non generated file(s) in ./internal/models!" && exit 1)
+	@find ./internal/types -name ".*" -prune -o -type f -print | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' \
+		|| (echo "Error: Non generated file(s) in ./internal/types!" && exit 1)
+	@find ./internal/models -name ".*" -prune -o -type f -print | xargs -L1 grep -L '// Code generated .* DO NOT EDIT\.' \
+		|| (echo "Error: Non generated file(s) in ./internal/models!" && exit 1)
 
 check-script-dir: ##- (opt) Ensures all scripts/**/*.go files have the "//go:build scripts" build tag set.
 	@echo "make check-script-dir"
