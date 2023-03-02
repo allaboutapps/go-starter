@@ -445,5 +445,11 @@ LDFLAGS = $(eval LDFLAGS := "\
 # https://www.gnu.org/software/make/manual/html_node/One-Shell.html
 # required to ensure make fails if one recipe fails (even on parallel jobs) and on pipefails
 .ONESHELL:
-SHELL = /bin/bash
-.SHELLFLAGS = -cEeuo pipefail
+
+# # normal POSIX bash shell mode
+# SHELL = /bin/bash
+# .SHELLFLAGS = -cEeuo pipefail
+
+# wrapped make time tracing shell, use MAKE_TRACE_TIME=true make <target>
+SHELL = /app/rksh
+.SHELLFLAGS = $@
