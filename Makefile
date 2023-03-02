@@ -263,6 +263,7 @@ swagger-lint-ref-siblings: ##- (opt) Checks api/**/*.[yml|yaml] for invalid usag
 # https://goswagger.io/usage/flatten.html
 swagger-concat: ##- (opt) Regenerates api/swagger.yml based on api/paths/*.
 	@echo "make swagger-concat"
+	@mkdir -p api/tmp
 	@rm -rf api/tmp/*
 	@swagger mixin \
 		--output=api/tmp/tmp.yml \
