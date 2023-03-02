@@ -58,6 +58,7 @@ RUN apt-get update \
     postgresql-client-12 \
     icu-devtools \
     tmux \
+    rsync \
     # --- END DEVELOPMENT ---
     # 
     && apt-get clean \
@@ -189,6 +190,7 @@ ENV PATH $PATH:$GOBIN
 FROM development as builder
 WORKDIR /app
 COPY Makefile /app/Makefile
+COPY --chmod=0755 rksh /app/rksh
 COPY go.mod /app/go.mod
 COPY go.sum /app/go.sum
 RUN make modules
