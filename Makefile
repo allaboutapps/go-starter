@@ -446,10 +446,10 @@ LDFLAGS = $(eval LDFLAGS := "\
 # required to ensure make fails if one recipe fails (even on parallel jobs) and on pipefails
 .ONESHELL:
 
-# # normal POSIX bash shell mode
-# SHELL = /bin/bash
-# .SHELLFLAGS = -cEeuo pipefail
+# normal POSIX bash shell mode
+SHELL = /bin/bash
+.SHELLFLAGS = -cEeuo pipefail
 
-# wrapped make time tracing shell, use MAKE_TRACE_TIME=true make <target>
-SHELL = /app/rksh
-.SHELLFLAGS = $@
+# # wrapped make time tracing shell, use MAKE_TRACE_TIME=true make <target>
+# SHELL = /app/rksh
+# .SHELLFLAGS = $@
