@@ -19,6 +19,10 @@
   - Minor: [Bump github.com/mikefarah/yq from 4.24.2 to 4.30.5](https://github.com/mikefarah/yq/releases/tag/v4.30.5)
 - Major: Upgrade distroless app image from base-debian10 to base-debian11
 - Major: Dockerfile is now build to support amd64 and arm64 architecture
+- Improve speed of `make swagger` when dealing with many files in `/api` by generating to a docker volume instead of the host filesystem, rsyncing only to changes into `/internal/types`. Furthermore split our swagger type generation and validation into two separate make targets, that can run concurrently (requires `./docker-helper.sh --rebuild`).
+  - Note that `/app/api/tmp`, `/app/tmp` and `/app/bin` are now baked by proper docker volumes when using our `docker-compose.yml`/`./docker-helper.sh --up`. You **cannot** remove these directories directly inside the container (but its contents) and you can also no longer see its files on your host machine directly! 
+- Fix `make check-gen-dirs` false positives hidden files.
+- Allow to trace/benchmark `Makefile` targets execution by using a custom shell wrapper for make execution. See `SHELL` and `.SHELLFLAGS` within `Makefile` and the custom `rksh` script in the root working directory. Usage: `MAKE_TRACE_TIME=true make <target>`
 - `go.mod` changes:
   - Minor: [Bump github.com/BurntSushi/toml from 1.1.0 to 1.2.1](https://github.com/BurntSushi/toml/releases/tag/v1.2.1)
   - Minor: [Bump github.com/gabriel-vasile/mimetype from 1.4.0 to 1.4.1](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.1)
