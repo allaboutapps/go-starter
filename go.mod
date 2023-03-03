@@ -16,7 +16,7 @@ require (
 	github.com/go-openapi/validate v0.22.0
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
-	github.com/labstack/echo/v4 v4.9.1
+	github.com/labstack/echo/v4 v4.10.2
 	github.com/lib/pq v1.10.7
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
 	github.com/pkg/errors v0.9.1
@@ -32,9 +32,9 @@ require (
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.13.0
 	github.com/volatiletech/strmangle v0.0.4
-	golang.org/x/crypto v0.3.0
-	golang.org/x/sys v0.2.0
-	golang.org/x/text v0.4.0
+	golang.org/x/crypto v0.6.0
+	golang.org/x/sys v0.5.0
+	golang.org/x/text v0.7.0
 	google.golang.org/api v0.103.0
 )
 
@@ -82,7 +82,7 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.16 // indirect
+	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-oci8 v0.1.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
@@ -107,9 +107,9 @@ require (
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	go.mongodb.org/mongo-driver v1.11.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.2.0 // indirect
-	golang.org/x/time v0.2.0 // indirect
+	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20221201204527-e3fa12d562f3 // indirect
