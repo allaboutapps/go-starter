@@ -33,8 +33,8 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.13.0
 	github.com/volatiletech/strmangle v0.0.4
 	golang.org/x/crypto v0.3.0
-	golang.org/x/sys v0.2.0
-	golang.org/x/text v0.4.0
+	golang.org/x/sys v0.5.0
+	golang.org/x/text v0.7.0
 	google.golang.org/api v0.103.0
 )
 
@@ -107,7 +107,7 @@ require (
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	go.mongodb.org/mongo-driver v1.11.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.2.0 // indirect
 	golang.org/x/time v0.2.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
