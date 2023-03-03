@@ -12,7 +12,7 @@
 - Switch [from Go 1.17.9 to Go 1.19.3](https://go.dev/doc/devel/release#go1.19) (requires `./docker-helper.sh --rebuild`).
   - Major: Update base docker image from debian buster to bullseye
   - Minor: [Bump github.com/darold/pgFormatter from 5.2 to 5.3](https://github.com/darold/pgFormatter/releases/tag/v5.3)
-  - Minor: [Bump github.com/gotestyourself/gotestsum from 1.8.0 to 1.8.2](https://github.com/gotestyourself/gotestsum/releases/tag/v1.8.2)
+  - Minor: [Bump github.com/gotestyourself/gotestsum from 1.8.0 to 1.9.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.9.0)
   - Minor: [Bump github.com/golangci/golangci-lint from 1.45.2 to 1.50.1](https://github.com/golangci/golangci-lint/releases/tag/v1.50.1)
   - Minor: [Bump github.com/uw-labs/lichen from 0.1.5 to 0.1.7](https://github.com/uw-labs/lichen/releases/tag/v0.1.7)
   - Minor: [Bump github.com/watchexec/watchexec from 1.18.11 to 1.20.6](https://github.com/watchexec/watchexec/releases/tag/v1.20.6)
