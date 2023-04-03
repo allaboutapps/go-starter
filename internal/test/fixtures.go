@@ -2,9 +2,11 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -19,7 +21,8 @@ type Insertable interface {
 	Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error
 }
 
-// FixtureMap represents the main definition which fixtures are available though Fixtures()
+// The main definition which fixtures are available through Fixtures().
+// Mind the declaration order! The fields get inserted exactly in the order they are declared.
 type FixtureMap struct {
 	User1                         *models.User
 	User1AppUserProfile           *models.AppUserProfile
@@ -135,22 +138,18 @@ func Fixtures() FixtureMap {
 // Inserts defines the order in which the fixtures will be inserted
 // into the test database
 func Inserts() []Insertable {
-	fixtures := Fixtures()
-
-	return []Insertable{
-		fixtures.User1,
-		fixtures.User1AppUserProfile,
-		fixtures.User1AccessToken1,
-		fixtures.User1RefreshToken1,
-		fixtures.User2,
-		fixtures.User2AppUserProfile,
-		fixtures.User2AccessToken1,
-		fixtures.User2RefreshToken1,
-		fixtures.UserDeactivated,
-		fixtures.UserDeactivatedAppUserProfile,
-		fixtures.UserDeactivatedAccessToken1,
-		fixtures.UserDeactivatedRefreshToken1,
-		fixtures.User1PushToken,
-		fixtures.User1PushTokenAPN,
+	fix := Fixtures()
+	insertableIfc := (*Insertable)(nil)
+	insertsAsInterface, err := util.GetFieldsImplementing(&fix, insertableIfc)
+	if err != nil {
+		panic(fmt.Errorf("failed to get insertable fixture fields: %w", err))
 	}
+
+	// TODO: could be improved with generics
+	inserts := make([]Insertable, 0, len(insertsAsInterface))
+	for _, object := range insertsAsInterface {
+		inserts = append(inserts, object.(Insertable))
+	}
+
+	return inserts
 }

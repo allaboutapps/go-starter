@@ -1,0 +1,68 @@
+([]interface {}) (len=4) {
+  (*models.User)({
+    ID: (string) (len=36) "9e16c597-2491-45bb-89ca-775b6e07f51d",
+    Username: (null.String) {
+      String: (string) "",
+      Valid: (bool) false
+    },
+    Password: (null.String) {
+      String: (string) "",
+      Valid: (bool) false
+    },
+    IsActive: (bool) false,
+    Scopes: (types.StringArray) <nil>,
+    LastAuthenticatedAt: (null.Time) {
+      Time: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+      Valid: (bool) false
+    },
+    CreatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    UpdatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    R: (*models.userR)(<nil>),
+    L: (models.userL) {
+    }
+  }),
+  (*models.User)({
+    ID: (string) (len=36) "52028fd6-e299-4d36-8bba-21fe4713ffcd",
+    Username: (null.String) {
+      String: (string) "",
+      Valid: (bool) false
+    },
+    Password: (null.String) {
+      String: (string) "",
+      Valid: (bool) false
+    },
+    IsActive: (bool) false,
+    Scopes: (types.StringArray) <nil>,
+    LastAuthenticatedAt: (null.Time) {
+      Time: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+      Valid: (bool) false
+    },
+    CreatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    UpdatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    R: (*models.userR)(<nil>),
+    L: (models.userL) {
+    }
+  }),
+  (*models.AppUserProfile)({
+    UserID: (string) (len=36) "9e16c597-2491-45bb-89ca-775b6e07f51d",
+    LegalAcceptedAt: (null.Time) {
+      Time: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+      Valid: (bool) false
+    },
+    CreatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    UpdatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    R: (*models.appUserProfileR)(<nil>),
+    L: (models.appUserProfileL) {
+    }
+  }),
+  (*models.AccessToken)({
+    Token: (string) "",
+    ValidUntil: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    UserID: (string) (len=36) "9e16c597-2491-45bb-89ca-775b6e07f51d",
+    CreatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    UpdatedAt: (time.Time) 0001-01-01 00:00:00 +0000 UTC,
+    R: (*models.accessTokenR)(<nil>),
+    L: (models.accessTokenL) {
+    }
+  })
+}
