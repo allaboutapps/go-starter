@@ -101,6 +101,7 @@ func TestGetFieldsImplementingMemberStructPointer(t *testing.T) {
 
 	output := make([]byte, len(content))
 	n, err := fields[0].Read(output)
+	assert.NoError(t, err)
 	assert.Equal(t, len(content), n)
 	assert.Equal(t, content, string(output))
 }
@@ -116,6 +117,7 @@ func TestGetFieldsImplementingMemberInterface(t *testing.T) {
 
 	output := make([]byte, len(content))
 	n, err := fields[0].Read(output)
+	assert.NoError(t, err)
 	assert.Equal(t, len(content), n)
 	assert.Equal(t, content, string(output))
 }
