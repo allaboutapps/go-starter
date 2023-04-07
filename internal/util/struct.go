@@ -6,6 +6,8 @@ import (
 )
 
 // GetFieldsImplementing returns all fields of a struct implementing a certain interface.
+// Returned fields are pointers to a type or interface objects.
+//
 // Parameter structPtr must be a pointer to a struct.
 // Parameter interfaceObject must be given as a pointer to an interface,
 // for example (*Insertable)(nil), where Insertable is an interface name.
@@ -40,16 +42,40 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 	// Getting the VisibleFields returns all public fields in the struct
 	for i, field := range reflect.VisibleFields(structType) {
 
-		// Check the field type, should be a pointer to a struct
-		if field.Type.Kind() != reflect.Ptr || field.Type.Elem().Kind() != reflect.Struct {
+		// Check if the field can be exported.
+		// Interface() can be called only on exportable fields.
+		if !field.IsExported() {
 			continue
 		}
 
-		// Check if the field type implements the interface and can be exported.
-		// Interface() can be called only on exportable fields.
-		if field.Type.Implements(interfaceType) && field.IsExported() {
-			// Great, we can add it to the return slice
-			retFields = append(retFields, structValue.Field(i).Interface().(T))
+		fieldValue := structValue.Field(i)
+
+		// Depending on the field type, different checks apply.
+		switch field.Type.Kind() {
+
+		case reflect.Pointer:
+
+			// Let's check if it implements the interface.
+			if field.Type.Implements(interfaceType) {
+				// Great, we can add it to the return slice
+				retFields = append(retFields, fieldValue.Interface().(T))
+			}
+
+		case reflect.Interface:
+			// If it's an interface, make sure it's not nil.
+			if fieldValue.IsNil() {
+				continue
+			}
+
+			// Now we can check if it's the same interface.
+			if field.Type.Implements(interfaceType) {
+				// Great, we can add it to the return slice
+				retFields = append(retFields, fieldValue.Interface().(T))
+			}
+
+		default:
+			// We can skip any other cases.
+			continue
 		}
 	}
 
