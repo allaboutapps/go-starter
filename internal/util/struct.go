@@ -9,7 +9,7 @@ import (
 // Parameter structPtr must be a pointer to a struct.
 // Parameter interfaceObject must be given as a pointer to an interface,
 // for example (*Insertable)(nil), where Insertable is an interface name.
-func GetFieldsImplementing(structPtr interface{}, interfaceObject interface{}) ([]interface{}, error) {
+func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]T, error) {
 
 	// Verify if structPtr is a pointer to a struct
 	inputParamStructType := reflect.TypeOf(structPtr)
@@ -35,7 +35,7 @@ func GetFieldsImplementing(structPtr interface{}, interfaceObject interface{}) (
 
 	structValue := reflect.ValueOf(structPtr).Elem()
 
-	retFields := make([]interface{}, 0)
+	retFields := make([]T, 0)
 
 	// Getting the VisibleFields returns all public fields in the struct
 	for i, field := range reflect.VisibleFields(structType) {
@@ -49,7 +49,7 @@ func GetFieldsImplementing(structPtr interface{}, interfaceObject interface{}) (
 		// Interface() can be called only on exportable fields.
 		if field.Type.Implements(interfaceType) && field.IsExported() {
 			// Great, we can add it to the return slice
-			retFields = append(retFields, structValue.Field(i).Interface())
+			retFields = append(retFields, structValue.Field(i).Interface().(T))
 		}
 	}
 

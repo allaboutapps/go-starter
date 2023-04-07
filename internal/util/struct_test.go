@@ -5,10 +5,8 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/models"
-	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -41,20 +39,14 @@ type testStructFixture struct {
 
 func TestGetFieldsImplementingInvalidInput(t *testing.T) {
 
-	_, err := util.GetFieldsImplementing(nil, nil)
-	assert.Error(t, err)
-
 	// invalid interfaceObject input param, must be a pointer to an interface
-	_, err = util.GetFieldsImplementing(&testStructEmpty{}, nil)
+	// pointer to a struct
+	_, err := util.GetFieldsImplementing(&testStructEmpty{}, &testStructEmpty{})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "interfaceObject")
-	_, err = util.GetFieldsImplementing(&testStructEmpty{}, testStructEmpty{})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "interfaceObject")
-	_, err = util.GetFieldsImplementing(&testStructEmpty{}, &testStructEmpty{})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "interfaceObject")
-	_, err = util.GetFieldsImplementing(&testStructEmpty{}, (insertable)(nil))
+	// pointer to a pointer to an interface
+	interfaceObjPtr := (*insertable)(nil)
+	_, err = util.GetFieldsImplementing(&testStructEmpty{}, &interfaceObjPtr)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "interfaceObject")
 
@@ -109,9 +101,8 @@ func TestGetFieldsImplementingSuccess(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(structNotInitializedFields))
 	for _, f := range structNotInitializedFields {
-		object, ok := f.(insertable)
-		require.True(t, ok)
-		assert.Nil(t, object)
+		assert.Nil(t, f)
+		assert.Implements(t, (*insertable)(nil), f)
 	}
 
 	// Struct initialized
@@ -128,11 +119,10 @@ func TestGetFieldsImplementingSuccess(t *testing.T) {
 	insertableFields, err := util.GetFieldsImplementing(&fix, (*insertable)(nil))
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(insertableFields))
-	test.Snapshoter.Save(t, insertableFields)
 
 	for _, f := range insertableFields {
-		_, ok := f.(insertable)
-		require.True(t, ok)
+		assert.NotNil(t, f)
+		assert.Implements(t, (*insertable)(nil), f)
 	}
 
 	type upsertable interface {
@@ -143,7 +133,7 @@ func TestGetFieldsImplementingSuccess(t *testing.T) {
 	// there should be equal number of fields implementing Insertable and Upsertable interface
 	assert.Equal(t, len(insertableFields), len(upsertableFields))
 	for _, f := range upsertableFields {
-		_, ok := f.(upsertable)
-		require.True(t, ok)
+		assert.NotNil(t, f)
+		assert.Implements(t, (*upsertable)(nil), f)
 	}
 }

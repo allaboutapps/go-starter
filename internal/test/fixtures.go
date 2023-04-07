@@ -140,15 +140,9 @@ func Fixtures() FixtureMap {
 func Inserts() []Insertable {
 	fix := Fixtures()
 	insertableIfc := (*Insertable)(nil)
-	insertsAsInterface, err := util.GetFieldsImplementing(&fix, insertableIfc)
+	inserts, err := util.GetFieldsImplementing(&fix, insertableIfc)
 	if err != nil {
 		panic(fmt.Errorf("failed to get insertable fixture fields: %w", err))
-	}
-
-	// TODO: could be improved with generics
-	inserts := make([]Insertable, 0, len(insertsAsInterface))
-	for _, object := range insertsAsInterface {
-		inserts = append(inserts, object.(Insertable))
 	}
 
 	return inserts
