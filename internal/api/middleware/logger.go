@@ -187,7 +187,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				in = "0"
 			}
 
-			l := log.With().
+			l := log.With().Caller().
 				Dict("req", zerolog.Dict().
 					Str("id", id).
 					Str("host", req.Host).
