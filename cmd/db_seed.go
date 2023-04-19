@@ -25,7 +25,7 @@ func init() {
 	dbCmd.AddCommand(seedCmd)
 }
 
-func seedCmdFunc(cmd *cobra.Command, args []string) {
+func seedCmdFunc(_ *cobra.Command, _ []string) {
 	if err := applyFixtures(); err != nil {
 		fmt.Printf("Error while seeding fixtures: %v", err)
 		os.Exit(1)

@@ -334,7 +334,7 @@ func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixt
 }
 
 // ApplyDump applies dumpFile (absolute path to .sql file) to db
-func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) error {
+func ApplyDump(_ context.Context, t *testing.T, db *sql.DB, dumpFile string) error {
 	t.Helper()
 
 	// ensure file exists

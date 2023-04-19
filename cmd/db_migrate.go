@@ -24,7 +24,7 @@ func init() {
 	migrate.SetTable(config.DatabaseMigrationTable)
 }
 
-func migrateCmdFunc(cmd *cobra.Command, args []string) {
+func migrateCmdFunc(_ *cobra.Command, _ []string) {
 	n, err := applyMigrations()
 	if err != nil {
 		fmt.Printf("Error while applying migrations: %v\n", err)

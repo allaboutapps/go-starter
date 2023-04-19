@@ -43,7 +43,7 @@ type ResponseBodyLogSkipper func(req *http.Request, res *echo.Response) bool
 // DefaultResponseBodyLogSkipper returns false for all responses with Content-Type
 // application/json, preventing logging for all other types of payloads as those
 // might contain binary or URL-encoded data unfit for logging purposes.
-func DefaultResponseBodyLogSkipper(req *http.Request, res *echo.Response) bool {
+func DefaultResponseBodyLogSkipper(_ *http.Request, res *echo.Response) bool {
 	contentType := res.Header().Get(echo.HeaderContentType)
 	switch {
 	case strings.HasPrefix(contentType, echo.MIMEApplicationJSON):
