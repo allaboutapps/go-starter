@@ -334,7 +334,7 @@ func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixt
 }
 
 // ApplyDump applies dumpFile (absolute path to .sql file) to db
-func ApplyDump(_ context.Context, t *testing.T, db *sql.DB, dumpFile string) error {
+func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) error {
 	t.Helper()
 
 	// ensure file exists
@@ -344,11 +344,11 @@ func ApplyDump(_ context.Context, t *testing.T, db *sql.DB, dumpFile string) err
 
 	// we need to get the db name before being able to do anything.
 	var targetDB string
-	if err := db.QueryRow("SELECT current_database();").Scan(&targetDB); err != nil {
+	if err := db.QueryRowContext(ctx, "SELECT current_database();").Scan(&targetDB); err != nil {
 		return err
 	}
 
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("cat %q | psql %q", dumpFile, targetDB)) //nolint:gosec
+	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("cat %q | psql %q", dumpFile, targetDB)) //nolint:gosec
 	combinedOutput, err := cmd.CombinedOutput()
 
 	if err != nil {
