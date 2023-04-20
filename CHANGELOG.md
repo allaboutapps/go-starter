@@ -9,11 +9,16 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
-- Switch [from Go 1.17.9 to Go 1.20.3](https://go.dev/doc/devel/release#go1.19) (requires `./docker-helper.sh --rebuild`).
+- Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.19) (requires `./docker-helper.sh --rebuild`).
+- Minor: [Bump github.com/golangci/golangci-lint from 1.50.1 to 1.52.2](https://github.com/golangci/golangci-lint/releases/tag/v1.52.2)
+- Minor: [Bump golang.org/x/net from 0.2.0 to 0.7.0](https://cs.opensource.google/go/x/net) (Fixing CVE-2022-41723)
+
+## 2023-03-03
+- Switch [from Go 1.17.9 to Go 1.19.3](https://go.dev/doc/devel/release#go1.19) (requires `./docker-helper.sh --rebuild`).
   - Major: Update base docker image from debian buster to bullseye
   - Minor: [Bump github.com/darold/pgFormatter from 5.2 to 5.3](https://github.com/darold/pgFormatter/releases/tag/v5.3)
   - Minor: [Bump github.com/gotestyourself/gotestsum from 1.8.0 to 1.9.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.9.0)
-  - Minor: [Bump github.com/golangci/golangci-lint from 1.45.2 to 1.52.2](https://github.com/golangci/golangci-lint/releases/tag/v1.52.2)
+  - Minor: [Bump github.com/golangci/golangci-lint from 1.45.2 to 1.50.1](https://github.com/golangci/golangci-lint/releases/tag/v1.50.1)
   - Minor: [Bump github.com/uw-labs/lichen from 0.1.5 to 0.1.7](https://github.com/uw-labs/lichen/releases/tag/v0.1.7)
   - Minor: [Bump github.com/watchexec/watchexec from 1.18.11 to 1.20.6](https://github.com/watchexec/watchexec/releases/tag/v1.20.6)
   - Minor: [Bump github.com/mikefarah/yq from 4.24.2 to 4.30.5](https://github.com/mikefarah/yq/releases/tag/v4.30.5)
@@ -46,7 +51,6 @@
   - Minor: [Bump golang.org/x/crypto from v0.0.0-20220411220226-7b82a4e95df4 to 0.3.0](https://cs.opensource.google/go/x/crypto)
   - Minor: [Bump golang.org/x/sys from v0.0.0-20220412211240-33da011f77ad to 0.2.0](https://cs.opensource.google/go/x/sys)
   - Minor: [Bump golang.org/x/text from 0.3.7 to 0.4.0](https://cs.opensource.google/go/x/text) (Fixing CVE-2022-32149)
-  - Minor: [Bump golang.org/x/net from 0.2.0 to 0.7.0](https://cs.opensource.google/go/x/net) (Fixing CVE-2022-41723)
   - Minor: [Bump google.golang.org/api from 0.74.0 to 0.103.0](https://github.com/googleapis/google-api-go-client/compare/v0.80.0...v0.103.0)
 
 ## 2022-09-13
