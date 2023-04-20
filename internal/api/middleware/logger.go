@@ -127,6 +127,7 @@ type LoggerConfig struct {
 	LogRequestBody            bool
 	LogRequestHeader          bool
 	LogRequestQuery           bool
+	LogCaller                 bool
 	RequestBodyLogSkipper     RequestBodyLogSkipper
 	RequestBodyLogReplacer    BodyLogReplacer
 	RequestHeaderLogReplacer  HeaderLogReplacer
@@ -138,11 +139,14 @@ type LoggerConfig struct {
 	ResponseHeaderLogReplacer HeaderLogReplacer
 }
 
+// Logger with default logger output and configuration
 func Logger() echo.MiddlewareFunc {
-	return LoggerWithConfig(DefaultLoggerConfig)
+	return LoggerWithConfig(DefaultLoggerConfig, nil)
 }
 
-func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
+// LoggerWithConfig returns a new MiddlewareFunc which creates a logger with the desired configuration.
+// If output is set to nil, the default output is used.
+func LoggerWithConfig(config LoggerConfig, output io.Writer) echo.MiddlewareFunc {
 	if config.Skipper == nil {
 		config.Skipper = DefaultLoggerConfig.Skipper
 	}
@@ -187,7 +191,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				in = "0"
 			}
 
-			l := log.With().Caller().
+			l := log.With().
 				Dict("req", zerolog.Dict().
 					Str("id", id).
 					Str("host", req.Host).
@@ -195,6 +199,16 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					Str("url", req.URL.String()).
 					Str("bytes_in", in),
 				).Logger()
+
+			if output != nil {
+				l = l.Output(output)
+			}
+
+			if config.LogCaller {
+				// Caller uses https://pkg.go.dev/runtime#Caller underneath and might decrease the performance.
+				l = l.With().Caller().Logger()
+			}
+
 			le := l.WithLevel(config.Level)
 			req = req.WithContext(l.WithContext(context.WithValue(req.Context(), util.CTXKeyRequestID, id)))
 

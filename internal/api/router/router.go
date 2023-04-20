@@ -72,6 +72,7 @@ func Init(s *api.Server) {
 			LogRequestQuery:   s.Config.Logger.LogRequestQuery,
 			LogResponseBody:   s.Config.Logger.LogResponseBody,
 			LogResponseHeader: s.Config.Logger.LogResponseHeader,
+			LogCaller:         s.Config.Logger.LogCaller,
 			RequestBodyLogSkipper: func(req *http.Request) bool {
 				// We skip all body logging for auth endpoints as these might contain credentials
 				if strings.HasPrefix(req.URL.Path, "/api/v1/auth") {
@@ -96,7 +97,7 @@ func Init(s *api.Server) {
 				}
 				return false
 			},
-		}))
+		}, nil /* logger output - set to default */))
 	} else {
 		log.Warn().Msg("Disabling logger middleware due to environment config")
 	}
