@@ -20,9 +20,10 @@
 - Major: Upgrade distroless app image from base-debian10 to base-debian11
 - Major: Dockerfile is now build to support amd64 and arm64 architecture
 - Improve speed of `make swagger` when dealing with many files in `/api` by generating to a docker volume instead of the host filesystem, rsyncing only to changes into `/internal/types`. Furthermore split our swagger type generation and validation into two separate make targets, that can run concurrently (requires `./docker-helper.sh --rebuild`).
-  - Note that `/app/api/tmp`, `/app/tmp` and `/app/bin` are now baked by proper docker volumes when using our `docker-compose.yml`/`./docker-helper.sh --up`. You **cannot** remove these directories directly inside the container (but its contents) and you can also no longer see its files on your host machine directly! 
+  - Note that `/app/api/tmp`, `/app/tmp` and `/app/bin` are now baked by proper docker volumes when using our `docker-compose.yml`/`./docker-helper.sh --up`. You **cannot** remove these directories directly inside the container (but its contents) and you can also no longer see its files on your host machine directly!
 - Fix `make check-gen-dirs` false positives hidden files.
 - Allow to trace/benchmark `Makefile` targets execution by using a custom shell wrapper for make execution. See `SHELL` and `.SHELLFLAGS` within `Makefile` and the custom `rksh` script in the root working directory. Usage: `MAKE_TRACE_TIME=true make <target>`
+- Minor: add `GetFieldsImplementing` to utils and use it to easier add new fixture fields.
 - `go.mod` changes:
   - Minor: [Bump github.com/BurntSushi/toml from 1.1.0 to 1.2.1](https://github.com/BurntSushi/toml/releases/tag/v1.2.1)
   - Minor: [Bump github.com/gabriel-vasile/mimetype from 1.4.0 to 1.4.1](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.1)
@@ -77,7 +78,7 @@
 - `go.mod` changes:
   - Major: [Bump `github.com/rubenv/sql-migrate` from v0.0.0-20210614095031-55d5740dbbcc to v1.1.1](https://github.com/rubenv/sql-migrate/compare/55d5740dbbccbaa4934009263b37ba52d837241f...v1.1.1) (though this should not lead to any major changes)
   - Minor: [Bump github.com/volatiletech/sqlboiler/v4 from 4.6.0 to v4.9.2](https://github.com/volatiletech/sqlboiler/blob/v4.9.2/CHANGELOG.md#v492---2022-04-11) (your generated model might slightly change, minor changes).
-    - Note that v5 will prefer wrapping errors (e.g. `sql.ErrNoRows`) to retain the stack trace, thus it's about time for us to start to enforce proper `errors.Is` checks in our codebase (see above). 
+    - Note that v5 will prefer wrapping errors (e.g. `sql.ErrNoRows`) to retain the stack trace, thus it's about time for us to start to enforce proper `errors.Is` checks in our codebase (see above).
   - Minor: [#178: Bump github.com/labstack/echo/v4 from 4.6.1 to 4.7.2](https://github.com/allaboutapps/go-starter/pull/178) (support for HEAD method query params binding, minor changes).
   - Minor: [#160: Bump github.com/rs/zerolog from 1.25.0 to 1.26.1](https://github.com/allaboutapps/go-starter/pull/160) (minor changes).
   - Minor: [#179: Bump github.com/nicksnyder/go-i18n/v2 from 2.1.2 to 2.2.0](https://github.com/allaboutapps/go-starter/pull/179) (minor changes).
@@ -97,7 +98,7 @@
   - This does not require a development container restart.
   - We override the env within the app process through `config.DefaultServiceConfigFromEnv()`, so this does not mess with the actual container ENV.
   - See `.env.local.sample` for further instructions to use this.
-  - Note that `.env.local` is **NEVER automatically** applied during **test runs**. If you really need that, use the specialized `test.DotEnvLoadLocalOrSkipTest` helper before loading up your server within that very test! This ensures that this test is automatically skipped if the `.env.local` file is no longer available. 
+  - Note that `.env.local` is **NEVER automatically** applied during **test runs**. If you really need that, use the specialized `test.DotEnvLoadLocalOrSkipTest` helper before loading up your server within that very test! This ensures that this test is automatically skipped if the `.env.local` file is no longer available.
 - VSCode windows closes now explicitly stop Docker containers via [`shutdownAction: "stopCompose"`](https://code.visualstudio.com/docs/remote/devcontainerjson-reference) within `.devcontainer.json`.
   - Use `./docker-helper --halt` or other `docker` or `docker-compose` management commands to do this explicitly instead.
 - Drone CI specific (minor): Fix multiline ENV variables were messing up our `.hostenv` for `docker run` command testing of the final image.
@@ -122,9 +123,9 @@
 
 - **BREAKING** Username format change in auth handlers
   - Added the `util.ToUsernameFormat` helper function, which will **lowercase** and **trim whitespaces**. We use it to format usernames in the login, register, and forgot-password handlers.
-    - This prevents user duplication (e.g. two accounts registered with the same email address with different casing) and 
-    - cases where users would inadvertently register with specific casing or a trailing whitespace after their username, and subsequently struggle to log into their account.  
-  - **This effectively locks existing users whose username contains uppercase characters and/or whitespaces out of their accounts.** 
+    - This prevents user duplication (e.g. two accounts registered with the same email address with different casing) and
+    - cases where users would inadvertently register with specific casing or a trailing whitespace after their username, and subsequently struggle to log into their account.
+  - **This effectively locks existing users whose username contains uppercase characters and/or whitespaces out of their accounts.**
     - Before rolling out this change, check whether any existing users are affected and migrate their usernames to a format that is compatible with this change.
     - Be aware that this may cause conflicts in regard to the uniqueness constraint of usernames and therefore need to be resolved manually, which is why we are not including a database migration to automatically migrate existing usernames to the new format.
   - For more information and a possible manual database migration flow please see this special WIKI page: https://github.com/allaboutapps/go-starter/wiki/2022-02-28
@@ -134,7 +135,7 @@
 ### Changed
 
 - Changed order of make targets in the `make swagger` pipeline. `make swagger-lint-ref-siblings` will now run after `make swagger-concat`, always linting the current version of our swagger file. This helps avoid errors regarding an invalid `swagger.yml` when resolving merge conflicts as those are often resolved by running `make swagger` and generating a fresh `swagger.yml`.
- 
+
 ## 2022-02-02
 
 ### Changed
@@ -226,7 +227,7 @@
 
 ### Changed
 
-- **Hotfix**: We will pin the `Dockerfile` development and builder stage to `golang:1.16.7-buster` (+ `-buster`) for now, as currently the [new debian bullseye release within the go official docker images](https://github.com/docker-library/golang/commit/48a7371ed6055a97a10adb0b75756192ad5f1c97) breaks some tooling. The upgrade to debian bullseye and Go 1.17 will happen ~simultaneously~ **separately** within go-starter in the following weeks. 
+- **Hotfix**: We will pin the `Dockerfile` development and builder stage to `golang:1.16.7-buster` (+ `-buster`) for now, as currently the [new debian bullseye release within the go official docker images](https://github.com/docker-library/golang/commit/48a7371ed6055a97a10adb0b75756192ad5f1c97) breaks some tooling. The upgrade to debian bullseye and Go 1.17 will happen ~simultaneously~ **separately** within go-starter in the following weeks.
 
 ## 2021-08-16
 
