@@ -9,7 +9,7 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
-- Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.19) (requires `./docker-helper.sh --rebuild`).
+- Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.20) (requires `./docker-helper.sh --rebuild`).
 - Add new log configuration:
   - optional `output` param of `LoggerWithConfig` to redirect the log output
   - optional caller info switched on with `SERVER_LOGGER_LOG_CALLER`
