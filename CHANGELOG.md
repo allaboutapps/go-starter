@@ -33,6 +33,7 @@
   - Note that `/app/api/tmp`, `/app/tmp` and `/app/bin` are now baked by proper docker volumes when using our `docker-compose.yml`/`./docker-helper.sh --up`. You **cannot** remove these directories directly inside the container (but its contents) and you can also no longer see its files on your host machine directly!
 - Fix `make check-gen-dirs` false positives hidden files.
 - Allow to trace/benchmark `Makefile` targets execution by using a custom shell wrapper for make execution. See `SHELL` and `.SHELLFLAGS` within `Makefile` and the custom `rksh` script in the root working directory. Usage: `MAKE_TRACE_TIME=true make <target>`
+- Minor: add `GetFieldsImplementing` to utils and use it to easier add new fixture fields.
 - `go.mod` changes:
   - Minor: [Bump github.com/BurntSushi/toml from 1.1.0 to 1.2.1](https://github.com/BurntSushi/toml/releases/tag/v1.2.1)
   - Minor: [Bump github.com/gabriel-vasile/mimetype from 1.4.0 to 1.4.1](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.1)
@@ -56,6 +57,7 @@
   - Minor: [Bump golang.org/x/crypto from v0.0.0-20220411220226-7b82a4e95df4 to 0.3.0](https://cs.opensource.google/go/x/crypto)
   - Minor: [Bump golang.org/x/sys from v0.0.0-20220412211240-33da011f77ad to 0.2.0](https://cs.opensource.google/go/x/sys)
   - Minor: [Bump golang.org/x/text from 0.3.7 to 0.4.0](https://cs.opensource.google/go/x/text) (Fixing CVE-2022-32149)
+  - Minor: [Bump golang.org/x/net from 0.2.0 to 0.7.0](https://cs.opensource.google/go/x/net) (Fixing CVE-2022-41723)
   - Minor: [Bump google.golang.org/api from 0.74.0 to 0.103.0](https://github.com/googleapis/google-api-go-client/compare/v0.80.0...v0.103.0)
 
 ## 2022-09-13

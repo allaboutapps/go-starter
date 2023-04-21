@@ -2,7 +2,9 @@ package data
 
 import (
 	"context"
+	"fmt"
 
+	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -14,6 +16,7 @@ type Upsertable interface {
 	Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error
 }
 
+// Mind the declaration order! The fields get upserted exactly in the order they are declared.
 type FixtureMap struct{}
 
 func Fixtures() FixtureMap {
@@ -21,5 +24,12 @@ func Fixtures() FixtureMap {
 }
 
 func Upserts() []Upsertable {
-	return []Upsertable{}
+	fix := Fixtures()
+	upsertableIfc := (*Upsertable)(nil)
+	upserts, err := util.GetFieldsImplementing(&fix, upsertableIfc)
+	if err != nil {
+		panic(fmt.Errorf("failed to get upsertable fixture fields: %w", err))
+	}
+
+	return upserts
 }
