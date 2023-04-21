@@ -57,7 +57,6 @@
   - Minor: [Bump golang.org/x/crypto from v0.0.0-20220411220226-7b82a4e95df4 to 0.3.0](https://cs.opensource.google/go/x/crypto)
   - Minor: [Bump golang.org/x/sys from v0.0.0-20220412211240-33da011f77ad to 0.2.0](https://cs.opensource.google/go/x/sys)
   - Minor: [Bump golang.org/x/text from 0.3.7 to 0.4.0](https://cs.opensource.google/go/x/text) (Fixing CVE-2022-32149)
-  - Minor: [Bump golang.org/x/net from 0.2.0 to 0.7.0](https://cs.opensource.google/go/x/net) (Fixing CVE-2022-41723)
   - Minor: [Bump google.golang.org/api from 0.74.0 to 0.103.0](https://github.com/googleapis/google-api-go-client/compare/v0.80.0...v0.103.0)
 
 ## 2022-09-13
