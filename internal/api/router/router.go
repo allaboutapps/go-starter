@@ -97,7 +97,7 @@ func Init(s *api.Server) {
 				}
 				return false
 			},
-		}, nil /* logger output - set to default */))
+		}))
 	} else {
 		log.Warn().Msg("Disabling logger middleware due to environment config")
 	}

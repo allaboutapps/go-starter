@@ -11,8 +11,8 @@
 ## Unreleased
 - Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.19) (requires `./docker-helper.sh --rebuild`).
 - Add new log configuration:
-  - `output` param of `LoggerWithConfig` to redirect the log output
-  - log caller info switched on with `SERVER_LOGGER_LOG_CALLER`
+  - optional `output` param of `LoggerWithConfig` to redirect the log output
+  - optional caller info switched on with `SERVER_LOGGER_LOG_CALLER`
 - Minor: update devcontainer.json syntax to remove deprecation warning
 - `go.mod` changes:
   - Minor: [Bump github.com/golangci/golangci-lint from 1.50.1 to 1.52.2](https://github.com/golangci/golangci-lint/releases/tag/v1.52.2)

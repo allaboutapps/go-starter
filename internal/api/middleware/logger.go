@@ -145,8 +145,8 @@ func Logger() echo.MiddlewareFunc {
 }
 
 // LoggerWithConfig returns a new MiddlewareFunc which creates a logger with the desired configuration.
-// If output is set to nil, the default output is used.
-func LoggerWithConfig(config LoggerConfig, output io.Writer) echo.MiddlewareFunc {
+// If output is set to nil, the default output is used. If more output params are provided, the first is being used.
+func LoggerWithConfig(config LoggerConfig, output ...io.Writer) echo.MiddlewareFunc {
 	if config.Skipper == nil {
 		config.Skipper = DefaultLoggerConfig.Skipper
 	}
@@ -200,8 +200,8 @@ func LoggerWithConfig(config LoggerConfig, output io.Writer) echo.MiddlewareFunc
 					Str("bytes_in", in),
 				).Logger()
 
-			if output != nil {
-				l = l.Output(output)
+			if len(output) > 0 {
+				l = l.Output(output[0])
 			}
 
 			if config.LogCaller {
