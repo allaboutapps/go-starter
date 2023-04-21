@@ -14,6 +14,7 @@
   - optional `output` param of `LoggerWithConfig` to redirect the log output
   - optional caller info switched on with `SERVER_LOGGER_LOG_CALLER`
 - Minor: update devcontainer.json syntax to remove deprecation warning
+- Minor: add `GetFieldsImplementing` to utils and use it to easier add new fixture fields.
 - `go.mod` changes:
   - Minor: [Bump github.com/golangci/golangci-lint from 1.50.1 to 1.52.2](https://github.com/golangci/golangci-lint/releases/tag/v1.52.2)
   - Minor: [Bump golang.org/x/net from 0.2.0 to 0.7.0](https://cs.opensource.google/go/x/net) (Fixing CVE-2022-41723)
@@ -33,7 +34,6 @@
   - Note that `/app/api/tmp`, `/app/tmp` and `/app/bin` are now baked by proper docker volumes when using our `docker-compose.yml`/`./docker-helper.sh --up`. You **cannot** remove these directories directly inside the container (but its contents) and you can also no longer see its files on your host machine directly!
 - Fix `make check-gen-dirs` false positives hidden files.
 - Allow to trace/benchmark `Makefile` targets execution by using a custom shell wrapper for make execution. See `SHELL` and `.SHELLFLAGS` within `Makefile` and the custom `rksh` script in the root working directory. Usage: `MAKE_TRACE_TIME=true make <target>`
-- Minor: add `GetFieldsImplementing` to utils and use it to easier add new fixture fields.
 - `go.mod` changes:
   - Minor: [Bump github.com/BurntSushi/toml from 1.1.0 to 1.2.1](https://github.com/BurntSushi/toml/releases/tag/v1.2.1)
   - Minor: [Bump github.com/gabriel-vasile/mimetype from 1.4.0 to 1.4.1](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.1)
