@@ -13,6 +13,7 @@
 - Add new log configuration:
   - optional `output` param of `LoggerWithConfig` to redirect the log output
   - optional caller info switched on with `SERVER_LOGGER_LOG_CALLER`
+- Minor: rename unused function parameters to fix linter errors
 - Minor: update devcontainer.json syntax to remove deprecation warning
 - Minor: add `GetFieldsImplementing` to utils and use it to easier add new fixture fields.
 - `go.mod` changes:
