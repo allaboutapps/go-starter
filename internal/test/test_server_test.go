@@ -27,7 +27,7 @@ type TestResponsePayload struct {
 }
 
 // Validate validates this request payload
-func (m *TestRequestPayload) Validate(formats strfmt.Registry) error {
+func (m *TestRequestPayload) Validate(_ strfmt.Registry) error {
 	return nil
 }
 
@@ -50,7 +50,7 @@ func (m *TestRequestPayload) UnmarshalBinary(b []byte) error {
 }
 
 // Validate validates this response payload
-func (m *TestResponsePayload) Validate(formats strfmt.Registry) error {
+func (m *TestResponsePayload) Validate(_ strfmt.Registry) error {
 	return nil
 }
 
