@@ -12,7 +12,7 @@
 
 ![go starter overview](https://public.allaboutapps.at/go-starter-wiki/go-starter-main-overview.png)
 
-Demo: **[https://go-starter.allaboutapps.at](https://go-starter.allaboutapps.at)**  
+Demo: **[https://go-starter.allaboutapps.at](https://go-starter.allaboutapps.at)**
 FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/allaboutapps/go-starter/wiki/FAQ)**
 
 ## Table of Contents
@@ -51,11 +51,11 @@ FAQ: **[https://github.com/allaboutapps/go-starter/wiki/FAQ](https://github.com/
 - Implements [OAuth 2.0 Bearer Tokens](https://tools.ietf.org/html/rfc6750) and password authentication using [argon2id](https://godoc.org/github.com/alexedwards/argon2id) hashes.
 - Comes with a tested mock and [FCM](https://firebase.google.com/docs/cloud-messaging) provider for sending push notifications and storing push tokens.
 - CLI layer provided by [spf13/cobra](https://github.com/spf13/cobra). It's exceptionally easy to [add additional sub-commands via `cobra-cli`](https://github.com/spf13/cobra-cli/blob/main/README.md#add-commands-to-a-project).
-- Comes with an initial [PostgreSQL](https://www.postgresql.org/) database structure (see [/migrations](https://github.com/allaboutapps/go-starter/tree/master/migrations)), covering: 
+- Comes with an initial [PostgreSQL](https://www.postgresql.org/) database structure (see [/migrations](https://github.com/allaboutapps/go-starter/tree/master/migrations)), covering:
   - auth tokens (access-, refresh-, password-reset-tokens),
   - a generic auth-related `user` model
   - an app-specific bare-bones `app_user_profile` model,
-  - push notification tokens and 
+  - push notification tokens and
   - a health check sequence (for performing writeable checks).
 - API endpoints and CLI for liveness (`/-/healthy`) and readiness (`/-/ready`) probes
 - Parallel jobs optimized `Makefile` and various convenience scripts (see all targets and its description via `make help`). A full rebuild only takes seconds.
@@ -85,7 +85,7 @@ Please refer to the [official installation guide](https://code.visualstudio.com/
 
 ### Quickstart
 
-Create a new git repository through the GitHub template repository feature ([use this template](https://github.com/allaboutapps/go-starter/generate)). You will then start with a **single initial commit** in your own repository. 
+Create a new git repository through the GitHub template repository feature ([use this template](https://github.com/allaboutapps/go-starter/generate)). You will then start with a **single initial commit** in your own repository.
 
 ```bash
 # Clone your new repository, cd into it, then easily start the docker-compose dev environment through our helper
@@ -178,7 +178,7 @@ make
 make test
 ```
 
-### Running 
+### Running
 
 To run the service locally you may:
 
@@ -226,6 +226,7 @@ Please make sure to update tests as appropriate.
 - [Michael Farkas - @farkmi](https://github.com/farkmi)
 - [Mario Ranftl - @majodev](https://github.com/majodev)
 - [Manuel Wieser - @mwieser](https://github.com/mwieser)
+- [Anna - @anjankow](https://github.com/anjankow)
 
 ### Previous maintainers
 
