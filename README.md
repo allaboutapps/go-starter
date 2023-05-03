@@ -223,10 +223,10 @@ Please make sure to update tests as appropriate.
 
 ## Current maintainers
 
+- [Anna - @anjankow](https://github.com/anjankow)
 - [Michael Farkas - @farkmi](https://github.com/farkmi)
 - [Mario Ranftl - @majodev](https://github.com/majodev)
 - [Manuel Wieser - @mwieser](https://github.com/mwieser)
-- [Anna - @anjankow](https://github.com/anjankow)
 
 ### Previous maintainers
 
