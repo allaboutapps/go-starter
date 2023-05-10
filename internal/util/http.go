@@ -89,10 +89,11 @@ func BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error {
 // BindAndValidate binds the request, parsing path+query+body and validating these structs.
 //
 // Deprecated: Use our dedicated BindAndValidate* mappers instead:
-//   BindAndValidateBody(c echo.Context, v runtime.Validatable) error // preferred
-//   BindAndValidatePathAndQueryParams(c echo.Context, v runtime.Validatable) error  // preferred
-//   BindAndValidatePathParams(c echo.Context, v runtime.Validatable) error // rare usecases
-//   BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error // rare usecases
+//
+//	BindAndValidateBody(c echo.Context, v runtime.Validatable) error // preferred
+//	BindAndValidatePathAndQueryParams(c echo.Context, v runtime.Validatable) error  // preferred
+//	BindAndValidatePathParams(c echo.Context, v runtime.Validatable) error // rare usecases
+//	BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error // rare usecases
 //
 // BindAndValidate works like Echo <v4.2.0. It was preferred to .Bind() everything (query, params, body) to a single struct
 // in one pass. Thus we included additional handling to allow multiple body rebindings (though copying while restoring),

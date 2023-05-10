@@ -1,0 +1,59 @@
+#!/bin/bash
+set -Eeo pipefail
+
+# Description:
+# Wraps passed make targets to print timing traces to stderr (if enabled).
+#
+# Usage:
+#   MAKE_TRACE_TIME=true make <target>
+# 
+# Requirements:
+# This script must act as shell for make, thus must be configured via Makefile args (bottom of our Makefile):
+#   SHELL = /app/rksh
+#   .SHELLFLAGS = $@
+#
+# Naming:
+# This script was named "rksh" to convince "make" that we are still running a
+# POSIX compliant shell in .ONESHELL mode. This is a hack to work around the fact
+# that .ONESHELL mode only applies its "special escape handling" when it assumes
+# POSIX shell mode, thus properly excapes "@-+" from the targets, which will not 
+# be the case when naming this file differently.
+#
+# See:
+#   https://www.gnu.org/software/make/manual/make.html#One-Shell
+#   https://git.savannah.gnu.org/cgit/make.git/tree/src/job.c?h=4.4.1#n433 (is_bourne_compatible_shell)
+#
+# Passed args:
+# >&2 echo $1 # name of the make target
+# >&2 echo $2 # body of the make target
+# >&2 echo "make $1: /bin/bash -cEeuo pipefail $2" # debug: combined
+
+# colors:
+RED='\033[0;31m' # errors
+GREY='\033[0;90m' # trace start
+GREEN='\033[0;32m' # trace end
+NC='\033[0m' # No Color
+
+function color_reset {
+    >&2 printf "${NC}" # reset color
+}
+trap color_reset EXIT
+
+if [ "$MAKE_TRACE_TIME" = true ] ; then
+
+    # Ensure to write additional information to stderr as make targets stdout may be piped
+    >&2 echo -e "${GREY}$(date -u +"%Y-%m-%dT%H:%M:%SZ") l${MAKELEVEL:-"*"}s${SHLVL:-"*"} RUN 'make $1' ${NC}"
+    
+    TIMEFORMAT="%Rsec"
+    time {
+        # TIMEFORMAT gets appended and printed to stderr
+        (/bin/bash -cEeuo pipefail "$2" \
+            && (ret=$?; >&2 printf "${GREEN}$(date -u +"%Y-%m-%dT%H:%M:%SZ") l${MAKELEVEL:-"*"}s${SHLVL:-"*"} END 'make $1' exit ${ret} in ")) \
+            || (ret=$?; >&2 printf "${RED}$(date -u +"%Y-%m-%dT%H:%M:%SZ") l${MAKELEVEL:-"*"}s${SHLVL:-"*"} ERR 'make $1' exit ${ret} in " && exit "${ret}")
+    }
+
+else
+    # Just run the make target as usual while highlighting errors
+    (/bin/bash -cEeuo pipefail "$2") \
+        || (ret=$?; >&2 echo -e "${RED}l${MAKELEVEL:-"*"}s${SHLVL:-"*"} ERR 'make $1' exit ${ret}${NC}" && exit "${ret}")
+fi

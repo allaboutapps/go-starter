@@ -82,6 +82,7 @@ type LoggerServer struct {
 	LogRequestQuery    bool
 	LogResponseBody    bool
 	LogResponseHeader  bool
+	LogCaller          bool
 	PrettyPrintConsole bool
 }
 
@@ -219,6 +220,7 @@ func DefaultServiceConfigFromEnv() Server {
 			LogRequestQuery:    util.GetEnvAsBool("SERVER_LOGGER_LOG_REQUEST_QUERY", false),
 			LogResponseBody:    util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_BODY", false),
 			LogResponseHeader:  util.GetEnvAsBool("SERVER_LOGGER_LOG_RESPONSE_HEADER", false),
+			LogCaller:          util.GetEnvAsBool("SERVER_LOGGER_LOG_CALLER", false),
 			PrettyPrintConsole: util.GetEnvAsBool("SERVER_LOGGER_PRETTY_PRINT_CONSOLE", false),
 		},
 		Push: PushService{
