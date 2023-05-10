@@ -43,7 +43,7 @@ type ResponseBodyLogSkipper func(req *http.Request, res *echo.Response) bool
 // DefaultResponseBodyLogSkipper returns false for all responses with Content-Type
 // application/json, preventing logging for all other types of payloads as those
 // might contain binary or URL-encoded data unfit for logging purposes.
-func DefaultResponseBodyLogSkipper(req *http.Request, res *echo.Response) bool {
+func DefaultResponseBodyLogSkipper(_ *http.Request, res *echo.Response) bool {
 	contentType := res.Header().Get(echo.HeaderContentType)
 	switch {
 	case strings.HasPrefix(contentType, echo.MIMEApplicationJSON):
@@ -127,6 +127,7 @@ type LoggerConfig struct {
 	LogRequestBody            bool
 	LogRequestHeader          bool
 	LogRequestQuery           bool
+	LogCaller                 bool
 	RequestBodyLogSkipper     RequestBodyLogSkipper
 	RequestBodyLogReplacer    BodyLogReplacer
 	RequestHeaderLogReplacer  HeaderLogReplacer
@@ -138,11 +139,14 @@ type LoggerConfig struct {
 	ResponseHeaderLogReplacer HeaderLogReplacer
 }
 
+// Logger with default logger output and configuration
 func Logger() echo.MiddlewareFunc {
-	return LoggerWithConfig(DefaultLoggerConfig)
+	return LoggerWithConfig(DefaultLoggerConfig, nil)
 }
 
-func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
+// LoggerWithConfig returns a new MiddlewareFunc which creates a logger with the desired configuration.
+// If output is set to nil, the default output is used. If more output params are provided, the first is being used.
+func LoggerWithConfig(config LoggerConfig, output ...io.Writer) echo.MiddlewareFunc {
 	if config.Skipper == nil {
 		config.Skipper = DefaultLoggerConfig.Skipper
 	}
@@ -195,6 +199,16 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					Str("url", req.URL.String()).
 					Str("bytes_in", in),
 				).Logger()
+
+			if len(output) > 0 {
+				l = l.Output(output[0])
+			}
+
+			if config.LogCaller {
+				// Caller uses https://pkg.go.dev/runtime#Caller underneath and might decrease the performance.
+				l = l.With().Caller().Logger()
+			}
+
 			le := l.WithLevel(config.Level)
 			req = req.WithContext(l.WithContext(context.WithValue(req.Context(), util.CTXKeyRequestID, id)))
 

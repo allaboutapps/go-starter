@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.17.9-buster AS development
+FROM golang:1.20.3-bullseye AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,8 +15,8 @@ ENV MAKEFLAGS "-j 8 --no-print-directory"
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
 # https://wiki.postgresql.org/wiki/Apt
 # run lsb_release -c inside the container to pick the proper repository flavor
-# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" \
+# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" \
     | tee /etc/apt/sources.list.d/pgdg.list \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
     | apt-key add -
@@ -28,11 +28,11 @@ RUN apt-get update \
     # Mandadory minimal linux packages
     # Installed at development stage and app stage
     # Do not forget to add mandadory linux packages to the final app Dockerfile stage below!
-    # 
+    #
     # -- START MANDADORY --
     ca-certificates \
     # --- END MANDADORY ---
-    # 
+    #
     # Development specific packages
     # Only installed at development stage and NOT available in the final Docker stage
     # based upon
@@ -58,8 +58,9 @@ RUN apt-get update \
     postgresql-client-12 \
     icu-devtools \
     tmux \
+    rsync \
     # --- END DEVELOPMENT ---
-    # 
+    #
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -78,38 +79,40 @@ ENV LANG en_US.UTF-8
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v5.2.tar.gz \
-    && tar xzf v5.2.tar.gz \
-    && cd pgFormatter-5.2 \
+    && wget https://github.com/darold/pgFormatter/archive/v5.3.tar.gz \
+    && tar xzf v5.3.tar.gz \
+    && cd pgFormatter-5.3 \
     && perl Makefile.PL \
     && make && make install \
-    && rm -rf /tmp/pgFormatter 
+    && rm -rf /tmp/pgFormatter
 
 # go gotestsum: (this package should NOT be installed via go get)
 # https://github.com/gotestyourself/gotestsum/releases
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
-    && wget https://github.com/gotestyourself/gotestsum/releases/download/v1.8.0/gotestsum_1.8.0_linux_amd64.tar.gz \
-    && tar xzf gotestsum_1.8.0_linux_amd64.tar.gz \
+    && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.9.0/gotestsum_1.9.0_linux_${ARCH}.tar.gz" \
+    && tar xzf "gotestsum_1.9.0_linux_${ARCH}.tar.gz" \
     && cp gotestsum /usr/local/bin/gotestsum \
-    && rm -rf /tmp/gotestsum 
+    && rm -rf /tmp/gotestsum
 
 # go linting: (this package should NOT be installed via go get)
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+    | sh -s -- -b $(go env GOPATH)/bin v1.52.2
 
-# go swagger: (this package should NOT be installed via go get) 
+# go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
-RUN curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.29.0/swagger_linux_amd64" \
+RUN ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && curl -o /usr/local/bin/swagger -L'#' \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.29.0/swagger_linux_${ARCH}" \
     && chmod +x /usr/local/bin/swagger
 
-# lichen: go license util 
+# lichen: go license util
 # TODO: Install from static binary as soon as it becomes available.
 # https://github.com/uw-labs/lichen/tags
-RUN go install github.com/uw-labs/lichen@v0.1.5
+RUN go install github.com/uw-labs/lichen@v0.1.7
 
 # cobra-cli: cobra cmd scaffolding generator
 # TODO: Install from static binary as soon as it becomes available.
@@ -120,19 +123,20 @@ RUN go install github.com/spf13/cobra-cli@v1.3.0
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/cli-v1.18.11/watchexec-1.18.11-x86_64-unknown-linux-musl.tar.xz \
-    && tar xf watchexec-1.18.11-x86_64-unknown-linux-musl.tar.xz \
-    && cp watchexec-1.18.11-x86_64-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/v1.20.6/watchexec-1.20.6-$(arch)-unknown-linux-musl.tar.xz \
+    && tar xf watchexec-1.20.6-$(arch)-unknown-linux-musl.tar.xz \
+    && cp watchexec-1.20.6-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # yq
 # https://github.com/mikefarah/yq/releases
 RUN mkdir -p /tmp/yq \
     && cd /tmp/yq \
-    && wget https://github.com/mikefarah/yq/releases/download/v4.24.2/yq_linux_amd64.tar.gz \
-    && tar xzf yq_linux_amd64.tar.gz \
-    && cp yq_linux_amd64 /usr/local/bin/yq \
-    && rm -rf /tmp/yq 
+    && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && wget "https://github.com/mikefarah/yq/releases/download/v4.30.5/yq_linux_${ARCH}.tar.gz" \
+    && tar xzf "yq_linux_${ARCH}.tar.gz" \
+    && cp "yq_linux_${ARCH}" /usr/local/bin/yq \
+    && rm -rf /tmp/yq
 
 # gsdev
 # The sole purpose of the "gsdev" cli util is to provide a handy short command for the following (all args are passed):
@@ -141,7 +145,7 @@ RUN printf '#!/bin/bash\nset -Eeo pipefail\ncd /app && go run -tags scripts ./sc
 
 # linux permissions / vscode support: Add user to avoid linux file permission issues
 # Detail: Inside the container, any mounted files/folders will have the exact same permissions
-# as outside the container - including the owner user ID (UID) and group ID (GID). 
+# as outside the container - including the owner user ID (UID) and group ID (GID).
 # Because of this, your container user will either need to have the same UID or be in a group with the same GID.
 # The actual name of the user / group does not matter. The first user on a machine typically gets a UID of 1000,
 # so most containers use this as the ID of the user to try to avoid this problem.
@@ -166,11 +170,11 @@ RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
     /home/$USERNAME/.vscode-server-insiders
 
 # linux permissions / vscode support: chown $GOPATH so $USERNAME can directly work with it
-# Note that this should be the final step after installing all build deps 
+# Note that this should be the final step after installing all build deps
 RUN mkdir -p /$GOPATH/pkg && chown -R $USERNAME /$GOPATH
 
 # $GOBIN is where our own compiled binaries will live and other go.mod / VSCode binaries will be installed.
-# It should always come AFTER our other $PATH segments and should be earliest targeted in stage "builder", 
+# It should always come AFTER our other $PATH segments and should be earliest targeted in stage "builder",
 # as /app/bin will the shadowed by a volume mount via docker-compose!
 # E.g. "which golangci-lint" should report "/go/bin" not "/app/bin" (where VSCode will place it).
 # https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
@@ -186,6 +190,7 @@ ENV PATH $PATH:$GOBIN
 FROM development as builder
 WORKDIR /app
 COPY Makefile /app/Makefile
+COPY --chmod=0755 rksh /app/rksh
 COPY go.mod /app/go.mod
 COPY go.sum /app/go.sum
 RUN make modules
@@ -205,7 +210,7 @@ RUN make go-build
 # https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
 # The :debug image provides a busybox shell to enter (base-debian10 only, not static).
 # https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian10:debug as app
+FROM gcr.io/distroless/base-debian11:debug as app
 
 # FROM debian:buster-slim as app
 # RUN apt-get update \

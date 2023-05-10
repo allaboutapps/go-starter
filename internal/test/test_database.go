@@ -344,11 +344,11 @@ func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) e
 
 	// we need to get the db name before being able to do anything.
 	var targetDB string
-	if err := db.QueryRow("SELECT current_database();").Scan(&targetDB); err != nil {
+	if err := db.QueryRowContext(ctx, "SELECT current_database();").Scan(&targetDB); err != nil {
 		return err
 	}
 
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("cat %q | psql %q", dumpFile, targetDB)) //nolint:gosec
+	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("cat %q | psql %q", dumpFile, targetDB)) //nolint:gosec
 	combinedOutput, err := cmd.CombinedOutput()
 
 	if err != nil {
