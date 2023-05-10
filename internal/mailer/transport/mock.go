@@ -1,12 +1,17 @@
 package transport
 
 import (
+	"errors"
+	"fmt"
+	"log"
 	"sync"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/jordan-wright/email"
 )
+
+const defaultWaitTimeout = time.Second * 10
 
 type MockMailTransport struct {
 	sync.RWMutex
@@ -27,6 +32,22 @@ func NewMock() *MockMailTransport {
 func (m *MockMailTransport) Send(mail *email.Email) error {
 	m.Lock()
 	defer m.Unlock()
+
+	// Calling wg.Done might panic leaving a user clueless what was the reason of test failure.
+	// We will add more information before exiting.
+	defer func() {
+		rcp := recover()
+		if rcp == nil {
+			return
+		}
+
+		err, ok := rcp.(error)
+		if !ok {
+			err = fmt.Errorf("%v", rcp)
+		}
+
+		log.Fatalf("Unexpected email sent! MockMailTransport panicked: %s", err)
+	}()
 
 	m.mails = append(m.mails, mail)
 	m.OnMailSent(*mail)
@@ -64,5 +85,13 @@ func (m *MockMailTransport) Expect(mailCnt int) {
 
 // Wait until all expected mails have arrived
 func (m *MockMailTransport) Wait() {
-	_ = util.WaitTimeout(&m.wg, time.Second*10)
+	if err := util.WaitTimeout(&m.wg, defaultWaitTimeout); errors.Is(err, util.ErrWaitTimeout) {
+		panic(fmt.Sprintf("Some emails are missing, sent: %v", len(m.GetSentMails())))
+	}
+}
+
+func (m *MockMailTransport) WaitWithTimeout(timeout time.Duration) {
+	if err := util.WaitTimeout(&m.wg, timeout); errors.Is(err, util.ErrWaitTimeout) {
+		log.Fatalf("Some emails are missing, found: %v", len(m.GetSentMails()))
+	}
 }
