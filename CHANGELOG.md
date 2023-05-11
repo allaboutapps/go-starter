@@ -19,7 +19,7 @@
 - Add util for IN and NIN query helper which use `pg.StringArray` as param for slices instead of passing each item as arg.
   - sqlboiler fails at around 10k params because each element is passed as an argument and some database and driver limits are reached
   - `db.IN` should be used in go-starter projects when using postgres because it allows for over 1kk params in `IN` and `NIN` where clauses
-- Fixed bug in `test.RunningInTest()` were the test env did not get recognized while debugging
+- Fixed bug in `test.RunningInTest()` where the test env did not get recognized while debugging
 
 ## 2023-05-03
 - Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.20) (requires `./docker-helper.sh --rebuild`).
