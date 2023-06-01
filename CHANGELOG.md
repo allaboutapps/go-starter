@@ -10,7 +10,6 @@
 
 ## Unreleased
 
-## 2023-05-25
 
 - Migration to Docker Compose V2 ([Docker Compose Docs](https://docs.docker.com/compose/reference/))
 
