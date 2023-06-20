@@ -398,10 +398,9 @@ get-go-ldflags: ##- (opt) Prints used -ldflags as evaluated in Makefile used in 
 
 # https://gist.github.com/prwhite/8168133 - based on comment from @m000
 help: ##- Show common make targets.
-	@echo "usage: make <target>"
+	@echo "usage: make \033[36m<target>\033[0m"
 	@echo "note: use 'make help-all' to see all make targets."
-	@echo ""
-	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | grep --invert "(opt)" | sort | column -t -s '@'
+	@awk 'BEGIN {FS = ":.*#\#-"; } /^[a-zA-Z_-]+:.*?/ { printf "  \033[36m%-40s\033[0m %s\n", $$1, $$2 } /^# --- / { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 help-all: ##- Show all make targets.
 	@echo "usage: make <target>"
