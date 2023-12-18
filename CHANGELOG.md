@@ -12,6 +12,7 @@
 
 
 - Migration to Docker Compose V2 ([Docker Compose Docs](https://docs.docker.com/compose/reference/))
+- Extended the snapshot and request helper
 
 ## 2023-05-03
 - Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.20) (requires `./docker-helper.sh --rebuild`).

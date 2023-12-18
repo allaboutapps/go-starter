@@ -1,0 +1,19 @@
+{
+	"ID": <redacted>,
+	"A": "foo",
+	"B": 1,
+	"C": true,
+	"D": {
+		"Foo": "skip me",
+		"Bar": 3
+	},
+	"E": [
+		"skip me",
+		"skip me too"
+	],
+	"F": {
+		"skip me": 1,
+		"skip me three": 3,
+		"skip me too": 2
+	}
+}
