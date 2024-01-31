@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/rogpeppe/go-internal/modfile"
+	"golang.org/x/mod/modfile"
 )
 
 // GetModuleName returns the current go module's name as defined in the go.mod file.

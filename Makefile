@@ -298,7 +298,7 @@ swagger-generate: ##- (opt) Generate swagger /internal/types.
 		--config-file=api/config/go-swagger-config.yml \
 		-q
 	@find tmp/testdata/types -type f -exec sed -i "s|${GO_MODULE_NAME}/tmp/testdata/types|${GO_MODULE_NAME}/internal/types|g" {} \;
-	rsync -au --size-only --ignore-times --delete tmp/testdata/types/ internal/types/
+	rsync -au --ignore-times --delete tmp/testdata/types/ internal/types/
 
 swagger-validate: ##- (opt) Validate api/swagger.yml.
 	@echo "make swagger-validate"

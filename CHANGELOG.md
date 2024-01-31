@@ -9,14 +9,42 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## 2024-01-31
-- Migration to Docker Compose V2 ([Docker Compose Docs](https://docs.docker.com/compose/reference/))
+- Migration to Docker Compose V2 ([Docker Compose Docs](https://docs.docker.com/compose/reference/)), thx [@eklatzer](https://github.com/eklatzer)
 - Upgrade to [IntegreSQL v1.1.0](https://github.com/allaboutapps/integresql/blob/v1.1.0/CHANGELOG.md#v110)
 - Switch [from Go 1.20.3 Go 1.21.6](https://go.dev/doc/devel/release#go1.21.0) (requires `./docker-helper.sh --rebuild`).
+- Fix premature optimization in `make swagger` -> `make swagger-generate` (rm `rsync` with `--size-only`), thx [@eklatzer](https://github.com/eklatzer)
 - Dockerfile deps upgrade:
   - Upgrade pgFormatter [from v5.3 to v5.5](https://github.com/darold/pgFormatter/releases/tag/v5.5)
   - Upgrade gotestsum [from 1.9.0 to 1.11.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.11.0)
   - Upgrade golangci-lint [from 1.52.2 to 1.55.2](https://github.com/golangci/golangci-lint/releases/tag/v1.55.2)
   - Upgrade watchexec [from 1.20.6 to 1.25.1](https://github.com/watchexec/watchexec/releases/tag/v1.25.1)
+- `go.mod` upgrades
+  - Minor: [Bump github.com/BurntSushi/toml from v1.2.1 to v1.3.2](https://github.com/BurntSushi/toml)
+  - Minor: [Bump github.com/davecgh/go-spew from v1.1.1 to v1.1.2-0.20180830191138-d8f796af33cc](https://github.com/davecgh/go-spew/commit/d8f796af33cc11cb798c1aaeb27a4ebc5099927d)
+  - Minor: [Bump github.com/gabriel-vasile/mimetype from v1.4.1 to v1.4.3](https://github.com/gabriel-vasile/mimetype)
+  - Minor: [Bump github.com/go-openapi/errors from v0.20.3 to v0.21.0](https://github.com/go-openapi/errors)
+  - Minor: [Bump github.com/go-openapi/runtime from v0.25.0 to v0.27.1](https://github.com/go-openapi/runtime)
+  - Minor: [Bump github.com/go-openapi/strfmt from v0.21.3 to v0.22.0](https://github.com/go-openapi/strfmt)
+  - Minor: [Bump github.com/go-openapi/swag from v0.22.3 to v0.22.9](https://github.com/go-openapi/swag)
+  - Minor: [Bump github.com/go-openapi/validate from v0.22.0 to v0.22.6](https://github.com/go-openapi/validate)
+  - Minor: [Bump github.com/labstack/echo/v4 from v4.9.1 to v4.11.4](https://github.com/labstack/echo)
+  - Minor: [Bump github.com/lib/pq from v1.10.7 to v1.10.9](https://github.com/lib/pq)
+  - Minor: [Bump github.com/nicksnyder/go-i18n/v2 from v2.2.1 to v2.4.0](https://github.com/nicksnyder/go-i18n)
+  - Minor: [Bump github.com/pmezard/go-difflib from v1.0.0 to v1.0.1-0.20181226105442-5d4384ee4fb2](https://github.com/pmezard/go-difflib) (deprecated)
+  - Minor: [Bump github.com/rs/zerolog from v1.28.0 to v1.31.0](https://github.com/rs/zerolog)
+  - Minor: [Bump github.com/rubenv/sql-migrate from v1.2.0 to v1.6.1](https://github.com/rubenv/sql-migrate)
+  - Minor: [Bump github.com/spf13/cobra from v1.6.1 to v1.8.0](https://github.com/spf13/cobra)
+  - Minor: [Bump github.com/spf13/viper from v1.14.0 to v1.18.2](https://github.com/spf13/viper)
+  - Minor: [Bump github.com/stretchr/testify from v1.8.1 to v1.8.4](https://github.com/stretchr/testify)
+  - Minor: [Bump github.com/subosito/gotenv from v1.4.1 to v1.6.0](https://github.com/subosito/gotenv)
+  - Minor: [Bump github.com/volatiletech/sqlboiler/v4 from v4.13.0 to v4.16.1](https://github.com/volatiletech/sqlboiler)
+  - Minor: [Bump github.com/volatiletech/strmangle from v0.0.4 to v0.0.6](https://github.com/volatiletech/strmangle)
+  - Minor: [Bump golang.org/x/crypto from v0.3.0 to v0.18.0](https://golang.org/x/crypto)
+  - Minor: [Bump golang.org/x/sys from v0.5.0 to v0.16.0](https://golang.org/x/sys)
+  - Minor: [Bump golang.org/x/text from v0.7.0 to v0.14.0](https://golang.org/x/text)
+  - Minor: [Bump google.golang.org/api from v0.103.0 to v0.161.0](https://google.golang.org/api)
+  - Minor: [Bump xxxx from yyy to zzz](https://xxxx)
+  - Replace: [github.com/rogpeppe/go-internal v1.9.0](https://github.com/rogpeppe/go-internal) with [golang.org/x/mod v0.14.0](https://pkg.go.dev/golang.org/x/mod)
 
 ## 2023-05-03
 - Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.20) (requires `./docker-helper.sh --rebuild`).
