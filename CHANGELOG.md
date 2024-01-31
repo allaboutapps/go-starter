@@ -8,10 +8,15 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
-## Unreleased
-
-
+## 2024-01-31
 - Migration to Docker Compose V2 ([Docker Compose Docs](https://docs.docker.com/compose/reference/))
+- Upgrade to [IntegreSQL v1.1.0](https://github.com/allaboutapps/integresql/blob/v1.1.0/CHANGELOG.md#v110)
+- Switch [from Go 1.20.3 Go 1.21.6](https://go.dev/doc/devel/release#go1.21.0) (requires `./docker-helper.sh --rebuild`).
+- Dockerfile deps upgrade:
+  - Upgrade pgFormatter [from v5.3 to v5.5](https://github.com/darold/pgFormatter/releases/tag/v5.5)
+  - Upgrade gotestsum [from 1.9.0 to 1.11.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.11.0)
+  - Upgrade golangci-lint [from 1.52.2 to 1.55.2](https://github.com/golangci/golangci-lint/releases/tag/v1.55.2)
+  - Upgrade watchexec [from 1.20.6 to 1.25.1](https://github.com/watchexec/watchexec/releases/tag/v1.25.1)
 
 ## 2023-05-03
 - Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.20) (requires `./docker-helper.sh --rebuild`).
