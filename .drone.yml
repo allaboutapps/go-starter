@@ -436,7 +436,7 @@ services:
     <<: *WHEN_BUILD_EVENT
 
   "integresql":
-    image: allaboutapps/integresql:latest
+    image: ghcr.io/allaboutapps/integresql:v1.1.0
     environment:
       PGHOST: *PGHOST
       PGUSER: *PGUSER
