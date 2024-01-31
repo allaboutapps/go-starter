@@ -106,7 +106,7 @@ services:
       - pgvolume:/var/lib/postgresql/data
 
   integresql:
-    image: allaboutapps/integresql:1.0.0
+    image: ghcr.io/allaboutapps/integresql:v1.1.0
     expose:
       - "5000"
     depends_on:

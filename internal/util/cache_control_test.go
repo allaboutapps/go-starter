@@ -28,9 +28,9 @@ func TestCacheControl(t *testing.T) {
 				return c.JSON(http.StatusOK, "no-cache")
 			} else if cache.HasDirective(util.CacheControlDirectiveNoStore) {
 				return c.JSON(http.StatusOK, "no-store")
-			} else {
-				return c.NoContent(http.StatusNoContent)
 			}
+			return c.NoContent(http.StatusNoContent)
+
 		}, middleware.CacheControl())
 
 		header := http.Header{}
