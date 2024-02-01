@@ -1,8 +1,11 @@
 package test
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -10,6 +13,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/go-openapi/runtime"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
@@ -35,6 +39,7 @@ type snapshoter struct {
 	label    string
 	replacer func(s string) string
 	location string
+	skips    []string
 }
 
 var Snapshoter = snapshoter{
@@ -57,6 +62,66 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 	}
 
 	dump := s.replacer(spewConfig.Sdump(data...))
+
+	s.save(t, dump)
+}
+
+// SaveString creates a snapshot of the raw string.
+// Used to snapshot payloads or mails as formatted data.
+// It will fail the test if the dump is different from the saved dump.
+// It will also fail if it is the creation or an update of the snapshot.
+// vastly inspired by https://github.com/bradleyjkemp/cupaloy
+// main reason for self implementation is the replacer function and general flexibility
+func (s snapshoter) SaveString(t TestingT, data string) {
+	t.Helper()
+	err := os.MkdirAll(s.location, os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data = s.replacer(data)
+
+	s.save(t, data)
+}
+
+// SaveResponseAndValidate is used to create 2 snapshots for endpoint tests.
+// One snapshot will save the raw JSON response as indented JSON.
+// For the second snapshot the response will be parsed and validated using request helpers (helper_request.go)
+// Afterwards a dump of the response will be saved.
+// It will fail the test if the dump is different from the saved dump.
+// It will also fail if it is the creation or an update of the snapshot.
+func (s snapshoter) SaveResponseAndValidate(t TestingT, res *httptest.ResponseRecorder, v runtime.Validatable) {
+	t.Helper()
+
+	// snapshot prettyfied json first
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, res.Body.Bytes(), "", "\t"); err != nil {
+		t.Fatal(err)
+	}
+
+	jsonS := s
+	// set custom replacer for JSON compared to dumps
+	jsonS.replacer = func(s string) string {
+		skipString := strings.Join(jsonS.skips, "|")
+		re, err := regexp.Compile(fmt.Sprintf(`"(?i)(%s)": .*`, skipString))
+		if err != nil {
+			panic(err)
+		}
+
+		// replace lines with property name + <redacted>
+		return re.ReplaceAllString(s, `"$1": <redacted>,`)
+	}
+
+	jsonS.label += "JSON"
+	jsonS.SaveString(t, prettyJSON.String())
+
+	// bind and snapshot response type struct
+	ParseResponseAndValidate(t, res, v)
+	s.Save(t, v)
+}
+
+func (s snapshoter) save(t TestingT, dump string) {
+	t.Helper()
 	snapshotName := fmt.Sprintf("%s%s", strings.Replace(t.Name(), "/", "-", -1), s.label)
 	snapshotAbsPath := filepath.Join(s.location, fmt.Sprintf("%s.golden", snapshotName))
 
@@ -67,6 +132,7 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 		}
 
 		t.Errorf("Updating snapshot: '%s'", snapshotName)
+		return
 	}
 
 	prevSnapBytes, err := os.ReadFile(snapshotAbsPath)
@@ -77,7 +143,8 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 				t.Fatal(err)
 			}
 
-			t.Fatalf("No snapshot exists for name: '%s'. Creating new snapshot", snapshotName)
+			t.Errorf("No snapshot exists for name: '%s'. Creating new snapshot", snapshotName)
+			return
 		}
 
 		t.Fatal(err)
@@ -96,12 +163,13 @@ func (s snapshoter) Save(t TestingT, data ...interface{}) {
 			t.Fatal(err)
 		}
 
-		t.Error(diff)
+		t.Error(fmt.Sprintf("%s: %s", snapshotName, diff))
 	}
 }
 
 // SaveU is a short version for .Update(true).Save(...)
 func (s snapshoter) SaveU(t TestingT, data ...interface{}) {
+	t.Helper()
 	s.Update(true).Save(t, data...)
 }
 
@@ -110,18 +178,29 @@ func (s snapshoter) SaveU(t TestingT, data ...interface{}) {
 // Each line of the formatted dump is matched against the property name defined in skip and
 // the value will be replaced to deal with generated values that change each test.
 func (s snapshoter) Skip(skip []string) snapshoter {
+	s.skips = skip
 	s.replacer = func(s string) string {
 		skipString := strings.Join(skip, "|")
-		re, err := regexp.Compile(fmt.Sprintf("(%s): .*", skipString))
+		re, err := regexp.Compile(fmt.Sprintf("(?m)(\\s+%s): .*[^{]$", skipString))
+		if err != nil {
+			panic(err)
+		}
+
+		reStruct, err := regexp.Compile(fmt.Sprintf("((\\s+%s): .*){\n([^}]|\n)*}", skipString))
 		if err != nil {
 			panic(err)
 		}
 
 		// replace lines with property name + <redacted>
-		return re.ReplaceAllString(s, "$1: <redacted>,")
+		return reStruct.ReplaceAllString(re.ReplaceAllString(s, "$1: <redacted>,"), "$1 { <redacted> }")
 	}
 
 	return s
+}
+
+// Redact is a wrapper for Skip for easier usage with a variadic.
+func (s snapshoter) Redact(skip ...string) snapshoter {
+	return s.Skip(skip)
 }
 
 // Upadte is used to force an update for the snapshot. Will fail the test.

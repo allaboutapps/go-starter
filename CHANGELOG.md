@@ -9,6 +9,8 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
+- Added new features to the test snapshot helper. The snapshoter can now be used to save the json response body and the parsed and validated go-swagger type.
+  - The replacer function of `Skip` and `Redact` now supports multiline skips for maps or slices.
 
 ## 2024-02-01
 - [Persist bash history in development container](https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history) (requires `./docker-helper.sh --rebuild`).

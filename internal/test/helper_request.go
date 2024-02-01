@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"github.com/go-openapi/runtime"
@@ -18,7 +17,7 @@ import (
 type GenericPayload map[string]interface{}
 type GenericArrayPayload []interface{}
 
-func (g GenericPayload) Reader(t *testing.T) *bytes.Reader {
+func (g GenericPayload) Reader(t TestingT) *bytes.Reader {
 	t.Helper()
 
 	b, err := json.Marshal(g)
@@ -29,7 +28,7 @@ func (g GenericPayload) Reader(t *testing.T) *bytes.Reader {
 	return bytes.NewReader(b)
 }
 
-func (g GenericArrayPayload) Reader(t *testing.T) *bytes.Reader {
+func (g GenericArrayPayload) Reader(t TestingT) *bytes.Reader {
 	t.Helper()
 
 	b, err := json.Marshal(g)
@@ -40,7 +39,7 @@ func (g GenericArrayPayload) Reader(t *testing.T) *bytes.Reader {
 	return bytes.NewReader(b)
 }
 
-func PerformRequestWithParams(t *testing.T, s *api.Server, method string, path string, body GenericPayload, headers http.Header, queryParams map[string]string) *httptest.ResponseRecorder {
+func PerformRequestWithParams(t TestingT, s *api.Server, method string, path string, body GenericPayload, headers http.Header, queryParams map[string]string) *httptest.ResponseRecorder {
 	t.Helper()
 
 	if body == nil {
@@ -50,7 +49,7 @@ func PerformRequestWithParams(t *testing.T, s *api.Server, method string, path s
 	return PerformRequestWithRawBody(t, s, method, path, body.Reader(t), headers, queryParams)
 }
 
-func PerformRequestWithArrayAndParams(t *testing.T, s *api.Server, method string, path string, body GenericArrayPayload, headers http.Header, queryParams map[string]string) *httptest.ResponseRecorder {
+func PerformRequestWithArrayAndParams(t TestingT, s *api.Server, method string, path string, body GenericArrayPayload, headers http.Header, queryParams map[string]string) *httptest.ResponseRecorder {
 	t.Helper()
 
 	if body == nil {
@@ -60,7 +59,7 @@ func PerformRequestWithArrayAndParams(t *testing.T, s *api.Server, method string
 	return PerformRequestWithRawBody(t, s, method, path, body.Reader(t), headers, queryParams)
 }
 
-func PerformRequestWithRawBody(t *testing.T, s *api.Server, method string, path string, body io.Reader, headers http.Header, queryParams map[string]string) *httptest.ResponseRecorder {
+func PerformRequestWithRawBody(t TestingT, s *api.Server, method string, path string, body io.Reader, headers http.Header, queryParams map[string]string) *httptest.ResponseRecorder {
 	t.Helper()
 
 	req := httptest.NewRequest(method, path, body)
@@ -88,19 +87,19 @@ func PerformRequestWithRawBody(t *testing.T, s *api.Server, method string, path 
 	return res
 }
 
-func PerformRequest(t *testing.T, s *api.Server, method string, path string, body GenericPayload, headers http.Header) *httptest.ResponseRecorder {
+func PerformRequest(t TestingT, s *api.Server, method string, path string, body GenericPayload, headers http.Header) *httptest.ResponseRecorder {
 	t.Helper()
 
 	return PerformRequestWithParams(t, s, method, path, body, headers, nil)
 }
 
-func PerformRequestWithArray(t *testing.T, s *api.Server, method string, path string, body GenericArrayPayload, headers http.Header) *httptest.ResponseRecorder {
+func PerformRequestWithArray(t TestingT, s *api.Server, method string, path string, body GenericArrayPayload, headers http.Header) *httptest.ResponseRecorder {
 	t.Helper()
 
 	return PerformRequestWithArrayAndParams(t, s, method, path, body, headers, nil)
 }
 
-func ParseResponseBody(t *testing.T, res *httptest.ResponseRecorder, v interface{}) {
+func ParseResponseBody(t TestingT, res *httptest.ResponseRecorder, v interface{}) {
 	t.Helper()
 
 	if err := json.NewDecoder(res.Result().Body).Decode(&v); err != nil {
@@ -108,7 +107,7 @@ func ParseResponseBody(t *testing.T, res *httptest.ResponseRecorder, v interface
 	}
 }
 
-func ParseResponseAndValidate(t *testing.T, res *httptest.ResponseRecorder, v runtime.Validatable) {
+func ParseResponseAndValidate(t TestingT, res *httptest.ResponseRecorder, v runtime.Validatable) {
 	t.Helper()
 
 	ParseResponseBody(t, res, &v)
@@ -118,13 +117,13 @@ func ParseResponseAndValidate(t *testing.T, res *httptest.ResponseRecorder, v ru
 	}
 }
 
-func HeadersWithAuth(t *testing.T, token string) http.Header {
+func HeadersWithAuth(t TestingT, token string) http.Header {
 	t.Helper()
 
 	return HeadersWithConfigurableAuth(t, "Bearer", token)
 }
 
-func HeadersWithConfigurableAuth(t *testing.T, scheme string, token string) http.Header {
+func HeadersWithConfigurableAuth(t TestingT, scheme string, token string) http.Header {
 	t.Helper()
 
 	headers := http.Header{}
