@@ -9,6 +9,17 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
+- Extend util and test package with additional helper functions.
+- Add MIME interface to use *mimtype.MIME or an already KnownMIME.
+- Add function to detach context to avoid context cancelation. Can be used to pass context information to go routines without a deadline or cancel.
+- Add oauth2 helper for PKCE extention to generate verifier and challenge.
+- Added starttls support to mailer
+- **DEPRECATED** If you were using the `SERVER_SMTP_USE_TLS` flag before to enable TLS, you'll need to migrate to the `SERVER_SMTP_ENCRYPTION` setting of `tls`. For the moment, both settings are supported (with a warning being printed when using `SERVER_SMTP_USE_TLS`, however support for the deprecated config might be dropped in a future release).
+- Extend mailer mock to support waiting for all expected mails to arrive to check asynchronously sent mails in tests.
+- Add util for IN and NIN query helper which use `pg.StringArray` as param for slices instead of passing each item as arg.
+  - sqlboiler fails at around 10k params because each element is passed as an argument and some database and driver limits are reached
+  - `db.IN` should be used in go-starter projects when using postgres because it allows for over 1kk params in `IN` and `NIN` where clauses
+- Fixed bug in `test.RunningInTest()` where the test env did not get recognized while debugging
 
 ## 2024-02-01
 - [Persist bash history in development container](https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history) (requires `./docker-helper.sh --rebuild`).
