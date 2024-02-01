@@ -8,6 +8,14 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
+## Unreleased
+
+## 2024-02-01
+- [Persist bash history in development container](https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history) (requires `./docker-helper.sh --rebuild`).
+  - Your commands are now persisted between your development container restarts / rebuilds, making it easier to re-run specific commands you've previously executed (e.g. that one go command you cannot remember).
+- Hotfix [types.NullDecimal error](https://github.com/volatiletech/sqlboiler/issues/1234) by  downgrading indirect `github.com/ericlagergren/decimal@v0.0.0-20190420051523-6335edbaa640`.
+  - Note that we do not pin it in direct dependencies, as this downgrade is already in [SQLBoilers master](https://github.com/volatiletech/sqlboiler/commit/bc59c158590800f7810cce241a12d572e898014f) anyways.
+
 ## 2024-01-31
 - Migration to Docker Compose V2 ([Docker Compose Docs](https://docs.docker.com/compose/reference/)), thx [@eklatzer](https://github.com/eklatzer)
 - Upgrade to [IntegreSQL v1.1.0](https://github.com/allaboutapps/integresql/blob/v1.1.0/CHANGELOG.md#v110)
