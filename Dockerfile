@@ -173,6 +173,13 @@ RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
 # Note that this should be the final step after installing all build deps
 RUN mkdir -p /$GOPATH/pkg && chown -R $USERNAME /$GOPATH
 
+# https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/home/$USERNAME/commandhistory/.bash_history" \
+    && mkdir /home/$USERNAME/commandhistory \
+    && touch /home/$USERNAME/commandhistory/.bash_history \
+    && chown -R $USERNAME /home/$USERNAME/commandhistory \
+    && echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"
+
 # $GOBIN is where our own compiled binaries will live and other go.mod / VSCode binaries will be installed.
 # It should always come AFTER our other $PATH segments and should be earliest targeted in stage "builder",
 # as /app/bin will the shadowed by a volume mount via docker-compose!
