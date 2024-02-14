@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.20.3-bullseye AS development
+FROM golang:1.21.6-bullseye AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -79,9 +79,9 @@ ENV LANG en_US.UTF-8
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v5.3.tar.gz \
-    && tar xzf v5.3.tar.gz \
-    && cd pgFormatter-5.3 \
+    && wget https://github.com/darold/pgFormatter/archive/v5.5.tar.gz \
+    && tar xzf v5.5.tar.gz \
+    && cd pgFormatter-5.5 \
     && perl Makefile.PL \
     && make && make install \
     && rm -rf /tmp/pgFormatter
@@ -91,8 +91,8 @@ RUN mkdir -p /tmp/pgFormatter \
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.9.0/gotestsum_1.9.0_linux_${ARCH}.tar.gz" \
-    && tar xzf "gotestsum_1.9.0_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.11.0/gotestsum_1.11.0_linux_${ARCH}.tar.gz" \
+    && tar xzf "gotestsum_1.11.0_linux_${ARCH}.tar.gz" \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum
 
@@ -100,7 +100,7 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.52.2
+    | sh -s -- -b $(go env GOPATH)/bin v1.55.2
 
 # go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
@@ -123,9 +123,9 @@ RUN go install github.com/spf13/cobra-cli@v1.3.0
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/v1.20.6/watchexec-1.20.6-$(arch)-unknown-linux-musl.tar.xz \
-    && tar xf watchexec-1.20.6-$(arch)-unknown-linux-musl.tar.xz \
-    && cp watchexec-1.20.6-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/v1.25.1/watchexec-1.25.1-$(arch)-unknown-linux-musl.tar.xz \
+    && tar xf watchexec-1.25.1-$(arch)-unknown-linux-musl.tar.xz \
+    && cp watchexec-1.25.1-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # yq
@@ -133,7 +133,7 @@ RUN mkdir -p /tmp/watchexec \
 RUN mkdir -p /tmp/yq \
     && cd /tmp/yq \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/mikefarah/yq/releases/download/v4.30.5/yq_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_${ARCH}.tar.gz" \
     && tar xzf "yq_linux_${ARCH}.tar.gz" \
     && cp "yq_linux_${ARCH}" /usr/local/bin/yq \
     && rm -rf /tmp/yq
@@ -172,6 +172,13 @@ RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
 # linux permissions / vscode support: chown $GOPATH so $USERNAME can directly work with it
 # Note that this should be the final step after installing all build deps
 RUN mkdir -p /$GOPATH/pkg && chown -R $USERNAME /$GOPATH
+
+# https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/home/$USERNAME/commandhistory/.bash_history" \
+    && mkdir /home/$USERNAME/commandhistory \
+    && touch /home/$USERNAME/commandhistory/.bash_history \
+    && chown -R $USERNAME /home/$USERNAME/commandhistory \
+    && echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"
 
 # $GOBIN is where our own compiled binaries will live and other go.mod / VSCode binaries will be installed.
 # It should always come AFTER our other $PATH segments and should be earliest targeted in stage "builder",
