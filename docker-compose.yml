@@ -29,6 +29,10 @@ services:
       - vscode-extensions:/home/development/.vscode-server/extensions
       - vscode-extensions-insiders:/home/development/.vscode-server-insiders/extensions
 
+      # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+      # keep user development .bash_history between container restarts
+      - bash-history:/home/development/commandhistory
+
     depends_on:
       - postgres
       - integresql
@@ -106,7 +110,7 @@ services:
       - pgvolume:/var/lib/postgresql/data
 
   integresql:
-    image: allaboutapps/integresql:1.0.0
+    image: ghcr.io/allaboutapps/integresql:v1.1.0
     expose:
       - "5000"
     depends_on:
@@ -157,3 +161,6 @@ volumes:
   # https://code.visualstudio.com/docs/remote/containers-advanced#_avoiding-extension-reinstalls-on-container-rebuild
   vscode-extensions:
   vscode-extensions-insiders:
+
+  # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+  bash-history:
