@@ -21,6 +21,15 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
     | apt-key add -
 
+# Setup GPG key to install Trivy to locally scan for vulnerabilities
+RUN mkdir -m 0755 -p /etc/apt/keyrings/ \
+    && wget -O- https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+    gpg --dearmor | \
+    tee /etc/apt/keyrings/trivy.gpg > /dev/null; \
+    chmod 644 /etc/apt/keyrings/trivy.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb bullseye main" \
+    | tee /etc/apt/sources.list.d/trivy.list
+
 # Install required system dependencies
 RUN apt-get update \
     && apt-get install -y \
@@ -59,6 +68,7 @@ RUN apt-get update \
     icu-devtools \
     tmux \
     rsync \
+    trivy \
     # --- END DEVELOPMENT ---
     #
     && apt-get clean \
@@ -118,6 +128,9 @@ RUN go install github.com/uw-labs/lichen@v0.1.7
 # TODO: Install from static binary as soon as it becomes available.
 # https://github.com/spf13/cobra-cli/releases
 RUN go install github.com/spf13/cobra-cli@v1.3.0
+
+# govulncheck: go vulnerability checker
+RUN go install golang.org/x/vuln/cmd/govulncheck@latest
 
 # watchexec
 # https://github.com/watchexec/watchexec/releases

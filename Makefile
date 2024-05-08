@@ -328,6 +328,15 @@ check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin
 	@(mkdir -p tmp 2> /dev/null && go version -m -v bin/app > tmp/.modules)
 	grep -f go.not -F tmp/.modules && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) || exit 0
 
+trivy-report: ##- Prints trivy report for all severities without failing
+	trivy fs /app --exit-code 0 --quiet
+
+trivy: ##- Runs trivy analysis and fails on HIGH, CRITICAL vulnerabilities.
+	trivy fs /app --exit-code 1 --severity HIGH,CRITICAL --quiet
+
+govulncheck:
+	govulncheck /app/...
+
 ### -----------------------
 # --- Git related
 ### -----------------------

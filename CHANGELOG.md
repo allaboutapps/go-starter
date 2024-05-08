@@ -11,6 +11,7 @@
 ## Unreleased
 - Added custom LogErrorFunc for recover middleware to attach request info the recover log messages
 - Adjusted order of validation error matching to correctly return list of errors wrapped in single error
+- Added vulnerability scanning to dev container (trivy and govulncheck)
 
 ## 2024-02-01
 - [Persist bash history in development container](https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history) (requires `./docker-helper.sh --rebuild`).
