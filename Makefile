@@ -13,6 +13,7 @@ build: ##- Default 'make' target: sql, swagger, go-generate, go-format, go-build
 all: clean init ##- Runs all of our common make targets: clean, init, build and test.
 	@$(MAKE) build
 	@$(MAKE) test
+	@$(MAKE) trivy
 
 info: info-db info-handlers info-go ##- Prints info about spec db, handlers, and go.mod updates, module-name and current go version.
 
@@ -327,6 +328,18 @@ check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin
 	@echo "make check-embedded-modules-go-not"
 	@(mkdir -p tmp 2> /dev/null && go version -m -v bin/app > tmp/.modules)
 	grep -f go.not -F tmp/.modules && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) || exit 0
+
+trivy-report: ##- Prints trivy report for all severities without failing
+	@echo "make trivy-report"
+	@trivy fs /app --exit-code 0 --quiet
+
+trivy: ##- Runs trivy analysis and fails on HIGH, CRITICAL vulnerabilities.
+	@echo "make trivy"
+	@trivy fs /app --exit-code 1 --severity HIGH,CRITICAL --quiet
+
+govulncheck:
+	@echo "make govulncheck"
+	@govulncheck /app/...
 
 ### -----------------------
 # --- Git related
