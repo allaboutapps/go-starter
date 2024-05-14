@@ -9,7 +9,8 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
-- Extended the snapshot and request helper
+- Extended the snapshot and request helper to improve the test experience when snapshotting raw JSON (`.SaveJSON`) and raw bytes like images (`.SaveBytes`)
+- Improved custom replace function in snapshot helper to only redact explicit matches
 - Added custom LogErrorFunc for recover middleware to attach request info the recover log messages
 - Adjusted order of validation error matching to correctly return list of errors wrapped in single error
 
