@@ -9,6 +9,9 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
+
+## 2024-05-14
+- Switch [from Go 1.21.6 Go 1.21.10](https://go.dev/doc/devel/release#go1.21.0) (requires `./docker-helper.sh --rebuild`).
 - Extended the snapshot and request helper to improve the test experience when snapshotting raw JSON (`.SaveJSON`) and raw bytes like images (`.SaveBytes`)
 - Improved custom replace function in snapshot helper to only redact explicit matches
 - Added custom LogErrorFunc for recover middleware to attach request info the recover log messages
