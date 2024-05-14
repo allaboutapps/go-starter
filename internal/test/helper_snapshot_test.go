@@ -1,6 +1,7 @@
 package test_test
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -9,9 +10,11 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/test/mocks"
 	"allaboutapps.dev/aw/go-starter/internal/util"
+
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 func TestSnapshot(t *testing.T) {
@@ -147,10 +150,11 @@ func TestSnapshotNotExists(t *testing.T) {
 	tMock.On("Fatalf", mock.Anything, mock.Anything).Return()
 	tMock.On("Fatal", mock.Anything).Return()
 	tMock.On("Error", mock.Anything).Return()
+	tMock.On("Errorf", mock.Anything, mock.Anything).Return()
 	test.Snapshoter.Save(tMock, a, b)
 	tMock.AssertNotCalled(t, "Error")
-	tMock.AssertNotCalled(t, "Fatalf")
-	tMock.AssertCalled(t, "Fatalf", mock.Anything, mock.Anything)
+	tMock.AssertNotCalled(t, "Fatal")
+	tMock.AssertCalled(t, "Errorf", mock.Anything, mock.Anything)
 }
 
 func TestSnapshotSkipFields(t *testing.T) {
@@ -174,6 +178,71 @@ func TestSnapshotSkipFields(t *testing.T) {
 	}
 
 	test.Snapshoter.Skip([]string{"ID"}).Save(t, a)
+}
+
+func TestSnapshotSkipPrefixedFields(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+
+	a := struct {
+		ID            string
+		OtherIDStr    string
+		OtherIDInt    int
+		OtherIDBool   bool
+		OtherIDPTR    *string
+		OtherIDStruct struct {
+			ID string
+		}
+	}{
+		ID:          "foo",
+		OtherIDStr:  "id str",
+		OtherIDInt:  4,
+		OtherIDBool: true,
+		OtherIDPTR:  swag.String("ID str ptr"),
+		OtherIDStruct: struct{ ID string }{
+			ID: "foo",
+		},
+	}
+
+	test.Snapshoter.Skip([]string{"ID"}).Save(t, a)
+}
+
+func TestSnapshotSkipMultilineFields(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+	randID, err := util.GenerateRandomBase64String(20)
+	require.NoError(t, err)
+	a := struct {
+		ID string
+		A  string
+		B  int
+		C  bool
+		D  interface{}
+		E  []string
+		F  map[string]int
+	}{
+		ID: randID,
+		A:  "foo",
+		B:  1,
+		C:  true,
+		D: struct {
+			Foo string
+			Bar int
+		}{
+			Foo: "skip me",
+			Bar: 3,
+		},
+		E: []string{"skip me", "skip me too"},
+		F: map[string]int{
+			"skip me":       1,
+			"skip me too":   2,
+			"skip me three": 3,
+		},
+	}
+
+	test.Snapshoter.Skip([]string{"ID", "D", "E", "F"}).Save(t, a)
 }
 
 func TestSnapshotWithLabel(t *testing.T) {
@@ -216,4 +285,60 @@ func TestSnapshotWithLocation(t *testing.T) {
 
 	location := filepath.Join(util.GetProjectRootDir(), "/internal/test/testdata")
 	test.Snapshoter.Location(location).Save(t, a)
+}
+
+func TestSnapshotJSON(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+
+	randID, err := util.GenerateRandomBase64String(20)
+	require.NoError(t, err)
+
+	details := struct {
+		ID string
+		A  string
+		B  int
+		C  bool
+		D  interface{}
+		E  []string
+		F  map[string]int
+	}{
+		ID: randID,
+		A:  "foo",
+		B:  1,
+		C:  true,
+		D: struct {
+			Foo string
+			Bar int
+		}{
+			Foo: "skip me",
+			Bar: 3,
+		},
+		E: []string{"skip me", "skip me too"},
+		F: map[string]int{
+			"skip me":       1,
+			"skip me too":   2,
+			"skip me three": 3,
+		},
+	}
+
+	marshaled, err := json.Marshal(details)
+	require.NoError(t, err)
+
+	test.Snapshoter.Redact("ID").SaveJSON(t, types.JSON(json.RawMessage(marshaled)))
+}
+
+func TestSnapshotSaveBytesImage(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+
+	filepath := filepath.Join(util.GetProjectRootDir(), "/test/testdata", "example.jpg")
+
+	// read file and save bytes
+	content, err := os.ReadFile(filepath)
+	require.NoError(t, err)
+
+	test.Snapshoter.SaveBytes(t, content, "jpg")
 }

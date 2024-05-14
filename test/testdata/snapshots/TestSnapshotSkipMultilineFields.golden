@@ -1,0 +1,9 @@
+(struct { ID string; A string; B int; C bool; D interface {}; E []string; F map[string]int }) {
+  ID: <redacted>,
+  A: (string) (len=3) "foo",
+  B: (int) 1,
+  C: (bool) true,
+  D: (struct { Foo string; Bar int })  { <redacted> },
+  E: ([]string) (len=2)  { <redacted> },
+  F: (map[string]int) (len=3)  { <redacted> }
+}
