@@ -37,7 +37,7 @@ func Init(s *api.Server) {
 
 	if s.Config.Echo.EnableRecoverMiddleware {
 		s.Echo.Use(echoMiddleware.RecoverWithConfig(echoMiddleware.RecoverConfig{
-			LogErrorFunc: middleware.LogErrorFuncWithRequestInfoFunc,
+			LogErrorFunc: middleware.LogErrorFuncWithRequestInfo,
 		}))
 	} else {
 		log.Warn().Msg("Disabling recover middleware due to environment config")
