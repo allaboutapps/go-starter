@@ -9,6 +9,8 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
+
+## 2024-05-28
 - Fixes the `LogErrorFuncWithRequestInfo` to return the error in order to pass the error to the global error handling mechanism
 
 ## 2024-05-14
