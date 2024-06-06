@@ -12,6 +12,7 @@
 - Extended password reset handling by debounce and reuse duration:
   - `PasswordResetTokenDebounceDuration`: if a password reset token has been created in this duration, no password reset is initialized
   - `PasswordResetTokenReuseDuration`: if a password reset token has been created in this duration and is still valid, it is reused instead of re-created
+- Added test helper to simplify assertion of `httperrors.HTTPError`  
 
 ## 2024-05-14
 - Switch [from Go 1.21.6 Go 1.21.10](https://go.dev/doc/devel/release#go1.21.0) (requires `./docker-helper.sh --rebuild`).

@@ -88,15 +88,7 @@ func TestPostRegisterAlreadyExists(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
-
-		assert.Equal(t, http.StatusConflict, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *httperrors.ErrConflictUserAlreadyExists.Code, *response.Code)
-		assert.Equal(t, *httperrors.ErrConflictUserAlreadyExists.Type, *response.Type)
-		assert.Equal(t, *httperrors.ErrConflictUserAlreadyExists.Title, *response.Title)
+		response := test.RequireHTTPError(t, res, httperrors.ErrConflictUserAlreadyExists)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
