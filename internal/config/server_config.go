@@ -50,10 +50,12 @@ type EchoServerSecureMiddleware struct {
 }
 
 type AuthServer struct {
-	AccessTokenValidity          time.Duration
-	PasswordResetTokenValidity   time.Duration
-	DefaultUserScopes            []string
-	LastAuthenticatedAtThreshold time.Duration
+	AccessTokenValidity                time.Duration
+	PasswordResetTokenValidity         time.Duration
+	PasswordResetTokenDebounceDuration time.Duration
+	PasswordResetTokenReuseDuration    time.Duration
+	DefaultUserScopes                  []string
+	LastAuthenticatedAtThreshold       time.Duration
 }
 
 type PathsServer struct {
@@ -180,10 +182,12 @@ func DefaultServiceConfigFromEnv() Server {
 			MntBaseDirAbs: util.GetEnv("SERVER_PATHS_MNT_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/assets/mnt")), // /app/assets/mnt (user-generated content)
 		},
 		Auth: AuthServer{
-			AccessTokenValidity:          time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_ACCESS_TOKEN_VALIDITY", 86400)),
-			PasswordResetTokenValidity:   time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_PASSWORD_RESET_TOKEN_VALIDITY", 900)),
-			DefaultUserScopes:            util.GetEnvAsStringArr("SERVER_AUTH_DEFAULT_USER_SCOPES", []string{"app"}),
-			LastAuthenticatedAtThreshold: time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900)),
+			AccessTokenValidity:                time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_ACCESS_TOKEN_VALIDITY", 86400)),
+			PasswordResetTokenValidity:         time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_PASSWORD_RESET_TOKEN_VALIDITY", 900)),
+			PasswordResetTokenDebounceDuration: time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_PASSWORD_RESET_TOKEN_DEBOUNCE_DURATION_SECONDS", 60)),
+			PasswordResetTokenReuseDuration:    time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_PASSWORD_RESET_TOKEN_REUSE_DURATION_SECONDS", 120)),
+			DefaultUserScopes:                  util.GetEnvAsStringArr("SERVER_AUTH_DEFAULT_USER_SCOPES", []string{"app"}),
+			LastAuthenticatedAtThreshold:       time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900)),
 		},
 		Management: ManagementServer{
 			Secret:           util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),

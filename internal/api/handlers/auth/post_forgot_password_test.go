@@ -6,13 +6,17 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
+	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/jordan-wright/email"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,7 +36,11 @@ func getLastSentMail(t *testing.T, m *mailer.Mailer) *email.Email {
 }
 
 func TestPostForgotPasswordSuccess(t *testing.T) {
-	test.WithTestServer(t, func(s *api.Server) {
+	config := config.DefaultServiceConfigFromEnv()
+	config.Auth.PasswordResetTokenReuseDuration = 120 * time.Second
+	config.Auth.PasswordResetTokenDebounceDuration = 60 * time.Second
+
+	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
 		payload := test.GenericPayload{
@@ -40,8 +48,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
-
-		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
+		require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		passwordResetToken, err := fixtures.User1.PasswordResetTokens().One(ctx, s.DB)
 		require.NoError(t, err)
@@ -49,6 +56,90 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 		mail := getLastSentMail(t, s.Mailer)
 		require.NotNil(t, mail)
 		assert.Contains(t, string(mail.HTML), fmt.Sprintf("http://localhost:3000/set-new-password?token=%s", passwordResetToken.Token))
+
+		// retrying should not send a new mail because of the debounce time
+		{
+			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
+			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
+
+			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
+
+			sentMails := mailer.GetSentMails()
+			assert.Len(t, sentMails, 1)
+		}
+
+		// CreatedAt of token exceeds debounce time, retrying should send a new mail
+		// but with the same token as the reuse duration has not passed yet
+		{
+			passwordResetToken.CreatedAt = time.Now().Add(-s.Config.Auth.PasswordResetTokenDebounceDuration)
+			_, err = passwordResetToken.Update(ctx, s.DB, boil.Whitelist(models.PasswordResetTokenColumns.CreatedAt))
+			require.NoError(t, err)
+
+			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
+			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
+
+			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
+
+			sentMails := mailer.GetSentMails()
+			require.Len(t, sentMails, 2)
+
+			passwordResetTokens, err := fixtures.User1.PasswordResetTokens().All(ctx, s.DB)
+			require.NoError(t, err)
+
+			assert.Len(t, passwordResetTokens, 1)
+			for _, mail := range sentMails {
+				assert.Contains(t, string(mail.HTML), fmt.Sprintf("http://localhost:3000/set-new-password?token=%s", passwordResetTokens[0].Token))
+			}
+		}
+
+		// CreatedAt of token exceeds reuse time, retrying should send a new mail with a new token
+		{
+			passwordResetToken.CreatedAt = time.Now().Add(-s.Config.Auth.PasswordResetTokenReuseDuration)
+			_, err = passwordResetToken.Update(ctx, s.DB, boil.Whitelist(models.PasswordResetTokenColumns.CreatedAt))
+			require.NoError(t, err)
+
+			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
+			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
+
+			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
+
+			sentMails := mailer.GetSentMails()
+			require.Len(t, sentMails, 3)
+
+			passwordResetTokens, err := fixtures.User1.PasswordResetTokens(
+				db.OrderBy(types.OrderDirDesc, models.PasswordResetTokenColumns.CreatedAt),
+			).All(ctx, s.DB)
+			require.NoError(t, err)
+
+			require.Len(t, passwordResetTokens, 2)
+
+			assert.Contains(t, string(sentMails[2].HTML), fmt.Sprintf("http://localhost:3000/set-new-password?token=%s", passwordResetTokens[0].Token))
+		}
+
+		// Token validity is expired, retrying should send a new mail with a new token
+		{
+			_, err = models.PasswordResetTokens().UpdateAll(ctx, s.DB, models.M{
+				models.PasswordResetTokenColumns.ValidUntil: time.Now().Add(-1 * time.Second),
+			})
+			require.NoError(t, err)
+
+			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
+			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
+
+			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
+
+			sentMails := mailer.GetSentMails()
+			require.Len(t, sentMails, 4)
+
+			passwordResetTokens, err := fixtures.User1.PasswordResetTokens(
+				db.OrderBy(types.OrderDirDesc, models.PasswordResetTokenColumns.CreatedAt),
+			).All(ctx, s.DB)
+			require.NoError(t, err)
+
+			require.Len(t, passwordResetTokens, 3)
+
+			assert.Contains(t, string(sentMails[3].HTML), fmt.Sprintf("http://localhost:3000/set-new-password?token=%s", passwordResetTokens[0].Token))
+		}
 	})
 }
 
