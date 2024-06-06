@@ -11,29 +11,15 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/config"
-	"allaboutapps.dev/aw/go-starter/internal/mailer"
-	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
-	"github.com/jordan-wright/email"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
-
-func getLastSentMail(t *testing.T, m *mailer.Mailer) *email.Email {
-	t.Helper()
-
-	mt, ok := m.Transport.(*transport.MockMailTransport)
-	if !ok {
-		t.Fatalf("invalid mailer transport type, got %T, want *transport.MockMailTransport", m.Transport)
-	}
-
-	return mt.GetLastSentMail()
-}
 
 func TestPostForgotPasswordSuccess(t *testing.T) {
 	config := config.DefaultServiceConfigFromEnv()
@@ -53,7 +39,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 		passwordResetToken, err := fixtures.User1.PasswordResetTokens().One(ctx, s.DB)
 		require.NoError(t, err)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		require.NotNil(t, mail)
 		assert.Contains(t, string(mail.HTML), fmt.Sprintf("http://localhost:3000/set-new-password?token=%s", passwordResetToken.Token))
 
@@ -62,9 +48,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
 			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
-			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
-
-			sentMails := mailer.GetSentMails()
+			sentMails := test.GetSentMails(t, s.Mailer)
 			assert.Len(t, sentMails, 1)
 		}
 
@@ -78,9 +62,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
 			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
-			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
-
-			sentMails := mailer.GetSentMails()
+			sentMails := test.GetSentMails(t, s.Mailer)
 			require.Len(t, sentMails, 2)
 
 			passwordResetTokens, err := fixtures.User1.PasswordResetTokens().All(ctx, s.DB)
@@ -101,9 +83,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
 			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
-			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
-
-			sentMails := mailer.GetSentMails()
+			sentMails := test.GetSentMails(t, s.Mailer)
 			require.Len(t, sentMails, 3)
 
 			passwordResetTokens, err := fixtures.User1.PasswordResetTokens(
@@ -126,9 +106,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 			res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
 			require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
-			mailer := test.GetTestMailerMockTransport(t, s.Mailer)
-
-			sentMails := mailer.GetSentMails()
+			sentMails := test.GetSentMails(t, s.Mailer)
 			require.Len(t, sentMails, 4)
 
 			passwordResetTokens, err := fixtures.User1.PasswordResetTokens(
@@ -158,7 +136,7 @@ func TestPostForgotPasswordUnknownUser(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		assert.Nil(t, mail)
 	})
 }
@@ -179,7 +157,7 @@ func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		assert.Nil(t, mail)
 	})
 }
@@ -205,7 +183,7 @@ func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		assert.Nil(t, mail)
 	})
 }
@@ -237,7 +215,7 @@ func TestPostForgotPasswordMissingUsername(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		assert.Nil(t, mail)
 	})
 }
@@ -271,7 +249,7 @@ func TestPostForgotPasswordEmptyUsername(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		assert.Nil(t, mail)
 	})
 }
@@ -305,7 +283,7 @@ func TestPostForgotPasswordInvalidUsername(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		assert.Nil(t, mail)
 	})
 }
@@ -325,7 +303,7 @@ func TestPostForgotPasswordSuccessLowercaseTrimWhitespaces(t *testing.T) {
 		passwordResetToken, err := fixtures.User1.PasswordResetTokens().One(ctx, s.DB)
 		require.NoError(t, err)
 
-		mail := getLastSentMail(t, s.Mailer)
+		mail := test.GetLastSentMail(t, s.Mailer)
 		require.NotNil(t, mail)
 		assert.Contains(t, string(mail.HTML), fmt.Sprintf("http://localhost:3000/set-new-password?token=%s", passwordResetToken.Token))
 	})

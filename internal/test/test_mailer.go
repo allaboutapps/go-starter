@@ -6,6 +6,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
+	"github.com/jordan-wright/email"
 )
 
 const (
@@ -48,4 +49,18 @@ func newMailerWithTransporter(t *testing.T, transporter transport.MailTransporte
 	}
 
 	return m
+}
+
+func GetLastSentMail(t *testing.T, m *mailer.Mailer) *email.Email {
+	t.Helper()
+
+	mt := GetTestMailerMockTransport(t, m)
+	return mt.GetLastSentMail()
+}
+
+func GetSentMails(t *testing.T, m *mailer.Mailer) []*email.Email {
+	t.Helper()
+
+	mt := GetTestMailerMockTransport(t, m)
+	return mt.GetSentMails()
 }
