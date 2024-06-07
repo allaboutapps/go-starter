@@ -27,7 +27,7 @@ to take action if dependant services (e.g. DB, NFS
 mounts) become unstable. You may also use this to 
 ensure all requirements are fulfilled before starting
 the app server.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string /* args */) {
 
 		verbose, err := cmd.Flags().GetBool(verboseFlag)
 		if err != nil {

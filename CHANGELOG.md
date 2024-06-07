@@ -9,6 +9,9 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
+- Update to [golang:1.22.4-bullseye](https://hub.docker.com/layers/library/golang/1.22.4-bullseye/images/sha256-6653e292cffc69f2a25ab096d70b7871e1db0a7acefae27b9853217e723bdda7?context=explore) (requires `./docker-helper.sh --rebuild`)
+  - Minor: [Bump github.com/golangci/golangci-lint from 1.55.2 to 1.59.0](https://github.com/golangci/golangci-lint/releases/tag/v1.59.0)
+  - Minor: [Bump github.com/gotestyourself/gotestsum from 1.11.0 to 1.12.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.12.0)
 
 ## 2024-05-28
 - Fixes the `LogErrorFuncWithRequestInfo` to return the error in order to pass the error to the global error handling mechanism
