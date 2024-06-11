@@ -9,6 +9,8 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
+
+## 2024-06-11
 - Update to [golang:1.22.4-bookworm](https://hub.docker.com/layers/library/golang/1.22.4-bookworm/images/sha256-5eb6d52cd78951fa53884e208a030db506ab619a13157b9b7ea3a8eb5e4cbeee?context=explore) (requires `./docker-helper.sh --rebuild`) containing the bump from Debian `bullseye`(11) to `bookworm` (12)
   - Minor: [Bump github.com/golangci/golangci-lint from 1.55.2 to 1.59.0](https://github.com/golangci/golangci-lint/releases/tag/v1.59.0)
   - Minor: [Bump github.com/gotestyourself/gotestsum from 1.11.0 to 1.12.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.12.0)
