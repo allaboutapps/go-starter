@@ -9,10 +9,10 @@
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
 ## Unreleased
-- Extended password reset handling by debounce and reuse duration:
-  - `PasswordResetTokenDebounceDuration`: if a password reset token has been created in this duration, no password reset is initialized
-  - `PasswordResetTokenReuseDuration`: if a password reset token has been created in this duration and is still valid, it is reused instead of re-created
-- Added test helper to simplify assertion of `httperrors.HTTPError`  
+- Extended and fixed the password reset handling by a debounce and reuse duration. This can for example be leveraged to mitigate email flooding. The token reuse fixes an existing solution that was not working due to searching for tokens created on minute in the future instead of the past using `models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(time.Minute*1)),`. The new default behaviour is to debounce the password reset by 60 seconds and not to reuse reset tokens: 
+  - `PasswordResetTokenDebounceDuration` / `SERVER_AUTH_PASSWORD_RESET_TOKEN_DEBOUNCE_DURATION_SECONDS`: if a password reset token has been created in this duration, no password reset is initialized (default: 60 seconds)
+  - `PasswordResetTokenReuseDuration` / `SERVER_AUTH_PASSWORD_RESET_TOKEN_REUSE_DURATION_SECONDS`: if a password reset token has been created in this duration and is still valid, it is reused instead of re-created (default-value: 0 seconds->no reuse)
+- Added test helper to simplify assertion of `httperrors.HTTPError`
 - Added helper to get last sent emails from mock transport
 
 ## 2024-05-14
