@@ -20,7 +20,7 @@
 res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
 response := test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
 ```
-- Added helper to get last sent emails from mock transport
+- Added helpers to get last sent emails from mock transport using `mail := test.GetLastSentMail(t, s.Mailer)` or `sentMails := test.GetSentMails(t, s.Mailer)`
 
 ## 2024-05-28
 - Fixes the `LogErrorFuncWithRequestInfo` to return the error in order to pass the error to the global error handling mechanism
