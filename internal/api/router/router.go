@@ -37,7 +37,7 @@ func Init(s *api.Server) {
 
 	if s.Config.Echo.EnableRecoverMiddleware {
 		s.Echo.Use(echoMiddleware.RecoverWithConfig(echoMiddleware.RecoverConfig{
-			LogErrorFunc: middleware.LogErrorFuncWithRequestInfoFunc,
+			LogErrorFunc: middleware.LogErrorFuncWithRequestInfo,
 		}))
 	} else {
 		log.Warn().Msg("Disabling recover middleware due to environment config")
@@ -123,7 +123,7 @@ func Init(s *api.Server) {
 		if s.Config.Pprof.EnableManagementKeyAuth {
 			pprofAuthMiddleware = echoMiddleware.KeyAuthWithConfig(echoMiddleware.KeyAuthConfig{
 				KeyLookup: "query:mgmt-secret",
-				Validator: func(key string, c echo.Context) (bool, error) {
+				Validator: func(key string, _ echo.Context) (bool, error) {
 					return key == s.Config.Management.Secret, nil
 				},
 			})
@@ -159,7 +159,7 @@ func Init(s *api.Server) {
 		// Management endpoints, uncacheable, secured by key auth (query param), available at /-/**
 		Management: s.Echo.Group("/-", echoMiddleware.KeyAuthWithConfig(echoMiddleware.KeyAuthConfig{
 			KeyLookup: "query:mgmt-secret",
-			Validator: func(key string, c echo.Context) (bool, error) {
+			Validator: func(key string, _ echo.Context) (bool, error) {
 				return key == s.Config.Management.Secret, nil
 			},
 			Skipper: func(c echo.Context) bool {

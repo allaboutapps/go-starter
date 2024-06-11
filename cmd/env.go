@@ -19,7 +19,7 @@ You may use this cmd to get an overview about how
 your ENV_VARS are bound by the server config.
 Please note that certain secrets are automatically
 removed from this output.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command /* cmd */, _ []string /* args */) {
 		runEnv()
 	},
 }

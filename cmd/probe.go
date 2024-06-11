@@ -16,7 +16,7 @@ const (
 var probeCmd = &cobra.Command{
 	Use:   "probe <subcommand>",
 	Short: "Probe related subcommands",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string /* args */) {
 		if err := cmd.Help(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
