@@ -87,9 +87,7 @@ func RequireHTTPError(t *testing.T, res *httptest.ResponseRecorder, httpError *h
 	var response httperrors.HTTPError
 	ParseResponseAndValidate(t, res, &response)
 
-	require.Equal(t, *httpError.Type, *response.Type)
-	require.Equal(t, *httpError.Title, *response.Title)
-	require.Equal(t, *httpError.Code, *response.Code)
+	require.Equal(t, httpError, &response)
 
 	return response
 }
