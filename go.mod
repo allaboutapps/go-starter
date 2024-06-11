@@ -1,6 +1,6 @@
 module allaboutapps.dev/aw/go-starter
 
-go 1.22
+go 1.22.4
 
 require (
 	github.com/BurntSushi/toml v1.3.2
