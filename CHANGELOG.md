@@ -23,6 +23,7 @@ res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete"
 response := test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
 ```
 - Added helpers to get last sent emails from mock transport using `mail := test.GetLastSentMail(t, s.Mailer)` or `sentMails := test.GetSentMails(t, s.Mailer)`
+- Bumped Github Actions `github/codeql-action` from v1 to v3 and set go version in `go.mod` to `1.22.4` due to https://github.com/github/codeql/issues/15647
 
 ## 2024-05-28
 - Fixes the `LogErrorFuncWithRequestInfo` to return the error in order to pass the error to the global error handling mechanism
