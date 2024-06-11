@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/types/auth"
@@ -55,7 +56,7 @@ func TestBindAndValidateSuccess(t *testing.T) {
 
 	res := test.PerformRequest(t, s, "POST", "/?test=true", testBody, nil)
 
-	assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+	require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 	var response types.PostLoginResponse
 	test.ParseResponseAndValidate(t, res, &response)
@@ -144,6 +145,41 @@ func TestParseFileUplaodUnsupported(t *testing.T) {
 	require.Equal(t, http.StatusUnsupportedMediaType, res.Result().StatusCode)
 }
 
+func TestParseFileUplaodEmpty(t *testing.T) {
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	_, err := writer.CreateFormFile("file", filepath.Base("example.txt"))
+	require.NoError(t, err)
+
+	err = writer.Close()
+	require.NoError(t, err)
+
+	e := echo.New()
+	e.POST("/", func(c echo.Context) error {
+
+		fh, file, mime, err := util.ParseFileUpload(c, "file", []string{"text/plain"})
+		assert.Nil(t, fh)
+		assert.Nil(t, file)
+		assert.Nil(t, mime)
+		assert.Equal(t, httperrors.ErrBadRequestZeroFileSize, err)
+		if err != nil {
+			return err
+		}
+
+		return c.NoContent(204)
+	})
+
+	s := &api.Server{
+		Echo: e,
+	}
+
+	headers := http.Header{}
+	headers.Set(echo.HeaderContentType, writer.FormDataContentType())
+
+	test.PerformRequestWithRawBody(t, s, "POST", "/", &body, headers, nil)
+}
+
 func prepareFileUpload(t *testing.T, filePath string) (*bytes.Buffer, string) {
 	t.Helper()
 
@@ -154,7 +190,7 @@ func prepareFileUpload(t *testing.T, filePath string) (*bytes.Buffer, string) {
 	require.NoError(t, err)
 	defer src.Close()
 
-	dst, err := writer.CreateFormFile("file", src.Name())
+	dst, err := writer.CreateFormFile("file", filepath.Base(src.Name()))
 	require.NoError(t, err)
 
 	_, err = io.Copy(dst, src)

@@ -1,0 +1,7 @@
+([]interface {}) (len=1) {
+  (pq.StringArray) (len=3) {
+    (string) (len=3) "max",
+    (string) (len=6) "muster",
+    (string) (len=5) "peter"
+  }
+}
