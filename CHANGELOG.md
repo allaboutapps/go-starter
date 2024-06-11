@@ -12,6 +12,15 @@
 - Update to [golang:1.22.4-bookworm](https://hub.docker.com/layers/library/golang/1.22.4-bookworm/images/sha256-5eb6d52cd78951fa53884e208a030db506ab619a13157b9b7ea3a8eb5e4cbeee?context=explore) (requires `./docker-helper.sh --rebuild`) containing the bump from Debian `bullseye`(11) to `bookworm` (12)
   - Minor: [Bump github.com/golangci/golangci-lint from 1.55.2 to 1.59.0](https://github.com/golangci/golangci-lint/releases/tag/v1.59.0)
   - Minor: [Bump github.com/gotestyourself/gotestsum from 1.11.0 to 1.12.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.12.0)
+- Extended and fixed the password reset handling by a debounce and reuse duration. This can for example be leveraged to mitigate email flooding. The token reuse fixes an existing solution that was not working due to searching for tokens created on minute in the future instead of the past using `models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(time.Minute*1)),`. The new default behaviour is to debounce the password reset by 60 seconds and not to reuse reset tokens: 
+  - `PasswordResetTokenDebounceDuration` / `SERVER_AUTH_PASSWORD_RESET_TOKEN_DEBOUNCE_DURATION_SECONDS`: if a password reset token has been created in this duration, no password reset is initialized (default: 60 seconds)
+  - `PasswordResetTokenReuseDuration` / `SERVER_AUTH_PASSWORD_RESET_TOKEN_REUSE_DURATION_SECONDS`: if a password reset token has been created in this duration and is still valid, it is reused instead of re-created (default-value: 0 seconds->no reuse)
+- Added test helper to simplify assertion of `httperrors.HTTPError` verifying the http status code and the returned error, example usage:
+```go
+res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
+response := test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
+```
+- Added helpers to get last sent emails from mock transport using `mail := test.GetLastSentMail(t, s.Mailer)` or `sentMails := test.GetSentMails(t, s.Mailer)`
 
 ## 2024-05-28
 - Fixes the `LogErrorFuncWithRequestInfo` to return the error in order to pass the error to the global error handling mechanism

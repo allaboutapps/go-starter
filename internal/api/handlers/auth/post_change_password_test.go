@@ -143,15 +143,7 @@ func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 		require.Equal(t, int64(1), rowsAff)
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/change-password", payload, test.HeadersWithAuth(t, fixtures.User2AccessToken1.Token))
-
-		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *httperrors.ErrForbiddenNotLocalUser.Code, *response.Code)
-		assert.Equal(t, *httperrors.ErrForbiddenNotLocalUser.Type, *response.Type)
-		assert.Equal(t, *httperrors.ErrForbiddenNotLocalUser.Title, *response.Title)
+		response := test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)

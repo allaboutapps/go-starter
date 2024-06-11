@@ -29,6 +29,10 @@ func TestWithTestMailer(t *testing.T) {
 	mt1 := test.GetTestMailerMockTransport(t, m1)
 	mail := mt1.GetLastSentMail()
 	mails := mt1.GetSentMails()
+
+	assert.Equal(t, mail, test.GetLastSentMail(t, m1))
+	assert.Equal(t, mails, test.GetSentMails(t, m1))
+
 	require.NotNil(t, mail)
 	require.Len(t, mails, 1)
 	assert.Equal(t, m1.Config.DefaultSender, mail.From)
@@ -41,6 +45,10 @@ func TestWithTestMailer(t *testing.T) {
 	mt2 := test.GetTestMailerMockTransport(t, m2)
 	mail = mt2.GetLastSentMail()
 	mails = mt2.GetSentMails()
+
+	assert.Equal(t, mail, test.GetLastSentMail(t, m2))
+	assert.Equal(t, mails, test.GetSentMails(t, m2))
+
 	require.NotNil(t, mail)
 	require.Len(t, mails, 1)
 	assert.Equal(t, m2.Config.DefaultSender, mail.From)

@@ -85,15 +85,7 @@ func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-
-		assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *httperrors.ErrNotFoundTokenNotFound.Code, *response.Code)
-		assert.Equal(t, *httperrors.ErrNotFoundTokenNotFound.Type, *response.Type)
-		assert.Equal(t, *httperrors.ErrNotFoundTokenNotFound.Title, *response.Title)
+		response := test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
@@ -137,15 +129,7 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-
-		assert.Equal(t, http.StatusConflict, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *httperrors.ErrConflictTokenExpired.Code, *response.Code)
-		assert.Equal(t, *httperrors.ErrConflictTokenExpired.Type, *response.Type)
-		assert.Equal(t, *httperrors.ErrConflictTokenExpired.Title, *response.Title)
+		response := test.RequireHTTPError(t, res, httperrors.ErrConflictTokenExpired)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
@@ -246,15 +230,7 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 		require.Equal(t, int64(1), rowsAff)
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-
-		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *httperrors.ErrForbiddenNotLocalUser.Code, *response.Code)
-		assert.Equal(t, *httperrors.ErrForbiddenNotLocalUser.Type, *response.Type)
-		assert.Equal(t, *httperrors.ErrForbiddenNotLocalUser.Title, *response.Title)
+		response := test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
