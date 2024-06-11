@@ -17,7 +17,7 @@ var handlersGenCmd = &cobra.Command{
 	Use:   "gen",
 	Short: "Generate internal/api/handlers/handlers.go.",
 	Long:  `Generates internal/api/handlers/handlers.go file based on the current implemented handlers.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string /* args */) {
 
 		printOnly, err := cmd.Flags().GetBool(printOnlyFlag)
 		if err != nil {

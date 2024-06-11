@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.21.10-bullseye AS development
+FROM golang:1.22.4-bookworm AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,8 +15,8 @@ ENV MAKEFLAGS "-j 8 --no-print-directory"
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
 # https://wiki.postgresql.org/wiki/Apt
 # run lsb_release -c inside the container to pick the proper repository flavor
-# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" \
+# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg, bookworm=>bookworm-pgdg
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
     | tee /etc/apt/sources.list.d/pgdg.list \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
     | apt-key add -
@@ -27,7 +27,7 @@ RUN mkdir -m 0755 -p /etc/apt/keyrings/ \
     gpg --dearmor | \
     tee /etc/apt/keyrings/trivy.gpg > /dev/null; \
     chmod 644 /etc/apt/keyrings/trivy.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb bullseye main" \
+    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb bookworm main" \
     | tee /etc/apt/sources.list.d/trivy.list
 
 # Install required system dependencies
@@ -101,8 +101,8 @@ RUN mkdir -p /tmp/pgFormatter \
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.11.0/gotestsum_1.11.0_linux_${ARCH}.tar.gz" \
-    && tar xzf "gotestsum_1.11.0_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.12.0/gotestsum_1.12.0_linux_${ARCH}.tar.gz" \
+    && tar xzf "gotestsum_1.12.0_linux_${ARCH}.tar.gz" \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum
 
@@ -110,7 +110,7 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+    | sh -s -- -b $(go env GOPATH)/bin v1.59.0
 
 # go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
@@ -230,9 +230,9 @@ RUN make go-build
 # https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
 # The :debug image provides a busybox shell to enter (base-debian10 only, not static).
 # https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian11:debug as app
+FROM gcr.io/distroless/base-debian12:debug as app
 
-# FROM debian:buster-slim as app
+# FROM debian:bookworm-slim as app
 # RUN apt-get update \
 #     && apt-get install -y \
 #     #

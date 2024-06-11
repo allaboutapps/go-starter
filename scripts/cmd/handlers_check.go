@@ -17,7 +17,7 @@ var handlersCheckCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Checks handlers vs. swagger spec.",
 	Long:  `Checks currently implemented handlers against swagger spec.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string /* args */) {
 
 		printAll, err := cmd.Flags().GetBool(printAllFlag)
 		if err != nil {

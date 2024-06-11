@@ -12,6 +12,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,24 +22,28 @@ func TestWithTestDatabaseConcurrentUsage(t *testing.T) {
 
 	go func() {
 		test.WithTestDatabase(t, func(db1 *sql.DB) {
+			assert.NotNil(t, db1)
 			wg.Done()
 		})
 	}()
 
 	go func() {
 		test.WithTestDatabaseEmpty(t, func(db2 *sql.DB) {
+			assert.NotNil(t, db2)
 			wg.Done()
 		})
 	}()
 
 	go func() {
 		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/plain.sql")}, func(db3 *sql.DB) {
+			assert.NotNil(t, db3)
 			wg.Done()
 		})
 	}()
 
 	go func() {
 		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/users.sql")}, func(db4 *sql.DB) {
+			assert.NotNil(t, db4)
 			wg.Done()
 		})
 	}()

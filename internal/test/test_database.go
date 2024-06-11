@@ -190,7 +190,7 @@ func WithTestDatabaseEmptyContext(ctx context.Context, t *testing.T, closure fun
 		poolHash := storePoolHash(t, poolID, []string{selfFile})
 
 		// properly build up the template database once (noop)
-		execClosureNewIntegresTemplate(ctx, t, poolHash, func(db *sql.DB) error {
+		execClosureNewIntegresTemplate(ctx, t, poolHash, func(_ *sql.DB) error {
 			t.Helper()
 			return nil
 		})
