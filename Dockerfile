@@ -207,7 +207,7 @@ ENV PATH $PATH:$GOBIN
 # --- Purpose: Statically built binaries and CI environment
 ### -----------------------
 
-FROM development as builder
+FROM development AS builder
 WORKDIR /app
 COPY Makefile /app/Makefile
 COPY --chmod=0755 rksh /app/rksh
@@ -230,9 +230,9 @@ RUN make go-build
 # https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
 # The :debug image provides a busybox shell to enter (base-debian10 only, not static).
 # https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian12:debug as app
+FROM gcr.io/distroless/base-debian12:debug AS app
 
-# FROM debian:bookworm-slim as app
+# FROM debian:bookworm-slim AS app
 # RUN apt-get update \
 #     && apt-get install -y \
 #     #
