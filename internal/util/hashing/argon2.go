@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 
 	"golang.org/x/crypto/argon2"
@@ -46,7 +47,14 @@ func ComparePasswordAndHash(password string, hash string) (matches bool, err err
 
 	pKey := argon2.IDKey([]byte(password), salt, params.Time, params.Memory, params.Threads, params.KeyLength)
 
-	if subtle.ConstantTimeEq(int32(len(key)), int32(len(pKey))) == 0 {
+	keyLen := len(key)
+	pKeyLen := len(pKey)
+
+	if keyLen > math.MaxInt32 || pKeyLen > math.MaxInt32 {
+		return false, ErrInvalidArgon2Hash
+	}
+
+	if subtle.ConstantTimeEq(int32(keyLen), int32(pKeyLen)) == 0 {
 		return false, nil
 	}
 
@@ -90,7 +98,13 @@ func decodeArgon2Hash(hash string) (params *Argon2Params, salt []byte, key []byt
 	if err != nil {
 		return nil, nil, nil, ErrInvalidArgon2Hash
 	}
-	params.KeyLength = uint32(len(key))
+
+	keyLength := len(key)
+	if keyLength > math.MaxInt32 {
+		return nil, nil, nil, ErrInvalidArgon2Hash
+	}
+
+	params.KeyLength = uint32(keyLength)
 
 	return params, salt, key, nil
 }

@@ -10,6 +10,9 @@
 
 ## Unreleased
 
+- Update to [golang:1.23.4-bookworm](https://hub.docker.com/layers/library/golang/1.23.4-bookworm/images/sha256-5c3223fcb23efeccf495739c9fd9bbfe76cee51caea90591860395057eab3113) (requires `./docker-helper.sh --rebuild`)
+  - Minor: [Bump github.com/golangci/golangci-lint from v1.59.0 to v1.62.2](https://github.com/golangci/golangci-lint/releases/tag/v1.62.2)
+
 ## 2024-06-11
 - Update to [golang:1.22.4-bookworm](https://hub.docker.com/layers/library/golang/1.22.4-bookworm/images/sha256-5eb6d52cd78951fa53884e208a030db506ab619a13157b9b7ea3a8eb5e4cbeee?context=explore) (requires `./docker-helper.sh --rebuild`) containing the bump from Debian `bullseye`(11) to `bookworm` (12)
   - Minor: [Bump github.com/golangci/golangci-lint from 1.55.2 to 1.59.0](https://github.com/golangci/golangci-lint/releases/tag/v1.59.0)
