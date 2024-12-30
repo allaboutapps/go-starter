@@ -423,6 +423,23 @@ help-all: ##- Show all make targets.
 	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | sort | column -t -s '@'
 
 ### -----------------------
+# --- Changelog
+### -----------------------
+
+changelog-prerelease: # Usage: make changelog-prerelease
+	@echo "make changelog-prerelease"
+	@changie batch 0.0.0 --prerelease prerelease-$(shell date +%Y-%m-%d-%H%M%S) --move-dir prerelease
+	@git add --all
+	@git commit -m "PRERELEASE: $(shell date +%Y-%m-%d-%H%M%S)"
+
+changelog-release: # Usage: make changelog-release VERSION=24.11.0
+	@echo "make changelog-release with version $(VERSION)"
+	@changie batch $(VERSION) --include prerelease --remove-prereleases
+	@changie merge
+	@git add --all
+	@git commit -m "RELEASE: $(VERSION)"
+
+### -----------------------
 # --- Make variables
 ### -----------------------
 
