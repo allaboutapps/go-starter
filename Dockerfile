@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.22.4-bookworm AS development
+FROM golang:1.23.4-bookworm AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -110,7 +110,7 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v1.59.0
+    | sh -s -- -b $(go env GOPATH)/bin v1.62.2
 
 # go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
@@ -207,7 +207,7 @@ ENV PATH $PATH:$GOBIN
 # --- Purpose: Statically built binaries and CI environment
 ### -----------------------
 
-FROM development as builder
+FROM development AS builder
 WORKDIR /app
 COPY Makefile /app/Makefile
 COPY --chmod=0755 rksh /app/rksh
@@ -230,9 +230,9 @@ RUN make go-build
 # https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
 # The :debug image provides a busybox shell to enter (base-debian10 only, not static).
 # https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian12:debug as app
+FROM gcr.io/distroless/base-debian12:debug AS app
 
-# FROM debian:bookworm-slim as app
+# FROM debian:bookworm-slim AS app
 # RUN apt-get update \
 #     && apt-get install -y \
 #     #
