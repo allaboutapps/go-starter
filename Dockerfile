@@ -132,6 +132,9 @@ RUN go install github.com/spf13/cobra-cli@v1.3.0
 # govulncheck: go vulnerability checker
 RUN go install golang.org/x/vuln/cmd/govulncheck@latest
 
+# changie: a tool to help manage changelogs
+RUN go install github.com/miniscruff/changie@v1.21.0
+
 # watchexec
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \

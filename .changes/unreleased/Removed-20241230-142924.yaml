@@ -1,0 +1,3 @@
+kind: Removed
+body: Remove `util.MinInt` and `util.MaxInt`, use the built-in functions `min` and `max` instead. See https://go.dev/ref/spec#Min_and_max
+time: 2024-12-30T14:29:24.303565783Z
