@@ -8,6 +8,10 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
+## 25.01.1 - 2025-01-03
+### Changed
+* Bump [github.com/volatiletech/sqlboiler/v4 from v4.17.1 to v4.18.0](https://github.com/volatiletech/sqlboiler/releases/tag/v4.18.0)
+
 ## 25.01.0 - 2025-01-02
 ### Added
 * Migrate the changelog tracking from manual tracking to the changelog tracking tool [changie](https://github.com/miniscruff/changie)
