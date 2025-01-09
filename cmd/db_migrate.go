@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/spf13/cobra"
 )
@@ -53,13 +56,41 @@ func applyMigrations() (int, error) {
 		return 0, err
 	}
 
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+	zerolog.SetGlobalLevel(serviceConfig.Logger.Level)
+	if serviceConfig.Logger.PrettyPrintConsole {
+		log.Logger = log.Output(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+			w.TimeFormat = "15:04:05"
+		}))
+	}
+
 	migrations := &migrate.FileMigrationSource{
 		Dir: config.DatabaseMigrationFolder,
 	}
-	n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
+
+	missingMigrations, _, err := migrate.PlanMigration(db, "postgres", migrations, migrate.Up, 0)
 	if err != nil {
+		log.Err(err).Msg("Error while planning migrations")
 		return 0, err
 	}
 
-	return n, nil
+	var appliedMigrationsCount int
+	for i := 0; i < len(missingMigrations); i++ {
+		log.Info().Str("migrationId", missingMigrations[i].Id).Msg("Applying migration")
+
+		n, err := migrate.ExecMax(db, "postgres", migrations, migrate.Up, 1)
+		if err != nil {
+			log.Err(err).Msg("Error while applying migration")
+			return 0, err
+		}
+
+		log.Info().Int("appliedMigrationsCount", n).Msg("Applied migration")
+
+		appliedMigrationsCount += n
+		if n == 0 {
+			break
+		}
+	}
+
+	return appliedMigrationsCount, nil
 }
