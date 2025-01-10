@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
-	"time"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
-	"github.com/rs/zerolog"
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/util/command"
 	"github.com/rs/zerolog/log"
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/spf13/cobra"
@@ -17,7 +17,9 @@ import (
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Executes all migrations which are not yet applied.",
-	Run:   migrateCmdFunc,
+	Run: func(_ *cobra.Command, _ []string) {
+		migrateCmdFunc()
+	},
 }
 
 func init() {
@@ -27,19 +29,28 @@ func init() {
 	migrate.SetTable(config.DatabaseMigrationTable)
 }
 
-func migrateCmdFunc(_ *cobra.Command, _ []string) {
-	n, err := applyMigrations()
-	if err != nil {
-		fmt.Printf("Error while applying migrations: %v\n", err)
-		os.Exit(1)
-	}
+func migrateCmdFunc() {
+	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
+		log := util.LogFromContext(ctx)
 
-	fmt.Printf("Applied %d migrations.\n", n)
+		n, err := applyMigrations(ctx, s.Config)
+		if err != nil {
+			log.Err(err).Msg("Error while applying migrations")
+			return err
+		}
+
+		log.Info().Int("appliedMigrationsCount", n).Msg("Successfully applied migrations")
+
+		return nil
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to apply migrations")
+	}
 }
 
-func applyMigrations() (int, error) {
-	ctx := context.Background()
-	serviceConfig := config.DefaultServiceConfigFromEnv()
+func applyMigrations(ctx context.Context, serviceConfig config.Server) (int, error) {
+	log := util.LogFromContext(ctx)
+
 	db, err := sql.Open("postgres", serviceConfig.Database.ConnectionString())
 	if err != nil {
 		return 0, err
@@ -54,14 +65,6 @@ func applyMigrations() (int, error) {
 	// in sync with the settings in dbconfig.yml and config.DatabaseMigrationTable.
 	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
 		return 0, err
-	}
-
-	zerolog.TimeFieldFormat = time.RFC3339Nano
-	zerolog.SetGlobalLevel(serviceConfig.Logger.Level)
-	if serviceConfig.Logger.PrettyPrintConsole {
-		log.Logger = log.Output(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
-			w.TimeFormat = "15:04:05"
-		}))
 	}
 
 	migrations := &migrate.FileMigrationSource{

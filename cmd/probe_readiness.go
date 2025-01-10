@@ -5,11 +5,20 @@ import (
 	"database/sql"
 	"fmt"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/common"
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/util/command"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
+
+var readinessFlags ReadinessFlags
+
+type ReadinessFlags struct {
+	Verbose bool
+}
 
 // readinessCmd represents the server command
 var readinessCmd = &cobra.Command{
@@ -27,40 +36,54 @@ to take action if dependant services (e.g. DB, NFS
 mounts) become unstable. You may also use this to 
 ensure all requirements are fulfilled before starting
 the app server.`,
-	Run: func(cmd *cobra.Command, _ []string /* args */) {
-
-		verbose, err := cmd.Flags().GetBool(verboseFlag)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to parse args")
-		}
-		runReadiness(verbose)
+	Run: func(_ *cobra.Command, _ []string /* args */) {
+		readinessCmdFunc(readinessFlags)
 	},
 }
 
 func init() {
 	probeCmd.AddCommand(readinessCmd)
-	readinessCmd.Flags().BoolP(verboseFlag, "v", false, "Show verbose output.")
+	readinessCmd.Flags().BoolVarP(&readinessFlags.Verbose, verboseFlag, "v", false, "Show verbose output.")
 }
 
-func runReadiness(verbose bool) {
-	config := config.DefaultServiceConfigFromEnv()
+func readinessCmdFunc(flags ReadinessFlags) {
+	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
+		log := util.LogFromContext(ctx)
+
+		errs, err := runReadiness(ctx, s.Config, flags)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to run readiness probes")
+		}
+
+		if len(errs) > 0 {
+			log.Fatal().Errs("errs", errs).Msg("Unhealthy.")
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to run readiness probes")
+	}
+}
+
+func runReadiness(ctx context.Context, config config.Server, flags ReadinessFlags) ([]error, error) {
+	log := util.LogFromContext(ctx)
 
 	db, err := sql.Open("postgres", config.Database.ConnectionString())
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to the database")
+		log.Error().Err(err).Msg("Failed to open database connection")
+		return nil, err
 	}
 	defer db.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), config.Management.ReadinessTimeout)
+	readinessCtx, cancel := context.WithTimeout(context.Background(), config.Management.ReadinessTimeout)
 	defer cancel()
 
-	str, errs := common.ProbeReadiness(ctx, db, config.Management.ProbeWriteablePathsAbs)
+	str, errs := common.ProbeReadiness(readinessCtx, db, config.Management.ProbeWriteablePathsAbs)
 
-	if verbose {
+	if flags.Verbose {
 		fmt.Print(str)
 	}
 
-	if len(errs) > 0 {
-		log.Fatal().Errs("errs", errs).Msg("Unhealthy.")
-	}
+	return errs, nil
 }

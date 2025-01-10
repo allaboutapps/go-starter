@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,16 +12,19 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"allaboutapps.dev/aw/go-starter/internal/config"
-	"github.com/rs/zerolog"
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/util/command"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-const (
-	probeFlag   string = "probe"
-	migrateFlag string = "migrate"
-	seedFlag    string = "seed"
-)
+type ServerFlags struct {
+	ProbeReadiness  bool
+	ApplyMigrations bool
+	SeedFixtures    bool
+}
+
+var serverFlags ServerFlags
 
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
@@ -32,101 +34,76 @@ var serverCmd = &cobra.Command{
 
 Requires configuration through ENV and
 and a fully migrated PostgreSQL database.`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		probeReadiness, err := cmd.Flags().GetBool(probeFlag)
-		if err != nil {
-			fmt.Printf("Error while parsing flags: %v\n", err)
-			os.Exit(1)
-		}
-
-		applyMigrations, err := cmd.Flags().GetBool(migrateFlag)
-		if err != nil {
-			fmt.Printf("Error while parsing flags: %v\n", err)
-			os.Exit(1)
-		}
-
-		seedFixtures, err := cmd.Flags().GetBool(seedFlag)
-		if err != nil {
-			fmt.Printf("Error while parsing flags: %v\n", err)
-			os.Exit(1)
-		}
-
-		if probeReadiness {
-			runReadiness(true)
-		}
-
-		if applyMigrations {
-			migrateCmdFunc(cmd, args)
-		}
-
-		if seedFixtures {
-			seedCmdFunc(cmd, args)
-		}
-
-		runServer()
+	Run: func(_ *cobra.Command, _ []string) {
+		runServer(serverFlags)
 	},
 }
 
 func init() {
-	serverCmd.Flags().BoolP(probeFlag, "p", false, "Probe readiness before startup.")
-	serverCmd.Flags().BoolP(migrateFlag, "m", false, "Apply migrations before startup.")
-	serverCmd.Flags().BoolP(seedFlag, "s", false, "Seed fixtures into database before startup.")
+	serverCmd.Flags().BoolVarP(&serverFlags.ProbeReadiness, "probe", "p", false, "Probe readiness before startup.")
+	serverCmd.Flags().BoolVarP(&serverFlags.ApplyMigrations, "migrate", "m", false, "Apply migrations before startup.")
+	serverCmd.Flags().BoolVarP(&serverFlags.SeedFixtures, "seed", "s", false, "Seed fixtures into database before startup.")
 	rootCmd.AddCommand(serverCmd)
 }
 
-func runServer() {
-	config := config.DefaultServiceConfigFromEnv()
+func runServer(flags ServerFlags) {
+	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
+		log := util.LogFromContext(ctx)
 
-	zerolog.TimeFieldFormat = time.RFC3339Nano
-	zerolog.SetGlobalLevel(config.Logger.Level)
-	if config.Logger.PrettyPrintConsole {
-		log.Logger = log.Output(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
-			w.TimeFormat = "15:04:05"
-		}))
-	}
+		if flags.ProbeReadiness {
+			errs, err := runReadiness(ctx, s.Config, ReadinessFlags{
+				Verbose: true,
+			})
+			if err != nil {
+				log.Fatal().Err(err).Msg("Failed to run readiness probes")
+			}
 
-	s := api.NewServer(config)
+			if len(errs) > 0 {
+				log.Fatal().Errs("errs", errs).Msg("Unhealthy.")
+			}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	if err := s.InitDB(ctx); err != nil {
-		cancel()
-		log.Fatal().Err(err).Msg("Failed to initialize database")
-	}
-	cancel()
+		}
 
-	if err := s.InitMailer(); err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize mailer")
-	}
-
-	if err := s.InitPush(); err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize push service")
-	}
-
-	if err := s.InitI18n(); err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
-	}
-
-	router.Init(s)
-
-	go func() {
-		if err := s.Start(); err != nil {
-			if errors.Is(err, http.ErrServerClosed) {
-				log.Info().Msg("Server closed")
-			} else {
-				log.Fatal().Err(err).Msg("Failed to start server")
+		if flags.ApplyMigrations {
+			_, err := applyMigrations(ctx, s.Config)
+			if err != nil {
+				log.Fatal().Err(err).Msg("Error while applying migrations")
 			}
 		}
-	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	<-quit
+		if flags.SeedFixtures {
+			err := applySeedFixtures(ctx, s.Config)
+			if err != nil {
+				log.Fatal().Err(err).Msg("Error while applying seed fixtures")
+			}
+		}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+		router.Init(s)
 
-	if err := s.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal().Err(err).Msg("Failed to gracefully shut down server")
+		go func() {
+			if err := s.Start(); err != nil {
+				if errors.Is(err, http.ErrServerClosed) {
+					log.Info().Msg("Server closed")
+				} else {
+					log.Fatal().Err(err).Msg("Failed to start server")
+				}
+			}
+		}()
+
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+		<-quit
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		if err := s.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal().Err(err).Msg("Failed to gracefully shut down server")
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to start server")
 	}
 }

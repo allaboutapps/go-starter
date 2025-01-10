@@ -3,12 +3,14 @@ package cmd
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"os"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/data"
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"allaboutapps.dev/aw/go-starter/internal/util/command"
 	dbutil "allaboutapps.dev/aw/go-starter/internal/util/db"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -18,29 +20,42 @@ var seedCmd = &cobra.Command{
 	Use:   "seed",
 	Short: "Inserts or updates fixtures to the database.",
 	Long:  `Uses upsert to add test data to the current environment.`,
-	Run:   seedCmdFunc,
+	Run: func(_ *cobra.Command, _ []string) {
+		seedCmdFunc()
+	},
 }
 
 func init() {
 	dbCmd.AddCommand(seedCmd)
 }
 
-func seedCmdFunc(_ *cobra.Command, _ []string) {
-	if err := applyFixtures(); err != nil {
-		fmt.Printf("Error while seeding fixtures: %v", err)
-		os.Exit(1)
-	}
+func seedCmdFunc() {
+	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
+		log := util.LogFromContext(ctx)
 
-	fmt.Println("Seeded all fixtures.")
+		err := applySeedFixtures(ctx, s.Config)
+		if err != nil {
+			log.Err(err).Msg("Error while applying seed fixtures")
+			return err
+		}
+
+		log.Info().Msg("Successfully applied seed fixtures")
+
+		return nil
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to apply migrations")
+	}
 }
 
-func applyFixtures() error {
-	ctx := context.Background()
-	config := config.DefaultServiceConfigFromEnv()
+func applySeedFixtures(ctx context.Context, config config.Server) error {
+	log := util.LogFromContext(ctx)
+
 	db, err := sql.Open("postgres", config.Database.ConnectionString())
 	if err != nil {
 		return err
 	}
+
 	defer db.Close()
 
 	if err := db.PingContext(ctx); err != nil {
@@ -54,13 +69,12 @@ func applyFixtures() error {
 
 		for _, fixture := range fixtures {
 			if err := fixture.Upsert(ctx, tx, true, nil, boil.Infer(), boil.Infer()); err != nil {
-				fmt.Printf("Failed to upsert fixture: %v\n", err)
+				log.Error().Err(err).Msg("Failed to upsert fixture")
 				return err
 			}
 		}
 
-		fmt.Printf("Upserted %d fixtures.\n", len(fixtures))
+		log.Info().Int("fixturesCount", len(fixtures)).Msg("Successfully upserted fixtures")
 		return nil
-
 	})
 }
