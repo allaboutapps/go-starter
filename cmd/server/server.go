@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"allaboutapps.dev/aw/go-starter/cmd/db"
 	"allaboutapps.dev/aw/go-starter/cmd/probe"
@@ -95,13 +94,6 @@ func runServer(flags Flags) {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 		<-quit
-
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
-		if err := s.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal().Err(err).Msg("Failed to gracefully shut down server")
-		}
 
 		return nil
 	})
