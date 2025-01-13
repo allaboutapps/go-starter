@@ -1,4 +1,4 @@
-package cmd
+package db
 
 import (
 	"context"
@@ -15,25 +15,22 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// seedCmd represents the seed command
-var seedCmd = &cobra.Command{
-	Use:   "seed",
-	Short: "Inserts or updates fixtures to the database.",
-	Long:  `Uses upsert to add test data to the current environment.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		seedCmdFunc()
-	},
-}
-
-func init() {
-	dbCmd.AddCommand(seedCmd)
+func newSeed() *cobra.Command {
+	return &cobra.Command{
+		Use:   "seed",
+		Short: "Inserts or updates fixtures to the database.",
+		Long:  `Uses upsert to add test data to the current environment.`,
+		Run: func(_ *cobra.Command, _ []string) {
+			seedCmdFunc()
+		},
+	}
 }
 
 func seedCmdFunc() {
 	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
 		log := util.LogFromContext(ctx)
 
-		err := applySeedFixtures(ctx, s.Config)
+		err := ApplySeedFixtures(ctx, s.Config)
 		if err != nil {
 			log.Err(err).Msg("Error while applying seed fixtures")
 			return err
@@ -48,7 +45,7 @@ func seedCmdFunc() {
 	}
 }
 
-func applySeedFixtures(ctx context.Context, config config.Server) error {
+func ApplySeedFixtures(ctx context.Context, config config.Server) error {
 	log := util.LogFromContext(ctx)
 
 	db, err := sql.Open("postgres", config.Database.ConnectionString())

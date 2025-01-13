@@ -1,4 +1,4 @@
-package cmd
+package server
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"allaboutapps.dev/aw/go-starter/cmd/db"
+	"allaboutapps.dev/aw/go-starter/cmd/probe"
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"allaboutapps.dev/aw/go-starter/internal/config"
@@ -18,40 +20,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ServerFlags struct {
+type Flags struct {
 	ProbeReadiness  bool
 	ApplyMigrations bool
 	SeedFixtures    bool
 }
 
-var serverFlags ServerFlags
+func New() *cobra.Command {
+	var flags Flags
 
-// serverCmd represents the server command
-var serverCmd = &cobra.Command{
-	Use:   "server",
-	Short: "Starts the server",
-	Long: `Starts the stateless RESTful JSON server
+	cmd := &cobra.Command{
+		Use:   "server",
+		Short: "Starts the server",
+		Long: `Starts the stateless RESTful JSON server
+	
+	Requires configuration through ENV and
+	and a fully migrated PostgreSQL database.`,
+		Run: func(_ *cobra.Command, _ []string) {
+			runServer(flags)
+		},
+	}
 
-Requires configuration through ENV and
-and a fully migrated PostgreSQL database.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		runServer(serverFlags)
-	},
+	cmd.Flags().BoolVarP(&flags.ProbeReadiness, "probe", "p", false, "Probe readiness before startup.")
+	cmd.Flags().BoolVarP(&flags.ApplyMigrations, "migrate", "m", false, "Apply migrations before startup.")
+	cmd.Flags().BoolVarP(&flags.SeedFixtures, "seed", "s", false, "Seed fixtures into database before startup.")
+
+	return cmd
 }
 
-func init() {
-	serverCmd.Flags().BoolVarP(&serverFlags.ProbeReadiness, "probe", "p", false, "Probe readiness before startup.")
-	serverCmd.Flags().BoolVarP(&serverFlags.ApplyMigrations, "migrate", "m", false, "Apply migrations before startup.")
-	serverCmd.Flags().BoolVarP(&serverFlags.SeedFixtures, "seed", "s", false, "Seed fixtures into database before startup.")
-	rootCmd.AddCommand(serverCmd)
-}
-
-func runServer(flags ServerFlags) {
+func runServer(flags Flags) {
 	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
 		log := util.LogFromContext(ctx)
 
 		if flags.ProbeReadiness {
-			errs, err := runReadiness(ctx, s.Config, ReadinessFlags{
+			errs, err := probe.RunReadiness(ctx, s.Config, probe.ReadinessFlags{
 				Verbose: true,
 			})
 			if err != nil {
@@ -65,14 +67,14 @@ func runServer(flags ServerFlags) {
 		}
 
 		if flags.ApplyMigrations {
-			_, err := applyMigrations(ctx, s.Config)
+			_, err := db.ApplyMigrations(ctx, s.Config)
 			if err != nil {
 				log.Fatal().Err(err).Msg("Error while applying migrations")
 			}
 		}
 
 		if flags.SeedFixtures {
-			err := applySeedFixtures(ctx, s.Config)
+			err := db.ApplySeedFixtures(ctx, s.Config)
 			if err != nil {
 				log.Fatal().Err(err).Msg("Error while applying seed fixtures")
 			}

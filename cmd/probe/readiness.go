@@ -1,4 +1,4 @@
-package cmd
+package probe
 
 import (
 	"context"
@@ -14,43 +14,43 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var readinessFlags ReadinessFlags
-
 type ReadinessFlags struct {
 	Verbose bool
 }
 
-// readinessCmd represents the server command
-var readinessCmd = &cobra.Command{
-	Use:   "readiness",
-	Short: "Runs readiness probes",
-	Long: `Runs connection readinesss probes
+func newReadiness() *cobra.Command {
+	var flags ReadinessFlags
 
-This command triggers the same readinesss probes as in
-/-/ready (apart from the actual server.ready 
-probe) and prints the results to stdout. Fails with
-non zero exitcode on encountered errors.
+	cmd := &cobra.Command{
+		Use:   "readiness",
+		Short: "Runs readiness probes",
+		Long: `Runs connection readinesss probes
+	
+	This command triggers the same readinesss probes as in
+	/-/ready (apart from the actual server.ready 
+	probe) and prints the results to stdout. Fails with
+	non zero exitcode on encountered errors.
+	
+	A typical usecase of this command are readiness probes 
+	to take action if dependant services (e.g. DB, NFS 
+	mounts) become unstable. You may also use this to 
+	ensure all requirements are fulfilled before starting
+	the app server.`,
+		Run: func(_ *cobra.Command, _ []string /* args */) {
+			readinessCmdFunc(flags)
+		},
+	}
 
-A typical usecase of this command are readiness probes 
-to take action if dependant services (e.g. DB, NFS 
-mounts) become unstable. You may also use this to 
-ensure all requirements are fulfilled before starting
-the app server.`,
-	Run: func(_ *cobra.Command, _ []string /* args */) {
-		readinessCmdFunc(readinessFlags)
-	},
-}
+	cmd.Flags().BoolVarP(&flags.Verbose, verboseFlag, "v", false, "Show verbose output.")
 
-func init() {
-	probeCmd.AddCommand(readinessCmd)
-	readinessCmd.Flags().BoolVarP(&readinessFlags.Verbose, verboseFlag, "v", false, "Show verbose output.")
+	return cmd
 }
 
 func readinessCmdFunc(flags ReadinessFlags) {
 	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
 		log := util.LogFromContext(ctx)
 
-		errs, err := runReadiness(ctx, s.Config, flags)
+		errs, err := RunReadiness(ctx, s.Config, flags)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to run readiness probes")
 		}
@@ -66,7 +66,7 @@ func readinessCmdFunc(flags ReadinessFlags) {
 	}
 }
 
-func runReadiness(ctx context.Context, config config.Server, flags ReadinessFlags) ([]error, error) {
+func RunReadiness(ctx context.Context, config config.Server, flags ReadinessFlags) ([]error, error) {
 	log := util.LogFromContext(ctx)
 
 	db, err := sql.Open("postgres", config.Database.ConnectionString())

@@ -1,4 +1,4 @@
-package cmd
+package db
 
 import (
 	"context"
@@ -14,17 +14,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var migrateCmd = &cobra.Command{
-	Use:   "migrate",
-	Short: "Executes all migrations which are not yet applied.",
-	Run: func(_ *cobra.Command, _ []string) {
-		migrateCmdFunc()
-	},
+func newMigrate() *cobra.Command {
+	return &cobra.Command{
+		Use:   "migrate",
+		Short: "Executes all migrations which are not yet applied.",
+		Run: func(_ *cobra.Command, _ []string) {
+			migrateCmdFunc()
+		},
+	}
 }
 
 func init() {
-	dbCmd.AddCommand(migrateCmd)
-
 	// pin migrate to use the globally defined `migrations` table identifier
 	migrate.SetTable(config.DatabaseMigrationTable)
 }
@@ -33,7 +33,7 @@ func migrateCmdFunc() {
 	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
 		log := util.LogFromContext(ctx)
 
-		n, err := applyMigrations(ctx, s.Config)
+		n, err := ApplyMigrations(ctx, s.Config)
 		if err != nil {
 			log.Err(err).Msg("Error while applying migrations")
 			return err
@@ -48,7 +48,7 @@ func migrateCmdFunc() {
 	}
 }
 
-func applyMigrations(ctx context.Context, serviceConfig config.Server) (int, error) {
+func ApplyMigrations(ctx context.Context, serviceConfig config.Server) (int, error) {
 	log := util.LogFromContext(ctx)
 
 	db, err := sql.Open("postgres", serviceConfig.Database.ConnectionString())

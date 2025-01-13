@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"allaboutapps.dev/aw/go-starter/cmd/db"
+	"allaboutapps.dev/aw/go-starter/cmd/env"
+	"allaboutapps.dev/aw/go-starter/cmd/probe"
+	"allaboutapps.dev/aw/go-starter/cmd/server"
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"github.com/spf13/cobra"
 )
@@ -30,4 +34,12 @@ func Execute() {
 
 func init() {
 	rootCmd.SetVersionTemplate(`{{printf "%s\n" .Version}}`)
+
+	// attach the subcommands
+	rootCmd.AddCommand(
+		db.New(),
+		env.New(),
+		probe.New(),
+		server.New(),
+	)
 }

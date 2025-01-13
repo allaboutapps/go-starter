@@ -1,4 +1,4 @@
-package cmd
+package probe
 
 import (
 	"context"
@@ -14,36 +14,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var livenessFlags LivenessFlags
-
 type LivenessFlags struct {
 	Verbose bool
 }
 
-// livenessCmd represents the server command
-var livenessCmd = &cobra.Command{
-	Use:   "liveness",
-	Short: "Runs liveness probes",
-	Long: `Runs connection livenesss probes
+func newLiveness() *cobra.Command {
+	var flags LivenessFlags
 
-This command triggers the same livenesss probes as in
-/-/healthy (apart from the actual server.ready 
-probe) and prints the results to stdout. Fails with
-non zero exitcode on encountered errors.
+	cmd := &cobra.Command{
+		Use:   "liveness",
+		Short: "Runs liveness probes",
+		Long: `Runs connection livenesss probes
+		
+		This command triggers the same livenesss probes as in
+		/-/healthy (apart from the actual server.ready 
+		probe) and prints the results to stdout. Fails with
+		non zero exitcode on encountered errors.
+		
+		A typical usecase of this command are liveness probes 
+		to take action if dependant services (e.g. DB, NFS 
+		mounts) become unstable. You may also use this to 
+		ensure all requirements are fulfilled before starting
+		the app server.`,
+		Run: func(_ *cobra.Command, _ []string) {
+			livenessCmdFunc(flags)
+		},
+	}
 
-A typical usecase of this command are liveness probes 
-to take action if dependant services (e.g. DB, NFS 
-mounts) become unstable. You may also use this to 
-ensure all requirements are fulfilled before starting
-the app server.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		livenessCmdFunc(livenessFlags)
-	},
-}
+	cmd.Flags().BoolVarP(&flags.Verbose, verboseFlag, "v", false, "Show verbose output.")
 
-func init() {
-	probeCmd.AddCommand(livenessCmd)
-	livenessCmd.Flags().BoolVarP(&livenessFlags.Verbose, verboseFlag, "v", false, "Show verbose output.")
+	return cmd
 }
 
 func livenessCmdFunc(flags LivenessFlags) {
