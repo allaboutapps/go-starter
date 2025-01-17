@@ -2,8 +2,6 @@ package command
 
 import (
 	"context"
-	"errors"
-	"net/http"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -44,8 +42,8 @@ func WithServer(ctx context.Context, config config.Server, f func(ctx context.Co
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	if err := s.Shutdown(shutdownCtx); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal().Err(err).Msg("Failed to gracefully shut down server")
+	if errs := s.Shutdown(shutdownCtx); len(errs) > 0 {
+		log.Fatal().Errs("shutdownErrors", errs).Msg("Failed to gracefully shut down server")
 	}
 
 	return nil
