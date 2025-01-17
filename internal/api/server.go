@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/i18n"
@@ -58,6 +59,29 @@ func (s *Server) Ready() bool {
 		s.Mailer != nil &&
 		s.Push != nil &&
 		s.I18n != nil
+}
+
+func (s *Server) InitCmd() *Server {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := s.InitDB(ctx); err != nil {
+		cancel()
+		log.Fatal().Err(err).Msg("Failed to initialize database")
+	}
+	cancel()
+
+	if err := s.InitMailer(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize mailer")
+	}
+
+	if err := s.InitPush(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize push service")
+	}
+
+	if err := s.InitI18n(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
+	}
+
+	return s
 }
 
 func (s *Server) InitDB(ctx context.Context) error {
