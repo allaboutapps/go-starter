@@ -8,6 +8,11 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
+## 25.01.3 - 2025-01-17
+### Fixed
+* Fix shutdown handling to check all errors
+* Fix nil pointer dereference of shutdown without s.Echo
+
 ## 25.01.2 - 2025-01-17
 ### Changed
 * Refactor migration application logic to apply each missing migration individually and to print infos about the migration being applied
