@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
@@ -167,18 +168,29 @@ func (s *Server) Start() error {
 	return s.Echo.Start(s.Config.Echo.ListenAddress)
 }
 
-func (s *Server) Shutdown(ctx context.Context) error {
+func (s *Server) Shutdown(ctx context.Context) []error {
 	log.Warn().Msg("Shutting down server")
+
+	var errs []error
 
 	if s.DB != nil {
 		log.Debug().Msg("Closing database connection")
 
 		if err := s.DB.Close(); err != nil && !errors.Is(err, sql.ErrConnDone) {
 			log.Error().Err(err).Msg("Failed to close database connection")
+			errs = append(errs, err)
 		}
 	}
 
-	log.Debug().Msg("Shutting down echo server")
+	if s.Echo != nil {
+		log.Debug().Msg("Shutting down echo server")
 
-	return s.Echo.Shutdown(ctx)
+		if err := s.Echo.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error().Err(err).Msg("Failed to shutdown echo server")
+			errs = append(errs, err)
+		}
+
+	}
+
+	return errs
 }

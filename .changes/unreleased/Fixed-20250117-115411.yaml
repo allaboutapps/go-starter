@@ -1,0 +1,3 @@
+kind: Fixed
+body: Fix shutdown handling to check all errors
+time: 2025-01-17T11:54:11.489518139Z
