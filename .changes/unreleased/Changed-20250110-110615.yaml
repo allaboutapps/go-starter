@@ -1,3 +1,5 @@
 kind: Changed
-body: Refactor the cobra cmd setup structure and the flag parsing logic using struct-based flags
+body: |
+  Refactor the cobra cmd setup structure and the flag parsing logic using struct-based flags.
+  **BREAKING**: The restructuring breaks additionally created subcommands attached to the existing commands. See [Migration Guide Command Restructuring](https://github.com/allaboutapps/go-starter/wiki/Migration-Guide-Command-Restructuring)
 time: 2025-01-10T11:06:15.926075991Z
