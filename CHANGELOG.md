@@ -8,6 +8,13 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
+## 25.01.2 - 2025-01-17
+### Changed
+* Refactor migration application logic to apply each missing migration individually and to print infos about the migration being applied
+* Refactor the cobra cmd setup structure and the flag parsing logic using struct-based flags.
+**BREAKING**: The restructuring breaks additionally created subcommands attached to the existing commands. See [Migration Guide Command Restructuring](https://github.com/allaboutapps/go-starter/wiki/Migration-Guide-Command-Restructuring)
+
+
 ## 25.01.1 - 2025-01-03
 ### Changed
 * Bump [github.com/volatiletech/sqlboiler/v4 from v4.17.1 to v4.18.0](https://github.com/volatiletech/sqlboiler/releases/tag/v4.18.0)

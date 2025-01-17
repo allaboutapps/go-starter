@@ -1,3 +1,0 @@
-kind: Changed
-body: Refactor migration application logic to apply each missing migration individually and to print infos about the migration being applied
-time: 2025-01-09T13:56:10.529862142Z
