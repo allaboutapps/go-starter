@@ -15,7 +15,7 @@ var moduleCmd = &cobra.Command{
 	Use:   "modulename",
 	Short: "Prints the modulename",
 	Long:  `Prints the currently applied go modulename of this project.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command /* cmd */, _ []string /* args */) {
 		runModulename()
 	},
 }

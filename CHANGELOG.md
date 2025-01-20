@@ -8,18 +8,123 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
-## Unreleased
-- Extend util and test package with additional helper functions.
-- Add MIME interface to use *mimtype.MIME or an already KnownMIME.
-- Add function to detach context to avoid context cancelation. Can be used to pass context information to go routines without a deadline or cancel.
-- Add oauth2 helper for PKCE extention to generate verifier and challenge.
-- Added starttls support to mailer
-- **DEPRECATED** If you were using the `SERVER_SMTP_USE_TLS` flag before to enable TLS, you'll need to migrate to the `SERVER_SMTP_ENCRYPTION` setting of `tls`. For the moment, both settings are supported (with a warning being printed when using `SERVER_SMTP_USE_TLS`, however support for the deprecated config might be dropped in a future release).
-- Extend mailer mock to support waiting for all expected mails to arrive to check asynchronously sent mails in tests.
-- Add util for IN and NIN query helper which use `pg.StringArray` as param for slices instead of passing each item as arg.
-  - sqlboiler fails at around 10k params because each element is passed as an argument and some database and driver limits are reached
-  - `db.IN` should be used in go-starter projects when using postgres because it allows for over 1kk params in `IN` and `NIN` where clauses
-- Fixed bug in `test.RunningInTest()` where the test env did not get recognized while debugging
+## 25.01.3 - 2025-01-17
+### Fixed
+* Fix shutdown handling to check all errors
+* Fix nil pointer dereference of shutdown without s.Echo
+
+## 25.01.2 - 2025-01-17
+### Changed
+* Refactor migration application logic to apply each missing migration individually and to print infos about the migration being applied
+* Refactor the cobra cmd setup structure and the flag parsing logic using struct-based flags.
+**BREAKING**: The restructuring breaks additionally created subcommands attached to the existing commands. See [Migration Guide Command Restructuring](https://github.com/allaboutapps/go-starter/wiki/Migration-Guide-Command-Restructuring)
+
+
+## 25.01.1 - 2025-01-03
+### Changed
+* Bump [github.com/volatiletech/sqlboiler/v4 from v4.17.1 to v4.18.0](https://github.com/volatiletech/sqlboiler/releases/tag/v4.18.0)
+
+## 25.01.0 - 2025-01-02
+### Added
+* Migrate the changelog tracking from manual tracking to the changelog tracking tool [changie](https://github.com/miniscruff/changie)
+### Changed
+* Update to [golang:1.23.4-bookworm](https://hub.docker.com/layers/library/golang/1.23.4-bookworm/images/sha256-5c3223fcb23efeccf495739c9fd9bbfe76cee51caea90591860395057eab3113) (requires `./docker-helper.sh --rebuild`)
+* [Bump github.com/golangci/golangci-lint from v1.59.0 to v1.62.2](https://github.com/golangci/golangci-lint/releases/tag/v1.62.2)
+* `go.mod` updates:
+  - Minor: [Bump github.com/BurntSushi/toml from v1.3.2 to v1.4.0](https://github.com/BurntSushi/toml/releases/tag/v1.4.0)
+  - Patch: [Bump github.com/gabriel-vasile/mimetype from v1.4.3 to v1.4.7](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.7)
+  - Minor: [Bump github.com/go-openapi/errors from v0.21.0 to v0.22.0](https://github.com/go-openapi/errors/releases/tag/v0.22.0)
+  - Minor: [Bump github.com/go-openapi/runtime from v0.27.1 to v0.28.0](https://github.com/go-openapi/runtime/releases/tag/v0.28.0)
+  - Minor: [Bump github.com/go-openapi/strfmt from v0.22.0 to v0.23.0](https://github.com/go-openapi/strfmt/releases/tag/v0.23.0)
+  - Minor: [Bump github.com/go-openapi/swag from v0.22.9 to v0.23.0](https://github.com/go-openapi/swag/releases/tag/v0.23.0)
+  - Minor: [Bump github.com/go-openapi/validate from v0.22.6 to v0.24.0](https://github.com/go-openapi/validate/releases/tag/v0.24.0)
+  - Patch: [Bump github.com/labstack/echo/v4 from v4.11.4 to v4.13.3](https://github.com/labstack/echo/releases/tag/v4.13.3)
+  - Patch: [Bump github.com/nicksnyder/go-i18n/v2 from v2.4.0 to v2.4.1](https://github.com/nicksnyder/go-i18n/releases/tag/v2.4.1)
+  - Minor: [Bump github.com/rs/zerolog from v1.31.0 to v1.33.0](https://github.com/rs/zerolog/releases/tag/v1.33.0)
+  - Minor: [Bump github.com/rubenv/sql-migrate from v1.6.1 to v1.7.1](https://github.com/rubenv/sql-migrate/releases/tag/v1.7.1)
+  - Patch: [Bump github.com/spf13/cobra from v1.8.0 to v1.8.1](https://github.com/spf13/cobra/releases/tag/v1.8.1)
+  - Minor: [Bump github.com/spf13/viper from v1.18.2 to v1.19.0](https://github.com/spf13/viper/releases/tag/v1.19.0)
+  - Minor: [Bump github.com/stretchr/testify from v1.8.4 to v1.10.0](https://github.com/stretchr/testify/releases/tag/v1.10.0)
+  - Patch: [Bump github.com/volatiletech/sqlboiler/v4 from v4.16.1 to v4.17.1](https://github.com/volatiletech/sqlboiler/releases/tag/v4.17.1)
+  - Patch: [Bump github.com/volatiletech/strmangle from v0.0.6 to v0.0.8](https://github.com/volatiletech/strmangle/releases/tag/v0.0.8)
+  - Minor: [Bump golang.org/x/crypto from v0.18.0 to v0.31.0](https://github.com/golang/crypto/releases/tag/v0.31.0)
+  - Minor: [Bump golang.org/x/mod from v0.14.0 to v0.22.0](https://github.com/golang/mod/releases/tag/v0.22.0)
+  - Minor: [Bump golang.org/x/sys from v0.16.0 to v0.28.0](https://github.com/golang/sys/releases/tag/v0.28.0)
+  - Minor: [Bump golang.org/x/text from v0.14.0 to v0.21.0](https://github.com/golang/text/releases/tag/v0.21.0)
+  - Minor: [Bump google.golang.org/api from v0.161.0 to v0.214.0](https://github.com/googleapis/google-api-go-client/releases/tag/v0.214.0)
+
+### Removed
+* Remove `util.MinInt` and `util.MaxInt`, use the built-in functions `min` and `max` instead. See https://go.dev/ref/spec#Min_and_max
+
+## 2024-06-11
+- Update to [golang:1.22.4-bookworm](https://hub.docker.com/layers/library/golang/1.22.4-bookworm/images/sha256-5eb6d52cd78951fa53884e208a030db506ab619a13157b9b7ea3a8eb5e4cbeee?context=explore) (requires `./docker-helper.sh --rebuild`) containing the bump from Debian `bullseye`(11) to `bookworm` (12)
+  - Minor: [Bump github.com/golangci/golangci-lint from 1.55.2 to 1.59.0](https://github.com/golangci/golangci-lint/releases/tag/v1.59.0)
+  - Minor: [Bump github.com/gotestyourself/gotestsum from 1.11.0 to 1.12.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.12.0)
+- Extended and fixed the password reset handling by a debounce and reuse duration. This can for example be leveraged to mitigate email flooding. The token reuse fixes an existing solution that was not working due to searching for tokens created on minute in the future instead of the past using `models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(time.Minute*1)),`. The new default behaviour is to debounce the password reset by 60 seconds and not to reuse reset tokens: 
+  - `PasswordResetTokenDebounceDuration` / `SERVER_AUTH_PASSWORD_RESET_TOKEN_DEBOUNCE_DURATION_SECONDS`: if a password reset token has been created in this duration, no password reset is initialized (default: 60 seconds)
+  - `PasswordResetTokenReuseDuration` / `SERVER_AUTH_PASSWORD_RESET_TOKEN_REUSE_DURATION_SECONDS`: if a password reset token has been created in this duration and is still valid, it is reused instead of re-created (default-value: 0 seconds->no reuse)
+- Added test helper to simplify assertion of `httperrors.HTTPError` verifying the http status code and the returned error, example usage:
+```go
+res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
+response := test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
+```
+- Added helpers to get last sent emails from mock transport using `mail := test.GetLastSentMail(t, s.Mailer)` or `sentMails := test.GetSentMails(t, s.Mailer)`
+- Bumped Github Actions `github/codeql-action` from v1 to v3 and set go version in `go.mod` to `1.22.4` due to https://github.com/github/codeql/issues/15647
+
+## 2024-05-28
+- Fixes the `LogErrorFuncWithRequestInfo` to return the error in order to pass the error to the global error handling mechanism
+
+## 2024-05-14
+- Switch [from Go 1.21.6 Go 1.21.10](https://go.dev/doc/devel/release#go1.21.0) (requires `./docker-helper.sh --rebuild`).
+- Extended the snapshot and request helper to improve the test experience when snapshotting raw JSON (`.SaveJSON`) and raw bytes like images (`.SaveBytes`)
+- Improved custom replace function in snapshot helper to only redact explicit matches
+- Added custom LogErrorFunc for recover middleware to attach request info the recover log messages
+- Adjusted order of validation error matching to correctly return list of errors wrapped in single error
+- Added vulnerability scanning to dev container (trivy and govulncheck)
+
+## 2024-02-01
+- [Persist bash history in development container](https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history) (requires `./docker-helper.sh --rebuild`).
+  - Your commands are now persisted between your development container restarts / rebuilds, making it easier to re-run specific commands you've previously executed (e.g. that one go command you cannot remember).
+- Hotfix [types.NullDecimal error](https://github.com/volatiletech/sqlboiler/issues/1234) by  downgrading indirect `github.com/ericlagergren/decimal@v0.0.0-20190420051523-6335edbaa640`.
+  - Note that we do not pin it in direct dependencies, as this downgrade is already in [SQLBoilers master](https://github.com/volatiletech/sqlboiler/commit/bc59c158590800f7810cce241a12d572e898014f) anyways.
+
+## 2024-01-31
+- Migration to Docker Compose V2 ([Docker Compose Docs](https://docs.docker.com/compose/reference/)), thx [@eklatzer](https://github.com/eklatzer)
+- Upgrade to [IntegreSQL v1.1.0](https://github.com/allaboutapps/integresql/blob/v1.1.0/CHANGELOG.md#v110)
+- Switch [from Go 1.20.3 Go 1.21.6](https://go.dev/doc/devel/release#go1.21.0) (requires `./docker-helper.sh --rebuild`).
+- Fix premature optimization in `make swagger` -> `make swagger-generate` (rm `rsync` with `--size-only`), thx [@eklatzer](https://github.com/eklatzer)
+- Dockerfile deps upgrade:
+  - Upgrade pgFormatter [from v5.3 to v5.5](https://github.com/darold/pgFormatter/releases/tag/v5.5)
+  - Upgrade gotestsum [from 1.9.0 to 1.11.0](https://github.com/gotestyourself/gotestsum/releases/tag/v1.11.0)
+  - Upgrade golangci-lint [from 1.52.2 to 1.55.2](https://github.com/golangci/golangci-lint/releases/tag/v1.55.2)
+  - Upgrade watchexec [from 1.20.6 to 1.25.1](https://github.com/watchexec/watchexec/releases/tag/v1.25.1)
+- `go.mod` upgrades
+  - Minor: [Bump github.com/BurntSushi/toml from v1.2.1 to v1.3.2](https://github.com/BurntSushi/toml)
+  - Minor: [Bump github.com/davecgh/go-spew from v1.1.1 to v1.1.2-0.20180830191138-d8f796af33cc](https://github.com/davecgh/go-spew/commit/d8f796af33cc11cb798c1aaeb27a4ebc5099927d)
+  - Minor: [Bump github.com/gabriel-vasile/mimetype from v1.4.1 to v1.4.3](https://github.com/gabriel-vasile/mimetype)
+  - Minor: [Bump github.com/go-openapi/errors from v0.20.3 to v0.21.0](https://github.com/go-openapi/errors)
+  - Minor: [Bump github.com/go-openapi/runtime from v0.25.0 to v0.27.1](https://github.com/go-openapi/runtime)
+  - Minor: [Bump github.com/go-openapi/strfmt from v0.21.3 to v0.22.0](https://github.com/go-openapi/strfmt)
+  - Minor: [Bump github.com/go-openapi/swag from v0.22.3 to v0.22.9](https://github.com/go-openapi/swag)
+  - Minor: [Bump github.com/go-openapi/validate from v0.22.0 to v0.22.6](https://github.com/go-openapi/validate)
+  - Minor: [Bump github.com/labstack/echo/v4 from v4.9.1 to v4.11.4](https://github.com/labstack/echo)
+  - Minor: [Bump github.com/lib/pq from v1.10.7 to v1.10.9](https://github.com/lib/pq)
+  - Minor: [Bump github.com/nicksnyder/go-i18n/v2 from v2.2.1 to v2.4.0](https://github.com/nicksnyder/go-i18n)
+  - Minor: [Bump github.com/pmezard/go-difflib from v1.0.0 to v1.0.1-0.20181226105442-5d4384ee4fb2](https://github.com/pmezard/go-difflib) (deprecated)
+  - Minor: [Bump github.com/rs/zerolog from v1.28.0 to v1.31.0](https://github.com/rs/zerolog)
+  - Minor: [Bump github.com/rubenv/sql-migrate from v1.2.0 to v1.6.1](https://github.com/rubenv/sql-migrate)
+  - Minor: [Bump github.com/spf13/cobra from v1.6.1 to v1.8.0](https://github.com/spf13/cobra)
+  - Minor: [Bump github.com/spf13/viper from v1.14.0 to v1.18.2](https://github.com/spf13/viper)
+  - Minor: [Bump github.com/stretchr/testify from v1.8.1 to v1.8.4](https://github.com/stretchr/testify)
+  - Minor: [Bump github.com/subosito/gotenv from v1.4.1 to v1.6.0](https://github.com/subosito/gotenv)
+  - Minor: [Bump github.com/volatiletech/sqlboiler/v4 from v4.13.0 to v4.16.1](https://github.com/volatiletech/sqlboiler)
+  - Minor: [Bump github.com/volatiletech/strmangle from v0.0.4 to v0.0.6](https://github.com/volatiletech/strmangle)
+  - Minor: [Bump golang.org/x/crypto from v0.3.0 to v0.18.0](https://golang.org/x/crypto)
+  - Minor: [Bump golang.org/x/sys from v0.5.0 to v0.16.0](https://golang.org/x/sys)
+  - Minor: [Bump golang.org/x/text from v0.7.0 to v0.14.0](https://golang.org/x/text)
+  - Minor: [Bump google.golang.org/api from v0.103.0 to v0.161.0](https://google.golang.org/api)
+  - Minor: [Bump xxxx from yyy to zzz](https://xxxx)
+  - Replace: [github.com/rogpeppe/go-internal v1.9.0](https://github.com/rogpeppe/go-internal) with [golang.org/x/mod v0.14.0](https://pkg.go.dev/golang.org/x/mod)
 
 ## 2023-05-03
 - Switch [from Go 1.19.3 to Go 1.20.3](https://go.dev/doc/devel/release#go1.20) (requires `./docker-helper.sh --rebuild`).

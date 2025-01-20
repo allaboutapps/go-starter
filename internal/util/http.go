@@ -294,6 +294,11 @@ func defaultEchoBindAll(c echo.Context, v runtime.Validatable) (err error) {
 func formatValidationErrors(ctx context.Context, err *oerrors.CompositeError) []*types.HTTPValidationErrorDetail {
 	valErrs := make([]*types.HTTPValidationErrorDetail, 0, len(err.Errors))
 	for _, e := range err.Errors {
+		var compositeError *oerrors.CompositeError
+		if errors.As(e, &compositeError) {
+			valErrs = append(valErrs, formatValidationErrors(ctx, compositeError)...)
+			continue
+		}
 
 		var validationError *oerrors.Validation
 		if errors.As(e, &validationError) {
@@ -302,12 +307,6 @@ func formatValidationErrors(ctx context.Context, err *oerrors.CompositeError) []
 				In:    &validationError.In,
 				Error: swag.String(validationError.Error()),
 			})
-			continue
-		}
-
-		var compositeError *oerrors.CompositeError
-		if errors.As(e, &compositeError) {
-			valErrs = append(valErrs, formatValidationErrors(ctx, compositeError)...)
 			continue
 		}
 

@@ -4,10 +4,12 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
 
+	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -73,4 +75,19 @@ func CompareAll(t *testing.T, base map[string]string, toCheck map[string]string,
 		contains := strings.Contains(compareStrV, strV)
 		assert.Truef(t, contains, "Expected for %s: '%s'. Got: '%s'", k, strV, compareStrV)
 	}
+}
+
+func RequireHTTPError(t *testing.T, res *httptest.ResponseRecorder, httpError *httperrors.HTTPError) httperrors.HTTPError {
+	t.Helper()
+
+	if httpError.Code != nil {
+		require.Equal(t, int(*httpError.Code), res.Result().StatusCode)
+	}
+
+	var response httperrors.HTTPError
+	ParseResponseAndValidate(t, res, &response)
+
+	require.Equal(t, httpError, &response)
+
+	return response
 }

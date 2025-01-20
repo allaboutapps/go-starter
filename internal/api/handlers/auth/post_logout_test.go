@@ -139,7 +139,6 @@ func TestPostLogoutUnknownAuthToken(t *testing.T) {
 func TestPostLogoutMissingAuthToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, nil)
-
 		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
 
 		var response httperrors.HTTPError

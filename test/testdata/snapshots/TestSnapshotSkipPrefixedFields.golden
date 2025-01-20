@@ -1,0 +1,10 @@
+(struct { ID string; OtherIDStr string; OtherIDInt int; OtherIDBool bool; OtherIDPTR *string; OtherIDStruct struct { ID string } }) {
+  ID: <redacted>,
+  OtherIDStr: (string) (len=6) "id str",
+  OtherIDInt: (int) 4,
+  OtherIDBool: (bool) true,
+  OtherIDPTR: (*string)((len=10) "ID str ptr"),
+  OtherIDStruct: (struct { ID string }) {
+    ID: <redacted>,
+  }
+}

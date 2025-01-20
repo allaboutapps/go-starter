@@ -13,6 +13,7 @@ build: ##- Default 'make' target: sql, swagger, go-generate, go-format, go-build
 all: clean init ##- Runs all of our common make targets: clean, init, build and test.
 	@$(MAKE) build
 	@$(MAKE) test
+	@$(MAKE) trivy
 
 info: info-db info-handlers info-go ##- Prints info about spec db, handlers, and go.mod updates, module-name and current go version.
 
@@ -298,7 +299,7 @@ swagger-generate: ##- (opt) Generate swagger /internal/types.
 		--config-file=api/config/go-swagger-config.yml \
 		-q
 	@find tmp/testdata/types -type f -exec sed -i "s|${GO_MODULE_NAME}/tmp/testdata/types|${GO_MODULE_NAME}/internal/types|g" {} \;
-	rsync -au --size-only --ignore-times --delete tmp/testdata/types/ internal/types/
+	rsync -au --ignore-times --delete tmp/testdata/types/ internal/types/
 
 swagger-validate: ##- (opt) Validate api/swagger.yml.
 	@echo "make swagger-validate"
@@ -327,6 +328,18 @@ check-embedded-modules-go-not: ##- (opt) Checks embedded modules in compiled bin
 	@echo "make check-embedded-modules-go-not"
 	@(mkdir -p tmp 2> /dev/null && go version -m -v bin/app > tmp/.modules)
 	grep -f go.not -F tmp/.modules && (echo "go.not: Found disallowed embedded module(s) in bin/app!" && exit 1) || exit 0
+
+trivy-report: ##- Prints trivy report for all severities without failing
+	@echo "make trivy-report"
+	@trivy fs /app --exit-code 0 --quiet
+
+trivy: ##- Runs trivy analysis and fails on HIGH, CRITICAL vulnerabilities.
+	@echo "make trivy"
+	@trivy fs /app --exit-code 1 --severity HIGH,CRITICAL --quiet
+
+govulncheck:
+	@echo "make govulncheck"
+	@govulncheck /app/...
 
 ### -----------------------
 # --- Git related
@@ -408,6 +421,23 @@ help-all: ##- Show all make targets.
 	@echo "note: make targets flagged with '(opt)' are part of a main target."
 	@echo ""
 	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | sort | column -t -s '@'
+
+### -----------------------
+# --- Changelog
+### -----------------------
+
+changelog-prerelease: # Usage: make changelog-prerelease
+	@echo "make changelog-prerelease"
+	@changie batch 0.0.0 --prerelease prerelease-$(shell date +%Y-%m-%d-%H%M%S) --move-dir prerelease
+	@git add --all
+	@git commit -m "PRERELEASE: $(shell date +%Y-%m-%d-%H%M%S)"
+
+changelog-release: # Usage: make changelog-release VERSION=24.11.0
+	@echo "make changelog-release with version $(VERSION)"
+	@changie batch $(VERSION) --include prerelease --remove-prereleases
+	@changie merge
+	@git add --all
+	@git commit -m "RELEASE: $(VERSION)"
 
 ### -----------------------
 # --- Make variables

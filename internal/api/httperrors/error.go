@@ -61,7 +61,7 @@ func (e *HTTPError) Error() string {
 	if e.Internal != nil {
 		fmt.Fprintf(&b, ", %v", e.Internal)
 	}
-	if e.AdditionalData != nil && len(e.AdditionalData) > 0 {
+	if len(e.AdditionalData) > 0 {
 		keys := make([]string, 0, len(e.AdditionalData))
 		for k := range e.AdditionalData {
 			keys = append(keys, k)
@@ -118,7 +118,7 @@ func (e *HTTPValidationError) Error() string {
 	if e.Internal != nil {
 		fmt.Fprintf(&b, ", %v", e.Internal)
 	}
-	if e.AdditionalData != nil && len(e.AdditionalData) > 0 {
+	if len(e.AdditionalData) > 0 {
 		keys := make([]string, 0, len(e.AdditionalData))
 		for k := range e.AdditionalData {
 			keys = append(keys, k)

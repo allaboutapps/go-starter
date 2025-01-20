@@ -57,9 +57,26 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 			return c.NoContent(http.StatusNoContent)
 		}
 
+		if s.Config.Auth.PasswordResetTokenDebounceDuration > 0 {
+			resetTokenInDebounceTimeExists, err := user.PasswordResetTokens(
+				models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(-s.Config.Auth.PasswordResetTokenDebounceDuration)),
+				models.PasswordResetTokenWhere.ValidUntil.GT(time.Now()),
+			).Exists(ctx, s.DB)
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to check for existing password reset token")
+				return err
+			}
+
+			if resetTokenInDebounceTimeExists {
+				log.Debug().Msg("Password reset token exists within debounce time, not sending new one")
+				return c.NoContent(http.StatusNoContent)
+			}
+		}
+
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
 			passwordResetToken, err := user.PasswordResetTokens(
-				models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(time.Minute*1)),
+				models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(-s.Config.Auth.PasswordResetTokenReuseDuration)),
+				models.PasswordResetTokenWhere.ValidUntil.GT(time.Now()),
 			).One(ctx, tx)
 			if err != nil {
 				if errors.Is(err, sql.ErrNoRows) {

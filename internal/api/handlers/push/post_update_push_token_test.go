@@ -111,15 +111,7 @@ func TestPostUpdatePushTokenWithDuplicateToken(t *testing.T) {
 		assert.NoError(t, err)
 
 		res := test.PerformRequest(t, s, "PUT", "/api/v1/push/token", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
-
-		assert.Equal(t, http.StatusConflict, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *httperrors.ErrConflictPushToken.Code, *response.Code)
-		assert.Equal(t, *httperrors.ErrConflictPushToken.Type, *response.Type)
-		assert.Equal(t, *httperrors.ErrConflictPushToken.Title, *response.Title)
+		response := test.RequireHTTPError(t, res, httperrors.ErrConflictPushToken)
 		assert.Empty(t, response.Detail)
 		assert.Nil(t, response.Internal)
 		assert.Nil(t, response.AdditionalData)
@@ -163,11 +155,10 @@ func TestPostUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "PUT", "/api/v1/push/token", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
-
-		assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
+		response := test.RequireHTTPError(t, res, httperrors.ErrNotFoundOldPushToken)
+		assert.Empty(t, response.Detail)
+		assert.Nil(t, response.Internal)
+		assert.Nil(t, response.AdditionalData)
 
 		newToken, err := models.PushTokens(models.PushTokenWhere.Token.EQ(testToken)).One(ctx, s.DB)
 		require.NoError(t, err)
@@ -175,13 +166,6 @@ func TestPostUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
 		assert.Equal(t, testToken, newToken.Token)
 		assert.Equal(t, testProvider, newToken.Provider)
 		assert.Equal(t, fixtures.User1.ID, newToken.UserID)
-
-		assert.Equal(t, *httperrors.ErrNotFoundOldPushToken.Code, *response.Code)
-		assert.Equal(t, *httperrors.ErrNotFoundOldPushToken.Type, *response.Type)
-		assert.Equal(t, *httperrors.ErrNotFoundOldPushToken.Title, *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
 
 		err = oldPushToken.Reload(ctx, s.DB)
 		assert.NoError(t, err)

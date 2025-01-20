@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/i18n"
@@ -58,6 +60,29 @@ func (s *Server) Ready() bool {
 		s.Mailer != nil &&
 		s.Push != nil &&
 		s.I18n != nil
+}
+
+func (s *Server) InitCmd() *Server {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := s.InitDB(ctx); err != nil {
+		cancel()
+		log.Fatal().Err(err).Msg("Failed to initialize database")
+	}
+	cancel()
+
+	if err := s.InitMailer(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize mailer")
+	}
+
+	if err := s.InitPush(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize push service")
+	}
+
+	if err := s.InitI18n(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
+	}
+
+	return s
 }
 
 func (s *Server) InitDB(ctx context.Context) error {
@@ -143,18 +168,29 @@ func (s *Server) Start() error {
 	return s.Echo.Start(s.Config.Echo.ListenAddress)
 }
 
-func (s *Server) Shutdown(ctx context.Context) error {
+func (s *Server) Shutdown(ctx context.Context) []error {
 	log.Warn().Msg("Shutting down server")
+
+	var errs []error
 
 	if s.DB != nil {
 		log.Debug().Msg("Closing database connection")
 
 		if err := s.DB.Close(); err != nil && !errors.Is(err, sql.ErrConnDone) {
 			log.Error().Err(err).Msg("Failed to close database connection")
+			errs = append(errs, err)
 		}
 	}
 
-	log.Debug().Msg("Shutting down echo server")
+	if s.Echo != nil {
+		log.Debug().Msg("Shutting down echo server")
 
-	return s.Echo.Shutdown(ctx)
+		if err := s.Echo.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error().Err(err).Msg("Failed to shutdown echo server")
+			errs = append(errs, err)
+		}
+
+	}
+
+	return errs
 }
