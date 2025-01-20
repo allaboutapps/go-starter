@@ -182,18 +182,3 @@ func ContainsAll(str string, sub ...string) bool {
 
 	return true
 }
-
-// StringSliceEquals returns only true if two string slices have the same
-// strings in the same order.
-func StringSliceEquals(a []string, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
-}

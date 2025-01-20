@@ -80,17 +80,3 @@ func TestEmptyIfNil(t *testing.T) {
 	assert.Equal(t, s, util.EmptyIfNil(&s))
 	assert.Equal(t, "", util.EmptyIfNil(nil))
 }
-
-func TestStringSliceEquals(t *testing.T) {
-	a := []string{"a", "b", "c"}
-	b := []string{"a", "b", "c"}
-	assert.True(t, util.StringSliceEquals(a, b))
-
-	b[0] = "b"
-	b[1] = "a"
-	assert.False(t, util.StringSliceEquals(a, b))
-
-	b = a
-	b = append(b, "x")
-	assert.False(t, util.StringSliceEquals(a, b))
-}
