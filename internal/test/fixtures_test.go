@@ -104,10 +104,10 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestInsertableInterface(t *testing.T) {
-	var user = &models.AppUserProfile{
+	var user any = &models.AppUserProfile{
 		UserID: "62b13d29-5c4e-420e-b991-a631d3938776",
 	}
 
-	_, ok := interface{}(user).(test.Insertable)
+	_, ok := user.(test.Insertable)
 	assert.True(t, ok, "AppUserProfile should implement the Insertable interface")
 }
