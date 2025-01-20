@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"math"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/volatiletech/null/v8"
@@ -72,7 +73,7 @@ func NullIntFromInt16Ptr(i *int16) null.Int {
 }
 
 func Int16PtrFromNullInt(i null.Int) *int16 {
-	if !i.Valid {
+	if !i.Valid || i.Int > math.MaxInt16 || i.Int < math.MinInt16 {
 		return nil
 	}
 
@@ -81,8 +82,11 @@ func Int16PtrFromNullInt(i null.Int) *int16 {
 }
 
 func Int16PtrFromInt(i int) *int16 {
-	res := int16(i)
+	if i > math.MaxInt16 || i < math.MinInt16 {
+		return nil
+	}
 
+	res := int16(i)
 	return &res
 }
 

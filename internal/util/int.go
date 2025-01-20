@@ -1,6 +1,10 @@
 package util
 
-import "github.com/go-openapi/swag"
+import (
+	"math"
+
+	"github.com/go-openapi/swag"
+)
 
 func IntPtrToInt64Ptr(num *int) *int64 {
 	if num == nil {
@@ -19,5 +23,9 @@ func Int64PtrToIntPtr(num *int64) *int {
 }
 
 func IntToInt32Ptr(num int) *int32 {
+	if num > math.MaxInt32 || num < math.MinInt32 {
+		return nil
+	}
+
 	return swag.Int32(int32(num))
 }

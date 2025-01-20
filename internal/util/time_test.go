@@ -160,8 +160,8 @@ func TestMaxTime(t *testing.T) {
 	a := time.Date(2022, 4, 12, 0, 0, 0, 1, time.UTC)
 	b := time.Date(2022, 4, 12, 0, 0, 0, 2, time.UTC)
 	c := time.Date(2022, 4, 12, 0, 0, 0, 0, time.UTC)
-	max := util.MaxTime(a, b, c)
-	assert.Equal(t, b, max)
+	latestTime := util.MaxTime(a, b, c)
+	assert.Equal(t, b, latestTime)
 }
 
 func TestNonZeroTimeOrNil(t *testing.T) {

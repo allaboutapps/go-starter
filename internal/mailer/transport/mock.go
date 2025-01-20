@@ -25,7 +25,7 @@ func NewMock() *MockMailTransport {
 	return &MockMailTransport{
 		RWMutex:    sync.RWMutex{},
 		mails:      make([]*email.Email, 0),
-		OnMailSent: func(mail email.Email) {},
+		OnMailSent: func(_ email.Email) {},
 	}
 }
 

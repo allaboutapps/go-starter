@@ -78,13 +78,13 @@ func TruncateTime(d time.Time) time.Time {
 
 // MaxTime returns the latest time.Time of the given params
 func MaxTime(times ...time.Time) time.Time {
-	var max time.Time
+	var latestTime time.Time
 	for _, t := range times {
-		if t.After(max) {
-			max = t
+		if t.After(latestTime) {
+			latestTime = t
 		}
 	}
-	return max
+	return latestTime
 }
 
 // NonZeroTimeOrNil returns a pointer to passed time if it is not a zero time. Passing zero/uninitialised time returns nil instead.
