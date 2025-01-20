@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"testing"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
@@ -125,7 +126,7 @@ func DefaultServiceConfigFromEnv() Server {
 	// If you need dotenv ENV variables available in a test, do that explicitly within that
 	// test before executing DefaultServiceConfigFromEnv (or test.WithTestServer).
 	// See /internal/test/helper_dot_env.go: test.DotEnvLoadLocalOrSkipTest(t)
-	if !util.RunningInTest() {
+	if !testing.Testing() {
 		DotEnvTryLoad(filepath.Join(util.GetProjectRootDir(), ".env.local"), os.Setenv)
 	}
 
