@@ -85,13 +85,11 @@ func (m *MockMailTransport) Expect(mailCnt int) {
 
 // Wait until all expected mails have arrived
 func (m *MockMailTransport) Wait() {
-	if err := util.WaitTimeout(&m.wg, defaultWaitTimeout); errors.Is(err, util.ErrWaitTimeout) {
-		panic(fmt.Sprintf("Some emails are missing, sent: %v", len(m.GetSentMails())))
-	}
+	m.WaitWithTimeout(defaultWaitTimeout)
 }
 
 func (m *MockMailTransport) WaitWithTimeout(timeout time.Duration) {
 	if err := util.WaitTimeout(&m.wg, timeout); errors.Is(err, util.ErrWaitTimeout) {
-		log.Fatalf("Some emails are missing, found: %v", len(m.GetSentMails()))
+		log.Fatalf("Timeout waiting for %d mails to be sent", m.expected)
 	}
 }
