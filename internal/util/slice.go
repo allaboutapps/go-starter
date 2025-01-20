@@ -1,16 +1,5 @@
 package util
 
-// ContainsString checks whether the given string slice contains the string provided.
-func ContainsString(slice []string, s string) bool {
-	for _, v := range slice {
-		if v == s {
-			return true
-		}
-	}
-
-	return false
-}
-
 // ContainsAllString checks whether the given string slice contains all strings provided.
 func ContainsAllString(slice []string, sub ...string) bool {
 	contains := make(map[string]bool)

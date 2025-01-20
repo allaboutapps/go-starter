@@ -3,6 +3,7 @@ package util
 import (
 	"net/url"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -29,7 +30,7 @@ func GetEnv(key string, defaultVal string) string {
 }
 
 func GetEnvEnum(key string, defaultVal string, allowedValues []string) string {
-	if !ContainsString(allowedValues, defaultVal) {
+	if !slices.Contains(allowedValues, defaultVal) {
 		log.Panic().Str("key", key).Str("value", defaultVal).Msg("Default value is not in the allowed values list.")
 	}
 
@@ -38,7 +39,7 @@ func GetEnvEnum(key string, defaultVal string, allowedValues []string) string {
 		return defaultVal
 	}
 
-	if !ContainsString(allowedValues, val) {
+	if !slices.Contains(allowedValues, val) {
 		log.Error().Str("key", key).Str("value", val).Msg("Value is not allowed. Fallback to default value.")
 		return defaultVal
 	}

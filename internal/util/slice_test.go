@@ -7,14 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestContainsString(t *testing.T) {
-	test := []string{"a", "b", "d"}
-	assert.True(t, util.ContainsString(test, "a"))
-	assert.True(t, util.ContainsString(test, "b"))
-	assert.False(t, util.ContainsString(test, "c"))
-	assert.True(t, util.ContainsString(test, "d"))
-}
-
 func TestContainsAllString(t *testing.T) {
 	test := []string{"a", "b", "d"}
 	assert.True(t, util.ContainsAllString(test, "a"))
