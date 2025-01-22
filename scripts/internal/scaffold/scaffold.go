@@ -9,10 +9,10 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 
-	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/swag"
 	"golang.org/x/mod/modfile"
 )
@@ -128,7 +128,7 @@ func toSwaggerResource(resource *StorageResource) *SwaggerResource {
 		property := fieldToProperty(field)
 		properties = append(properties, property)
 
-		if !util.ContainsString(payloadExcluded, field.Name) {
+		if !slices.Contains(payloadExcluded, field.Name) {
 			payloadProperties = append(payloadProperties, property)
 		}
 	}
