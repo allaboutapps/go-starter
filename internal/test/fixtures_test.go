@@ -8,6 +8,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -100,4 +101,13 @@ func TestUpdate(t *testing.T) {
 
 	})
 
+}
+
+func TestInsertableInterface(t *testing.T) {
+	var user any = &models.AppUserProfile{
+		UserID: "62b13d29-5c4e-420e-b991-a631d3938776",
+	}
+
+	_, ok := user.(test.Insertable)
+	assert.True(t, ok, "AppUserProfile should implement the Insertable interface")
 }

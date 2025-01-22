@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -13,7 +14,7 @@ import (
 // see the separate internal/test/fixtures.go file
 
 type Upsertable interface {
-	Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error
+	Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...models.UpsertOptionFunc) error
 }
 
 // Mind the declaration order! The fields get upserted exactly in the order they are declared.
