@@ -2,15 +2,18 @@ package test_test
 
 import (
 	"encoding/json"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"testing"
 
+	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/test/mocks"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 
+	apitypes "allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -285,6 +288,22 @@ func TestSnapshotWithLocation(t *testing.T) {
 
 	location := filepath.Join(util.GetProjectRootDir(), "/internal/test/testdata")
 	test.Snapshoter.Location(location).Save(t, a)
+}
+
+func TestSaveResponseAndValidate(t *testing.T) {
+	if test.UpdateGoldenGlobal {
+		t.Skip()
+	}
+
+	test.WithTestServer(t, func(s *api.Server) {
+		fixtures := test.Fixtures()
+
+		res := test.PerformRequest(t, s, "GET", "/api/v1/auth/userinfo", nil, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+		require.Equal(t, http.StatusOK, res.Result().StatusCode)
+
+		var response apitypes.GetUserInfoResponse
+		test.Snapshoter.Redact("Email", "UpdatedAt", "updated_at").SaveResponseAndValidate(t, res, &response)
+	})
 }
 
 func TestSnapshotJSON(t *testing.T) {
