@@ -337,7 +337,7 @@ trivy: ##- Runs trivy analysis and fails on HIGH, CRITICAL vulnerabilities.
 	@echo "make trivy"
 	@trivy fs /app --exit-code 1 --severity HIGH,CRITICAL --quiet
 
-govulncheck:
+govulncheck: ##- Runs govulncheck.
 	@echo "make govulncheck"
 	@govulncheck /app/...
 
@@ -409,30 +409,26 @@ force-module-name: ##- Overwrite occurrences of 'allaboutapps.dev/aw/go-starter'
 get-go-ldflags: ##- (opt) Prints used -ldflags as evaluated in Makefile used in make go-build
 	@echo $(LDFLAGS)
 
-# https://gist.github.com/prwhite/8168133 - based on comment from @m000
 help: ##- Show common make targets.
-	@echo "usage: make <target>"
+	@echo -e "usage: make \033[36m<target>\033[0m"
 	@echo "note: use 'make help-all' to see all make targets."
-	@echo ""
-	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | grep --invert "(opt)" | sort | column -t -s '@'
+	@awk 'BEGIN {FS = ":.*#\#-"; } /^[a-zA-Z_-]+:.*?/ && !/(opt)/ { printf " \033[36m%-40s\033[0m %s\n", $$1, $$2 } /^# --- / { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 help-all: ##- Show all make targets.
-	@echo "usage: make <target>"
-	@echo "note: make targets flagged with '(opt)' are part of a main target."
-	@echo ""
-	@sed -e '/#\{2\}-/!d; s/\\$$//; s/:[^#\t]*/@/; s/#\{2\}- *//' $(MAKEFILE_LIST) | sort | column -t -s '@'
+	@echo -e "usage: make \033[36m<target>\033[0m"
+	@awk 'BEGIN {FS = ":.*#\#-"; } /^[a-zA-Z_-]+:.*?/ { printf "  \033[36m%-40s\033[0m %s\n", $$1, $$2 } /^# --- / { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 ### -----------------------
 # --- Changelog
 ### -----------------------
 
-changelog-prerelease: # Usage: make changelog-prerelease
+changelog-prerelease: ##- Generates a changelog prerelease.
 	@echo "make changelog-prerelease"
 	@changie batch 0.0.0 --prerelease prerelease-$(shell date +%Y-%m-%d-%H%M%S) --move-dir prerelease
 	@git add --all
 	@git commit -m "PRERELEASE: $(shell date +%Y-%m-%d-%H%M%S)"
 
-changelog-release: # Usage: make changelog-release VERSION=24.11.0
+changelog-release: ##- Generates a changelog release using the $(VERSION) variable. Usage: make changelog-release VERSION=24.11.0
 	@echo "make changelog-release with version $(VERSION)"
 	@changie batch $(VERSION) --include prerelease --remove-prereleases
 	@changie merge
