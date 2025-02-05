@@ -68,6 +68,9 @@ services:
       # optional: static management secret to easily call http://localhost:8080/-/healthy?mgmt-secret=mgmtpass
       SERVER_MANAGEMENT_SECRET: "mgmtpass"
 
+      # path to the changie config
+      CHANGIE_CONFIG_PATH: "/app/.changie-go-starter.yaml"
+
     # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
     cap_add:
       - SYS_PTRACE

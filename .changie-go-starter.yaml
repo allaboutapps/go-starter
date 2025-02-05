@@ -1,7 +1,7 @@
-changesDir: .changes
+changesDir: .changes-go-starter
 unreleasedDir: unreleased
 headerPath: header.tpl.md
-changelogPath: CHANGELOG.md
+changelogPath: CHANGELOG-go-starter.md
 versionExt: md
 versionFormat: '## {{.Version}} - {{.Time.Format "2006-01-02"}}'
 kindFormat: '### {{.Kind}}'
