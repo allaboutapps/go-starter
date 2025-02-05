@@ -26,7 +26,7 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 
 		passwordResetToken := models.PasswordResetToken{
 			UserID:     fixtures.User1.ID,
-			ValidUntil: time.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
+			ValidUntil: s.Clock.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
 		}
 
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())
@@ -109,7 +109,7 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 
 		passwordResetToken := models.PasswordResetToken{
 			UserID:     fixtures.User1.ID,
-			ValidUntil: time.Now().Add(time.Minute * -10),
+			ValidUntil: s.Clock.Now().Add(time.Minute * -10),
 		}
 
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())
@@ -150,7 +150,7 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 
 		passwordResetToken := models.PasswordResetToken{
 			UserID:     fixtures.UserDeactivated.ID,
-			ValidUntil: time.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
+			ValidUntil: s.Clock.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
 		}
 
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())
@@ -191,7 +191,7 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 
 		passwordResetToken := models.PasswordResetToken{
 			UserID:     fixtures.User2.ID,
-			ValidUntil: time.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
+			ValidUntil: s.Clock.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
 		}
 
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())

@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
@@ -62,7 +61,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 			user := &models.User{
 				Username:            null.StringFrom(username),
 				Password:            null.StringFrom(hash),
-				LastAuthenticatedAt: null.TimeFrom(time.Now()),
+				LastAuthenticatedAt: null.TimeFrom(s.Clock.Now()),
 				IsActive:            true,
 				Scopes:              s.Config.Auth.DefaultUserScopes,
 			}
@@ -82,7 +81,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 			}
 
 			accessToken := models.AccessToken{
-				ValidUntil: time.Now().Add(s.Config.Auth.AccessTokenValidity),
+				ValidUntil: s.Clock.Now().Add(s.Config.Auth.AccessTokenValidity),
 				UserID:     user.ID,
 			}
 

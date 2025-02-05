@@ -23,6 +23,9 @@ func TestPostRegisterSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 
+		now := time.Date(2025, 2, 5, 11, 42, 30, 0, time.UTC)
+		test.SetMockClock(t, s, now)
+
 		username := "usernew@example.com"
 		payload := test.GenericPayload{
 			"username": username,
@@ -50,7 +53,7 @@ func TestPostRegisterSuccess(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, null.StringFrom(username), user.Username)
 		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
-		assert.WithinDuration(t, time.Now(), user.LastAuthenticatedAt.Time, time.Second*10)
+		assert.Equal(t, now, user.LastAuthenticatedAt.Time)
 		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
 
 		assert.NotNil(t, user.R.AppUserProfile)
@@ -109,7 +112,7 @@ func TestPostRegisterSuccessLowercaseTrimWhitespaces(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, null.StringFrom(usernameLowerTrimmed), user.Username)
 		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
-		assert.WithinDuration(t, time.Now(), user.LastAuthenticatedAt.Time, time.Second*10)
+		assert.WithinDuration(t, s.Clock.Now(), user.LastAuthenticatedAt.Time, time.Second*10)
 		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
 
 		assert.NotNil(t, user.R.AppUserProfile)

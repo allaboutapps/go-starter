@@ -14,6 +14,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/push"
 	"allaboutapps.dev/aw/go-starter/internal/push/provider"
+	"github.com/dropbox/godropbox/time2"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 
@@ -37,6 +38,7 @@ type Server struct {
 	Mailer *mailer.Mailer
 	Push   *push.Service
 	I18n   *i18n.Service
+	Clock  time2.Clock
 }
 
 func NewServer(config config.Server) *Server {
@@ -69,6 +71,10 @@ func (s *Server) InitCmd() *Server {
 		log.Fatal().Err(err).Msg("Failed to initialize database")
 	}
 	cancel()
+
+	if err := s.InitClock(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize clock")
+	}
 
 	if err := s.InitMailer(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize mailer")
@@ -107,6 +113,11 @@ func (s *Server) InitDB(ctx context.Context) error {
 
 	s.DB = db
 
+	return nil
+}
+
+func (s *Server) InitClock() error {
+	s.Clock = time2.DefaultClock
 	return nil
 }
 

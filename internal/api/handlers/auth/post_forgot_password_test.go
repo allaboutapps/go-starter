@@ -55,7 +55,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 		// CreatedAt of token exceeds debounce time, retrying should send a new mail
 		// but with the same token as the reuse duration has not passed yet
 		{
-			passwordResetToken.CreatedAt = time.Now().Add(-s.Config.Auth.PasswordResetTokenDebounceDuration)
+			passwordResetToken.CreatedAt = s.Clock.Now().Add(-s.Config.Auth.PasswordResetTokenDebounceDuration)
 			_, err = passwordResetToken.Update(ctx, s.DB, boil.Whitelist(models.PasswordResetTokenColumns.CreatedAt))
 			require.NoError(t, err)
 
@@ -76,7 +76,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 
 		// CreatedAt of token exceeds reuse time, retrying should send a new mail with a new token
 		{
-			passwordResetToken.CreatedAt = time.Now().Add(-s.Config.Auth.PasswordResetTokenReuseDuration)
+			passwordResetToken.CreatedAt = s.Clock.Now().Add(-s.Config.Auth.PasswordResetTokenReuseDuration)
 			_, err = passwordResetToken.Update(ctx, s.DB, boil.Whitelist(models.PasswordResetTokenColumns.CreatedAt))
 			require.NoError(t, err)
 
@@ -99,7 +99,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 		// Token validity is expired, retrying should send a new mail with a new token
 		{
 			_, err = models.PasswordResetTokens().UpdateAll(ctx, s.DB, models.M{
-				models.PasswordResetTokenColumns.ValidUntil: time.Now().Add(-1 * time.Second),
+				models.PasswordResetTokenColumns.ValidUntil: s.Clock.Now().Add(-1 * time.Second),
 			})
 			require.NoError(t, err)
 
