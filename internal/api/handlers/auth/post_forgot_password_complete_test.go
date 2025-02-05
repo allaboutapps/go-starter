@@ -258,6 +258,7 @@ func TestPostForgotPasswordCompleteBadRequest(t *testing.T) {
 			name: "EmptyToken",
 			payload: test.GenericPayload{
 				"password": "correct horse battery stable",
+				"token":    "",
 			},
 		},
 		{

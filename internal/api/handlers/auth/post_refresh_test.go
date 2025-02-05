@@ -98,7 +98,7 @@ func TestPostRefreshBadRequest(t *testing.T) {
 				res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", tt.payload, nil)
 				assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-				var response httperrors.HTTPError
+				var response httperrors.HTTPValidationError
 				test.ParseResponseAndValidate(t, res, &response)
 
 				test.Snapshoter.Save(t, response)

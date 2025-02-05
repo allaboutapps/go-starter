@@ -122,7 +122,7 @@ func TestPostLoginUserWithoutPassword(t *testing.T) {
 	})
 }
 
-func TestPostLoginBadrequest(t *testing.T) {
+func TestPostLoginBadRequest(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		fixtures := test.Fixtures()
 
@@ -153,12 +153,14 @@ func TestPostLoginBadrequest(t *testing.T) {
 				name: "EmptyUsername",
 				payload: test.GenericPayload{
 					"username": "",
+					"password": test.PlainTestUserPassword,
 				},
 			},
 			{
 				name: "EmptyPassword",
 				payload: test.GenericPayload{
 					"username": fixtures.User1.Username,
+					"password": "",
 				},
 			},
 		}
