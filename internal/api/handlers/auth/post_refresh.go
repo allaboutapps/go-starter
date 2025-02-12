@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
@@ -62,7 +61,7 @@ func postRefreshHandler(s *api.Server) echo.HandlerFunc {
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
 			accessToken := models.AccessToken{
-				ValidUntil: time.Now().Add(s.Config.Auth.AccessTokenValidity),
+				ValidUntil: s.Clock.Now().Add(s.Config.Auth.AccessTokenValidity),
 				UserID:     user.ID,
 			}
 

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/models"
@@ -59,8 +58,8 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 
 		if s.Config.Auth.PasswordResetTokenDebounceDuration > 0 {
 			resetTokenInDebounceTimeExists, err := user.PasswordResetTokens(
-				models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(-s.Config.Auth.PasswordResetTokenDebounceDuration)),
-				models.PasswordResetTokenWhere.ValidUntil.GT(time.Now()),
+				models.PasswordResetTokenWhere.CreatedAt.GT(s.Clock.Now().Add(-s.Config.Auth.PasswordResetTokenDebounceDuration)),
+				models.PasswordResetTokenWhere.ValidUntil.GT(s.Clock.Now()),
 			).Exists(ctx, s.DB)
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to check for existing password reset token")
@@ -75,8 +74,8 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
 			passwordResetToken, err := user.PasswordResetTokens(
-				models.PasswordResetTokenWhere.CreatedAt.GT(time.Now().Add(-s.Config.Auth.PasswordResetTokenReuseDuration)),
-				models.PasswordResetTokenWhere.ValidUntil.GT(time.Now()),
+				models.PasswordResetTokenWhere.CreatedAt.GT(s.Clock.Now().Add(-s.Config.Auth.PasswordResetTokenReuseDuration)),
+				models.PasswordResetTokenWhere.ValidUntil.GT(s.Clock.Now()),
 			).One(ctx, tx)
 			if err != nil {
 				if errors.Is(err, sql.ErrNoRows) {
@@ -84,7 +83,7 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 
 					passwordResetToken = &models.PasswordResetToken{
 						UserID:     user.ID,
-						ValidUntil: time.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
+						ValidUntil: s.Clock.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
 					}
 
 					if err := passwordResetToken.Insert(ctx, tx, boil.Infer()); err != nil {
