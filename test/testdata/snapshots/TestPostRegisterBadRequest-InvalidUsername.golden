@@ -1,0 +1,1 @@
+(httperrors.HTTPValidationError) HTTPValidationError 400 (generic): Bad Request - Validation: username (in body): username in body must be of type email: "definitely not an email"

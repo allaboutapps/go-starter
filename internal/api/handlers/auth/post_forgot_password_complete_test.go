@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
-	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/models"
@@ -40,7 +39,6 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 		var response types.PostLoginResponse
@@ -50,14 +48,12 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 		assert.NotEqual(t, fixtures.User1AccessToken1.Token, response.AccessToken)
 		assert.NotEmpty(t, response.RefreshToken)
 		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, *response.RefreshToken)
-		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response.ExpiresIn)
-		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 		test.Snapshoter.Skip([]string{"AccessToken", "RefreshToken"}).Save(t, response)
 
 		err = fixtures.User1AccessToken1.Reload(ctx, s.DB)
-		assert.Equal(t, sql.ErrNoRows, err)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.Equal(t, sql.ErrNoRows, err)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 
 		cnt, err := fixtures.User1.AccessTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
@@ -85,10 +81,7 @@ func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-		response := test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
 
 		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
@@ -129,10 +122,7 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-		response := test.RequireHTTPError(t, res, httperrors.ErrConflictTokenExpired)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		test.RequireHTTPError(t, res, httperrors.ErrConflictTokenExpired)
 
 		err = fixtures.User1AccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
@@ -173,18 +163,7 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-
-		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *middleware.ErrForbiddenUserDeactivated.Code, *response.Code)
-		assert.Equal(t, *middleware.ErrForbiddenUserDeactivated.Type, *response.Type)
-		assert.Equal(t, *middleware.ErrForbiddenUserDeactivated.Title, *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		test.RequireHTTPError(t, res, middleware.ErrForbiddenUserDeactivated)
 
 		err = fixtures.UserDeactivatedAccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
@@ -224,16 +203,13 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 			"password": newPassword,
 		}
 
-		fixtures.User2.Password = null.NewString("", false)
+		fixtures.User2.Password = null.String{}
 		rowsAff, err := fixtures.User2.Update(context.Background(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-		response := test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
 
 		err = fixtures.User2AccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
@@ -254,28 +230,22 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 	})
 }
 
-func TestPostForgotPasswordCompleteValidation(t *testing.T) {
+func TestPostForgotPasswordCompleteBadRequest(t *testing.T) {
 	tests := []struct {
-		name        string
-		payload     test.GenericPayload
-		wantKey     string
-		wantMessage string
+		name    string
+		payload test.GenericPayload
 	}{
 		{
 			name: "MissingToken",
 			payload: test.GenericPayload{
 				"password": "correct horse battery stable",
 			},
-			wantKey:     "token",
-			wantMessage: "token in body is required",
 		},
 		{
 			name: "MissingPassword",
 			payload: test.GenericPayload{
 				"token": "7b6e2366-7806-421f-bd56-ffcb39d7b1ee",
 			},
-			wantKey:     "password",
-			wantMessage: "password in body is required",
 		},
 		{
 			name: "InvalidToken",
@@ -283,16 +253,13 @@ func TestPostForgotPasswordCompleteValidation(t *testing.T) {
 				"token":    "definitelydoesnotexist",
 				"password": "correct horse battery stable",
 			},
-			wantKey:     "token",
-			wantMessage: "token in body must be of type uuid4: \"definitelydoesnotexist\"",
 		},
 		{
 			name: "EmptyToken",
 			payload: test.GenericPayload{
 				"password": "correct horse battery stable",
+				"token":    "",
 			},
-			wantKey:     "token",
-			wantMessage: "token in body is required",
 		},
 		{
 			name: "EmptyPassword",
@@ -300,32 +267,19 @@ func TestPostForgotPasswordCompleteValidation(t *testing.T) {
 				"token":    "42deb737-fa9c-4e9e-bdce-e33b829c72f7",
 				"password": "",
 			},
-			wantKey:     "password",
-			wantMessage: "password in body should be at least 1 chars long",
 		},
 	}
 
 	test.WithTestServer(t, func(s *api.Server) {
 		for _, tt := range tests {
-			tt := tt
 			t.Run(tt.name, func(t *testing.T) {
 				res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", tt.payload, nil)
-
 				assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
 				var response httperrors.HTTPValidationError
 				test.ParseResponseAndValidate(t, res, &response)
 
-				assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
-				assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
-				assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
-				assert.Empty(t, response.Detail)
-				assert.Nil(t, response.Internal)
-				assert.Nil(t, response.AdditionalData)
-				assert.NotEmpty(t, response.ValidationErrors)
-				assert.Equal(t, tt.wantKey, *response.ValidationErrors[0].Key)
-				assert.Equal(t, "body", *response.ValidationErrors[0].In)
-				assert.Equal(t, tt.wantMessage, *response.ValidationErrors[0].Error)
+				test.Snapshoter.Save(t, response)
 			})
 		}
 	})

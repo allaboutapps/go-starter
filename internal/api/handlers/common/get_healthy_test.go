@@ -27,7 +27,6 @@ func TestGetHealthySuccess(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)
-		// fmt.Println(res.Body.String())
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 		require.Contains(t, res.Body.String(), "seq_health=1")
 
@@ -54,8 +53,6 @@ func TestGetHealthySuccess(t *testing.T) {
 
 			assert.NotEqual(t, firstTouchTime[i], stat.ModTime())
 		}
-
-		// fmt.Println(res.Body.String())
 	})
 }
 
@@ -75,7 +72,6 @@ func TestGetHealthyWrongAuth(t *testing.T) {
 
 func TestGetHealthyDBPingError(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-
 		// forcefully close the DB
 		s.DB.Close()
 
@@ -86,21 +82,18 @@ func TestGetHealthyDBPingError(t *testing.T) {
 
 func TestGetHealthyDBSeqError(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-
 		// forcefully remove the sequence
 		if _, err := s.DB.Exec("DROP SEQUENCE seq_health;"); err != nil {
 			t.Fatal(err, "was unable to drop sequence seq_health")
 		}
 
 		res := test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)
-
 		require.Equal(t, 521, res.Result().StatusCode)
 	})
 }
 
 func TestGetHealthyMountError(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-
 		s.Config.Management.ProbeWriteablePathsAbs = []string{"/this/path/does/not/exist"}
 
 		res := test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)
@@ -110,7 +103,6 @@ func TestGetHealthyMountError(t *testing.T) {
 
 func TestGetHealthyNotReady(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-
 		// forcefully remove an initialized component to check if ready state works
 		s.Mailer = nil
 

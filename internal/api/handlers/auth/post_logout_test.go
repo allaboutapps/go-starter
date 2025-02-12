@@ -10,6 +10,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,11 +20,10 @@ func TestPostLogoutSuccess(t *testing.T) {
 		fixtures := test.Fixtures()
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
-
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
-		assert.Equal(t, sql.ErrNoRows, err)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 
 		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
@@ -34,19 +34,19 @@ func TestPostLogoutSuccessWithRefreshToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
+
 		payload := test.GenericPayload{
 			"refresh_token": fixtures.User1RefreshToken1.Token,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
-
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
-		assert.Equal(t, sql.ErrNoRows, err)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 
 		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.Equal(t, sql.ErrNoRows, err)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
 
@@ -54,16 +54,16 @@ func TestPostLogoutSuccessWithUnknownRefreshToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
+
 		payload := test.GenericPayload{
 			"refresh_token": "93d8ccd0-be30-4661-a428-cbe74e1a3ffe",
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
-
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
-		assert.Equal(t, sql.ErrNoRows, err)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 
 		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
@@ -79,18 +79,12 @@ func TestPostLogoutInvalidRefreshToken(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
-
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		var response httperrors.HTTPError
+		var response httperrors.HTTPValidationError
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
-		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		test.Snapshoter.Save(t, response)
 
 		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
@@ -100,55 +94,35 @@ func TestPostLogoutInvalidRefreshToken(t *testing.T) {
 	})
 }
 
-func TestPostLogoutInvalidAuthToken(t *testing.T) {
+func TestPostLogoutError(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, test.HeadersWithAuth(t, "not my auth token"))
+		tests := []struct {
+			name          string
+			expectedError *httperrors.HTTPError
+			headers       http.Header
+		}{
+			{
+				name:          "InvalidAuthToken",
+				expectedError: middleware.ErrBadRequestMalformedToken,
+				headers:       test.HeadersWithAuth(t, "not my auth token"),
+			},
+			{
+				name:          "UnknownAuthToken",
+				expectedError: httperrors.NewFromEcho(echo.ErrUnauthorized),
+				headers:       test.HeadersWithAuth(t, "25e8630e-9a41-4f38-8339-373f0c203cef"),
+			},
+			{
+				name:          "MissingAuthToken",
+				expectedError: httperrors.NewFromEcho(echo.ErrUnauthorized),
+				headers:       nil,
+			},
+		}
 
-		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *middleware.ErrBadRequestMalformedToken.Code, *response.Code)
-		assert.Equal(t, *middleware.ErrBadRequestMalformedToken.Type, *response.Type)
-		assert.Equal(t, *middleware.ErrBadRequestMalformedToken.Title, *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-	})
-}
-
-func TestPostLogoutUnknownAuthToken(t *testing.T) {
-	test.WithTestServer(t, func(s *api.Server) {
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, test.HeadersWithAuth(t, "25e8630e-9a41-4f38-8339-373f0c203cef"))
-
-		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, int64(http.StatusUnauthorized), *response.Code)
-		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
-	})
-}
-
-func TestPostLogoutMissingAuthToken(t *testing.T) {
-	test.WithTestServer(t, func(s *api.Server) {
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, nil)
-		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, int64(http.StatusUnauthorized), *response.Code)
-		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, tt.headers)
+				test.RequireHTTPError(t, res, tt.expectedError)
+			})
+		}
 	})
 }
