@@ -25,16 +25,16 @@
 				"[go]": {
 					"editor.formatOnSave": true,
 					"editor.codeActionsOnSave": {
-						"source.organizeImports": true,
+						"source.organizeImports": true
 					},
 					// Optional: Disable snippets, as they conflict with completion ranking.
-					"editor.snippetSuggestions": "none",
+					"editor.snippetSuggestions": "none"
 				},
 				"[go.mod]": {
 					"editor.formatOnSave": true,
 					"editor.codeActionsOnSave": {
-						"source.organizeImports": true,
-					},
+						"source.organizeImports": true
+					}
 				},
 				"[sql]": {
 					"editor.formatOnSave": true
@@ -50,7 +50,7 @@
 					// If true, enable additional analyses with staticcheck.
 					// Warning: This will significantly increase memory usage.
 					// DISABLED, done via
-					"staticcheck": false,
+					"staticcheck": false
 				},
 				// https://code.visualstudio.com/docs/languages/go#_intellisense
 				"go.autocompleteUnimportedPackages": true,
@@ -72,9 +72,9 @@
 				"go.delveConfig": {
 					"dlvLoadConfig": {
 						// increase max length of strings displayed in debugger
-						"maxStringLen": 2048,
+						"maxStringLen": 2048
 					},
-					"apiVersion": 2,
+					"apiVersion": 2
 				},
 				// ensure that the pgFormatter VSCode extension uses the pgFormatter that comes preinstalled in the Dockerfile
 				"pgFormatter.pgFormatterPath": "/usr/local/bin/pg_format"
@@ -94,12 +94,15 @@
 			]
 		}
 	},
+	// import host-local git config, with all applicable includes, into the container (https://github.com/microsoft/vscode-remote-release/issues/2084#issuecomment-2259986798)
+	"initializeCommand": "git config -l --global --include > \"${localWorkspaceFolder}\"/.gitconfig.global",
+	"postAttachCommand": "while IFS='=' read -r key value; do git config --global \"$key\" \"$value\"; done < \"${containerWorkspaceFolder}\"/.gitconfig.global; rm -f \"${containerWorkspaceFolder}\"/.gitconfig.global",
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],
 	// Uncomment the next line if you want to keep your containers running after VS Code shuts down.
 	// "shutdownAction": "none",
 	// Uncomment the next line to run commands after the container is created - for example installing git.
-	"postCreateCommand": "go version",
+	"postCreateCommand": "go version"
 	// "postCreateCommand": "apt-get update && apt-get install -y git",
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
 	// "remoteUser": ""
