@@ -1,0 +1,3 @@
+kind: Changed
+body: Separated the go-starter and child project readme and changelog files to prevent conflicts
+time: 2025-02-05T07:57:56.44409762Z

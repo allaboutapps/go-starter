@@ -28,7 +28,7 @@ func WithServer(ctx context.Context, config config.Server, f func(ctx context.Co
 
 	s := api.NewServer(config).InitCmd()
 
-	start := time.Now()
+	start := s.Clock.Now()
 
 	err := f(ctx, s)
 

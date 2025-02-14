@@ -347,7 +347,7 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 			if res.ValidUntil.IsZero() {
 				log.Trace().Str("user_id", user.ID).Msg("Auth token has no expiry, allowing request")
 			} else {
-				if time.Now().After(res.ValidUntil) {
+				if config.S.Clock.Now().After(res.ValidUntil) {
 					if config.Mode == AuthModeTry {
 						log.Trace().Time("valid_until", res.ValidUntil).Str("user_id", user.ID).Msg("Auth token is expired, but auth mode permits access, allowing request")
 						return next(c)

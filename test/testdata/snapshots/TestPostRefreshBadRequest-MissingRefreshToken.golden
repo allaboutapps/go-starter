@@ -1,0 +1,1 @@
+(httperrors.HTTPValidationError) HTTPValidationError 400 (generic): Bad Request - Validation: refresh_token (in body): refresh_token in body is required

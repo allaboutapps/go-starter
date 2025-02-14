@@ -12,6 +12,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/types"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +25,6 @@ func TestPostRefreshSuccess(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", payload, nil)
-
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 		var response types.PostLoginResponse
@@ -38,29 +38,7 @@ func TestPostRefreshSuccess(t *testing.T) {
 		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 
 		err := fixtures.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.Equal(t, sql.ErrNoRows, err)
-	})
-}
-
-func TestPostRefreshInvalidToken(t *testing.T) {
-	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{
-			"refresh_token": "not my refresh token",
-		}
-
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", payload, nil)
-
-		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
-		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
 
@@ -71,18 +49,7 @@ func TestPostRefreshUnknownToken(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", payload, nil)
-
-		assert.Equal(t, http.StatusUnauthorized, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, int64(http.StatusUnauthorized), *response.Code)
-		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
-		assert.Equal(t, http.StatusText(http.StatusUnauthorized), *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		test.RequireHTTPError(t, res, httperrors.NewFromEcho(echo.ErrUnauthorized))
 	})
 }
 
@@ -95,40 +62,47 @@ func TestPostRefreshDeactivatedUser(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", payload, nil)
-
-		assert.Equal(t, http.StatusForbidden, res.Result().StatusCode)
-
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, *middleware.ErrForbiddenUserDeactivated.Code, *response.Code)
-		assert.Equal(t, *middleware.ErrForbiddenUserDeactivated.Type, *response.Type)
-		assert.Equal(t, *middleware.ErrForbiddenUserDeactivated.Title, *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+		test.RequireHTTPError(t, res, middleware.ErrForbiddenUserDeactivated)
 
 		err := fixtures.UserDeactivatedRefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
 	})
 }
 
-func TestPostRefreshMissingRefreshToken(t *testing.T) {
+func TestPostRefreshBadRequest(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		payload := test.GenericPayload{}
+		tests := []struct {
+			name    string
+			payload test.GenericPayload
+		}{
+			{
+				name:    "MissingRefreshToken",
+				payload: test.GenericPayload{},
+			},
+			{
+				name: "EmptyRefreshToken",
+				payload: test.GenericPayload{
+					"refresh_token": "",
+				},
+			},
+			{
+				name: "InvalidToken",
+				payload: test.GenericPayload{
+					"refresh_token": "not a valid token",
+				},
+			},
+		}
 
-		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", payload, nil)
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", tt.payload, nil)
+				assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 
-		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+				var response httperrors.HTTPValidationError
+				test.ParseResponseAndValidate(t, res, &response)
 
-		var response httperrors.HTTPError
-		test.ParseResponseAndValidate(t, res, &response)
-
-		assert.Equal(t, int64(http.StatusBadRequest), *response.Code)
-		assert.Equal(t, httperrors.HTTPErrorTypeGeneric, *response.Type)
-		assert.Equal(t, http.StatusText(http.StatusBadRequest), *response.Title)
-		assert.Empty(t, response.Detail)
-		assert.Nil(t, response.Internal)
-		assert.Nil(t, response.AdditionalData)
+				test.Snapshoter.Save(t, response)
+			})
+		}
 	})
 }

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
@@ -53,7 +52,7 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 
 		user := passwordResetToken.R.User
 
-		if time.Now().After(passwordResetToken.ValidUntil) {
+		if s.Clock.Now().After(passwordResetToken.ValidUntil) {
 			log.Debug().
 				Str("user_id", user.ID).
 				Time("valid_until", passwordResetToken.ValidUntil).
@@ -101,7 +100,7 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 			}
 
 			accessToken := models.AccessToken{
-				ValidUntil: time.Now().Add(s.Config.Auth.AccessTokenValidity),
+				ValidUntil: s.Clock.Now().Add(s.Config.Auth.AccessTokenValidity),
 				UserID:     user.ID,
 			}
 

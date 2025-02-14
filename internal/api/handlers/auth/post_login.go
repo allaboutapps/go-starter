@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
@@ -81,7 +80,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 
 		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
 			accessToken := models.AccessToken{
-				ValidUntil: time.Now().Add(s.Config.Auth.AccessTokenValidity),
+				ValidUntil: s.Clock.Now().Add(s.Config.Auth.AccessTokenValidity),
 				UserID:     user.ID,
 			}
 
@@ -99,7 +98,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 				return err
 			}
 
-			user.LastAuthenticatedAt = null.TimeFrom(time.Now())
+			user.LastAuthenticatedAt = null.TimeFrom(s.Clock.Now())
 			if _, err := user.Update(ctx, tx, boil.Infer()); err != nil {
 				log.Debug().Err(err).Msg("Failed to update user's last authenticated at timestamp")
 				return err

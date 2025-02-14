@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"github.com/dropbox/godropbox/time2"
 )
 
 // WithTestServer returns a fully configured server (using the default server config).
@@ -70,6 +72,7 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 
 	// attach the already initialized db
 	s.DB = db
+	s.Clock = time2.NewMockClock(time.Now())
 
 	if err := s.InitMailer(); err != nil {
 		t.Fatalf("Failed to init mailer: %v", err)
