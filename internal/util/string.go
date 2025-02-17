@@ -5,7 +5,14 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"regexp"
 	"strings"
+
+	"github.com/go-openapi/swag"
+)
+
+var (
+	StringSpaceReplacer = regexp.MustCompile(`\s+`)
 )
 
 // GenerateRandomBytes returns n random bytes securely generated using the system's default CSPRNG.
@@ -123,4 +130,55 @@ func GenerateRandomString(n int, ranges []CharRange, extra string) (string, erro
 // Lowercases a string and trims whitespace from the beginning and end of the string
 func ToUsernameFormat(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
+}
+
+// NonEmptyOrNil returns a pointer to passed string if it is not empty. Passing empty strings returns nil instead.
+func NonEmptyOrNil(s string) *string {
+	if len(s) > 0 {
+		return swag.String(s)
+	}
+
+	return nil
+}
+
+// EmptyIfNil returns an empty string if the passed pointer is nil. Passing a pointer to a string will return the value of the string.
+func EmptyIfNil(s *string) string {
+	if s == nil {
+		return ""
+	}
+
+	return *s
+}
+
+// ContainsAll returns true if a string (str) contains all substrings (sub)
+func ContainsAll(str string, sub ...string) bool {
+	subLen := len(sub)
+	contains := make([]bool, subLen)
+	indices := make([]int, subLen)
+	runes := make([][]rune, subLen)
+	for i, s := range sub {
+		runes[i] = []rune(s)
+	}
+
+	for _, marked := range str {
+		for i, r := range runes {
+			if len(r) == 0 {
+				contains[i] = true
+			}
+			if !contains[i] && marked == r[indices[i]] {
+				indices[i]++
+				if indices[i] >= len(r) {
+					contains[i] = true
+				}
+			}
+		}
+	}
+
+	for _, c := range contains {
+		if !c {
+			return false
+		}
+	}
+
+	return true
 }

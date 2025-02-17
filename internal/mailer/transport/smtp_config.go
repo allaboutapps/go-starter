@@ -47,12 +47,36 @@ func SMTPAuthTypeFromString(s string) SMTPAuthType {
 	}
 }
 
+type SMTPEncryption string
+
+const (
+	SMTPEncryptionNone     SMTPEncryption = "none"
+	SMTPEncryptionTLS      SMTPEncryption = "tls"
+	SMTPEncryptionStartTLS SMTPEncryption = "starttls"
+)
+
+func (e SMTPEncryption) String() string {
+	return string(e)
+}
+
+func SMTPEncryptionFromString(s string) SMTPEncryption {
+	switch strings.ToLower(s) {
+	case "tls":
+		return SMTPEncryptionTLS
+	case "starttls":
+		return SMTPEncryptionStartTLS
+	default:
+		return SMTPEncryptionNone
+	}
+}
+
 type SMTPMailTransportConfig struct {
-	Host      string
-	Port      int
-	AuthType  SMTPAuthType `json:"-"` // iota
-	Username  string
-	Password  string `json:"-"` // sensitive
-	UseTLS    bool
-	TLSConfig *tls.Config `json:"-"` // pointer
+	Host       string
+	Port       int
+	AuthType   SMTPAuthType `json:"-"` // iota
+	Username   string
+	Password   string         `json:"-"` // sensitive
+	Encryption SMTPEncryption `json:"-"` // iota
+	TLSConfig  *tls.Config    `json:"-"` // pointer
+	UseTLS     bool           // Deprecated: Use Encryption type SMTPEncryptionTLS instead
 }

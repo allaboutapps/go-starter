@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"math"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/volatiletech/null/v8"
@@ -62,4 +63,37 @@ func NullFloat32FromFloat64Ptr(f *float64) null.Float32 {
 		return null.NewFloat32(0.0, false)
 	}
 	return null.NewFloat32(float32(*f), true)
+}
+
+func NullIntFromInt16Ptr(i *int16) null.Int {
+	if i == nil {
+		return null.NewInt(0, false)
+	}
+	return null.NewInt(int(*i), true)
+}
+
+func Int16PtrFromNullInt(i null.Int) *int16 {
+	if !i.Valid || i.Int > math.MaxInt16 || i.Int < math.MinInt16 {
+		return nil
+	}
+
+	res := int16(i.Int)
+	return &res
+}
+
+func Int16PtrFromInt(i int) *int16 {
+	if i > math.MaxInt16 || i < math.MinInt16 {
+		return nil
+	}
+
+	res := int16(i)
+	return &res
+}
+
+func NullStringIfEmpty(s string) null.String {
+	if len(s) == 0 {
+		return null.String{}
+	}
+
+	return null.StringFrom(s)
 }

@@ -19,7 +19,6 @@ func TestGetReadyReadiness(t *testing.T) {
 
 func TestGetReadyReadinessBroken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-
 		// forcefully remove an initialized component to check if ready state works
 		s.Mailer = nil
 
@@ -31,7 +30,6 @@ func TestGetReadyReadinessBroken(t *testing.T) {
 
 func TestGetReadyDBBrokenNotReady(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-
 		// forcefully remove pg
 		err := s.DB.Close()
 		require.NoError(t, err)

@@ -90,6 +90,31 @@ func TestEndOfMonth(t *testing.T) {
 
 }
 
+func TestEndOfPreviousMonth(t *testing.T) {
+	d := util.Date(2020, 3, 12, time.UTC)
+	expected := time.Date(2020, 2, 29, 23, 59, 59, 999999999, time.UTC)
+	assert.True(t, expected.Equal(util.EndOfPreviousMonth(d)))
+
+	d = util.Date(2020, 12, 35, time.UTC)
+	expected = time.Date(2020, 12, 31, 23, 59, 59, 999999999, time.UTC)
+	res := util.EndOfPreviousMonth(d)
+	assert.True(t, expected.Equal(res))
+
+	expected = time.Date(2020, 12, 31, 0, 0, 0, 0, time.UTC)
+	assert.Equal(t, expected, util.TruncateTime(res))
+}
+
+func TestStartOfDay(t *testing.T) {
+	d := time.Date(2020, 3, 12, 23, 59, 59, 999999999, time.UTC)
+	expected := util.Date(2020, 3, 12, time.UTC)
+	assert.True(t, expected.Equal(util.StartOfDay(d)))
+
+	d = time.Date(2021, 1, 4, 23, 59, 59, 999999999, time.UTC)
+	expected = util.Date(2020, 12, 35, time.UTC)
+	res := util.StartOfDay(d)
+	assert.True(t, expected.Equal(res))
+}
+
 func TestEndOfDay(t *testing.T) {
 	d := util.Date(2020, 3, 12, time.UTC)
 	expected := time.Date(2020, 3, 12, 23, 59, 59, 999999999, time.UTC)
@@ -129,5 +154,22 @@ func TestDayBefore(t *testing.T) {
 
 	expected = time.Date(2020, 2, 29, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.TruncateTime(res))
+}
 
+func TestMaxTime(t *testing.T) {
+	a := time.Date(2022, 4, 12, 0, 0, 0, 1, time.UTC)
+	b := time.Date(2022, 4, 12, 0, 0, 0, 2, time.UTC)
+	c := time.Date(2022, 4, 12, 0, 0, 0, 0, time.UTC)
+	latestTime := util.MaxTime(a, b, c)
+	assert.Equal(t, b, latestTime)
+}
+
+func TestNonZeroTimeOrNil(t *testing.T) {
+	d := time.Time{}
+	res := util.NonZeroTimeOrNil(d)
+	assert.Empty(t, res)
+
+	d = util.Date(2021, 7, 2, time.UTC)
+	res = util.NonZeroTimeOrNil(d)
+	assert.Equal(t, &d, res)
 }

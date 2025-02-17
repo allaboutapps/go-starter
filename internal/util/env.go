@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/text/language"
@@ -198,4 +199,24 @@ func GetMgmtSecret(envKey string) string {
 	})
 
 	return mgmtSecret
+}
+
+func GetEnvAsLocation(key string, defaultVal string) *time.Location {
+	strVal := GetEnv(key, "")
+
+	if len(strVal) == 0 {
+		l, err := time.LoadLocation(defaultVal)
+		if err != nil {
+			log.Panic().Str("key", key).Str("defaultVal", defaultVal).Err(err).Msg("Failed to parse default value for env variable as location")
+		}
+
+		return l
+	}
+
+	l, err := time.LoadLocation(strVal)
+	if err != nil {
+		log.Panic().Str("key", key).Str("strVal", strVal).Err(err).Msg("Failed to parse env variable as location")
+	}
+
+	return l
 }

@@ -169,6 +169,11 @@ func ParseFileUpload(c echo.Context, formNameFile string, allowedMIMETypes []str
 		return nil, nil, nil, err
 	}
 
+	if fh.Size < 1 {
+		log.Debug().Err(err).Str("filename", fh.Filename).Int64("fileSize", fh.Size).Msg("File size can't be 0")
+		return nil, nil, nil, httperrors.ErrBadRequestZeroFileSize
+	}
+
 	mime, err := mimetype.DetectReader(file)
 	if err != nil {
 		log.Debug().Err(err).Str("filename", fh.Filename).Int64("fileSize", fh.Size).Msg("Failed to detect MIME type of uploaded file")

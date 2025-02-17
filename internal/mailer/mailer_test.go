@@ -3,6 +3,7 @@ package mailer_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
@@ -16,12 +17,16 @@ func TestMailerSendPasswordReset(t *testing.T) {
 	fixtures := test.Fixtures()
 
 	m := test.NewTestMailer(t)
+	mt := test.GetTestMailerMockTransport(t, m)
+	mt.Expect(1)
+
 	//nolint:gosec
 	passwordResetLink := "http://localhost/password/reset/12345"
 	err := m.SendPasswordReset(ctx, fixtures.User1.Username.String, passwordResetLink)
 	require.NoError(t, err)
 
-	mt := test.GetTestMailerMockTransport(t, m)
+	mt.WaitWithTimeout(time.Second)
+
 	mail := mt.GetLastSentMail()
 	mails := mt.GetSentMails()
 	require.NotNil(t, mail)

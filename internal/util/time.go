@@ -1,6 +1,10 @@
 package util
 
-import "time"
+import (
+	"time"
+
+	"github.com/go-openapi/swag"
+)
 
 const (
 	DateFormat = "2006-01-02"
@@ -19,8 +23,16 @@ func EndOfMonth(d time.Time) time.Time {
 	return time.Date(d.Year(), d.Month()+1, 1, 0, 0, 0, -1, d.Location())
 }
 
+func EndOfPreviousMonth(d time.Time) time.Time {
+	return time.Date(d.Year(), d.Month(), 1, 0, 0, 0, -1, d.Location())
+}
+
 func EndOfDay(d time.Time) time.Time {
 	return time.Date(d.Year(), d.Month(), d.Day()+1, 0, 0, 0, -1, d.Location())
+}
+
+func StartOfDay(d time.Time) time.Time {
+	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
 }
 
 func StartOfMonth(d time.Time) time.Time {
@@ -62,4 +74,24 @@ func DayBefore(d time.Time) time.Time {
 
 func TruncateTime(d time.Time) time.Time {
 	return time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, d.Location())
+}
+
+// MaxTime returns the latest time.Time of the given params
+func MaxTime(times ...time.Time) time.Time {
+	var latestTime time.Time
+	for _, t := range times {
+		if t.After(latestTime) {
+			latestTime = t
+		}
+	}
+	return latestTime
+}
+
+// NonZeroTimeOrNil returns a pointer to passed time if it is not a zero time. Passing zero/uninitialised time returns nil instead.
+func NonZeroTimeOrNil(t time.Time) *time.Time {
+	if t.IsZero() {
+		return nil
+	}
+
+	return swag.Time(t)
 }

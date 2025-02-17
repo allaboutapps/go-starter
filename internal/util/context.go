@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 type contextKey string
@@ -10,10 +11,26 @@ type contextKey string
 const (
 	CTXKeyUser          contextKey = "user"
 	CTXKeyAccessToken   contextKey = "access_token"
+	CTXKeyCacheControl  contextKey = "cache_control"
 	CTXKeyRequestID     contextKey = "request_id"
 	CTXKeyDisableLogger contextKey = "disable_logger"
-	CTXKeyCacheControl  contextKey = "cache_control"
 )
+
+type detachedContext struct {
+	parent context.Context
+}
+
+func (c detachedContext) Deadline() (time.Time, bool)       { return time.Time{}, false }
+func (c detachedContext) Done() <-chan struct{}             { return nil }
+func (c detachedContext) Err() error                        { return nil }
+func (c detachedContext) Value(key interface{}) interface{} { return c.parent.Value(key) }
+
+// DetachContext detaches a context by returning a wrapped struct implementing the context interface, but omitting the deadline, done and error functionality.
+// Mainly used to pass context information to go routines that should not be cancelled by the context.
+// ! USE THIS DETACHED CONTEXT SPARINGLY, ONLY IF ABSOLUTELY NEEDED. DO *NOT* KEEP USING A DETACHED CONTEXT FOR A PROLONGED TIME OUT OF CHAIN
+func DetachContext(ctx context.Context) context.Context {
+	return detachedContext{ctx}
+}
 
 // RequestIDFromContext returns the ID of the (HTTP) request, returning an error if it is not present.
 func RequestIDFromContext(ctx context.Context) (string, error) {

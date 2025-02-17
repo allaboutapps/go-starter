@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"testing"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
@@ -125,7 +126,7 @@ func DefaultServiceConfigFromEnv() Server {
 	// If you need dotenv ENV variables available in a test, do that explicitly within that
 	// test before executing DefaultServiceConfigFromEnv (or test.WithTestServer).
 	// See /internal/test/helper_dot_env.go: test.DotEnvLoadLocalOrSkipTest(t)
-	if !util.RunningInTest() {
+	if !testing.Testing() {
 		DotEnvTryLoad(filepath.Join(util.GetProjectRootDir(), ".env.local"), os.Setenv)
 	}
 
@@ -204,13 +205,14 @@ func DefaultServiceConfigFromEnv() Server {
 			Transporter:                 util.GetEnvEnum("SERVER_MAILER_TRANSPORTER", MailerTransporterMock.String(), []string{MailerTransporterSMTP.String(), MailerTransporterMock.String()}),
 		},
 		SMTP: transport.SMTPMailTransportConfig{
-			Host:      util.GetEnv("SERVER_SMTP_HOST", "mailhog"),
-			Port:      util.GetEnvAsInt("SERVER_SMTP_PORT", 1025),
-			Username:  util.GetEnv("SERVER_SMTP_USERNAME", ""),
-			Password:  util.GetEnv("SERVER_SMTP_PASSWORD", ""),
-			AuthType:  transport.SMTPAuthTypeFromString(util.GetEnv("SERVER_SMTP_AUTH_TYPE", transport.SMTPAuthTypeNone.String())),
-			UseTLS:    util.GetEnvAsBool("SERVER_SMTP_USE_TLS", false),
-			TLSConfig: nil,
+			Host:       util.GetEnv("SERVER_SMTP_HOST", "mailhog"),
+			Port:       util.GetEnvAsInt("SERVER_SMTP_PORT", 1025),
+			Username:   util.GetEnv("SERVER_SMTP_USERNAME", ""),
+			Password:   util.GetEnv("SERVER_SMTP_PASSWORD", ""),
+			AuthType:   transport.SMTPAuthTypeFromString(util.GetEnv("SERVER_SMTP_AUTH_TYPE", transport.SMTPAuthTypeNone.String())),
+			Encryption: transport.SMTPEncryption(util.GetEnvEnum("SERVER_SMTP_ENCRYPTION", transport.SMTPEncryptionNone.String(), []string{transport.SMTPEncryptionNone.String(), transport.SMTPEncryptionTLS.String(), transport.SMTPEncryptionStartTLS.String()})),
+			UseTLS:     util.GetEnvAsBool("SERVER_SMTP_USE_TLS", false),
+			TLSConfig:  nil,
 		},
 		Frontend: FrontendServer{
 			BaseURL:               util.GetEnv("SERVER_FRONTEND_BASE_URL", "http://localhost:3000"),

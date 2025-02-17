@@ -1,0 +1,1 @@
+(string) (len=135) "SELECT * FROM \"users\" INNER JOIN app_user_profiles ON app_user_profiles.user_id=users.id WHERE (app_user_profiles.username <> all($1));"

@@ -2,11 +2,13 @@ package httperrors
 
 import (
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/go-openapi/swag"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -48,6 +50,10 @@ func NewHTTPErrorWithDetail(code int, errorType string, title string, detail str
 			Detail: detail,
 		},
 	}
+}
+
+func NewFromEcho(e *echo.HTTPError) *HTTPError {
+	return NewHTTPError(e.Code, HTTPErrorTypeGeneric, http.StatusText(e.Code))
 }
 
 func (e *HTTPError) Error() string {
