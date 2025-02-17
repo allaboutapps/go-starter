@@ -8,6 +8,14 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
+## 25.02.1 - 2025-02-17
+### Changed
+* Improve the makefile help messages, thx [@rainchen](https://github.com/rainchen)
+### Removed
+* Remove `util.ContainsString`, use `slices.Contains` instead. Fixes https://github.com/allaboutapps/go-starter/issues/275. See https://go.dev/doc/go1.21#slices
+### Fixed
+* Fix Upsertable interface to match Upsert func of sqlboiler, fixes https://github.com/allaboutapps/go-starter/issues/277
+
 ## 25.02.0 - 2025-02-17
 ### Added
 * Add STARTTLS support to the mailer, thx [@mwieser](https://github.com/mwieser)

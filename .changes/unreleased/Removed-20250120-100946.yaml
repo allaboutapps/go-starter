@@ -1,3 +1,0 @@
-kind: Removed
-body: Remove `util.ContainsString`, use `slices.Contains` instead. Fixes https://github.com/allaboutapps/go-starter/issues/275. See https://go.dev/doc/go1.21#slices
-time: 2025-01-20T10:09:46.0686067Z
