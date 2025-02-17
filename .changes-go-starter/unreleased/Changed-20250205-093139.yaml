@@ -1,3 +1,0 @@
-kind: Changed
-body: Simplify the endpoint tests by using test.RequireHTTPError, response snapshots and table-driven tests
-time: 2025-02-05T09:31:39.217664396Z

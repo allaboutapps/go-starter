@@ -1,3 +1,0 @@
-kind: Added
-body: Add mock clock to server struct to ensure consistent and mockable time during tests
-time: 2025-02-05T10:28:17.270553814Z
