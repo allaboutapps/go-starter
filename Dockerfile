@@ -217,7 +217,6 @@ COPY --chmod=0755 rksh /app/rksh
 COPY go.mod /app/go.mod
 COPY go.sum /app/go.sum
 RUN make modules
-COPY tools.go /app/tools.go
 RUN make tools
 COPY . /app/
 RUN make go-build
