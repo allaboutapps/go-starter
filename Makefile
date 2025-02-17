@@ -133,9 +133,8 @@ init: ##- Runs make modules, tools and tidy.
 modules: ##- (opt) Cache packages as specified in go.mod.
 	go mod download
 
-# https://marcofranssen.nl/manage-go-tools-via-go-modules/
-tools: ##- (opt) Install packages as specified in tools.go.
-	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -P $$(nproc) -tI % go install %
+tools: ##- (opt) Install tools.
+	@go install tool
 
 tidy: ##- (opt) Tidy our go.sum file.
 	go mod tidy
