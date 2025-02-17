@@ -1,6 +1,6 @@
 module allaboutapps.dev/aw/go-starter
 
-go 1.22.4
+go 1.24.0
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -129,4 +129,10 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+tool (
+	github.com/rubenv/sql-migrate/sql-migrate
+	github.com/volatiletech/sqlboiler/v4
+	github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql
 )
