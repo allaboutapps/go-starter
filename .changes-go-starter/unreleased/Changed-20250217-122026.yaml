@@ -2,7 +2,6 @@ kind: Changed
 body: |
   Dependency updates:
     - Patch: [Bump github.com/gabriel-vasile/mimetype from v1.4.7 to v1.4.8](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.8)
-    - Minor: [Bump github.com/nicksnyder/go-i18n/v2 from v2.4.1 to v2.5.1](https://github.com/nicksnyder/go-i18n/releases/tag/v2.5.1)
     - Minor: [Bump github.com/spf13/cobra from v1.8.1 to v1.9.1](https://github.com/spf13/cobra/releases/tag/v1.9.1)
     - Patch: [Bump github.com/volatiletech/sqlboiler/v4 from v4.17.1 to v4.18.0](https://github.com/volatiletech/sqlboiler/releases/tag/v4.18.0)
     - Minor: [Bump golang.org/x/crypto from v0.31.0 to v0.33.0](https://github.com/golang/crypto/releases/tag/v0.33.0)
