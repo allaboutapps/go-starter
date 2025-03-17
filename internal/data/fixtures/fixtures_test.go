@@ -1,9 +1,9 @@
-package data_test
+package fixtures_test
 
 import (
 	"testing"
 
-	"allaboutapps.dev/aw/go-starter/internal/data"
+	data "allaboutapps.dev/aw/go-starter/internal/data/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"github.com/stretchr/testify/assert"
 )
