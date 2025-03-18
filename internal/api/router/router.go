@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"net/http"
 	"runtime"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
+	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
@@ -16,7 +18,7 @@ import (
 	"net/http/pprof"
 )
 
-func Init(s *api.Server) {
+func Init(s *api.Server) error {
 	s.Echo = echo.New()
 
 	s.Echo.Debug = s.Config.Echo.Debug
@@ -29,6 +31,17 @@ func Init(s *api.Server) {
 
 	// ---
 	// General middleware
+	if s.Config.Management.EnableMetrics {
+		s.Echo.Use(echoprometheus.NewMiddleware(""))
+		err := s.Metrics.RegisterMetrics(context.Background())
+		if err != nil {
+			log.Err(err).Msg("Failed to register metrics")
+			return err
+		}
+	} else {
+		log.Warn().Msg("Disabling metrics middleware due to environment config")
+	}
+
 	if s.Config.Echo.EnableTrailingSlashMiddleware {
 		s.Echo.Pre(echoMiddleware.RemoveTrailingSlash())
 	} else {
@@ -195,4 +208,11 @@ func Init(s *api.Server) {
 	// ---
 	// Finally attach our handlers
 	handlers.AttachAllRoutes(s)
+
+	if s.Config.Management.EnableMetrics {
+		log.Info().Msg("Metrics enabled and available under /metrics")
+		s.Echo.GET("/metrics", echoprometheus.NewHandler())
+	}
+
+	return nil
 }

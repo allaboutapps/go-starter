@@ -15,6 +15,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/i18n"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
+	"allaboutapps.dev/aw/go-starter/internal/metrics"
 	"allaboutapps.dev/aw/go-starter/internal/push"
 	"allaboutapps.dev/aw/go-starter/internal/push/provider"
 	"github.com/dropbox/godropbox/time2"
@@ -34,16 +35,17 @@ type Router struct {
 }
 
 type Server struct {
-	Config config.Server
-	DB     *sql.DB
-	Echo   *echo.Echo
-	Router *Router
-	Mailer *mailer.Mailer
-	Push   *push.Service
-	I18n   *i18n.Service
-	Clock  time2.Clock
-	Auth   AuthService
-	Local  *local.Service
+	Config  config.Server
+	DB      *sql.DB
+	Echo    *echo.Echo
+	Router  *Router
+	Mailer  *mailer.Mailer
+	Push    *push.Service
+	I18n    *i18n.Service
+	Clock   time2.Clock
+	Auth    AuthService
+	Local   *local.Service
+	Metrics *metrics.Service
 }
 
 type AuthService interface {
@@ -118,6 +120,10 @@ func (s *Server) InitCmd() *Server {
 		log.Fatal().Err(err).Msg("Failed to initialize local service")
 	}
 
+	if err := s.InitMetricsService(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize metrics service")
+	}
+
 	return s
 }
 
@@ -129,6 +135,16 @@ func (s *Server) InitAuthService() error {
 
 func (s *Server) InitLocalService() error {
 	s.Local = local.NewService(s.Config, s.DB, s.Clock)
+
+	return nil
+}
+
+func (s *Server) InitMetricsService() error {
+	var err error
+	s.Metrics, err = metrics.New(s.DB)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

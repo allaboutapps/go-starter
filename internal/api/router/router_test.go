@@ -1,11 +1,16 @@
 package router_test
 
 import (
+	"fmt"
+	"net/http"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/metrics/users"
+	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,5 +71,29 @@ func TestMiddlewaresDisabled(t *testing.T) {
 	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "GET", "/-/ready", nil, nil)
 		require.Equal(t, 200, res.Result().StatusCode)
+	})
+}
+
+func TestMetricsEnabled(t *testing.T) {
+	config := config.DefaultServiceConfigFromEnv()
+	config.Management.EnableMetrics = true
+
+	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
+		res := test.PerformRequest(t, s, "GET", "/metrics", nil, nil)
+		require.Equal(t, http.StatusOK, res.Result().StatusCode)
+
+		result := res.Body.String()
+
+		expectedTotalUserCount, err := models.Users().Count(t.Context(), s.DB)
+		require.NoError(t, err)
+
+		assert.Contains(t, result, fmt.Sprintf("%s %d", users.MetricNameTotalUserCount, expectedTotalUserCount))
+	})
+}
+
+func TestMetricsDisabled(t *testing.T) {
+	test.WithTestServer(t, func(s *api.Server) {
+		res := test.PerformRequest(t, s, "GET", "/metrics", nil, nil)
+		require.Equal(t, http.StatusNotFound, res.Result().StatusCode)
 	})
 }

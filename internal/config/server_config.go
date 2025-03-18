@@ -70,6 +70,7 @@ type ManagementServer struct {
 	LivenessTimeout         time.Duration
 	ProbeWriteablePathsAbs  []string
 	ProbeWriteableTouchfile string
+	EnableMetrics           bool
 }
 
 type FrontendServer struct {
@@ -197,6 +198,7 @@ func DefaultServiceConfigFromEnv() Server {
 			ProbeWriteablePathsAbs: util.GetEnvAsStringArr("SERVER_MANAGEMENT_PROBE_WRITEABLE_PATHS_ABS", []string{
 				filepath.Join(util.GetProjectRootDir(), "/assets/mnt")}, ","),
 			ProbeWriteableTouchfile: util.GetEnv("SERVER_MANAGEMENT_PROBE_WRITEABLE_TOUCHFILE", ".healthy"),
+			EnableMetrics:           util.GetEnvAsBool("SERVER_MANAGEMENT_ENABLE_METRICS", false),
 		},
 		Mailer: Mailer{
 			DefaultSender:               util.GetEnv("SERVER_MAILER_DEFAULT_SENDER", "go-starter@example.com"),

@@ -23,7 +23,10 @@ var handlersCheckCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		handlers.CheckHandlers(printAll)
+		err = handlers.CheckHandlers(printAll)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
