@@ -14,10 +14,10 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// PostUpdatePushTokenPayload post update push token payload
+// PutUpdatePushTokenPayload put update push token payload
 //
-// swagger:model postUpdatePushTokenPayload
-type PostUpdatePushTokenPayload struct {
+// swagger:model putUpdatePushTokenPayload
+type PutUpdatePushTokenPayload struct {
 
 	// New push token for given provider.
 	// Example: 1c91e550-8167-439c-8021-dee7de2f7e96
@@ -37,8 +37,8 @@ type PostUpdatePushTokenPayload struct {
 	Provider *string `json:"provider"`
 }
 
-// Validate validates this post update push token payload
-func (m *PostUpdatePushTokenPayload) Validate(formats strfmt.Registry) error {
+// Validate validates this put update push token payload
+func (m *PutUpdatePushTokenPayload) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateNewToken(formats); err != nil {
@@ -59,7 +59,7 @@ func (m *PostUpdatePushTokenPayload) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *PostUpdatePushTokenPayload) validateNewToken(formats strfmt.Registry) error {
+func (m *PutUpdatePushTokenPayload) validateNewToken(formats strfmt.Registry) error {
 
 	if err := validate.Required("newToken", "body", m.NewToken); err != nil {
 		return err
@@ -72,7 +72,7 @@ func (m *PostUpdatePushTokenPayload) validateNewToken(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *PostUpdatePushTokenPayload) validateOldToken(formats strfmt.Registry) error {
+func (m *PutUpdatePushTokenPayload) validateOldToken(formats strfmt.Registry) error {
 	if swag.IsZero(m.OldToken) { // not required
 		return nil
 	}
@@ -84,7 +84,7 @@ func (m *PostUpdatePushTokenPayload) validateOldToken(formats strfmt.Registry) e
 	return nil
 }
 
-func (m *PostUpdatePushTokenPayload) validateProvider(formats strfmt.Registry) error {
+func (m *PutUpdatePushTokenPayload) validateProvider(formats strfmt.Registry) error {
 
 	if err := validate.Required("provider", "body", m.Provider); err != nil {
 		return err
@@ -97,13 +97,13 @@ func (m *PostUpdatePushTokenPayload) validateProvider(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validates this post update push token payload based on context it is used
-func (m *PostUpdatePushTokenPayload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this put update push token payload based on context it is used
+func (m *PutUpdatePushTokenPayload) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *PostUpdatePushTokenPayload) MarshalBinary() ([]byte, error) {
+func (m *PutUpdatePushTokenPayload) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -111,8 +111,8 @@ func (m *PostUpdatePushTokenPayload) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *PostUpdatePushTokenPayload) UnmarshalBinary(b []byte) error {
-	var res PostUpdatePushTokenPayload
+func (m *PutUpdatePushTokenPayload) UnmarshalBinary(b []byte) error {
+	var res PutUpdatePushTokenPayload
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

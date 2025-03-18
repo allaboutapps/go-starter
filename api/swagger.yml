@@ -304,12 +304,12 @@ paths:
       tags:
       - push
       summary: Adds a push token to the user
-      operationId: PostUpdatePushTokenRoute
+      operationId: PutUpdatePushTokenRoute
       parameters:
       - name: Payload
         in: body
         schema:
-          $ref: '#/definitions/postUpdatePushTokenPayload'
+          $ref: '#/definitions/putUpdatePushTokenPayload'
       responses:
         "200":
           description: OK
@@ -704,29 +704,6 @@ definitions:
         maxLength: 255
         minLength: 1
         example: user@example.com
-  postUpdatePushTokenPayload:
-    type: object
-    required:
-    - newToken
-    - provider
-    properties:
-      newToken:
-        description: New push token for given provider.
-        type: string
-        maxLength: 500
-        example: 1c91e550-8167-439c-8021-dee7de2f7e96
-      oldToken:
-        description: Old token that can be deleted if present.
-        type: string
-        maxLength: 500
-        x-nullable: true
-        example: 495179de-b771-48f0-aab2-8d23701b0f02
-      provider:
-        description: Identifier of the provider the token is for (eg. "fcm", "apn").
-          Currently only "fcm" is supported.
-        type: string
-        maxLength: 500
-        example: fcm
   publicHttpError:
     type: object
     required:
@@ -767,6 +744,29 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/httpValidationErrorDetail'
+  putUpdatePushTokenPayload:
+    type: object
+    required:
+    - newToken
+    - provider
+    properties:
+      newToken:
+        description: New push token for given provider.
+        type: string
+        maxLength: 500
+        example: 1c91e550-8167-439c-8021-dee7de2f7e96
+      oldToken:
+        description: Old token that can be deleted if present.
+        type: string
+        maxLength: 500
+        x-nullable: true
+        example: 495179de-b771-48f0-aab2-8d23701b0f02
+      provider:
+        description: Identifier of the provider the token is for (eg. "fcm", "apn").
+          Currently only "fcm" is supported.
+        type: string
+        maxLength: 500
+        example: fcm
 responses:
   AuthForbiddenResponse:
     description: PublicHTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`

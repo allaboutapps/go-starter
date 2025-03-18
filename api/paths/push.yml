@@ -14,12 +14,12 @@ paths:
       tags:
         - push
       summary: Adds a push token to the user
-      operationId: PostUpdatePushTokenRoute
+      operationId: PutUpdatePushTokenRoute
       parameters:
         - name: Payload
           in: body
           schema:
-            "$ref": "../definitions/push.yml#/definitions/PostUpdatePushTokenPayload"
+            "$ref": "../definitions/push.yml#/definitions/PutUpdatePushTokenPayload"
       responses:
         "200":
           description: OK

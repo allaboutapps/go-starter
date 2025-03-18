@@ -15,7 +15,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func TestPostUpdatePushTokenSuccess(t *testing.T) {
+func TestPutUpdatePushTokenSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -41,7 +41,7 @@ func TestPostUpdatePushTokenSuccess(t *testing.T) {
 	})
 }
 
-func TestPostUpdatePushTokenSuccessWithOldToken(t *testing.T) {
+func TestPutUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -82,7 +82,7 @@ func TestPostUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 	})
 }
 
-func TestPostUpdatePushTokenWithDuplicateToken(t *testing.T) {
+func TestPutUpdatePushTokenWithDuplicateToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()
@@ -120,7 +120,7 @@ func TestPostUpdatePushTokenWithDuplicateToken(t *testing.T) {
 	})
 }
 
-func TestPostUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
+func TestPutUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 		fixtures := test.Fixtures()

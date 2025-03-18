@@ -16,18 +16,18 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/types"
 )
 
-// NewPostUpdatePushTokenRouteParams creates a new PostUpdatePushTokenRouteParams object
+// NewPutUpdatePushTokenRouteParams creates a new PutUpdatePushTokenRouteParams object
 // no default values defined in spec.
-func NewPostUpdatePushTokenRouteParams() PostUpdatePushTokenRouteParams {
+func NewPutUpdatePushTokenRouteParams() PutUpdatePushTokenRouteParams {
 
-	return PostUpdatePushTokenRouteParams{}
+	return PutUpdatePushTokenRouteParams{}
 }
 
-// PostUpdatePushTokenRouteParams contains all the bound params for the post update push token route operation
+// PutUpdatePushTokenRouteParams contains all the bound params for the put update push token route operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostUpdatePushTokenRoute
-type PostUpdatePushTokenRouteParams struct {
+// swagger:parameters PutUpdatePushTokenRoute
+type PutUpdatePushTokenRouteParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -35,21 +35,21 @@ type PostUpdatePushTokenRouteParams struct {
 	/*
 	  In: body
 	*/
-	Payload *types.PostUpdatePushTokenPayload
+	Payload *types.PutUpdatePushTokenPayload
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewPostUpdatePushTokenRouteParams() beforehand.
-func (o *PostUpdatePushTokenRouteParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewPutUpdatePushTokenRouteParams() beforehand.
+func (o *PutUpdatePushTokenRouteParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body types.PostUpdatePushTokenPayload
+		var body types.PutUpdatePushTokenPayload
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("payload", "body", "", err))
 		} else {
@@ -69,7 +69,7 @@ func (o *PostUpdatePushTokenRouteParams) BindRequest(r *http.Request, route *mid
 	return nil
 }
 
-func (o *PostUpdatePushTokenRouteParams) Validate(formats strfmt.Registry) error {
+func (o *PutUpdatePushTokenRouteParams) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	// Payload

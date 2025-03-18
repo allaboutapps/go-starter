@@ -11,6 +11,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
+	"allaboutapps.dev/aw/go-starter/internal/data/local"
 	"allaboutapps.dev/aw/go-starter/internal/i18n"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
@@ -42,6 +43,7 @@ type Server struct {
 	I18n   *i18n.Service
 	Clock  time2.Clock
 	Auth   AuthService
+	Local  *local.Service
 }
 
 type AuthService interface {
@@ -64,6 +66,9 @@ func NewServer(config config.Server) *Server {
 		Mailer: nil,
 		Push:   nil,
 		I18n:   nil,
+		Clock:  nil,
+		Auth:   nil,
+		Local:  nil,
 	}
 
 	return s
@@ -77,7 +82,8 @@ func (s *Server) Ready() bool {
 		s.Push != nil &&
 		s.I18n != nil &&
 		s.Clock != nil &&
-		s.Auth != nil
+		s.Auth != nil &&
+		s.Local != nil
 }
 
 func (s *Server) InitCmd() *Server {
@@ -108,11 +114,21 @@ func (s *Server) InitCmd() *Server {
 		log.Fatal().Err(err).Msg("Failed to initialize auth service")
 	}
 
+	if err := s.InitLocalService(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize local service")
+	}
+
 	return s
 }
 
 func (s *Server) InitAuthService() error {
 	s.Auth = auth.NewService(s.Config, s.DB, s.Clock)
+
+	return nil
+}
+
+func (s *Server) InitLocalService() error {
+	s.Local = local.NewService(s.Config, s.DB, s.Clock)
 
 	return nil
 }

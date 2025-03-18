@@ -89,6 +89,10 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 		t.Fatalf("Failed to init auth service: %v", err)
 	}
 
+	if err := s.InitLocalService(); err != nil {
+		t.Fatalf("Failed to init local service: %v", err)
+	}
+
 	router.Init(s)
 
 	closure(s)
