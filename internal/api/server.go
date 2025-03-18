@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"time"
 
+	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/i18n"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
@@ -39,6 +41,18 @@ type Server struct {
 	Push   *push.Service
 	I18n   *i18n.Service
 	Clock  time2.Clock
+	Auth   AuthService
+}
+
+type AuthService interface {
+	GetAppUserProfileIfExists(context.Context, string) (*dto.AppUserProfile, error)
+	InitPasswordReset(context.Context, dto.InitPasswordResetRequest) (dto.InitPasswordResetResult, error)
+	Login(context.Context, dto.LoginRequest) (dto.LoginResult, error)
+	Logout(context.Context, dto.LogoutRequest) error
+	Refresh(context.Context, dto.RefreshRequest) (dto.LoginResult, error)
+	Register(context.Context, dto.RegisterRequest) (dto.LoginResult, error)
+	ResetPassword(context.Context, dto.ResetPasswordRequest) (dto.LoginResult, error)
+	UpdatePassword(context.Context, dto.UpdatePasswordRequest) (dto.LoginResult, error)
 }
 
 func NewServer(config config.Server) *Server {
@@ -61,7 +75,9 @@ func (s *Server) Ready() bool {
 		s.Router != nil &&
 		s.Mailer != nil &&
 		s.Push != nil &&
-		s.I18n != nil
+		s.I18n != nil &&
+		s.Clock != nil &&
+		s.Auth != nil
 }
 
 func (s *Server) InitCmd() *Server {
@@ -88,7 +104,17 @@ func (s *Server) InitCmd() *Server {
 		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
 	}
 
+	if err := s.InitAuthService(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize auth service")
+	}
+
 	return s
+}
+
+func (s *Server) InitAuthService() error {
+	s.Auth = auth.NewService(s.Config, s.DB, s.Clock)
+
+	return nil
 }
 
 func (s *Server) InitDB(ctx context.Context) error {

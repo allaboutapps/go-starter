@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 )
@@ -58,7 +59,7 @@ func (s *Service) GetProviderCount() int {
 	return len(s.provider)
 }
 
-func (s *Service) SendToUser(ctx context.Context, user *models.User, title string, message string) error {
+func (s *Service) SendToUser(ctx context.Context, user *dto.User, title string, message string) error {
 	if s.GetProviderCount() < 1 {
 		return errors.New("No provider found")
 	}
@@ -66,7 +67,10 @@ func (s *Service) SendToUser(ctx context.Context, user *models.User, title strin
 
 	for k, p := range s.provider {
 		// get all registered tokens for provider
-		pushTokens, err := user.PushTokens(models.PushTokenWhere.Provider.EQ(string(k))).All(ctx, s.DB)
+		pushTokens, err := models.PushTokens(
+			models.PushTokenWhere.Provider.EQ(string(k)),
+			models.PushTokenWhere.UserID.EQ(user.ID),
+		).All(ctx, s.DB)
 		if err != nil {
 			return err
 		}
@@ -88,7 +92,10 @@ func (s *Service) SendToUser(ctx context.Context, user *models.User, title strin
 			}
 		}
 		// delete invalid tokens
-		_, err = user.PushTokens(models.PushTokenWhere.Token.IN(tokenToDelete)).DeleteAll(ctx, s.DB)
+		_, err = models.PushTokens(
+			models.PushTokenWhere.Token.IN(tokenToDelete),
+			models.PushTokenWhere.UserID.EQ(user.ID),
+		).DeleteAll(ctx, s.DB)
 		if err != nil {
 			log.Debug().Err(err).Str("provider", string(p.GetProviderType())).Msg("Could not delete invalid tokens for provider")
 			return err

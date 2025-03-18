@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
@@ -11,9 +11,9 @@ import (
 
 // EnrichContextWithCredentials stores the provided credentials in the form of user and access token used for authentication
 // in the give context and updates the logger associated with ctx to include the user's ID.
-func EnrichContextWithCredentials(ctx context.Context, result AuthenticationResult) context.Context {
+func EnrichContextWithCredentials(ctx context.Context, result Result) context.Context {
 	// Retrieve current logger associated with context and extend it ID of authenticated user
-	l := util.LogFromContext(ctx).With().Str("user_id", result.User.ID).Logger()
+	l := util.LogFromContext(ctx).With().Str("userID", result.User.ID).Logger()
 	c := l.WithContext(ctx)
 
 	// Store authenticated user's instance in context
@@ -26,7 +26,7 @@ func EnrichContextWithCredentials(ctx context.Context, result AuthenticationResu
 
 // EnrichEchoContextWithCredentials stores the provided credentials in the form of user and access token user for authentication
 // in the given echo context's request and updates the logger associated with c to include the user's ID.
-func EnrichEchoContextWithCredentials(c echo.Context, result AuthenticationResult) echo.Context {
+func EnrichEchoContextWithCredentials(c echo.Context, result Result) echo.Context {
 	// Get current context and enrich it with credentials
 	req := c.Request()
 	ctx := EnrichContextWithCredentials(req.Context(), result)
@@ -39,13 +39,13 @@ func EnrichEchoContextWithCredentials(c echo.Context, result AuthenticationResul
 
 // UserFromContext returns the user model of the currently authenticated user from a context. If no authentication was provided
 // or the current context does not carry any user information, nil will be returned instead.
-func UserFromContext(ctx context.Context) *models.User {
+func UserFromContext(ctx context.Context) *dto.User {
 	u := ctx.Value(util.CTXKeyUser)
 	if u == nil {
 		return nil
 	}
 
-	user, ok := u.(*models.User)
+	user, ok := u.(*dto.User)
 	if !ok {
 		return nil
 	}
@@ -55,7 +55,7 @@ func UserFromContext(ctx context.Context) *models.User {
 
 // UserFromEchoContext returns the user model of the currently authenticated user from an echo context. If no authentication was
 // provided or the current echo context does not carry any user information, nil will be returned instead.
-func UserFromEchoContext(c echo.Context) *models.User {
+func UserFromEchoContext(c echo.Context) *dto.User {
 	return UserFromContext(c.Request().Context())
 }
 

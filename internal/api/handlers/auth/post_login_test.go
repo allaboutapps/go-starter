@@ -8,9 +8,8 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
-	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
-	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
+	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/labstack/echo/v4"
@@ -100,7 +99,7 @@ func TestPostLoginDeactivatedUser(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
-		test.RequireHTTPError(t, res, middleware.ErrForbiddenUserDeactivated)
+		test.RequireHTTPError(t, res, httperrors.ErrForbiddenUserDeactivated)
 	})
 }
 
