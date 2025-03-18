@@ -1,0 +1,3 @@
+kind: Changed
+body: 'Moved the data fixtures from `internal/data/` to a separate package in `internal/data/fixtures`. **BREAKING**: Existing changes to the fixtures need to be moved from `internal/data/` to `internal/data/fixtures`'
+time: 2025-03-18T13:02:23.008253779Z
