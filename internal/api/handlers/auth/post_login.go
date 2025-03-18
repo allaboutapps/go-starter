@@ -26,7 +26,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 		}
 
 		result, err := s.Auth.Login(ctx, dto.LoginRequest{
-			Username: dto.Username(body.Username.String()),
+			Username: dto.NewUsername(body.Username.String()),
 			Password: swag.StringValue(body.Password),
 		})
 		if err != nil {

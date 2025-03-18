@@ -25,7 +25,7 @@ func postForgotPasswordHandler(s *api.Server) echo.HandlerFunc {
 			return err
 		}
 
-		username := dto.Username(body.Username.String())
+		username := dto.NewUsername(body.Username.String())
 
 		result, err := s.Auth.InitPasswordReset(ctx, dto.InitPasswordResetRequest{
 			Username: username,

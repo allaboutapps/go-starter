@@ -26,7 +26,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 		}
 
 		result, err := s.Auth.Register(ctx, dto.RegisterRequest{
-			Username: dto.Username(body.Username.String()),
+			Username: dto.NewUsername(body.Username.String()),
 			Password: swag.StringValue(body.Password),
 		})
 		if err != nil {

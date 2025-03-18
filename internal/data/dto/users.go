@@ -94,11 +94,16 @@ type ResetPasswordRequest struct {
 	NewPassword string
 }
 
-// TODO: EK convert to struct with unexported string
-type Username string
+func NewUsername(val string) Username {
+	return Username{val: val}
+}
+
+type Username struct {
+	val string
+}
 
 func (u Username) String() string {
-	return util.ToUsernameFormat(string(u))
+	return util.ToUsernameFormat(string(u.val))
 }
 
 type InitPasswordResetRequest struct {
