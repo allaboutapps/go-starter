@@ -2,9 +2,11 @@ package util_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,6 +17,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/types/auth"
 	"allaboutapps.dev/aw/go-starter/internal/util"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/strfmt/conv"
 	"github.com/go-openapi/swag"
@@ -200,4 +203,32 @@ func prepareFileUpload(t *testing.T, filePath string) (*bytes.Buffer, string) {
 	require.NoError(t, err)
 
 	return &body, writer.FormDataContentType()
+}
+
+func TestStreamFile(t *testing.T) {
+	filename := "file_with_special_characters_🎉_س_.vcf"
+
+	e := echo.New()
+	e.GET("/files", func(c echo.Context) error {
+		path := filepath.Join(util.GetProjectRootDir(), "test", "testdata", "example.jpg")
+
+		fileType, err := mimetype.DetectFile(path)
+		require.NoError(t, err)
+
+		file, err := os.Open(path)
+		require.NoError(t, err)
+
+		return util.StreamFile(c, http.StatusOK, fileType.String(), filename, file)
+	})
+
+	s := &api.Server{Echo: e}
+
+	res := test.PerformRequest(t, s, "GET", "/files", nil, nil)
+	require.Equal(t, http.StatusOK, res.Result().StatusCode)
+
+	resultFileName := res.Header().Get(echo.HeaderContentDisposition)
+	assert.Equal(t, fmt.Sprintf("attachment; filename*=UTF-8''%s", url.QueryEscape(filename)), resultFileName)
+
+	contentType := res.Header().Get(echo.HeaderContentType)
+	assert.Equal(t, "image/jpeg", contentType)
 }
