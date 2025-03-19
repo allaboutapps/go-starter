@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
+	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/swag"
@@ -135,12 +136,14 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 	}
 }
 
-func NotFoundHandler(c echo.Context) error {
-	accepted := accept.Parse(c.Request().Header.Get(echo.HeaderAccept))
+func NotFoundHandler(config config.Server) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		accepted := accept.Parse(c.Request().Header.Get(echo.HeaderAccept))
 
-	if accepted.Accepts(echo.MIMETextHTML) {
-		return c.HTML(http.StatusNotFound, "<html><body><h1>Page Not Found</h1><p>The page you are looking for does not exist.</p></body></html>")
+		if accepted.Accepts(echo.MIMETextHTML) {
+			return c.HTML(http.StatusNotFound, fmt.Sprintf(`<html><body><h1>Page Not Found</h1><p>The page you are looking for does not exist. Did you mean to visit <a href="%s">%s</a>?</p></body></html>`, config.Frontend.BaseURL, config.Frontend.BaseURL))
+		}
+
+		return echo.ErrNotFound
 	}
-
-	return echo.ErrNotFound
 }
