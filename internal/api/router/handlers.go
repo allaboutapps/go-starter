@@ -11,6 +11,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
+	"github.com/timewasted/go-accept-headers"
 )
 
 var (
@@ -132,4 +133,14 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 			}
 		}
 	}
+}
+
+func NotFoundHandler(c echo.Context) error {
+	accepted := accept.Parse(c.Request().Header.Get(echo.HeaderAccept))
+
+	if accepted.Accepts(echo.MIMETextHTML) {
+		return c.HTML(http.StatusNotFound, "<html><body><h1>Page Not Found</h1><p>The page you are looking for does not exist.</p></body></html>")
+	}
+
+	return echo.ErrNotFound
 }
