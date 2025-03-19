@@ -141,7 +141,7 @@ func (s *Server) InitLocalService() error {
 
 func (s *Server) InitMetricsService() error {
 	var err error
-	s.Metrics, err = metrics.New(s.DB)
+	s.Metrics, err = metrics.New(s.Config, s.DB)
 	if err != nil {
 		return err
 	}
