@@ -173,3 +173,14 @@ definitions:
         maxLength: 255
         minLength: 1
         example: user@example.com
+  DeleteUserAccountPayload:
+    type: object
+    required:
+      - currentPassword
+    properties:
+      currentPassword:
+        description: Current password of user
+        type: string
+        maxLength: 500
+        minLength: 1
+        example: correct horse battery staple

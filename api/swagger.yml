@@ -61,6 +61,36 @@ paths:
       responses:
         "200":
           description: ModuleName @ Commit (BuildDate)
+  /api/v1/auth/account:
+    delete:
+      security:
+      - Bearer: []
+      description: Completely delete the user account. This action is irreversible
+        and therefore requires additional password authentication.
+      tags:
+      - auth
+      summary: Delete user account
+      operationId: DeleteUserAccountRoute
+      parameters:
+      - name: Payload
+        in: body
+        schema:
+          $ref: '#/definitions/deleteUserAccountPayload'
+      responses:
+        "204":
+          description: NoContent
+        "400":
+          description: PublicHTTPValidationError, type `INVALID_PASSWORD`
+          schema:
+            $ref: '#/definitions/publicHttpValidationError'
+        "401":
+          description: PublicHTTPError
+          schema:
+            $ref: '#/definitions/publicHttpError'
+        "403":
+          description: PublicHTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
+          schema:
+            $ref: '#/definitions/publicHttpError'
   /api/v1/auth/change-password:
     post:
       security:
@@ -336,6 +366,17 @@ paths:
         "200":
           description: OK
 definitions:
+  deleteUserAccountPayload:
+    type: object
+    required:
+    - currentPassword
+    properties:
+      currentPassword:
+        description: Current password of user
+        type: string
+        maxLength: 500
+        minLength: 1
+        example: correct horse battery staple
   getUserInfoResponse:
     type: object
     required:

@@ -476,3 +476,42 @@ func (s *Service) Register(ctx context.Context, request dto.RegisterRequest) (dt
 
 	return result, nil
 }
+
+func (s *Service) DeleteUserAccount(ctx context.Context, request dto.DeleteUserAccountRequest) error {
+	log := util.LogFromContext(ctx)
+
+	if !request.User.PasswordHash.Valid {
+		log.Debug().Msg("User is missing password, forbidding authentication")
+		return echo.ErrUnauthorized
+	}
+
+	match, err := hashing.ComparePasswordAndHash(request.CurrentPassword, request.User.PasswordHash.String)
+	if err != nil {
+		log.Debug().Err(err).Msg("Failed to compare password with stored hash")
+		return echo.ErrUnauthorized
+	}
+
+	if !match {
+		log.Debug().Msg("Provided password does not match stored hash")
+		return echo.ErrUnauthorized
+	}
+
+	// delete the user and all related data
+	err = db.WithTransaction(ctx, s.db, func(exec boil.ContextExecutor) error {
+		_, err = models.Users(
+			models.UserWhere.ID.EQ(request.User.ID),
+		).DeleteAll(ctx, exec)
+		if err != nil {
+			log.Err(err).Msg("Failed to delete user")
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Debug().Err(err).Msg("Failed to delete user account")
+		return err
+	}
+
+	return nil
+}
