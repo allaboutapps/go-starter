@@ -2,11 +2,10 @@ package util_test
 
 import (
 	"bytes"
-	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -212,13 +211,13 @@ func TestStreamFile(t *testing.T) {
 	e.GET("/files", func(c echo.Context) error {
 		path := filepath.Join(util.GetProjectRootDir(), "test", "testdata", "example.jpg")
 
-		fileType, err := mimetype.DetectFile(path)
+		mediaType, err := mimetype.DetectFile(path)
 		require.NoError(t, err)
 
 		file, err := os.Open(path)
 		require.NoError(t, err)
 
-		return util.StreamFile(c, http.StatusOK, fileType.String(), filename, file)
+		return util.StreamFile(c, http.StatusOK, mediaType.String(), filename, file)
 	})
 
 	s := &api.Server{Echo: e}
@@ -226,8 +225,11 @@ func TestStreamFile(t *testing.T) {
 	res := test.PerformRequest(t, s, "GET", "/files", nil, nil)
 	require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
-	resultFileName := res.Header().Get(echo.HeaderContentDisposition)
-	assert.Equal(t, fmt.Sprintf("attachment; filename*=UTF-8''%s", url.QueryEscape(filename)), resultFileName)
+	mediaType, params, err := mime.ParseMediaType(res.Header().Get(echo.HeaderContentDisposition))
+	require.NoError(t, err)
+
+	assert.Equal(t, "attachment", mediaType)
+	assert.Equal(t, filename, params["filename"])
 
 	contentType := res.Header().Get(echo.HeaderContentType)
 	assert.Equal(t, "image/jpeg", contentType)

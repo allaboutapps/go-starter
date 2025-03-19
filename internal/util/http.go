@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
@@ -222,14 +222,18 @@ func ParseFileUpload(c echo.Context, formNameFile string, allowedMIMETypes []str
 	return fh, file, mime, nil
 }
 
-func StreamFile(c echo.Context, code int, contentType string, fileName string, r io.ReadCloser) error {
-	// https://stackoverflow.com/questions/93551/how-to-encode-the-filename-parameter-of-content-disposition-header-in-http
-	// https://www.rfc-editor.org/rfc/rfc5987
-	c.Response().Header().Set(echo.HeaderContentDisposition, fmt.Sprintf("attachment; filename*=UTF-8''%s", url.PathEscape(fileName)))
+func StreamFile(c echo.Context, code int, mediaType string, fileName string, r io.ReadCloser) error {
+	formattedMediaType := mime.FormatMediaType("attachment",
+		map[string]string{
+			"filename": fileName,
+		},
+	)
+
+	c.Response().Header().Set(echo.HeaderContentDisposition, formattedMediaType)
 	SetOrAppendHeader(c.Response().Header(), echo.HeaderAccessControlExposeHeaders, echo.HeaderContentDisposition)
 
 	defer r.Close()
-	return c.Stream(code, contentType, r)
+	return c.Stream(code, mediaType, r)
 }
 
 func SetOrAppendHeader(header http.Header, key string, values ...string) {
