@@ -6,14 +6,15 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetTestPush(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
-		res := test.PerformRequest(t, s, "GET", "/api/v1/push/test", nil, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+		res := test.PerformRequest(t, s, "GET", "/api/v1/push/test", nil, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 	})
 }

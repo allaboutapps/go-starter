@@ -11,6 +11,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +30,7 @@ func TestPostRegisterSuccess(t *testing.T) {
 		username := "usernew@example.com"
 		payload := test.GenericPayload{
 			"username": username,
-			"password": test.PlainTestUserPassword,
+			"password": fixtures.PlainTestUserPassword,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
@@ -87,7 +88,7 @@ func TestPostRegisterSuccessLowercaseTrimWhitespaces(t *testing.T) {
 		usernameLowerTrimmed := "usernew@example.com"
 		payload := test.GenericPayload{
 			"username": username,
-			"password": test.PlainTestUserPassword,
+			"password": fixtures.PlainTestUserPassword,
 			"name":     "Trim Whitespaces",
 		}
 
@@ -142,23 +143,23 @@ func TestPostRegisterAlreadyExists(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
 
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
-			"password": test.PlainTestUserPassword,
+			"username": fix.User1.Username,
+			"password": fixtures.PlainTestUserPassword,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
 		test.RequireHTTPError(t, res, httperrors.ErrConflictUserAlreadyExists)
 
 		user, err := models.Users(
-			models.UserWhere.Username.EQ(fixtures.User1.Username),
+			models.UserWhere.Username.EQ(fix.User1.Username),
 			qm.Load(models.UserRels.AppUserProfile),
 			qm.Load(models.UserRels.AccessTokens),
 			qm.Load(models.UserRels.RefreshTokens),
 		).One(ctx, s.DB)
 		assert.NoError(t, err)
-		assert.Equal(t, user.ID, fixtures.User1.ID)
+		assert.Equal(t, user.ID, fix.User1.ID)
 
 		assert.NotNil(t, user.R.AppUserProfile)
 		assert.Len(t, user.R.AccessTokens, 1)
@@ -168,7 +169,7 @@ func TestPostRegisterAlreadyExists(t *testing.T) {
 
 func TestPostRegisterBadRequest(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		tests := []struct {
 			name    string
@@ -177,33 +178,33 @@ func TestPostRegisterBadRequest(t *testing.T) {
 			{
 				name: "MissingUsername",
 				payload: test.GenericPayload{
-					"password": test.PlainTestUserPassword,
+					"password": fixtures.PlainTestUserPassword,
 				},
 			},
 			{
 				name: "MissingPassword",
 				payload: test.GenericPayload{
-					"username": fixtures.User1.Username,
+					"username": fix.User1.Username,
 				},
 			},
 			{
 				name: "InvalidUsername",
 				payload: test.GenericPayload{
 					"username": "definitely not an email",
-					"password": test.PlainTestUserPassword,
+					"password": fixtures.PlainTestUserPassword,
 				},
 			},
 			{
 				name: "EmptyUsername",
 				payload: test.GenericPayload{
 					"username": "",
-					"password": test.PlainTestUserPassword,
+					"password": fixtures.PlainTestUserPassword,
 				},
 			},
 			{
 				name: "EmptyPassword",
 				payload: test.GenericPayload{
-					"username": fixtures.User1.Username,
+					"username": fix.User1.Username,
 					"password": "",
 				},
 			},

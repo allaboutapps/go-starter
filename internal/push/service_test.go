@@ -9,6 +9,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/push"
 	"allaboutapps.dev/aw/go-starter/internal/push/provider"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -17,9 +18,9 @@ import (
 func TestSendMessageSuccess(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
-		user1 := fixtures.User1
+		user1 := fix.User1
 
 		err := p.SendToUser(ctx, user1, "Hello", "World")
 		assert.NoError(t, err)
@@ -33,9 +34,9 @@ func TestSendMessageSuccess(t *testing.T) {
 func TestSendMessageSuccessWithGenericError(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
-		user1 := fixtures.User1
+		user1 := fix.User1
 
 		// provoke error from mock provider
 		err := p.SendToUser(ctx, user1, "other error", "World")
@@ -50,8 +51,8 @@ func TestSendMessageSuccessWithGenericError(t *testing.T) {
 func TestSendMessageWithInvalidToken(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
-		user1 := fixtures.User1
+		fix := fixtures.Fixtures()
+		user1 := fix.User1
 
 		user1InvalidPushToken := models.PushToken{
 			ID:       "55c37bc8-f245-40b3-bdef-14dee35b10bd",
@@ -79,12 +80,12 @@ func TestSendMessageWithNoProvider(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		p.ResetProviders()
 		require.Equal(t, 0, p.GetProviderCount())
 
-		user1 := fixtures.User1
+		user1 := fix.User1
 
 		err := p.SendToUser(ctx, user1, "Hello", "World")
 		assert.Error(t, err)
@@ -98,7 +99,7 @@ func TestSendMessageWithNoProvider(t *testing.T) {
 func TestSendMessageWithMultipleProvider(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		p.ResetProviders()
 		require.Equal(t, 0, p.GetProviderCount())
@@ -107,7 +108,7 @@ func TestSendMessageWithMultipleProvider(t *testing.T) {
 		mockProviderAPN := provider.NewMock(push.ProviderTypeAPN)
 		p.RegisterProvider(mockProviderAPN)
 		p.RegisterProvider(mockProviderFCM)
-		user1 := fixtures.User1
+		user1 := fix.User1
 
 		err := p.SendToUser(ctx, user1, "Hello", "World")
 		assert.NoError(t, err)
