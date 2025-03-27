@@ -1,4 +1,4 @@
-package test_test
+package fixtures_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
@@ -15,7 +16,7 @@ import (
 
 func TestFixturesReload(t *testing.T) {
 	test.WithTestDatabase(t, func(db *sql.DB) {
-		err := test.Fixtures().User1.Reload(context.Background(), db)
+		err := fixtures.Fixtures().User1.Reload(context.Background(), db)
 
 		if err != nil {
 			t.Error("failed to reload")
@@ -49,7 +50,7 @@ func TestInsert(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	test.WithTestDatabase(t, func(db *sql.DB) {
 
-		originalUser1 := test.Fixtures().User1
+		originalUser1 := fixtures.Fixtures().User1
 
 		updatedUser1 := models.User(*originalUser1)
 
@@ -81,7 +82,7 @@ func TestUpdate(t *testing.T) {
 	// with another testdatabase:
 	test.WithTestDatabase(t, func(db *sql.DB) {
 
-		originalUser1 := test.Fixtures().User1
+		originalUser1 := fixtures.Fixtures().User1
 
 		// ensure our fixture is the same again!
 		if originalUser1.Username != null.StringFrom("user1@example.com") {
@@ -108,6 +109,6 @@ func TestInsertableInterface(t *testing.T) {
 		UserID: "62b13d29-5c4e-420e-b991-a631d3938776",
 	}
 
-	_, ok := user.(test.Insertable)
+	_, ok := user.(fixtures.Insertable)
 	assert.True(t, ok, "AppUserProfile should implement the Insertable interface")
 }

@@ -7,6 +7,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	swaggerTypes "allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ import (
 func TestOrderBy(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		noUsername := models.User{
 			Scopes: types.StringArray{"cms"},
@@ -45,8 +46,8 @@ func TestOrderBy(t *testing.T) {
 		users, err = models.Users(db.OrderByLower(swaggerTypes.OrderDirAsc, models.TableNames.Users, models.UserColumns.Username)).All(ctx, sqlDB)
 		require.NoError(t, err)
 		require.NotEmpty(t, users)
-		assert.Equal(t, fixtures.User1.ID, users[0].ID)
-		assert.Equal(t, fixtures.User1.Username, users[0].Username)
+		assert.Equal(t, fix.User1.ID, users[0].ID)
+		assert.Equal(t, fix.User1.Username, users[0].Username)
 
 		users, err = models.Users(db.OrderByWithNulls(swaggerTypes.OrderDirAsc, db.OrderByNullsFirst, models.TableNames.Users, models.UserColumns.Username)).All(ctx, sqlDB)
 		require.NoError(t, err)
@@ -57,8 +58,8 @@ func TestOrderBy(t *testing.T) {
 		users, err = models.Users(db.OrderByLowerWithNulls(swaggerTypes.OrderDirDesc, db.OrderByNullsLast, models.TableNames.Users, models.UserColumns.Username)).All(ctx, sqlDB)
 		require.NoError(t, err)
 		require.NotEmpty(t, users)
-		assert.Equal(t, fixtures.UserDeactivated.ID, users[0].ID)
-		assert.Equal(t, fixtures.UserDeactivated.Username, users[0].Username)
+		assert.Equal(t, fix.UserDeactivated.ID, users[0].ID)
+		assert.Equal(t, fix.UserDeactivated.Username, users[0].Username)
 		assert.Equal(t, upperUsername.ID, users[1].ID)
 		assert.Equal(t, upperUsername.Username, users[1].Username)
 	})

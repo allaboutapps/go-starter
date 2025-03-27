@@ -7,6 +7,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +19,7 @@ import (
 func TestInnerJoinWithFilter(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		profiles, err := models.AppUserProfiles(db.InnerJoinWithFilter(models.TableNames.AppUserProfiles,
 			models.AppUserProfileColumns.UserID,
@@ -30,7 +31,7 @@ func TestInnerJoinWithFilter(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, profiles, 1)
 
-		assert.Equal(t, fixtures.User1AppUserProfile.UserID, profiles[0].UserID)
+		assert.Equal(t, fix.User1AppUserProfile.UserID, profiles[0].UserID)
 
 		profiles, err = models.AppUserProfiles(db.InnerJoinWithFilter(models.TableNames.AppUserProfiles,
 			models.AppUserProfileColumns.UserID,
@@ -43,14 +44,14 @@ func TestInnerJoinWithFilter(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, profiles, 1)
 
-		assert.Equal(t, fixtures.User1AppUserProfile.UserID, profiles[0].UserID)
+		assert.Equal(t, fix.User1AppUserProfile.UserID, profiles[0].UserID)
 	})
 }
 
 func TestInnerJoin(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		profiles, err := models.AppUserProfiles(db.InnerJoin(models.TableNames.AppUserProfiles,
 			models.AppUserProfileColumns.UserID,
@@ -62,7 +63,7 @@ func TestInnerJoin(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, profiles, 1)
 
-		assert.Equal(t, fixtures.User1AppUserProfile.UserID, profiles[0].UserID)
+		assert.Equal(t, fix.User1AppUserProfile.UserID, profiles[0].UserID)
 	})
 }
 

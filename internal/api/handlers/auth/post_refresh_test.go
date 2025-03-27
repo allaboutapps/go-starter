@@ -11,6 +11,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -19,9 +20,9 @@ import (
 func TestPostRefreshSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"refresh_token": fixtures.User1RefreshToken1.Token,
+			"refresh_token": fix.User1RefreshToken1.Token,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", payload, nil)
@@ -31,13 +32,13 @@ func TestPostRefreshSuccess(t *testing.T) {
 		test.ParseResponseAndValidate(t, res, &response)
 
 		assert.NotEmpty(t, response.AccessToken)
-		assert.NotEqual(t, fixtures.User1AccessToken1.Token, response.AccessToken)
+		assert.NotEqual(t, fix.User1AccessToken1.Token, response.AccessToken)
 		assert.NotEmpty(t, response.RefreshToken)
-		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, response.RefreshToken)
+		assert.NotEqual(t, fix.User1RefreshToken1.Token, response.RefreshToken)
 		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response.ExpiresIn)
 		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 
-		err := fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		err := fix.User1RefreshToken1.Reload(ctx, s.DB)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
@@ -56,15 +57,15 @@ func TestPostRefreshUnknownToken(t *testing.T) {
 func TestPostRefreshDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"refresh_token": fixtures.UserDeactivatedRefreshToken1.Token,
+			"refresh_token": fix.UserDeactivatedRefreshToken1.Token,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/refresh", payload, nil)
 		test.RequireHTTPError(t, res, middleware.ErrForbiddenUserDeactivated)
 
-		err := fixtures.UserDeactivatedRefreshToken1.Reload(ctx, s.DB)
+		err := fix.UserDeactivatedRefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
 	})
 }

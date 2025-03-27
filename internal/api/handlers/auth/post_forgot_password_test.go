@@ -13,6 +13,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/stretchr/testify/assert"
@@ -28,15 +29,15 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 
 	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
+			"username": fix.User1.Username,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
 		require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
-		passwordResetToken, err := fixtures.User1.PasswordResetTokens().One(ctx, s.DB)
+		passwordResetToken, err := fix.User1.PasswordResetTokens().One(ctx, s.DB)
 		require.NoError(t, err)
 
 		mail := test.GetLastSentMail(t, s.Mailer)
@@ -65,7 +66,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 			sentMails := test.GetSentMails(t, s.Mailer)
 			require.Len(t, sentMails, 2)
 
-			passwordResetTokens, err := fixtures.User1.PasswordResetTokens().All(ctx, s.DB)
+			passwordResetTokens, err := fix.User1.PasswordResetTokens().All(ctx, s.DB)
 			require.NoError(t, err)
 
 			assert.Len(t, passwordResetTokens, 1)
@@ -86,7 +87,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 			sentMails := test.GetSentMails(t, s.Mailer)
 			require.Len(t, sentMails, 3)
 
-			passwordResetTokens, err := fixtures.User1.PasswordResetTokens(
+			passwordResetTokens, err := fix.User1.PasswordResetTokens(
 				db.OrderBy(types.OrderDirDesc, models.PasswordResetTokenColumns.CreatedAt),
 			).All(ctx, s.DB)
 			require.NoError(t, err)
@@ -109,7 +110,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 			sentMails := test.GetSentMails(t, s.Mailer)
 			require.Len(t, sentMails, 4)
 
-			passwordResetTokens, err := fixtures.User1.PasswordResetTokens(
+			passwordResetTokens, err := fix.User1.PasswordResetTokens(
 				db.OrderBy(types.OrderDirDesc, models.PasswordResetTokenColumns.CreatedAt),
 			).All(ctx, s.DB)
 			require.NoError(t, err)
@@ -124,15 +125,15 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 func TestPostForgotPasswordSuccessLowercaseTrimWhitespaces(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fmt.Sprintf(" %s ", strings.ToUpper(fixtures.User1.Username.String)),
+			"username": fmt.Sprintf(" %s ", strings.ToUpper(fix.User1.Username.String)),
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
-		passwordResetToken, err := fixtures.User1.PasswordResetTokens().One(ctx, s.DB)
+		passwordResetToken, err := fix.User1.PasswordResetTokens().One(ctx, s.DB)
 		require.NoError(t, err)
 
 		mail := test.GetLastSentMail(t, s.Mailer)
@@ -164,10 +165,10 @@ func TestPostForgotPasswordUnknownUser(t *testing.T) {
 func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		payload := test.GenericPayload{
-			"username": fixtures.UserDeactivated.Username,
+			"username": fix.UserDeactivated.Username,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password", payload, nil)
@@ -185,14 +186,14 @@ func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
 func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		payload := test.GenericPayload{
-			"username": fixtures.User2.Username,
+			"username": fix.User2.Username,
 		}
 
-		fixtures.User2.Password = null.String{}
-		rowsAff, err := fixtures.User2.Update(context.Background(), s.DB, boil.Infer())
+		fix.User2.Password = null.String{}
+		rowsAff, err := fix.User2.Update(context.Background(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 
