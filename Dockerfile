@@ -64,7 +64,7 @@ RUN apt-get update \
     bsdmainutils \
     graphviz \
     xz-utils \
-    postgresql-client-12 \
+    postgresql-client-17 \
     icu-devtools \
     tmux \
     rsync \

@@ -11,6 +11,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -21,10 +22,10 @@ import (
 
 func TestPostLoginSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
-			"password": test.PlainTestUserPassword,
+			"username": fix.User1.Username,
+			"password": fixtures.PlainTestUserPassword,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
@@ -34,9 +35,9 @@ func TestPostLoginSuccess(t *testing.T) {
 		test.ParseResponseAndValidate(t, res, &response)
 
 		assert.NotEmpty(t, response.AccessToken)
-		assert.NotEqual(t, fixtures.User1AccessToken1.Token, response.AccessToken)
+		assert.NotEqual(t, fix.User1AccessToken1.Token, response.AccessToken)
 		assert.NotEmpty(t, response.RefreshToken)
-		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, response.RefreshToken)
+		assert.NotEqual(t, fix.User1RefreshToken1.Token, response.RefreshToken)
 		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response.ExpiresIn)
 		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 	})
@@ -44,10 +45,10 @@ func TestPostLoginSuccess(t *testing.T) {
 
 func TestPostLoginSuccessLowercaseTrimWhitespaces(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fmt.Sprintf(" %s ", strings.ToUpper(fixtures.User1.Username.String)),
-			"password": test.PlainTestUserPassword,
+			"username": fmt.Sprintf(" %s ", strings.ToUpper(fix.User1.Username.String)),
+			"password": fixtures.PlainTestUserPassword,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
@@ -57,9 +58,9 @@ func TestPostLoginSuccessLowercaseTrimWhitespaces(t *testing.T) {
 		test.ParseResponseAndValidate(t, res, &response)
 
 		assert.NotEmpty(t, response.AccessToken)
-		assert.NotEqual(t, fixtures.User1AccessToken1.Token, response.AccessToken)
+		assert.NotEqual(t, fix.User1AccessToken1.Token, response.AccessToken)
 		assert.NotEmpty(t, response.RefreshToken)
-		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, response.RefreshToken)
+		assert.NotEqual(t, fix.User1RefreshToken1.Token, response.RefreshToken)
 		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response.ExpiresIn)
 		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 	})
@@ -67,9 +68,9 @@ func TestPostLoginSuccessLowercaseTrimWhitespaces(t *testing.T) {
 
 func TestPostLoginInvalidCredentials(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fixtures.User1.Username,
+			"username": fix.User1.Username,
 			"password": "not my password",
 		}
 
@@ -82,7 +83,7 @@ func TestPostLoginUnknownUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		payload := test.GenericPayload{
 			"username": "definitelydoesnotexist@example.com",
-			"password": test.PlainTestUserPassword,
+			"password": fixtures.PlainTestUserPassword,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
@@ -92,10 +93,10 @@ func TestPostLoginUnknownUser(t *testing.T) {
 
 func TestPostLoginDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fixtures.UserDeactivated.Username,
-			"password": test.PlainTestUserPassword,
+			"username": fix.UserDeactivated.Username,
+			"password": fixtures.PlainTestUserPassword,
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
@@ -105,14 +106,14 @@ func TestPostLoginDeactivatedUser(t *testing.T) {
 
 func TestPostLoginUserWithoutPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
-			"username": fixtures.User2.Username,
-			"password": test.PlainTestUserPassword,
+			"username": fix.User2.Username,
+			"password": fixtures.PlainTestUserPassword,
 		}
 
-		fixtures.User2.Password = null.String{}
-		rowsAff, err := fixtures.User2.Update(context.Background(), s.DB, boil.Infer())
+		fix.User2.Password = null.String{}
+		rowsAff, err := fix.User2.Update(context.Background(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 
@@ -123,7 +124,7 @@ func TestPostLoginUserWithoutPassword(t *testing.T) {
 
 func TestPostLoginBadRequest(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		tests := []struct {
 			name    string
@@ -133,32 +134,32 @@ func TestPostLoginBadRequest(t *testing.T) {
 				name: "InvalidUsername",
 				payload: test.GenericPayload{
 					"username": "definitely not an email",
-					"password": test.PlainTestUserPassword,
+					"password": fixtures.PlainTestUserPassword,
 				},
 			},
 			{
 				name: "MissingUsername",
 				payload: test.GenericPayload{
-					"password": test.PlainTestUserPassword,
+					"password": fixtures.PlainTestUserPassword,
 				},
 			},
 			{
 				name: "MissingPassword",
 				payload: test.GenericPayload{
-					"username": fixtures.User1.Username,
+					"username": fix.User1.Username,
 				},
 			},
 			{
 				name: "EmptyUsername",
 				payload: test.GenericPayload{
 					"username": "",
-					"password": test.PlainTestUserPassword,
+					"password": fixtures.PlainTestUserPassword,
 				},
 			},
 			{
 				name: "EmptyPassword",
 				payload: test.GenericPayload{
-					"username": fixtures.User1.Username,
+					"username": fix.User1.Username,
 					"password": "",
 				},
 			},
