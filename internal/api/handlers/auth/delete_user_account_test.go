@@ -11,6 +11,8 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func assertUserAndRelatedData(ctx context.Context, s *api.Server, t *testing.T, userID string, expectExists bool) {
@@ -48,41 +50,41 @@ func assertUserAndRelatedData(ctx context.Context, s *api.Server, t *testing.T, 
 func TestDeleteUserAccount(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := test.Fixtures()
 
 		// expect the user to have a app user profile and different kinds of tokens (access, refresh, push, password reset)
-		assertUserAndRelatedData(ctx, s, t, fixtures.User1.ID, true)
+		assertUserAndRelatedData(ctx, s, t, fix.User1.ID, true)
 
 		payload := test.GenericPayload{
 			"currentPassword": test.PlainTestUserPassword,
 		}
 
-		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", payload, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
 		require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		// expect the user and all related data to be deleted
-		assertUserAndRelatedData(ctx, s, t, fixtures.User1.ID, false)
+		assertUserAndRelatedData(ctx, s, t, fix.User1.ID, false)
 	})
 }
 
 func TestDeleteUserAccountCurrentPasswordWrong(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := test.Fixtures()
 
 		payload := test.GenericPayload{
 			"currentPassword": "wrongpassword",
 		}
 
-		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", payload, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", payload, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
 		test.RequireHTTPError(t, res, httperrors.NewFromEcho(echo.ErrUnauthorized))
 	})
 }
 
 func TestDeleteUserAccountMissingCurrentPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := test.Fixtures()
 
-		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", nil, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", nil, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
 		require.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 	})
 }
@@ -91,5 +93,41 @@ func TestDeleteUserAccountNoAuth(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", nil, nil)
 		test.RequireHTTPError(t, res, httperrors.NewFromEcho(echo.ErrUnauthorized))
+	})
+}
+
+func TestDeleteUserAccountUserNotActive(t *testing.T) {
+	test.WithTestServer(t, func(s *api.Server) {
+		fix := test.Fixtures()
+		ctx := context.Background()
+
+		fix.User1.IsActive = false
+		_, err := fix.User1.Update(ctx, s.DB, boil.Whitelist(models.UserColumns.IsActive))
+		require.NoError(t, err)
+
+		payload := test.GenericPayload{
+			"currentPassword": "somepassword",
+		}
+
+		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", payload, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
+		test.RequireHTTPError(t, res, httperrors.ErrForbiddenUserDeactivated)
+	})
+}
+
+func TestDeleteUserAccountUserNotLocal(t *testing.T) {
+	test.WithTestServer(t, func(s *api.Server) {
+		fix := test.Fixtures()
+		ctx := context.Background()
+
+		fix.User1.Password = null.String{}
+		_, err := fix.User1.Update(ctx, s.DB, boil.Whitelist(models.UserColumns.Password))
+		require.NoError(t, err)
+
+		payload := test.GenericPayload{
+			"currentPassword": "wrongpassword",
+		}
+
+		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", payload, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
+		test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
 	})
 }

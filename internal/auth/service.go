@@ -480,9 +480,14 @@ func (s *Service) Register(ctx context.Context, request dto.RegisterRequest) (dt
 func (s *Service) DeleteUserAccount(ctx context.Context, request dto.DeleteUserAccountRequest) error {
 	log := util.LogFromContext(ctx)
 
+	if !request.User.IsActive {
+		log.Debug().Msg("User is deactivated, rejecting deletion")
+		return httperrors.ErrForbiddenUserDeactivated
+	}
+
 	if !request.User.PasswordHash.Valid {
-		log.Debug().Msg("User is missing password, forbidding authentication")
-		return echo.ErrUnauthorized
+		log.Debug().Msg("Failed to delete user account, user is missing password")
+		return httperrors.ErrForbiddenNotLocalUser
 	}
 
 	match, err := hashing.ComparePasswordAndHash(request.CurrentPassword, request.User.PasswordHash.String)
