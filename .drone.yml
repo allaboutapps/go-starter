@@ -112,7 +112,7 @@ pipeline:
 
   "database connection":
     group: build
-    image: postgres:12.4-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
+    image: postgres:17.4-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
     commands:
       # wait for postgres service to become available
       - |
@@ -402,6 +402,11 @@ pipeline:
     mgmt_git_email: infrastructure+drone@allaboutapps.at
     namespace: allaboutapps-go-starter-dev
     mgmt_deployment_yaml: namespaces/allaboutapps-go-starter-dev/app.deployment.yaml
+    skip_live_update: true
+    kubernetes_cluster: a3cloud-dev
+    # pre-sync migration job
+    job: pre-sync-migration
+    mgmt_job_yaml: namespaces/allaboutapps-go-starter-dev/application.yaml
     when:
       repo: AW/go-starter
       branch: [master, mr/a3cloud, mr/liveness-probing]
@@ -419,7 +424,7 @@ services:
       - "env | sort"
 
   "postgres":
-    image: postgres:12.4-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
+    image: postgres:17.4-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
     environment:
       POSTGRES_DB: *PGDATABASE
       POSTGRES_USER: *PGUSER

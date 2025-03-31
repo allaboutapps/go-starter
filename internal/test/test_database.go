@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	dbutil "allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/allaboutapps/integresql-client-go"
@@ -31,7 +32,7 @@ var (
 
 	// we will compute a db template hash over the following dirs/files
 	migDir           = config.DatabaseMigrationFolder
-	fixFile          = filepath.Join(pUtil.GetProjectRootDir(), "/internal/test/fixtures.go")
+	fixFile          = filepath.Join(pUtil.GetProjectRootDir(), "/internal/test/fixtures/fixtures.go")
 	selfFile         = filepath.Join(pUtil.GetProjectRootDir(), "/internal/test/test_database.go")
 	defaultPoolPaths = []string{migDir, fixFile, selfFile}
 )
@@ -313,7 +314,7 @@ func ApplyMigrations(t *testing.T, db *sql.DB) (countMigrations int, err error) 
 func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixtures int, err error) {
 	t.Helper()
 
-	inserts := Inserts()
+	inserts := fixtures.Inserts()
 
 	// insert test fixtures in an auto-managed db transaction
 	err = dbutil.WithTransaction(ctx, db, func(tx boil.ContextExecutor) error {

@@ -24,6 +24,7 @@ func Init(s *api.Server) error {
 	s.Echo.Debug = s.Config.Echo.Debug
 	s.Echo.HideBanner = true
 	s.Echo.Logger.SetOutput(&echoLogger{level: s.Config.Logger.RequestLevel, log: log.With().Str("component", "echo").Logger()})
+	echo.NotFoundHandler = NotFoundHandler(s.Config)
 
 	s.Echo.HTTPErrorHandler = HTTPErrorHandlerWithConfig(HTTPErrorHandlerConfig{
 		HideInternalServerErrorDetails: s.Config.Echo.HideInternalServerErrorDetails,

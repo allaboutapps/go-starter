@@ -10,6 +10,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/test/mocks"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 
@@ -296,9 +297,9 @@ func TestSaveResponseAndValidate(t *testing.T) {
 	}
 
 	test.WithTestServer(t, func(s *api.Server) {
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
-		res := test.PerformRequest(t, s, "GET", "/api/v1/auth/userinfo", nil, test.HeadersWithAuth(t, fixtures.User1AccessToken1.Token))
+		res := test.PerformRequest(t, s, "GET", "/api/v1/auth/userinfo", nil, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 		var response apitypes.GetUserInfoResponse

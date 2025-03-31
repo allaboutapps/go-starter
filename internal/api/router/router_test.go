@@ -10,6 +10,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/metrics/users"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -99,5 +100,29 @@ func TestMetricsDisabled(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		res := test.PerformRequest(t, s, "GET", "/metrics", nil, nil)
 		require.Equal(t, http.StatusNotFound, res.Result().StatusCode)
+	})
+}
+
+func TestNotFound(t *testing.T) {
+	test.WithTestServer(t, func(s *api.Server) {
+		t.Run("AcceptApplicationJSON", func(t *testing.T) {
+			headers := http.Header{}
+			headers.Set(echo.HeaderAccept, echo.MIMEApplicationJSON)
+
+			res := test.PerformRequest(t, s, "GET", "/api/v1/unknown-path", nil, headers)
+			require.Equal(t, http.StatusNotFound, res.Result().StatusCode)
+
+			test.Snapshoter.Save(t, res.Body.String())
+		})
+
+		t.Run("AcceptTextHTML", func(t *testing.T) {
+			headers := http.Header{}
+			headers.Set(echo.HeaderAccept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+
+			res := test.PerformRequest(t, s, "GET", "/api/v1/unknown-path", nil, headers)
+			require.Equal(t, http.StatusNotFound, res.Result().StatusCode)
+
+			test.Snapshoter.Save(t, res.Body.String())
+		})
 	})
 }

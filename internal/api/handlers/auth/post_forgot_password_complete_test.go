@@ -11,6 +11,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,10 +22,10 @@ import (
 func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
-			UserID:     fixtures.User1.ID,
+			UserID:     fix.User1.ID,
 			ValidUntil: s.Clock.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
 		}
 
@@ -44,34 +45,34 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 		test.ParseResponseAndValidate(t, res, &response)
 
 		assert.NotEmpty(t, response.AccessToken)
-		assert.NotEqual(t, fixtures.User1AccessToken1.Token, response.AccessToken)
+		assert.NotEqual(t, fix.User1AccessToken1.Token, response.AccessToken)
 		assert.NotEmpty(t, response.RefreshToken)
-		assert.NotEqual(t, fixtures.User1RefreshToken1.Token, *response.RefreshToken)
+		assert.NotEqual(t, fix.User1RefreshToken1.Token, *response.RefreshToken)
 		test.Snapshoter.Skip([]string{"AccessToken", "RefreshToken"}).Save(t, response)
 
-		err = fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		err = fix.User1AccessToken1.Reload(ctx, s.DB)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
-		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 
-		cnt, err := fixtures.User1.AccessTokens().Count(ctx, s.DB)
+		cnt, err := fix.User1.AccessTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		cnt, err = fixtures.User1.RefreshTokens().Count(ctx, s.DB)
+		cnt, err = fix.User1.RefreshTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		err = fixtures.User1.Reload(ctx, s.DB)
+		err = fix.User1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		assert.NotEqual(t, test.HashedTestUserPassword, fixtures.User1.Password.String)
+		assert.NotEqual(t, fixtures.HashedTestUserPassword, fix.User1.Password.String)
 	})
 }
 
 func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
@@ -82,32 +83,32 @@ func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
 		test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
 
-		err := fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		err := fix.User1AccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
 
-		cnt, err := fixtures.User1.AccessTokens().Count(ctx, s.DB)
+		cnt, err := fix.User1.AccessTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		cnt, err = fixtures.User1.RefreshTokens().Count(ctx, s.DB)
+		cnt, err = fix.User1.RefreshTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		err = fixtures.User1.Reload(ctx, s.DB)
+		err = fix.User1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		assert.Equal(t, test.HashedTestUserPassword, fixtures.User1.Password.String)
+		assert.Equal(t, fixtures.HashedTestUserPassword, fix.User1.Password.String)
 	})
 }
 
 func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
-			UserID:     fixtures.User1.ID,
+			UserID:     fix.User1.ID,
 			ValidUntil: s.Clock.Now().Add(time.Minute * -10),
 		}
 
@@ -123,32 +124,32 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
 		test.RequireHTTPError(t, res, httperrors.ErrConflictTokenExpired)
 
-		err = fixtures.User1AccessToken1.Reload(ctx, s.DB)
+		err = fix.User1AccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		err = fixtures.User1RefreshToken1.Reload(ctx, s.DB)
+		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
 
-		cnt, err := fixtures.User1.AccessTokens().Count(ctx, s.DB)
+		cnt, err := fix.User1.AccessTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		cnt, err = fixtures.User1.RefreshTokens().Count(ctx, s.DB)
+		cnt, err = fix.User1.RefreshTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		err = fixtures.User1.Reload(ctx, s.DB)
+		err = fix.User1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		assert.Equal(t, test.HashedTestUserPassword, fixtures.User1.Password.String)
+		assert.Equal(t, fixtures.HashedTestUserPassword, fix.User1.Password.String)
 	})
 }
 
 func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
-			UserID:     fixtures.UserDeactivated.ID,
+			UserID:     fix.UserDeactivated.ID,
 			ValidUntil: s.Clock.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
 		}
 
@@ -164,32 +165,32 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
 		test.RequireHTTPError(t, res, httperrors.ErrForbiddenUserDeactivated)
 
-		err = fixtures.UserDeactivatedAccessToken1.Reload(ctx, s.DB)
+		err = fix.UserDeactivatedAccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		err = fixtures.UserDeactivatedRefreshToken1.Reload(ctx, s.DB)
+		err = fix.UserDeactivatedRefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
 
-		cnt, err := fixtures.UserDeactivated.AccessTokens().Count(ctx, s.DB)
+		cnt, err := fix.UserDeactivated.AccessTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		cnt, err = fixtures.UserDeactivated.RefreshTokens().Count(ctx, s.DB)
+		cnt, err = fix.UserDeactivated.RefreshTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		err = fixtures.UserDeactivated.Reload(ctx, s.DB)
+		err = fix.UserDeactivated.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		assert.Equal(t, test.HashedTestUserPassword, fixtures.UserDeactivated.Password.String)
+		assert.Equal(t, fixtures.HashedTestUserPassword, fix.UserDeactivated.Password.String)
 	})
 }
 
 func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fixtures := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
-			UserID:     fixtures.User2.ID,
+			UserID:     fix.User2.ID,
 			ValidUntil: s.Clock.Now().Add(s.Config.Auth.PasswordResetTokenValidity),
 		}
 
@@ -202,30 +203,30 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 			"password": newPassword,
 		}
 
-		fixtures.User2.Password = null.String{}
-		rowsAff, err := fixtures.User2.Update(context.Background(), s.DB, boil.Infer())
+		fix.User2.Password = null.String{}
+		rowsAff, err := fix.User2.Update(context.Background(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
 		test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
 
-		err = fixtures.User2AccessToken1.Reload(ctx, s.DB)
+		err = fix.User2AccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		err = fixtures.User2RefreshToken1.Reload(ctx, s.DB)
+		err = fix.User2RefreshToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)
 
-		cnt, err := fixtures.User2.AccessTokens().Count(ctx, s.DB)
+		cnt, err := fix.User2.AccessTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		cnt, err = fixtures.User2.RefreshTokens().Count(ctx, s.DB)
+		cnt, err = fix.User2.RefreshTokens().Count(ctx, s.DB)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
-		err = fixtures.User2.Reload(ctx, s.DB)
+		err = fix.User2.Reload(ctx, s.DB)
 		assert.NoError(t, err)
-		assert.False(t, fixtures.User2.Password.Valid)
+		assert.False(t, fix.User2.Password.Valid)
 	})
 }
 
