@@ -93,7 +93,14 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 		t.Fatalf("Failed to init local service: %v", err)
 	}
 
-	router.Init(s)
+	if err := s.InitMetricsService(); err != nil {
+		t.Fatalf("Failed to init metrics ervice: %v", err)
+	}
+
+	err := router.Init(s)
+	if err != nil {
+		t.Fatalf("Failed to init router: %v", err)
+	}
 
 	closure(s)
 

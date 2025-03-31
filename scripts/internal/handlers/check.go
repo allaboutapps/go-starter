@@ -21,7 +21,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func CheckHandlers(printAll bool) {
+func CheckHandlers(printAll bool) error {
 	// https://golangbyexample.com/print-output-text-color-console/
 	// https://gist.github.com/ik5/d8ecde700972d4378d87
 	warningLine := "\033[1;33m%s\033[0m\n"
@@ -33,7 +33,10 @@ func CheckHandlers(printAll bool) {
 	defaultConfig.Echo.ListenAddress = ":0"
 
 	s := api.NewServer(defaultConfig)
-	router.Init(s)
+	err := router.Init(s)
+	if err != nil {
+		return err
+	}
 
 	// swaggerspec vs routes
 	routes := s.Router.Routes
@@ -119,4 +122,6 @@ func CheckHandlers(printAll bool) {
 	}
 
 	wg.Wait()
+
+	return nil
 }
