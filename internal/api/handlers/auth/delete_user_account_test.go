@@ -9,6 +9,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -50,13 +51,13 @@ func assertUserAndRelatedData(ctx context.Context, s *api.Server, t *testing.T, 
 func TestDeleteUserAccount(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := context.Background()
-		fix := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		// expect the user to have a app user profile and different kinds of tokens (access, refresh, push, password reset)
 		assertUserAndRelatedData(ctx, s, t, fix.User1.ID, true)
 
 		payload := test.GenericPayload{
-			"currentPassword": test.PlainTestUserPassword,
+			"currentPassword": fixtures.PlainTestUserPassword,
 		}
 
 		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", payload, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
@@ -69,7 +70,7 @@ func TestDeleteUserAccount(t *testing.T) {
 
 func TestDeleteUserAccountCurrentPasswordWrong(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fix := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		payload := test.GenericPayload{
 			"currentPassword": "wrongpassword",
@@ -82,7 +83,7 @@ func TestDeleteUserAccountCurrentPasswordWrong(t *testing.T) {
 
 func TestDeleteUserAccountMissingCurrentPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fix := test.Fixtures()
+		fix := fixtures.Fixtures()
 
 		res := test.PerformRequest(t, s, "DELETE", "/api/v1/auth/account", nil, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
 		require.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
@@ -98,7 +99,7 @@ func TestDeleteUserAccountNoAuth(t *testing.T) {
 
 func TestDeleteUserAccountUserNotActive(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fix := test.Fixtures()
+		fix := fixtures.Fixtures()
 		ctx := context.Background()
 
 		fix.User1.IsActive = false
@@ -116,7 +117,7 @@ func TestDeleteUserAccountUserNotActive(t *testing.T) {
 
 func TestDeleteUserAccountUserNotLocal(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		fix := test.Fixtures()
+		fix := fixtures.Fixtures()
 		ctx := context.Background()
 
 		fix.User1.Password = null.String{}
