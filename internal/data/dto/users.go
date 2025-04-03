@@ -137,3 +137,8 @@ type RegisterRequest struct {
 	Username Username
 	Password string
 }
+
+type DeleteUserAccountRequest struct {
+	User            User
+	CurrentPassword string
+}
