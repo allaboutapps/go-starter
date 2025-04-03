@@ -50,7 +50,7 @@ func (s *Service) GetAppUserProfileIfExists(ctx context.Context, userID string) 
 		return nil, err
 	}
 
-	return mapper.LocalAppUserProfileToDTOPtr(aup).Ptr(), nil
+	return mapper.LocalAppUserProfileToDTO(aup).Ptr(), nil
 }
 
 func (s *Service) UpdatePassword(ctx context.Context, request dto.UpdatePasswordRequest) (dto.LoginResult, error) {

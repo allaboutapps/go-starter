@@ -5,7 +5,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/models"
 )
 
-func LocalAppUserProfileToDTOPtr(appUserProfile *models.AppUserProfile) dto.AppUserProfile {
+func LocalAppUserProfileToDTO(appUserProfile *models.AppUserProfile) dto.AppUserProfile {
 	return dto.AppUserProfile{
 		UserID:          appUserProfile.UserID,
 		LegalAcceptedAt: appUserProfile.LegalAcceptedAt,
@@ -14,7 +14,7 @@ func LocalAppUserProfileToDTOPtr(appUserProfile *models.AppUserProfile) dto.AppU
 }
 
 func LocalUserToDTO(user *models.User) dto.User {
-	return dto.User{
+	result := dto.User{
 		ID:                  user.ID,
 		Username:            user.Username,
 		IsActive:            user.IsActive,
@@ -23,4 +23,10 @@ func LocalUserToDTO(user *models.User) dto.User {
 		UpdatedAt:           user.UpdatedAt,
 		PasswordHash:        user.Password,
 	}
+
+	if user.R != nil && user.R.AppUserProfile != nil {
+		result.Profile = LocalAppUserProfileToDTO(user.R.AppUserProfile).Ptr()
+	}
+
+	return result
 }

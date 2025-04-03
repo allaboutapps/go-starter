@@ -161,7 +161,7 @@ type AuthTokenValidator func(c echo.Context, config AuthConfig, token string) (a
 func DefaultAuthTokenValidator(c echo.Context, config AuthConfig, token string) (auth.Result, error) {
 	accessToken, err := models.AccessTokens(
 		models.AccessTokenWhere.Token.EQ(token),
-		qm.Load(models.AccessTokenRels.User),
+		qm.Load(qm.Rels(models.AccessTokenRels.User, models.UserRels.AppUserProfile)),
 	).One(c.Request().Context(), config.S.DB)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
