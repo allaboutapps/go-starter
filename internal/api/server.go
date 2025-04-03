@@ -8,10 +8,14 @@ import (
 	"net/http"
 	"time"
 
+	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/data/dto"
+	"allaboutapps.dev/aw/go-starter/internal/data/local"
 	"allaboutapps.dev/aw/go-starter/internal/i18n"
 	"allaboutapps.dev/aw/go-starter/internal/mailer"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
+	"allaboutapps.dev/aw/go-starter/internal/metrics"
 	"allaboutapps.dev/aw/go-starter/internal/push"
 	"allaboutapps.dev/aw/go-starter/internal/push/provider"
 	"github.com/dropbox/godropbox/time2"
@@ -31,14 +35,29 @@ type Router struct {
 }
 
 type Server struct {
-	Config config.Server
-	DB     *sql.DB
-	Echo   *echo.Echo
-	Router *Router
-	Mailer *mailer.Mailer
-	Push   *push.Service
-	I18n   *i18n.Service
-	Clock  time2.Clock
+	Config  config.Server
+	DB      *sql.DB
+	Echo    *echo.Echo
+	Router  *Router
+	Mailer  *mailer.Mailer
+	Push    *push.Service
+	I18n    *i18n.Service
+	Clock   time2.Clock
+	Auth    AuthService
+	Local   *local.Service
+	Metrics *metrics.Service
+}
+
+type AuthService interface {
+	GetAppUserProfileIfExists(context.Context, string) (*dto.AppUserProfile, error)
+	InitPasswordReset(context.Context, dto.InitPasswordResetRequest) (dto.InitPasswordResetResult, error)
+	Login(context.Context, dto.LoginRequest) (dto.LoginResult, error)
+	Logout(context.Context, dto.LogoutRequest) error
+	Refresh(context.Context, dto.RefreshRequest) (dto.LoginResult, error)
+	Register(context.Context, dto.RegisterRequest) (dto.LoginResult, error)
+	DeleteUserAccount(context.Context, dto.DeleteUserAccountRequest) error
+	ResetPassword(context.Context, dto.ResetPasswordRequest) (dto.LoginResult, error)
+	UpdatePassword(context.Context, dto.UpdatePasswordRequest) (dto.LoginResult, error)
 }
 
 func NewServer(config config.Server) *Server {
@@ -50,6 +69,9 @@ func NewServer(config config.Server) *Server {
 		Mailer: nil,
 		Push:   nil,
 		I18n:   nil,
+		Clock:  nil,
+		Auth:   nil,
+		Local:  nil,
 	}
 
 	return s
@@ -61,7 +83,10 @@ func (s *Server) Ready() bool {
 		s.Router != nil &&
 		s.Mailer != nil &&
 		s.Push != nil &&
-		s.I18n != nil
+		s.I18n != nil &&
+		s.Clock != nil &&
+		s.Auth != nil &&
+		s.Local != nil
 }
 
 func (s *Server) InitCmd() *Server {
@@ -88,7 +113,41 @@ func (s *Server) InitCmd() *Server {
 		log.Fatal().Err(err).Msg("Failed to initialize i18n service")
 	}
 
+	if err := s.InitAuthService(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize auth service")
+	}
+
+	if err := s.InitLocalService(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize local service")
+	}
+
+	if err := s.InitMetricsService(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize metrics service")
+	}
+
 	return s
+}
+
+func (s *Server) InitAuthService() error {
+	s.Auth = auth.NewService(s.Config, s.DB, s.Clock)
+
+	return nil
+}
+
+func (s *Server) InitLocalService() error {
+	s.Local = local.NewService(s.Config, s.DB, s.Clock)
+
+	return nil
+}
+
+func (s *Server) InitMetricsService() error {
+	var err error
+	s.Metrics, err = metrics.New(s.Config, s.DB)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Server) InitDB(ctx context.Context) error {

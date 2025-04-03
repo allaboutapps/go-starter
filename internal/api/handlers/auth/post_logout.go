@@ -1,18 +1,15 @@
 package auth
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
-	"allaboutapps.dev/aw/go-starter/internal/api/auth"
-	"allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/auth"
+	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"allaboutapps.dev/aw/go-starter/internal/util/db"
 	"github.com/labstack/echo/v4"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/null/v8"
 )
 
 func PostLogoutRoute(s *api.Server) *echo.Route {
@@ -29,39 +26,19 @@ func postLogoutHandler(s *api.Server) echo.HandlerFunc {
 			return err
 		}
 
-		token := auth.AccessTokenFromEchoContext(c)
-
-		if err := db.WithTransaction(ctx, s.DB, func(tx boil.ContextExecutor) error {
-			if _, err := models.AccessTokens(models.AccessTokenWhere.Token.EQ(*token)).DeleteAll(ctx, tx); err != nil {
-				log.Debug().Err(err).Msg("Failed to delete access token")
-				return err
-			}
-
-			if len(body.RefreshToken.String()) > 0 {
-				refreshToken, err := models.FindRefreshToken(ctx, tx, body.RefreshToken.String())
-				if err != nil {
-					if errors.Is(err, sql.ErrNoRows) {
-						log.Debug().Msg("Did not find provided refresh token, ignoring")
-						return nil
-					}
-
-					log.Debug().Err(err).Msg("Failed to load refresh token")
-					return err
-				}
-
-				if _, err := refreshToken.Delete(ctx, tx); err != nil {
-					log.Debug().Err(err).Msg("Failed to delete refresh token")
-					return err
-				}
-			}
-
-			return nil
-		}); err != nil {
-			log.Debug().Err(err).Msg("Failed to process logout")
-			return err
+		request := dto.LogoutRequest{
+			AccessToken: *auth.AccessTokenFromEchoContext(c),
 		}
 
-		log.Debug().Msg("Successfully logged out user")
+		if len(body.RefreshToken.String()) > 0 {
+			request.RefreshToken = null.StringFrom(body.RefreshToken.String())
+		}
+
+		err := s.Auth.Logout(ctx, request)
+		if err != nil {
+			log.Debug().Err(err).Msg("Failed to logout user")
+			return err
+		}
 
 		return c.NoContent(http.StatusNoContent)
 	}

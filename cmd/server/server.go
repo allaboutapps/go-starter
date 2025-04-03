@@ -79,7 +79,10 @@ func runServer(flags Flags) {
 			}
 		}
 
-		router.Init(s)
+		err := router.Init(s)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to initialize router")
+		}
 
 		go func() {
 			if err := s.Start(); err != nil {

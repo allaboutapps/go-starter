@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/types"
@@ -218,6 +220,30 @@ func ParseFileUpload(c echo.Context, formNameFile string, allowedMIMETypes []str
 	}
 
 	return fh, file, mime, nil
+}
+
+func StreamFile(c echo.Context, code int, mediaType string, fileName string, r io.ReadCloser) error {
+	formattedMediaType := mime.FormatMediaType("attachment",
+		map[string]string{
+			"filename": fileName,
+		},
+	)
+
+	c.Response().Header().Set(echo.HeaderContentDisposition, formattedMediaType)
+	SetOrAppendHeader(c.Response().Header(), echo.HeaderAccessControlExposeHeaders, echo.HeaderContentDisposition)
+
+	defer r.Close()
+	return c.Stream(code, mediaType, r)
+}
+
+func SetOrAppendHeader(header http.Header, key string, values ...string) {
+	headerSet := header.Get(key)
+	headerValue := strings.Join(values, ", ")
+	if headerSet == "" {
+		header.Add(key, headerValue)
+	} else {
+		header.Set(key, strings.Join([]string{headerSet, headerValue}, ", "))
+	}
 }
 
 func restoreBindAndValidate(c echo.Context, reqBody []byte, v runtime.Validatable) error {

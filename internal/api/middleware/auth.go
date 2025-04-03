@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
-	"allaboutapps.dev/aw/go-starter/internal/api/auth"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
+	"allaboutapps.dev/aw/go-starter/internal/auth"
+	"allaboutapps.dev/aw/go-starter/internal/data/dto"
+	"allaboutapps.dev/aw/go-starter/internal/data/mapper"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/strfmt"
@@ -22,7 +24,6 @@ import (
 var (
 	ErrBadRequestMalformedToken                = httperrors.NewHTTPError(http.StatusBadRequest, "MALFORMED_TOKEN", "Auth token is malformed")
 	ErrUnauthorizedLastAuthenticatedAtExceeded = httperrors.NewHTTPError(http.StatusUnauthorized, "LAST_AUTHENTICATED_AT_EXCEEDED", "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
-	ErrForbiddenUserDeactivated                = httperrors.NewHTTPError(http.StatusForbidden, "USER_DEACTIVATED", "User account is deactivated")
 	ErrForbiddenMissingScopes                  = httperrors.NewHTTPError(http.StatusForbidden, "MISSING_SCOPES", "User is missing required scopes")
 	ErrAuthTokenValidationFailed               = errors.New("auth token validation failed")
 )
@@ -155,26 +156,26 @@ func DefaultAuthTokenFormatValidator(token string) bool {
 	return strfmt.IsUUID4(token)
 }
 
-type AuthTokenValidator func(c echo.Context, config AuthConfig, token string) (auth.AuthenticationResult, error)
+type AuthTokenValidator func(c echo.Context, config AuthConfig, token string) (auth.Result, error)
 
-func DefaultAuthTokenValidator(c echo.Context, config AuthConfig, token string) (auth.AuthenticationResult, error) {
+func DefaultAuthTokenValidator(c echo.Context, config AuthConfig, token string) (auth.Result, error) {
 	accessToken, err := models.AccessTokens(
 		models.AccessTokenWhere.Token.EQ(token),
-		qm.Load(models.AccessTokenRels.User),
+		qm.Load(qm.Rels(models.AccessTokenRels.User, models.UserRels.AppUserProfile)),
 	).One(c.Request().Context(), config.S.DB)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			log.Trace().Err(err).Msg("Access token not found in database")
-			return auth.AuthenticationResult{}, ErrAuthTokenValidationFailed
+			return auth.Result{}, ErrAuthTokenValidationFailed
 		}
 
 		log.Error().Err(err).Msg("Failed to query for access token in database, aborting request")
-		return auth.AuthenticationResult{}, echo.ErrInternalServerError
+		return auth.Result{}, echo.ErrInternalServerError
 	}
 
-	return auth.AuthenticationResult{
+	return auth.Result{
 		Token:      accessToken.Token,
-		User:       accessToken.R.User,
+		User:       mapper.LocalUserToDTO(accessToken.R.User).Ptr(),
 		ValidUntil: accessToken.ValidUntil,
 	}, nil
 }
@@ -189,7 +190,7 @@ var (
 		Skipper:         middleware.DefaultSkipper,
 		FormatValidator: DefaultAuthTokenFormatValidator,
 		TokenValidator:  DefaultAuthTokenValidator,
-		Scopes:          []string{auth.AuthScopeApp.String()},
+		Scopes:          []string{auth.ScopeApp.String()},
 	}
 )
 
@@ -206,7 +207,7 @@ type AuthConfig struct {
 	Scopes          []string                 // List of scopes required to access endpoint (default: none required)
 }
 
-func (c AuthConfig) CheckLastAuthenticatedAt(user *models.User) bool {
+func (c AuthConfig) CheckLastAuthenticatedAt(user *dto.User) bool {
 	if c.Mode != AuthModeSecure {
 		return true
 	}
@@ -218,7 +219,7 @@ func (c AuthConfig) CheckLastAuthenticatedAt(user *models.User) bool {
 	return time.Since(user.LastAuthenticatedAt.Time).Seconds() <= c.S.Config.Auth.LastAuthenticatedAtThreshold.Seconds()
 }
 
-func (c AuthConfig) CheckUserScopes(user *models.User) bool {
+func (c AuthConfig) CheckUserScopes(user *dto.User) bool {
 	if len(c.Scopes) == 0 {
 		return true
 	}
@@ -361,7 +362,7 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 			// ! User has been explicitly deactivated - we do not allow access here, even with AuthModeTry
 			if !user.IsActive {
 				log.Trace().Str("user_id", user.ID).Msg("User is deactivated, rejecting request")
-				return ErrForbiddenUserDeactivated
+				return httperrors.ErrForbiddenUserDeactivated
 			}
 
 			if !config.CheckLastAuthenticatedAt(user) {

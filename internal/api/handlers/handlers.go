@@ -12,6 +12,7 @@ import (
 func AttachAllRoutes(s *api.Server) {
 	// attach our routes
 	s.Router.Routes = []*echo.Route{
+		auth.DeleteUserAccountRoute(s),
 		auth.GetUserInfoRoute(s),
 		auth.PostChangePasswordRoute(s),
 		auth.PostForgotPasswordCompleteRoute(s),
@@ -24,7 +25,6 @@ func AttachAllRoutes(s *api.Server) {
 		common.GetReadyRoute(s),
 		common.GetSwaggerRoute(s),
 		common.GetVersionRoute(s),
-		push.GetPushTestRoute(s),
-		push.PostUpdatePushTokenRoute(s),
+		push.PutUpdatePushTokenRoute(s),
 	}
 }

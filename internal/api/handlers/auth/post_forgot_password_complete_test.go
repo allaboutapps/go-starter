@@ -9,7 +9,6 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
-	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
@@ -164,7 +163,7 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 		}
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/forgot-password/complete", payload, nil)
-		test.RequireHTTPError(t, res, middleware.ErrForbiddenUserDeactivated)
+		test.RequireHTTPError(t, res, httperrors.ErrForbiddenUserDeactivated)
 
 		err = fix.UserDeactivatedAccessToken1.Reload(ctx, s.DB)
 		assert.NoError(t, err)

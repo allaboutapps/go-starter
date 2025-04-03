@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	ErrForbiddenUserDeactivated  = NewHTTPError(http.StatusForbidden, "USER_DEACTIVATED", "User account is deactivated")
 	ErrBadRequestInvalidPassword = NewHTTPErrorWithDetail(http.StatusBadRequest, "INVALID_PASSWORD", "The password provided was invalid", "Password was either too weak or did not match other criteria")
 	ErrForbiddenNotLocalUser     = NewHTTPError(http.StatusForbidden, "NOT_LOCAL_USER", "User account is not valid for local authentication")
 	ErrNotFoundTokenNotFound     = NewHTTPError(http.StatusNotFound, "TOKEN_NOT_FOUND", "Provided token was not found")

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
-	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
+	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"

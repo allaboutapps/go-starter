@@ -3,7 +3,7 @@ package auth
 type Scope string
 
 const (
-	AuthScopeApp Scope = "app"
+	ScopeApp Scope = "app"
 )
 
 func (s Scope) String() string {

@@ -6,7 +6,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
-	"allaboutapps.dev/aw/go-starter/internal/data"
+	data "allaboutapps.dev/aw/go-starter/internal/data/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/command"
 	dbutil "allaboutapps.dev/aw/go-starter/internal/util/db"

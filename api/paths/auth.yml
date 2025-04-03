@@ -214,3 +214,27 @@ paths:
           description: GetUserInfoResponse
           schema:
             $ref: "../definitions/auth.yml#/definitions/GetUserInfoResponse"
+  /api/v1/auth/account:
+    delete:
+      summary: Delete user account
+      description: |-
+        Completely delete the user account. This action is irreversible and therefore requires additional password authentication.
+      security:
+        - Bearer: []
+      operationId: DeleteUserAccountRoute
+      parameters:
+        - name: Payload
+          in: body
+          schema:
+            $ref: ../definitions/auth.yml#/definitions/DeleteUserAccountPayload
+      tags:
+        - auth
+      responses:
+        "204":
+          description: NoContent
+        "400":
+          $ref: "#/responses/InvalidPasswordResponse"
+        "401":
+          $ref: "#/responses/AuthUnauthorizedResponse"
+        "403":
+          $ref: "#/responses/AuthForbiddenResponse"
