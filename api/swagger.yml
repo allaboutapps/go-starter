@@ -280,19 +280,6 @@ paths:
           description: GetUserInfoResponse
           schema:
             $ref: '#/definitions/getUserInfoResponse'
-  /api/v1/push/test:
-    get:
-      security:
-      - Bearer: []
-      description: Sends a test push message to the current user
-      tags:
-      - test
-      summary: Send test push
-      operationId: GetPushTestRoute
-      deprecated: true
-      responses:
-        "200":
-          description: OK
   /api/v1/push/token:
     put:
       security:

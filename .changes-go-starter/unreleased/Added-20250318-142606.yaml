@@ -1,0 +1,3 @@
+kind: Added
+body: Add helper for streaming a file with a correctly encoded content disposition header to allow utf-8 filenames
+time: 2025-03-18T14:26:06.458180837Z

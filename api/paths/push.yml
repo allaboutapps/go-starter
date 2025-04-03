@@ -31,16 +31,3 @@ paths:
           description: PublicHTTPError, type `PUSH_TOKEN_ALREADY_EXISTS`
           schema:
             "$ref": "../definitions/errors.yml#/definitions/PublicHTTPError"
-  /api/v1/push/test:
-    get:
-      summary: Send test push
-      description: Sends a test push message to the current user
-      security:
-        - Bearer: []
-      operationId: GetPushTestRoute
-      tags:
-        - test
-      responses:
-        "200":
-          description: OK
-      deprecated: true
