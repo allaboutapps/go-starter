@@ -1,0 +1,3 @@
+kind: Changed
+body: Bump Github action workflow `actions/checkout` from `v2.3.4` to `v4`
+time: 2025-04-04T06:46:11.690151042Z
