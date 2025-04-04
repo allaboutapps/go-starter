@@ -8,6 +8,10 @@
   - The latest `master` is considered **stable** and should be periodically merged into our customer projects.
 - Please follow the update process in *[I just want to update / upgrade my project!](https://github.com/allaboutapps/go-starter/wiki/FAQ#i-just-want-to-update--upgrade-my-project)*.
 
+## 25.04.1 - 2025-04-04
+### Changed
+* Bump Github action workflow `actions/checkout` from `v2.3.4` to `v4`
+
 ## 25.04.0 - 2025-04-04
 ### Added
 * Add helper for streaming a file with a correctly encoded content disposition header to allow utf-8 filenames
