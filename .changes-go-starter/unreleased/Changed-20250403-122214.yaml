@@ -1,3 +1,0 @@
-kind: Changed
-body: 'Update to `golang:1.24.2-bookworm` (requires `./docker-helper.sh --rebuild`)'
-time: 2025-04-03T12:22:14.102276954Z

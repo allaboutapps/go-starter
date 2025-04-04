@@ -1,3 +1,0 @@
-kind: Added
-body: 'Add custom not found handler for echo to show a HTML page if text/html is requested'
-time: 2025-03-19T12:05:05.799637228Z
