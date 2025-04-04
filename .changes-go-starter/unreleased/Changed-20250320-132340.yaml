@@ -1,3 +1,0 @@
-kind: Changed
-body: 'Move the test fixtures from `internal/test/` to a separate package in `internal/test/fixtures`. **BREAKING**: Existing changes to the fixtures need to be moved from `internal/test/` to `internal/test/fixtures` and imports need to be updated'
-time: 2025-03-20T13:23:40.004014739Z

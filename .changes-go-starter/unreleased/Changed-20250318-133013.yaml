@@ -1,3 +1,0 @@
-kind: Changed
-body: 'Move the application logic from the handlers to dedicated services. **BREAKING**: This might break existing applications that have custom changes to the handlers. The custom changes need to be reflected in the new services.'
-time: 2025-03-18T13:30:13.373509172Z

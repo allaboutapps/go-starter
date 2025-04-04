@@ -1,9 +1,0 @@
-kind: Changed
-body: |
-  Bump Postgres from `postgres:12.4-alpine` to `postgres:17.4-alpine`. See the official Postgres release notes for more details:
-    * https://www.postgresql.org/docs/release/13.0/
-    * https://www.postgresql.org/docs/release/14.0/
-    * https://www.postgresql.org/docs/release/15.0/
-    * https://www.postgresql.org/docs/release/16.0/
-    * https://www.postgresql.org/docs/release/17.0/
-time: 2025-03-19T08:04:10.046740967Z
