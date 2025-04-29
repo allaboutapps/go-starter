@@ -14,7 +14,7 @@ import (
 
 func TestWithServer(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		var testError = errors.New("test error")
 

@@ -1,7 +1,6 @@
 package fixtures_test
 
 import (
-	"context"
 	"database/sql"
 	"testing"
 
@@ -16,7 +15,7 @@ import (
 
 func TestFixturesReload(t *testing.T) {
 	test.WithTestDatabase(t, func(db *sql.DB) {
-		err := fixtures.Fixtures().User1.Reload(context.Background(), db)
+		err := fixtures.Fixtures().User1.Reload(t.Context(), db)
 
 		if err != nil {
 			t.Error("failed to reload")
@@ -38,7 +37,7 @@ func TestInsert(t *testing.T) {
 			Scopes:   []string{"app"},
 		}
 
-		err := userNew.Insert(context.Background(), db, boil.Infer())
+		err := userNew.Insert(t.Context(), db, boil.Infer())
 
 		if err != nil {
 			t.Error("failed to insert")
@@ -60,14 +59,14 @@ func TestUpdate(t *testing.T) {
 			t.Fatalf("names match!")
 		}
 
-		_, err := updatedUser1.Update(context.Background(), db, boil.Infer())
+		_, err := updatedUser1.Update(t.Context(), db, boil.Infer())
 
 		if err != nil {
 			t.Error("failed to update")
 		}
 
 		// Attention, this actually mutates our user1 fixture!!!
-		err = originalUser1.Reload(context.Background(), db)
+		err = originalUser1.Reload(t.Context(), db)
 
 		if err != nil {
 			t.Error("failed to reload")
@@ -87,7 +86,7 @@ func TestUpdate(t *testing.T) {
 		// ensure our fixture is the same again!
 		if originalUser1.Username != null.StringFrom("user1@example.com") {
 
-			err := originalUser1.Reload(context.Background(), db)
+			err := originalUser1.Reload(t.Context(), db)
 
 			if err != nil {
 				t.Error("failed to reload")

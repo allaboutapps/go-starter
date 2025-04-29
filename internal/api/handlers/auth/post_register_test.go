@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -22,7 +21,7 @@ import (
 
 func TestPostRegisterSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		now := time.Date(2025, 2, 5, 11, 42, 30, 0, time.UTC)
 		test.SetMockClock(t, s, now)
@@ -82,7 +81,7 @@ func TestPostRegisterSuccess(t *testing.T) {
 
 func TestPostRegisterSuccessLowercaseTrimWhitespaces(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		username := " USERNEW@example.com "
 		usernameLowerTrimmed := "usernew@example.com"
@@ -141,7 +140,7 @@ func TestPostRegisterSuccessLowercaseTrimWhitespaces(t *testing.T) {
 
 func TestPostRegisterAlreadyExists(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{

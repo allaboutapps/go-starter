@@ -1,7 +1,6 @@
 package push_test
 
 import (
-	"context"
 	"database/sql"
 	"testing"
 
@@ -18,7 +17,7 @@ import (
 
 func TestSendMessageSuccess(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		err := p.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
@@ -32,7 +31,7 @@ func TestSendMessageSuccess(t *testing.T) {
 
 func TestSendMessageSuccessWithGenericError(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		// provoke error from mock provider
@@ -47,7 +46,7 @@ func TestSendMessageSuccessWithGenericError(t *testing.T) {
 
 func TestSendMessageWithInvalidToken(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		user1InvalidPushToken := models.PushToken{
@@ -75,7 +74,7 @@ func TestSendMessageWithInvalidToken(t *testing.T) {
 func TestSendMessageWithNoProvider(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
 
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		p.ResetProviders()
@@ -92,7 +91,7 @@ func TestSendMessageWithNoProvider(t *testing.T) {
 
 func TestSendMessageWithMultipleProvider(t *testing.T) {
 	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		p.ResetProviders()

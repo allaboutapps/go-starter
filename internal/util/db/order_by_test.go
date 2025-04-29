@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"context"
 	"database/sql"
 	"testing"
 
@@ -19,7 +18,7 @@ import (
 
 func TestOrderBy(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		noUsername := models.User{

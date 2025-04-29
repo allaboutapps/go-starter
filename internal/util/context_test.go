@@ -12,7 +12,7 @@ import (
 type contextKey string
 
 func TestDetachContextWithCancel(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 
 	var key contextKey = "test"
 	val := 42
@@ -47,7 +47,7 @@ func TestDetachContextWithCancel(t *testing.T) {
 }
 
 func TestDetachContextWithDeadline(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	ctx, cancel := context.WithTimeout(t.Context(), time.Second*1)
 	defer cancel()
 
 	var key contextKey = "test"

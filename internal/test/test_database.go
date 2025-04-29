@@ -52,7 +52,7 @@ func init() {
 // WithTestDatabase returns an isolated test database based on the current migrations and fixtures.
 func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	WithTestDatabaseContext(ctx, t, closure)
 }
 
@@ -106,7 +106,7 @@ type DatabaseDumpConfig struct {
 // WithTestDatabaseFromDump returns an isolated test database based on a dump file.
 func WithTestDatabaseFromDump(t *testing.T, config DatabaseDumpConfig, closure func(db *sql.DB)) {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	WithTestDatabaseFromDumpContext(ctx, t, config, closure)
 }
 
@@ -171,7 +171,7 @@ func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, config D
 // WithTestDatabaseEmpty returns an isolated test database with no migrations applied or fixtures inserted.
 func WithTestDatabaseEmpty(t *testing.T, closure func(db *sql.DB)) {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	WithTestDatabaseEmptyContext(ctx, t, closure)
 }
 

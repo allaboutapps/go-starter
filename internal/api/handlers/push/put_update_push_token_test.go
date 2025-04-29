@@ -1,7 +1,6 @@
 package push_test
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"testing"
@@ -18,7 +17,7 @@ import (
 
 func TestPutUpdatePushTokenSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		//nolint:gosec
@@ -44,7 +43,7 @@ func TestPutUpdatePushTokenSuccess(t *testing.T) {
 
 func TestPutUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		//nolint:gosec
@@ -85,7 +84,7 @@ func TestPutUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 
 func TestPutUpdatePushTokenWithDuplicateToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		//nolint:gosec
@@ -123,7 +122,7 @@ func TestPutUpdatePushTokenWithDuplicateToken(t *testing.T) {
 
 func TestPutUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		//nolint:gosec

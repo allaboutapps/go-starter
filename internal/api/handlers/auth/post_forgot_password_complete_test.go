@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"testing"
@@ -21,7 +20,7 @@ import (
 
 func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
@@ -71,7 +70,7 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 
 func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		newPassword := "correct horse battery staple"
@@ -104,7 +103,7 @@ func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 
 func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
@@ -145,7 +144,7 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 
 func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
@@ -186,7 +185,7 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 
 func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		passwordResetToken := models.PasswordResetToken{
@@ -204,7 +203,7 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 		}
 
 		fix.User2.Password = null.String{}
-		rowsAff, err := fix.User2.Update(context.Background(), s.DB, boil.Infer())
+		rowsAff, err := fix.User2.Update(t.Context(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 

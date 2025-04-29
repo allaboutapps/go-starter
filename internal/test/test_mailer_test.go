@@ -1,7 +1,6 @@
 package test_test
 
 import (
-	"context"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
@@ -12,7 +11,7 @@ import (
 )
 
 func TestWithTestMailer(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	fix := fixtures.Fixtures()
 	//nolint:gosec
 	passwordResetLink := "http://localhost/password/reset/12345"

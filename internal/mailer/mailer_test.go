@@ -1,7 +1,6 @@
 package mailer_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -14,7 +13,7 @@ import (
 )
 
 func TestMailerSendPasswordReset(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	fix := fixtures.Fixtures()
 
 	m := test.NewTestMailer(t)
@@ -42,7 +41,7 @@ func TestMailerSendPasswordReset(t *testing.T) {
 
 func SkipTestMailerSendPasswordResetWithMailhog(t *testing.T) {
 	t.Skip()
-	ctx := context.Background()
+	ctx := t.Context()
 	fix := fixtures.Fixtures()
 
 	m := test.NewSMTPMailerFromDefaultEnv(t)
@@ -55,7 +54,7 @@ func SkipTestMailerSendPasswordResetWithMailhog(t *testing.T) {
 
 func SkipTestMailerSendPasswordResetWithMailhogAndServer(t *testing.T) {
 	t.Skip()
-	ctx := context.Background()
+	ctx := t.Context()
 	fix := fixtures.Fixtures()
 
 	defaultConfig := config.DefaultServiceConfigFromEnv()
