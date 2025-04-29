@@ -213,7 +213,6 @@ func DefaultServiceConfigFromEnv() Server {
 			Password:   util.GetEnv("SERVER_SMTP_PASSWORD", ""),
 			AuthType:   transport.SMTPAuthTypeFromString(util.GetEnv("SERVER_SMTP_AUTH_TYPE", transport.SMTPAuthTypeNone.String())),
 			Encryption: transport.SMTPEncryption(util.GetEnvEnum("SERVER_SMTP_ENCRYPTION", transport.SMTPEncryptionNone.String(), []string{transport.SMTPEncryptionNone.String(), transport.SMTPEncryptionTLS.String(), transport.SMTPEncryptionStartTLS.String()})),
-			UseTLS:     util.GetEnvAsBool("SERVER_SMTP_USE_TLS", false),
 			TLSConfig:  nil,
 		},
 		Frontend: FrontendServer{
