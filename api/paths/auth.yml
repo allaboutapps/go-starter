@@ -19,6 +19,14 @@ responses:
     description: PublicHTTPValidationError
     schema:
       $ref: "../definitions/errors.yml#/definitions/PublicHTTPValidationError"
+parameters:
+  registrationTokenParam:
+    type: string
+    format: uuid4
+    in: path
+    name: registrationToken
+    description: Registration token to complete the registration process
+    required: true
 paths:
   /api/v1/auth/change-password:
     post:
@@ -177,7 +185,10 @@ paths:
             $ref: "../definitions/errors.yml#/definitions/PublicHTTPError"
   /api/v1/auth/register:
     post:
-      description: Returns an access and refresh token on successful registration
+      description: |
+        Registers a local user. If the registration process requires a confirmation
+        the status code `202` is returned without auth tokens. Afterwards the registration needs to be confirmed
+        using the `POST /api/v1/auth/register/{registrationToken}` endpoint.
       tags:
         - auth
       summary: Registers a local user
@@ -192,12 +203,45 @@ paths:
           description: PostLoginResponse
           schema:
             $ref: "../definitions/auth.yml#/definitions/PostLoginResponse"
+        "202":
+          description: RegisterResponse
+          schema:
+            $ref: "../definitions/auth.yml#/definitions/RegisterResponse"
         "400":
           $ref: "#/responses/InvalidPasswordResponse"
         "409":
           description: "PublicHTTPError, type `USER_ALREADY_EXISTS`"
           schema:
             $ref: "../definitions/errors.yml#/definitions/PublicHTTPError"
+  /api/v1/auth/register/{registrationToken}:
+    get:
+      summary: Page to complete registration
+      tags:
+        - auth
+      operationId: GetCompleteRegisterRoute
+      parameters:
+        - $ref: "#/parameters/registrationTokenParam"
+      produces:
+        - text/html
+      responses:
+        "200":
+          description: Page to complete registration
+    post:
+      summary: Complete registration
+      description: |-
+        Completes registration for a local user
+      tags:
+        - auth
+      operationId: PostCompleteRegisterRoute
+      parameters:
+        - $ref: "#/parameters/registrationTokenParam"
+      responses:
+        "200":
+          description: PostLoginResponse
+          schema:
+            $ref: "../definitions/auth.yml#/definitions/PostLoginResponse"
+        "401":
+          description: Unauthorized
   /api/v1/auth/userinfo:
     get:
       summary: Get user info

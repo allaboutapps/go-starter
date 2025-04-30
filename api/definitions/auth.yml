@@ -136,6 +136,15 @@ definitions:
         description: "Type of access token, will always be `bearer`"
         type: string
         example: bearer
+  RegisterResponse:
+    type: object
+    required:
+      - requiresConfirmation
+    properties: 
+      requiresConfirmation:
+        description: Indicates whether the registration process requires email confirmation
+        type: boolean
+        example: true
   PostLogoutPayload:
     type: object
     properties:

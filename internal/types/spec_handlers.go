@@ -37,12 +37,14 @@ func (o *SwaggerSpec) initHandlerCache() {
 	o.Handlers["PATCH"] = make(map[string]bool)
 
 	o.Handlers["DELETE"]["/api/v1/auth/account"] = true
+	o.Handlers["GET"]["/api/v1/auth/register/{registrationToken}"] = true
 	o.Handlers["GET"]["/-/healthy"] = true
 	o.Handlers["GET"]["/-/ready"] = true
 	o.Handlers["GET"]["/swagger.yml"] = true
 	o.Handlers["GET"]["/api/v1/auth/userinfo"] = true
 	o.Handlers["GET"]["/-/version"] = true
 	o.Handlers["POST"]["/api/v1/auth/change-password"] = true
+	o.Handlers["POST"]["/api/v1/auth/register/{registrationToken}"] = true
 	o.Handlers["POST"]["/api/v1/auth/forgot-password/complete"] = true
 	o.Handlers["POST"]["/api/v1/auth/forgot-password"] = true
 	o.Handlers["POST"]["/api/v1/auth/login"] = true
