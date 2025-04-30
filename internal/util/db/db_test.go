@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"context"
 	"database/sql"
 	"testing"
 
@@ -17,7 +16,7 @@ import (
 
 func TestWithTransactionSuccess(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		count, err := models.Users().Count(ctx, sqlDB)
 		require.NoError(t, err)
@@ -60,7 +59,7 @@ func TestWithTransactionSuccess(t *testing.T) {
 
 func TestWithTransactionWithError(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		count, err := models.Users().Count(ctx, sqlDB)
 		require.NoError(t, err)
@@ -105,7 +104,7 @@ func TestWithTransactionWithError(t *testing.T) {
 
 func TestWithTransactionWithPanic(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		count, err := models.Users().Count(ctx, sqlDB)
 		require.NoError(t, err)

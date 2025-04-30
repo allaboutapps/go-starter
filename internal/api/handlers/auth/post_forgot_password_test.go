@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -28,7 +27,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 	config.Auth.PasswordResetTokenDebounceDuration = 60 * time.Second
 
 	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
 			"username": fix.User1.Username,
@@ -124,7 +123,7 @@ func TestPostForgotPasswordSuccess(t *testing.T) {
 
 func TestPostForgotPasswordSuccessLowercaseTrimWhitespaces(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
 			"username": fmt.Sprintf(" %s ", strings.ToUpper(fix.User1.Username.String)),
@@ -144,7 +143,7 @@ func TestPostForgotPasswordSuccessLowercaseTrimWhitespaces(t *testing.T) {
 
 func TestPostForgotPasswordUnknownUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		payload := test.GenericPayload{
 			"username": "definitelydoesnotexist@example.com",
@@ -164,7 +163,7 @@ func TestPostForgotPasswordUnknownUser(t *testing.T) {
 
 func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		payload := test.GenericPayload{
@@ -185,7 +184,7 @@ func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
 
 func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		payload := test.GenericPayload{
@@ -193,7 +192,7 @@ func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
 		}
 
 		fix.User2.Password = null.String{}
-		rowsAff, err := fix.User2.Update(context.Background(), s.DB, boil.Infer())
+		rowsAff, err := fix.User2.Update(t.Context(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 
@@ -211,7 +210,7 @@ func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
 
 func TestPostForgotPasswordBadRequest(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		tests := []struct {
 			name    string

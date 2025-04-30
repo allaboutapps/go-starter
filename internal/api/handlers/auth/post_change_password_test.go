@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"testing"
@@ -22,7 +21,7 @@ import (
 
 func TestPostChangePasswordSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		newPassword := "correct horse battery staple"
@@ -65,7 +64,7 @@ func TestPostChangePasswordSuccess(t *testing.T) {
 
 func TestPostChangePasswordInvalidPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		newPassword := "correct horse battery staple"
@@ -86,7 +85,7 @@ func TestPostChangePasswordInvalidPassword(t *testing.T) {
 
 func TestPostChangePasswordDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		newPassword := "correct horse battery staple"
@@ -107,7 +106,7 @@ func TestPostChangePasswordDeactivatedUser(t *testing.T) {
 
 func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		newPassword := "correct horse battery staple"
@@ -117,7 +116,7 @@ func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 		}
 
 		fix.User2.Password = null.String{}
-		rowsAff, err := fix.User2.Update(context.Background(), s.DB, boil.Infer())
+		rowsAff, err := fix.User2.Update(t.Context(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 
@@ -133,7 +132,7 @@ func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 
 func TestPostChangePasswordBadRequest(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		tests := []struct {

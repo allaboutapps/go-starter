@@ -1,7 +1,6 @@
 package test_test
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -217,12 +216,12 @@ func TestWithTestDatabaseEmpty(t *testing.T) {
 			_, err = test.ApplyMigrations(t, db1)
 			require.NoError(t, err)
 
-			_, err = test.ApplyTestFixtures(context.Background(), t, db1)
+			_, err = test.ApplyTestFixtures(t.Context(), t, db1)
 			require.NoError(t, err)
 
 			// test apply dump to a empty database 2
 			dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/users.sql")
-			err = test.ApplyDump(context.Background(), t, db2, dumpFile)
+			err = test.ApplyDump(t.Context(), t, db2, dumpFile)
 			require.NoError(t, err)
 
 			// check user count

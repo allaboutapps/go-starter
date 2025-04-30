@@ -50,7 +50,7 @@ func assertUserAndRelatedData(ctx context.Context, s *api.Server, t *testing.T, 
 
 func TestDeleteUserAccount(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		// expect the user to have a app user profile and different kinds of tokens (access, refresh, push, password reset)
@@ -100,7 +100,7 @@ func TestDeleteUserAccountNoAuth(t *testing.T) {
 func TestDeleteUserAccountUserNotActive(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		fix := fixtures.Fixtures()
-		ctx := context.Background()
+		ctx := t.Context()
 
 		fix.User1.IsActive = false
 		_, err := fix.User1.Update(ctx, s.DB, boil.Whitelist(models.UserColumns.IsActive))
@@ -118,7 +118,7 @@ func TestDeleteUserAccountUserNotActive(t *testing.T) {
 func TestDeleteUserAccountUserNotLocal(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		fix := fixtures.Fixtures()
-		ctx := context.Background()
+		ctx := t.Context()
 
 		fix.User1.Password = null.String{}
 		_, err := fix.User1.Update(ctx, s.DB, boil.Whitelist(models.UserColumns.Password))

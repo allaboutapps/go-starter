@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"testing"
@@ -18,7 +17,7 @@ import (
 
 func TestPostRefreshSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
 			"refresh_token": fix.User1RefreshToken1.Token,
@@ -55,7 +54,7 @@ func TestPostRefreshUnknownToken(t *testing.T) {
 
 func TestPostRefreshDeactivatedUser(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
 			"refresh_token": fix.UserDeactivatedRefreshToken1.Token,

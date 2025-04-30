@@ -15,7 +15,7 @@ import (
 func TestEnsureDeadline(t *testing.T) {
 	deadline := time.Now().Add(1 * time.Second)
 
-	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	ctx, cancel := context.WithDeadline(t.Context(), deadline)
 	defer cancel()
 
 	receivedDeadline := ensureProbeDeadlineFromContext(ctx)
@@ -23,7 +23,7 @@ func TestEnsureDeadline(t *testing.T) {
 }
 
 func TestDummyDeadlineWithinOneSec(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	receivedDeadline := ensureProbeDeadlineFromContext(ctx)
 	assert.WithinDuration(t, time.Now().Add(1*time.Second), receivedDeadline, 100*time.Millisecond)
@@ -31,7 +31,7 @@ func TestDummyDeadlineWithinOneSec(t *testing.T) {
 }
 
 func TestProbeDatabasePingableDeadline(t *testing.T) {
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
+	ctx, cancel := context.WithDeadline(t.Context(), time.Now())
 	defer cancel()
 
 	_, err := probeDatabasePingable(ctx, &sql.DB{})
@@ -39,7 +39,7 @@ func TestProbeDatabasePingableDeadline(t *testing.T) {
 }
 
 func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
+	ctx, cancel := context.WithDeadline(t.Context(), time.Now())
 	defer cancel()
 
 	_, err := probeDatabaseNextHealthSequence(ctx, &sql.DB{})
@@ -47,7 +47,7 @@ func TestProbeDatabaseNextHealthSequenceDeadline(t *testing.T) {
 }
 
 func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
+	ctx, cancel := context.WithDeadline(t.Context(), time.Now())
 	defer cancel()
 
 	_, err := probePathWriteablePermission(ctx, "/any/thing")
@@ -55,7 +55,7 @@ func TestProbePathWriteablePermissionContextDeadline(t *testing.T) {
 }
 
 func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now())
+	ctx, cancel := context.WithDeadline(t.Context(), time.Now())
 	defer cancel()
 
 	_, err := probePathWriteableTouch(ctx, "/any/thing", ".touch")
@@ -63,6 +63,6 @@ func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
 }
 
 func TestProbePathWriteableTouchInaccessable(t *testing.T) {
-	_, err := probePathWriteableTouch(context.Background(), "/this/path/does/not/exist", ".touch")
+	_, err := probePathWriteableTouch(t.Context(), "/this/path/does/not/exist", ".touch")
 	assert.True(t, os.IsNotExist(err))
 }
