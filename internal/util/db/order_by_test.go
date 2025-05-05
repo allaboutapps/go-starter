@@ -21,6 +21,9 @@ func TestOrderBy(t *testing.T) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
+		_, err := fix.UserRequiresConfirmation.Delete(ctx, sqlDB)
+		require.NoError(t, err)
+
 		noUsername := models.User{
 			Scopes: types.StringArray{"cms"},
 		}
@@ -30,7 +33,7 @@ func TestOrderBy(t *testing.T) {
 			Scopes:   types.StringArray{"cms"},
 		}
 
-		err := noUsername.Insert(ctx, sqlDB, boil.Infer())
+		err = noUsername.Insert(ctx, sqlDB, boil.Infer())
 		require.NoError(t, err)
 
 		err = upperUsername.Insert(ctx, sqlDB, boil.Infer())

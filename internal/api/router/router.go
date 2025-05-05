@@ -2,13 +2,19 @@ package router
 
 import (
 	"context"
+	"fmt"
+	"html/template"
 	"net/http"
+	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers"
+	"allaboutapps.dev/aw/go-starter/internal/api/handlers/constants"
 	"allaboutapps.dev/aw/go-starter/internal/api/middleware"
+	"allaboutapps.dev/aw/go-starter/internal/api/router/templates"
 	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
@@ -20,6 +26,31 @@ import (
 
 func Init(s *api.Server) error {
 	s.Echo = echo.New()
+
+	viewsRenderer := &echoRenderer{
+		templates: map[templates.ViewTemplate]*template.Template{},
+	}
+
+	files, err := os.ReadDir(s.Config.Echo.WebTemplatesViewsBaseDirAbs)
+	if err != nil {
+		return fmt.Errorf("failed to read views templates dir: %w", err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		templateName := file.Name()
+		t, err := template.New(templateName).ParseGlob(filepath.Join(s.Config.Echo.WebTemplatesViewsBaseDirAbs, templateName))
+		if err != nil {
+			return fmt.Errorf("failed to parse template file: %w", err)
+		}
+
+		viewsRenderer.templates[templates.ViewTemplate(templateName)] = t
+	}
+
+	s.Echo.Renderer = viewsRenderer
 
 	s.Echo.Debug = s.Config.Echo.Debug
 	s.Echo.HideBanner = true
@@ -195,7 +226,8 @@ func Init(s *api.Server) error {
 					"/api/v1/auth/forgot-password/complete",
 					"/api/v1/auth/login",
 					"/api/v1/auth/refresh",
-					"/api/v1/auth/register":
+					"/api/v1/auth/register",
+					fmt.Sprintf("/api/v1/auth/register/:%s", constants.RegistrationTokenParam):
 					return true
 				}
 				return false

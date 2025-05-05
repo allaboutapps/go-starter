@@ -13,6 +13,7 @@ func AttachAllRoutes(s *api.Server) {
 	// attach our routes
 	s.Router.Routes = []*echo.Route{
 		auth.DeleteUserAccountRoute(s),
+		auth.GetCompleteRegisterRoute(s),
 		auth.GetUserInfoRoute(s),
 		auth.PostChangePasswordRoute(s),
 		auth.PostForgotPasswordCompleteRoute(s),

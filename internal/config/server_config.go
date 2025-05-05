@@ -27,6 +27,7 @@ type EchoServer struct {
 	EnableSecureMiddleware         bool
 	EnableCacheControlMiddleware   bool
 	SecureMiddleware               EchoServerSecureMiddleware
+	WebTemplatesViewsBaseDirAbs    string
 }
 
 type PprofServer struct {
@@ -173,6 +174,7 @@ func DefaultServiceConfigFromEnv() Server {
 				HSTSPreloadEnabled:    util.GetEnvAsBool("SERVER_ECHO_SECURE_MIDDLEWARE_HSTS_PRELOAD_ENABLED", false),
 				ReferrerPolicy:        util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_REFERRER_POLICY", ""),
 			},
+			WebTemplatesViewsBaseDirAbs: util.GetEnv("SERVER_ECHO_WEB_TEMPLATES_VIEWS_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/templates/views")),
 		},
 		Pprof: PprofServer{
 			// https://golang.org/pkg/net/http/pprof/

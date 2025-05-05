@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Account confirmation</title>
+</head>
+<body>
+    <div id="status">Processing request...</div>
+    
+    <script>
+        function processConfirmation() {
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', "http://localhost:8080/api/v1/auth/register/c9182e0b-4a46-4825-9f10-56f04a8b1665", true);
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    document.getElementById('status').textContent = 'Successfully confirmed account.'; 
+                    window.location.href = 'myapp://some/path';
+                } else {
+                    document.getElementById('status').textContent = 'Failed to confirm, please try registering again.';
+                }
+            };
+            xhr.onerror = function () {
+                document.getElementById('status').textContent = 'Failed to confirm, please try registering again.';
+            };
+            xhr.send(JSON.stringify({}));
+        }
+
+        window.onload = processConfirmation;
+    </script>
+</body>
+</html>
