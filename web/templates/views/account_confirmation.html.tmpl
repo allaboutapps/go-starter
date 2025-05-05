@@ -14,7 +14,6 @@
             xhr.onload = function () {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     document.getElementById('status').textContent = 'Successfully confirmed account.'; 
-                    window.location.href = 'myapp://some/path';
                 } else {
                     document.getElementById('status').textContent = 'Failed to confirm, please try registering again.';
                 }
