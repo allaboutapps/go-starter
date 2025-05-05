@@ -143,6 +143,10 @@ type RegisterRequest struct {
 	Password string
 }
 
+type CompleteRegisterRequest struct {
+	ConfirmationToken string
+}
+
 type DeleteUserAccountRequest struct {
 	User            User
 	CurrentPassword string

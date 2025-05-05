@@ -562,3 +562,59 @@ func (s *Service) DeleteUserAccount(ctx context.Context, request dto.DeleteUserA
 
 	return nil
 }
+
+func (s *Service) CompleteRegister(ctx context.Context, request dto.CompleteRegisterRequest) (dto.LoginResult, error) {
+	log := util.LogFromContext(ctx)
+
+	var result dto.LoginResult
+	err := db.WithTransaction(ctx, s.db, func(exec boil.ContextExecutor) error {
+		confirmationToken, err := models.ConfirmationTokens(
+			models.ConfirmationTokenWhere.Token.EQ(request.ConfirmationToken),
+			models.ConfirmationTokenWhere.ValidUntil.GT(s.clock.Now()),
+			qm.Load(models.ConfirmationTokenRels.User),
+		).One(ctx, s.db)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				log.Debug().Err(err).Msg("Confirmation token not found")
+				return httperrors.ErrNotFoundTokenNotFound
+			}
+
+			log.Err(err).Msg("Failed to load confirmation token")
+			return err
+		}
+
+		user := confirmationToken.R.User
+		if user.IsActive || !user.RequiresConfirmation {
+			log.Debug().Msg("User already active, skipping confirmation")
+			return nil
+		}
+
+		user.IsActive = true
+		user.RequiresConfirmation = false
+		if _, err := user.Update(ctx, exec, boil.Whitelist(models.UserColumns.IsActive, models.UserColumns.RequiresConfirmation, models.UserColumns.UpdatedAt)); err != nil {
+			log.Err(err).Msg("Failed to update user")
+			return err
+		}
+
+		if _, err := confirmationToken.Delete(ctx, exec); err != nil {
+			log.Err(err).Msg("Failed to delete confirmation token")
+			return err
+		}
+
+		result, err = s.authenticateUser(ctx, exec, dto.AuthenticateUserRequest{
+			User: mapper.LocalUserToDTO(confirmationToken.R.User),
+		})
+		if err != nil {
+			log.Err(err).Msg("Failed to authenticate user")
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Debug().Err(err).Msg("Failed to complete registration")
+		return dto.LoginResult{}, err
+	}
+
+	return result, nil
+}

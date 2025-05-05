@@ -16,6 +16,7 @@ func AttachAllRoutes(s *api.Server) {
 		auth.GetCompleteRegisterRoute(s),
 		auth.GetUserInfoRoute(s),
 		auth.PostChangePasswordRoute(s),
+		auth.PostCompleteRegisterRoute(s),
 		auth.PostForgotPasswordCompleteRoute(s),
 		auth.PostForgotPasswordRoute(s),
 		auth.PostLoginRoute(s),
