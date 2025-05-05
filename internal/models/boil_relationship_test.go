@@ -10,6 +10,7 @@ import "testing"
 func TestToOne(t *testing.T) {
 	t.Run("AccessTokenToUserUsingUser", testAccessTokenToOneUserUsingUser)
 	t.Run("AppUserProfileToUserUsingUser", testAppUserProfileToOneUserUsingUser)
+	t.Run("ConfirmationTokenToUserUsingUser", testConfirmationTokenToOneUserUsingUser)
 	t.Run("PasswordResetTokenToUserUsingUser", testPasswordResetTokenToOneUserUsingUser)
 	t.Run("PushTokenToUserUsingUser", testPushTokenToOneUserUsingUser)
 	t.Run("RefreshTokenToUserUsingUser", testRefreshTokenToOneUserUsingUser)
@@ -25,6 +26,7 @@ func TestOneToOne(t *testing.T) {
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
 	t.Run("UserToAccessTokens", testUserToManyAccessTokens)
+	t.Run("UserToConfirmationTokens", testUserToManyConfirmationTokens)
 	t.Run("UserToPasswordResetTokens", testUserToManyPasswordResetTokens)
 	t.Run("UserToPushTokens", testUserToManyPushTokens)
 	t.Run("UserToRefreshTokens", testUserToManyRefreshTokens)
@@ -35,6 +37,7 @@ func TestToMany(t *testing.T) {
 func TestToOneSet(t *testing.T) {
 	t.Run("AccessTokenToUserUsingAccessTokens", testAccessTokenToOneSetOpUserUsingUser)
 	t.Run("AppUserProfileToUserUsingAppUserProfile", testAppUserProfileToOneSetOpUserUsingUser)
+	t.Run("ConfirmationTokenToUserUsingConfirmationTokens", testConfirmationTokenToOneSetOpUserUsingUser)
 	t.Run("PasswordResetTokenToUserUsingPasswordResetTokens", testPasswordResetTokenToOneSetOpUserUsingUser)
 	t.Run("PushTokenToUserUsingPushTokens", testPushTokenToOneSetOpUserUsingUser)
 	t.Run("RefreshTokenToUserUsingRefreshTokens", testRefreshTokenToOneSetOpUserUsingUser)
@@ -58,6 +61,7 @@ func TestOneToOneRemove(t *testing.T) {}
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
 	t.Run("UserToAccessTokens", testUserToManyAddOpAccessTokens)
+	t.Run("UserToConfirmationTokens", testUserToManyAddOpConfirmationTokens)
 	t.Run("UserToPasswordResetTokens", testUserToManyAddOpPasswordResetTokens)
 	t.Run("UserToPushTokens", testUserToManyAddOpPushTokens)
 	t.Run("UserToRefreshTokens", testUserToManyAddOpRefreshTokens)
