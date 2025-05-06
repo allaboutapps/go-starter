@@ -17,5 +17,8 @@ ALTER TABLE users
     ADD COLUMN requires_confirmation boolean NOT NULL DEFAULT FALSE;
 
 -- +migrate Down
+ALTER TABLE users
+    DROP COLUMN requires_confirmation;
+
 DROP TABLE IF EXISTS confirmation_tokens;
 
