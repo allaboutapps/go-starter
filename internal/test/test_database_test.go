@@ -230,7 +230,7 @@ func TestWithTestDatabaseEmpty(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			require.Equal(t, 3, usrCount)
+			require.Equal(t, 4, usrCount)
 		})
 	})
 }

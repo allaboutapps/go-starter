@@ -24,20 +24,23 @@ type Insertable interface {
 // The main definition which fixtures are available through Fixtures().
 // Mind the declaration order! The fields get inserted exactly in the order they are declared.
 type FixtureMap struct {
-	User1                         *models.User
-	User1AppUserProfile           *models.AppUserProfile
-	User1AccessToken1             *models.AccessToken
-	User1RefreshToken1            *models.RefreshToken
-	User2                         *models.User
-	User2AppUserProfile           *models.AppUserProfile
-	User2AccessToken1             *models.AccessToken
-	User2RefreshToken1            *models.RefreshToken
-	UserDeactivated               *models.User
-	UserDeactivatedAppUserProfile *models.AppUserProfile
-	UserDeactivatedAccessToken1   *models.AccessToken
-	UserDeactivatedRefreshToken1  *models.RefreshToken
-	User1PushToken                *models.PushToken
-	User1PushTokenAPN             *models.PushToken
+	User1                                     *models.User
+	User1AppUserProfile                       *models.AppUserProfile
+	User1AccessToken1                         *models.AccessToken
+	User1RefreshToken1                        *models.RefreshToken
+	User2                                     *models.User
+	User2AppUserProfile                       *models.AppUserProfile
+	User2AccessToken1                         *models.AccessToken
+	User2RefreshToken1                        *models.RefreshToken
+	UserDeactivated                           *models.User
+	UserDeactivatedAppUserProfile             *models.AppUserProfile
+	UserDeactivatedAccessToken1               *models.AccessToken
+	UserDeactivatedRefreshToken1              *models.RefreshToken
+	User1PushToken                            *models.PushToken
+	User1PushTokenAPN                         *models.PushToken
+	UserRequiresConfirmation                  *models.User
+	UserRequiresConfirmationAppUserProfile    *models.AppUserProfile
+	UserRequiresConfirmationConfirmationToken *models.ConfirmationToken
 }
 
 // Fixtures returns a function wrapping our fixtures, which tests are allowed to manipulate.
@@ -92,6 +95,26 @@ func Fixtures() FixtureMap {
 	f.User2RefreshToken1 = &models.RefreshToken{
 		Token:  "ea909c75-63d1-4348-a63c-4bcf8ab334a2",
 		UserID: f.User2.ID,
+	}
+
+	f.UserRequiresConfirmation = &models.User{
+		ID:                   "402e1669-fff7-43ca-8f08-071c06409479",
+		IsActive:             false,
+		RequiresConfirmation: true,
+		Username:             null.StringFrom("userrequiresconfirmation@example.com"),
+		Password:             null.StringFrom(HashedTestUserPassword),
+		Scopes:               []string{"app"},
+	}
+
+	f.UserRequiresConfirmationAppUserProfile = &models.AppUserProfile{
+		UserID:          f.UserRequiresConfirmation.ID,
+		LegalAcceptedAt: null.TimeFrom(now.Add(time.Minute * -10)),
+	}
+
+	f.UserRequiresConfirmationConfirmationToken = &models.ConfirmationToken{
+		Token:      "c9182e0b-4a46-4825-9f10-56f04a8b1665",
+		ValidUntil: now.Add(time.Hour),
+		UserID:     f.UserRequiresConfirmation.ID,
 	}
 
 	f.UserDeactivated = &models.User{

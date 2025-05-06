@@ -271,7 +271,10 @@ paths:
             $ref: '#/definitions/publicHttpError'
   /api/v1/auth/register:
     post:
-      description: Returns an access and refresh token on successful registration
+      description: |
+        Registers a local user. If the registration process requires a confirmation
+        the status code `202` is returned without auth tokens. Afterwards the registration needs to be confirmed
+        using the `POST /api/v1/auth/register/{registrationToken}` endpoint.
       tags:
       - auth
       summary: Registers a local user
@@ -286,6 +289,10 @@ paths:
           description: PostLoginResponse
           schema:
             $ref: '#/definitions/postLoginResponse'
+        "202":
+          description: RegisterResponse
+          schema:
+            $ref: '#/definitions/registerResponse'
         "400":
           description: PublicHTTPValidationError, type `INVALID_PASSWORD`
           schema:
@@ -294,6 +301,44 @@ paths:
           description: PublicHTTPError, type `USER_ALREADY_EXISTS`
           schema:
             $ref: '#/definitions/publicHttpError'
+  /api/v1/auth/register/{registrationToken}:
+    get:
+      produces:
+      - text/html
+      tags:
+      - auth
+      summary: Page to complete registration
+      operationId: GetCompleteRegisterRoute
+      parameters:
+      - type: string
+        format: uuid4
+        description: Registration token to complete the registration process
+        name: registrationToken
+        in: path
+        required: true
+      responses:
+        "200":
+          description: Page to complete registration
+    post:
+      description: Completes registration for a local user
+      tags:
+      - auth
+      summary: Complete registration
+      operationId: PostCompleteRegisterRoute
+      parameters:
+      - type: string
+        format: uuid4
+        description: Registration token to complete the registration process
+        name: registrationToken
+        in: path
+        required: true
+      responses:
+        "200":
+          description: PostLoginResponse
+          schema:
+            $ref: '#/definitions/postLoginResponse'
+        "401":
+          description: Unauthorized
   /api/v1/auth/userinfo:
     get:
       security:
@@ -795,6 +840,23 @@ definitions:
         type: string
         maxLength: 500
         example: fcm
+  registerResponse:
+    type: object
+    required:
+    - requiresConfirmation
+    properties:
+      requiresConfirmation:
+        description: Indicates whether the registration process requires email confirmation
+        type: boolean
+        example: true
+parameters:
+  registrationTokenParam:
+    type: string
+    format: uuid4
+    description: Registration token to complete the registration process
+    name: registrationToken
+    in: path
+    required: true
 responses:
   AuthForbiddenResponse:
     description: PublicHTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`

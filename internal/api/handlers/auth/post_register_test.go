@@ -8,11 +8,15 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/auth"
+	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"allaboutapps.dev/aw/go-starter/internal/types"
+	"allaboutapps.dev/aw/go-starter/internal/util/db"
+	"allaboutapps.dev/aw/go-starter/internal/util/url"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -76,6 +80,112 @@ func TestPostRegisterSuccess(t *testing.T) {
 		assert.NotEqual(t, response.RefreshToken, *response2.RefreshToken)
 		assert.Equal(t, int64(s.Config.Auth.AccessTokenValidity.Seconds()), *response2.ExpiresIn)
 		assert.Equal(t, auth.TokenTypeBearer, *response2.TokenType)
+	})
+}
+
+func TestPostRegisterWithConfirmationSuccess(t *testing.T) {
+	config := config.DefaultServiceConfigFromEnv()
+	config.Auth.RegistrationRequiresConfirmation = true
+
+	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
+		ctx := t.Context()
+
+		username := "usernew@example.com"
+		payload := test.GenericPayload{
+			"username": username,
+			"password": fixtures.PlainTestUserPassword,
+		}
+
+		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
+
+		require.Equal(t, http.StatusAccepted, res.Result().StatusCode)
+
+		var response types.RegisterResponse
+		test.ParseResponseAndValidate(t, res, &response)
+
+		assert.True(t, swag.BoolValue(response.RequiresConfirmation))
+
+		// expect the user to be normally created
+		user, err := models.Users(
+			models.UserWhere.Username.EQ(null.StringFrom(username)),
+			qm.Load(models.UserRels.AppUserProfile),
+			qm.Load(models.UserRels.AccessTokens),
+			qm.Load(models.UserRels.RefreshTokens),
+			qm.Load(models.UserRels.ConfirmationTokens),
+		).One(ctx, s.DB)
+		assert.NoError(t, err)
+		assert.Equal(t, null.StringFrom(username), user.Username)
+		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
+		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
+		assert.False(t, user.IsActive)
+		assert.True(t, user.RequiresConfirmation)
+
+		assert.NotNil(t, user.R.AppUserProfile)
+		assert.Equal(t, false, user.R.AppUserProfile.LegalAcceptedAt.Valid)
+
+		// expect the user to have no access or refresh tokens
+		assert.Len(t, user.R.AccessTokens, 0)
+		assert.Len(t, user.R.RefreshTokens, 0)
+		require.Len(t, user.R.ConfirmationTokens, 1)
+		confirmationToken := user.R.ConfirmationTokens[0]
+
+		// expect the login to fail
+		res2 := test.PerformRequest(t, s, "POST", "/api/v1/auth/login", payload, nil)
+		test.RequireHTTPError(t, res2, httperrors.ErrForbiddenUserDeactivated)
+
+		// expect the confirmation email to be sent
+		mails := test.GetSentMails(t, s.Mailer)
+		require.Len(t, mails, 1)
+
+		mail := mails[0]
+		expectedConfirmationLink, err := url.ConfirmationDeeplinkURL(s.Config, confirmationToken.Token)
+		require.NoError(t, err)
+
+		assert.Equal(t, username, mail.To[0])
+		assert.Contains(t, string(mail.HTML), expectedConfirmationLink.String())
+
+		// directly register again should trigger the debounce
+		// and not create a new confirmation token
+		registerAgainRes := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
+		require.Equal(t, http.StatusAccepted, registerAgainRes.Result().StatusCode)
+
+		var registerAgainResponse types.RegisterResponse
+		test.ParseResponseAndValidate(t, registerAgainRes, &registerAgainResponse)
+
+		// expect the confirmation to be required
+		assert.True(t, swag.BoolValue(registerAgainResponse.RequiresConfirmation))
+
+		confirmationTokenCount, err := user.ConfirmationTokens().Count(ctx, s.DB)
+		require.NoError(t, err)
+
+		assert.EqualValues(t, 1, confirmationTokenCount)
+
+		// register later again
+		test.SetMockClock(t, s, s.Clock.Now().Add(config.Auth.ConfirmationTokenDebounceDuration+time.Second))
+
+		registerLaterAgainRes := test.PerformRequest(t, s, "POST", "/api/v1/auth/register", payload, nil)
+		require.Equal(t, http.StatusAccepted, registerLaterAgainRes.Result().StatusCode)
+
+		var registerLaterAgainResponse types.RegisterResponse
+		test.ParseResponseAndValidate(t, registerLaterAgainRes, &registerLaterAgainResponse)
+		assert.True(t, swag.BoolValue(registerLaterAgainResponse.RequiresConfirmation))
+
+		confirmationTokens, err := models.ConfirmationTokens(
+			models.ConfirmationTokenWhere.UserID.EQ(user.ID),
+			db.OrderBy(types.OrderDirDesc, models.ConfirmationTokenColumns.CreatedAt),
+		).All(ctx, s.DB)
+		require.NoError(t, err)
+
+		require.Len(t, confirmationTokens, 2)
+
+		lastSentMail := test.GetLastSentMail(t, s.Mailer)
+		require.NotNil(t, lastSentMail)
+
+		expectedConfirmationLink, err = url.ConfirmationDeeplinkURL(s.Config, confirmationTokens[0].Token)
+		require.NoError(t, err)
+
+		assert.Equal(t, username, lastSentMail.To[0])
+		assert.Contains(t, string(lastSentMail.HTML), expectedConfirmationLink.String())
 	})
 }
 

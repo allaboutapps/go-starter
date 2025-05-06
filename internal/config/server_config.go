@@ -27,6 +27,7 @@ type EchoServer struct {
 	EnableSecureMiddleware         bool
 	EnableCacheControlMiddleware   bool
 	SecureMiddleware               EchoServerSecureMiddleware
+	WebTemplatesViewsBaseDirAbs    string
 }
 
 type PprofServer struct {
@@ -57,6 +58,9 @@ type AuthServer struct {
 	PasswordResetTokenReuseDuration    time.Duration
 	DefaultUserScopes                  []string
 	LastAuthenticatedAtThreshold       time.Duration
+	RegistrationRequiresConfirmation   bool
+	ConfirmationTokenValidity          time.Duration
+	ConfirmationTokenDebounceDuration  time.Duration
 }
 
 type PathsServer struct {
@@ -170,6 +174,7 @@ func DefaultServiceConfigFromEnv() Server {
 				HSTSPreloadEnabled:    util.GetEnvAsBool("SERVER_ECHO_SECURE_MIDDLEWARE_HSTS_PRELOAD_ENABLED", false),
 				ReferrerPolicy:        util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_REFERRER_POLICY", ""),
 			},
+			WebTemplatesViewsBaseDirAbs: util.GetEnv("SERVER_ECHO_WEB_TEMPLATES_VIEWS_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/templates/views")),
 		},
 		Pprof: PprofServer{
 			// https://golang.org/pkg/net/http/pprof/
@@ -190,6 +195,9 @@ func DefaultServiceConfigFromEnv() Server {
 			PasswordResetTokenReuseDuration:    time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_PASSWORD_RESET_TOKEN_REUSE_DURATION_SECONDS", 0)),
 			DefaultUserScopes:                  util.GetEnvAsStringArr("SERVER_AUTH_DEFAULT_USER_SCOPES", []string{"app"}),
 			LastAuthenticatedAtThreshold:       time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900)),
+			RegistrationRequiresConfirmation:   util.GetEnvAsBool("SERVER_AUTH_REGISTRATION_REQUIRES_CONFIRMATION", false),
+			ConfirmationTokenValidity:          time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_CONFIRMATION_TOKEN_VALIDITY_SECONDS", 86400)),
+			ConfirmationTokenDebounceDuration:  time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_CONFIRMATION_TOKEN_DEBOUNCE_DURATION_SECONDS", 60)),
 		},
 		Management: ManagementServer{
 			Secret:           util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),

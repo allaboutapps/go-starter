@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/mailer/transport"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/jordan-wright/email"
@@ -16,8 +17,9 @@ import (
 )
 
 var (
-	ErrEmailTemplateNotFound   = errors.New("email template not found")
-	emailTemplatePasswordReset = "password_reset" // /app/templates/email/password_reset/**.
+	ErrEmailTemplateNotFound         = errors.New("email template not found")
+	emailTemplatePasswordReset       = "password_reset"       // /app/templates/email/password_reset/**.
+	emailTemplateAccountConfirmation = "account_confirmation" // /app/templates/email/account_confirmation/**
 )
 
 type Mailer struct {
@@ -95,6 +97,45 @@ func (m *Mailer) SendPasswordReset(ctx context.Context, to string, passwordReset
 	}
 
 	log.Debug().Msg("Successfully sent password reset email")
+
+	return nil
+}
+
+func (m *Mailer) SendAccountConfirmation(ctx context.Context, to string, payload dto.ConfirmatioNotificationPayload) error {
+	log := util.LogFromContext(ctx)
+
+	t, ok := m.Templates[emailTemplateAccountConfirmation]
+	if !ok {
+		log.Error().Msg("Account confirmation email template not found")
+		return ErrEmailTemplateNotFound
+	}
+
+	data := map[string]interface{}{
+		"confirmationLink": payload.ConfirmationLink,
+	}
+
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, data); err != nil {
+		log.Error().Err(err).Msg("Failed to execute account confirmation email template")
+		return err
+	}
+
+	e := email.NewEmail()
+
+	e.From = m.Config.DefaultSender
+	e.To = []string{to}
+	e.Subject = "Account confirmation"
+	e.HTML = buf.Bytes()
+
+	if !m.Config.Send {
+		log.Warn().Str("to", to).Msg("Sending has been disabled in mailer config, skipping account confirmation email")
+		return nil
+	}
+
+	if err := m.Transport.Send(e); err != nil {
+		log.Debug().Err(err).Msg("Failed to send account confirmation email")
+		return err
+	}
 
 	return nil
 }

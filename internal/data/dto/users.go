@@ -72,6 +72,11 @@ type UpdatePasswordRequest struct {
 	NewPassword                     string
 }
 
+type RegisterResult struct {
+	RequiresConfirmation bool
+	ConfirmationToken    null.String
+}
+
 type LoginResult struct {
 	UserID       string
 	AccessToken  string
@@ -138,7 +143,15 @@ type RegisterRequest struct {
 	Password string
 }
 
+type CompleteRegisterRequest struct {
+	ConfirmationToken string
+}
+
 type DeleteUserAccountRequest struct {
 	User            User
 	CurrentPassword string
+}
+
+type ConfirmatioNotificationPayload struct {
+	ConfirmationLink string
 }
