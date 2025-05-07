@@ -1,0 +1,18 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "test.at.aaa.b2b",
+                "paths": [
+                    "/api/v*/auth/register"
+                ]
+            }
+        ]
+    },
+    "webcredentials": {
+        "apps": [
+            "test.at.aaa.b2b"
+        ]
+    }
+}

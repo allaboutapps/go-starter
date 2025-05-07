@@ -32,6 +32,7 @@ type Router struct {
 	Management *echo.Group
 	APIV1Auth  *echo.Group
 	APIV1Push  *echo.Group
+	WellKnown  *echo.Group
 }
 
 type Server struct {
