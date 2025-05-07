@@ -10,7 +10,7 @@
     <script>
         function processConfirmation() {
             let xhr = new XMLHttpRequest();
-            xhr.open('POST', {{ .confirmationLink }}, true);
+            xhr.open('POST', {{ .confirmationRequestURL }}, true);
             xhr.onload = function () {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     document.getElementById('status').textContent = 'Successfully confirmed account.'; 

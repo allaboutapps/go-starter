@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
@@ -32,9 +33,9 @@ type GetCompleteRegisterRouteParams struct {
 
 	/*Registration token to complete the registration process
 	  Required: true
-	  In: path
+	  In: query
 	*/
-	RegistrationToken strfmt.UUID4 `param:"registrationToken"`
+	Token strfmt.UUID4 `query:"token"`
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -46,8 +47,10 @@ func (o *GetCompleteRegisterRouteParams) BindRequest(r *http.Request, route *mid
 
 	o.HTTPRequest = r
 
-	rRegistrationToken, rhkRegistrationToken, _ := route.Params.GetOK("registrationToken")
-	if err := o.bindRegistrationToken(rRegistrationToken, rhkRegistrationToken, route.Formats); err != nil {
+	qs := runtime.Values(r.URL.Query())
+
+	qToken, qhkToken, _ := qs.GetOK("token")
+	if err := o.bindToken(qToken, qhkToken, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -60,11 +63,14 @@ func (o *GetCompleteRegisterRouteParams) BindRequest(r *http.Request, route *mid
 func (o *GetCompleteRegisterRouteParams) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	// registrationToken
+	// token
 	// Required: true
-	// Parameter is provided by construction from the route
+	// AllowEmptyValue: false
+	if err := validate.Required("token", "query", o.Token); err != nil {
+		res = append(res, err)
+	}
 
-	if err := o.validateRegistrationToken(formats); err != nil {
+	if err := o.validateToken(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -74,34 +80,40 @@ func (o *GetCompleteRegisterRouteParams) Validate(formats strfmt.Registry) error
 	return nil
 }
 
-// bindRegistrationToken binds and validates parameter RegistrationToken from path.
-func (o *GetCompleteRegisterRouteParams) bindRegistrationToken(rawData []string, hasKey bool, formats strfmt.Registry) error {
+// bindToken binds and validates parameter Token from query.
+func (o *GetCompleteRegisterRouteParams) bindToken(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("token", "query", rawData)
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
 	// Required: true
-	// Parameter is provided by construction from the route
+	// AllowEmptyValue: false
+	if err := validate.RequiredString("token", "query", raw); err != nil {
+		return err
+	}
 
 	// Format: uuid4
 	value, err := formats.Parse("uuid4", raw)
 	if err != nil {
-		return errors.InvalidType("registrationToken", "path", "strfmt.UUID4", raw)
+		return errors.InvalidType("token", "query", "strfmt.UUID4", raw)
 	}
-	o.RegistrationToken = *(value.(*strfmt.UUID4))
+	o.Token = *(value.(*strfmt.UUID4))
 
-	if err := o.validateRegistrationToken(formats); err != nil {
+	if err := o.validateToken(formats); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// validateRegistrationToken carries on validations for parameter RegistrationToken
-func (o *GetCompleteRegisterRouteParams) validateRegistrationToken(formats strfmt.Registry) error {
+// validateToken carries on validations for parameter Token
+func (o *GetCompleteRegisterRouteParams) validateToken(formats strfmt.Registry) error {
 
-	if err := validate.FormatOf("registrationToken", "path", "uuid4", o.RegistrationToken.String(), formats); err != nil {
+	if err := validate.FormatOf("token", "query", "uuid4", o.Token.String(), formats); err != nil {
 		return err
 	}
 	return nil

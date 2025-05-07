@@ -213,19 +213,24 @@ paths:
           description: "PublicHTTPError, type `USER_ALREADY_EXISTS`"
           schema:
             $ref: "../definitions/errors.yml#/definitions/PublicHTTPError"
-  /api/v1/auth/register/{registrationToken}:
     get:
       summary: Page to complete registration
       tags:
         - auth
       operationId: GetCompleteRegisterRoute
       parameters:
-        - $ref: "#/parameters/registrationTokenParam"
+        - name: token
+          in: query
+          type: string
+          format: uuid4
+          description: Registration token to complete the registration process
+          required: true
       produces:
         - text/html
       responses:
         "200":
           description: Page to complete registration
+  /api/v1/auth/register/{registrationToken}:
     post:
       summary: Complete registration
       description: |-
