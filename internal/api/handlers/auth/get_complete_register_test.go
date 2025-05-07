@@ -16,7 +16,7 @@ func TestGetCompleteRegister(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		fix := fixtures.Fixtures()
 
-		res := test.PerformRequest(t, s, "GET", fmt.Sprintf("/api/v1/auth/register/%s", fix.UserRequiresConfirmationConfirmationToken.Token), nil, nil)
+		res := test.PerformRequest(t, s, "GET", fmt.Sprintf("/api/v1/auth/register?token=%s", fix.UserRequiresConfirmationConfirmationToken.Token), nil, nil)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 		response, err := io.ReadAll(res.Body)

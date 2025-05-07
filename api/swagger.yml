@@ -270,6 +270,23 @@ paths:
           schema:
             $ref: '#/definitions/publicHttpError'
   /api/v1/auth/register:
+    get:
+      produces:
+      - text/html
+      tags:
+      - auth
+      summary: Page to complete registration
+      operationId: GetCompleteRegisterRoute
+      parameters:
+      - type: string
+        format: uuid4
+        description: Registration token to complete the registration process
+        name: token
+        in: query
+        required: true
+      responses:
+        "200":
+          description: Page to complete registration
     post:
       description: |
         Registers a local user. If the registration process requires a confirmation
@@ -302,23 +319,6 @@ paths:
           schema:
             $ref: '#/definitions/publicHttpError'
   /api/v1/auth/register/{registrationToken}:
-    get:
-      produces:
-      - text/html
-      tags:
-      - auth
-      summary: Page to complete registration
-      operationId: GetCompleteRegisterRoute
-      parameters:
-      - type: string
-        format: uuid4
-        description: Registration token to complete the registration process
-        name: registrationToken
-        in: path
-        required: true
-      responses:
-        "200":
-          description: Page to complete registration
     post:
       description: Completes registration for a local user
       tags:

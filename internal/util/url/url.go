@@ -33,6 +33,21 @@ func ConfirmationDeeplinkURL(config config.Server, token string) (*url.URL, erro
 		return nil, err
 	}
 
+	u.Path = path.Join(u.Path, accountConfirmationPath)
+
+	q := u.Query()
+	q.Set(queryParamToken, token)
+	u.RawQuery = q.Encode()
+
+	return u, nil
+}
+
+func ConfirmationRequestURL(config config.Server, token string) (*url.URL, error) {
+	u, err := url.Parse(config.Echo.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+
 	u.Path = path.Join(u.Path, accountConfirmationPath, token)
 
 	return u, nil
