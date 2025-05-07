@@ -5,7 +5,6 @@ go 1.24.0
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/allaboutapps/integresql-client-go v1.0.0
-	github.com/allaboutapps/nullable v1.3.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gabriel-vasile/mimetype v1.4.8

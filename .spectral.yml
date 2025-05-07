@@ -1,0 +1,87 @@
+# ---------------------------------------------------------------------------
+# Spectral OpenAPI Guidelines: https://docs.stoplight.io/docs/spectral/4dec24461f3af-open-api-rules
+# ---------------------------------------------------------------------------
+extends: ["spectral:oas"]
+
+# ---------------------------------------------------------------------------
+# Custom overrides
+# ---------------------------------------------------------------------------
+overrides:
+# types that are not referenced in the swagger spec
+# but are referenced in code (e.g. because parameter enums are not generated as Golang types)
+  - files:
+      - "swagger.yml#/definitions/orderDir"
+    rules:
+      oas2-unused-definition: "off"
+
+# ---------------------------------------------------------------------------
+# Custom rules
+# ---------------------------------------------------------------------------
+rules:
+  # ---------------------------------------------------------------------------
+  # Rules from the spectral:oas preset, that are not needed
+  # ---------------------------------------------------------------------------
+  operation-tag-defined: "off"
+  oas2-api-host: "off"
+  oas2-api-schemes: "off"
+  info-contact: "off"
+  operation-description: "off"
+
+  # ---------------------------------------------------------------------------
+  # Custom AAA Rules
+  # ---------------------------------------------------------------------------
+  aaa-properties-id-casing:
+    description: Properties ending with 'ID' must be cased as 'Id'
+    severity: error
+    recommended: true
+    message: "{{property}} must end with 'Id' instead of 'ID'"
+    given: $.definitions..properties[*]~
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "ID$"
+
+  # ---------------------------------------------------------------------------
+  # Rules from the Adidas API Guidelines: https://github.com/adidas/api-guidelines/blob/master/.spectral.yml
+  # ---------------------------------------------------------------------------
+  adidas-path-parameters-camelCase-alphanumeric:
+    description: Path parameters MUST follow camelCase
+    severity: warn
+    recommended: true
+    message: "{{property}} path parameter is not camelCase: {{error}}"
+    given: $..parameters[?(@.in == 'path')].name
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]+$"
+
+  adidas-definitions-camelCase-alphanumeric:
+    description: All YAML/JSON definitions MUST follow fields-camelCase and be ASCII alphanumeric characters or `_` or `$`.
+    severity: error
+    recommended: true
+    message: "{{property}} MUST follow camelCase and be ASCII alphanumeric characters or `_` or `$`."
+    given: $.definitions[*]~
+    then:
+      function: pattern
+      functionOptions:
+        match: "/^[a-z$_]{1}[A-Z09$_]*/"
+
+  adidas-properties-camelCase-alphanumeric:
+    description: All JSON Schema properties MUST follow fields-camelCase and be ASCII alphanumeric characters or _ or $.
+    severity: error
+    recommended: true
+    message: "{{property}} MUST follow camelCase and be ASCII alphanumeric characters or _ or $."
+    given: $.definitions..properties[*]~
+    then:
+      function: pattern
+      functionOptions:
+        match: "/^[a-z$]{1}[A-Z09$]*/"
+
+  adidas-request-GET-no-body:
+    description: "A 'GET' request MUST NOT accept a 'body` parameter"
+    severity: error
+    given: $.paths..get.parameters..in
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "/^body$/"

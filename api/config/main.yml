@@ -29,9 +29,6 @@ definitions:
   # Any definitions that are not yet used within paths/*.yml are automatically removed from the resulting swagger.yml.
   # You may reference some definitions that you *always* want to be included here.
   # --
-  # Always include nullables so we can test deserialization
-  nullables:
-    $ref: "../definitions/nullable.yml#/definitions/Nullables"
   # Always include orderDir so we can test binding it to db queries directly.
   orderDir:
     type: string

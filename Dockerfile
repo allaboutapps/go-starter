@@ -154,6 +154,10 @@ RUN mkdir -p /tmp/yq \
     && cp "yq_linux_${ARCH}" /usr/local/bin/yq \
     && rm -rf /tmp/yq
 
+# spectral: OpenAPI / JSON schema linter
+# https://github.com/stoplightio/spectral
+RUN curl -L https://raw.github.com/stoplightio/spectral/master/scripts/install.sh | sh
+
 # gsdev
 # The sole purpose of the "gsdev" cli util is to provide a handy short command for the following (all args are passed):
 # go run -tags scripts /app/scripts/main.go "$@"
