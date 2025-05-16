@@ -1,0 +1,27 @@
+swagger: "2.0"
+info:
+  title: allaboutapps.dev/aw/go-starter
+  version: 0.1.0
+paths:
+  /.well-known/apple-app-site-association:
+    get:
+      summary: Apple App Site Association
+      description: |-
+        Returns the Apple App Site Association file.
+      operationId: GetAppleAppSiteAssociationRoute
+      tags:
+        - well-known
+      responses:
+        "200":
+          description: Apple App Site Association
+  /.well-known/assetlinks.json:
+    get:
+      summary: Android Digital Asset Links
+      description: |-
+        Returns the Android Digital Asset Links file.
+      operationId: GetAndroidDigitalAssetLinksRoute
+      tags:
+        - well-known
+      responses:
+        "200":
+          description: Android Digital Asset Links

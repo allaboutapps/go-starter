@@ -61,6 +61,26 @@ paths:
       responses:
         "200":
           description: ModuleName @ Commit (BuildDate)
+  /.well-known/apple-app-site-association:
+    get:
+      description: Returns the Apple App Site Association file.
+      tags:
+      - well-known
+      summary: Apple App Site Association
+      operationId: GetAppleAppSiteAssociationRoute
+      responses:
+        "200":
+          description: Apple App Site Association
+  /.well-known/assetlinks.json:
+    get:
+      description: Returns the Android Digital Asset Links file.
+      tags:
+      - well-known
+      summary: Android Digital Asset Links
+      operationId: GetAndroidDigitalAssetLinksRoute
+      responses:
+        "200":
+          description: Android Digital Asset Links
   /api/v1/auth/account:
     delete:
       security:

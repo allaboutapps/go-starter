@@ -6,6 +6,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/common"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/push"
+	"allaboutapps.dev/aw/go-starter/internal/api/handlers/wellknown"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,5 +29,7 @@ func AttachAllRoutes(s *api.Server) {
 		common.GetSwaggerRoute(s),
 		common.GetVersionRoute(s),
 		push.PutUpdatePushTokenRoute(s),
+		wellknown.GetAndroidDigitalAssetLinksRoute(s),
+		wellknown.GetAppleAppSiteAssociationRoute(s),
 	}
 }
