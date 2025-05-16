@@ -77,7 +77,11 @@
 					"apiVersion": 2
 				},
 				// ensure that the pgFormatter VSCode extension uses the pgFormatter that comes preinstalled in the Dockerfile
-				"pgFormatter.pgFormatterPath": "/usr/local/bin/pg_format"
+				"pgFormatter.pgFormatterPath": "/usr/local/bin/pg_format",
+				// only validate the merged swagger file as the individual files do not meet all linting requirements
+				"spectral.validateFiles": [
+					"**/api/swagger.yml"
+				]
 			},
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
@@ -86,6 +90,7 @@
 				"bradymholt.pgformatter",
 				// optional:
 				"42crunch.vscode-openapi",
+				"stoplight.spectral",
 				"heaths.vscode-guid",
 				"bungcip.better-toml",
 				"eamodio.gitlens",
