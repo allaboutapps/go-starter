@@ -78,5 +78,4 @@ type SMTPMailTransportConfig struct {
 	Password   string         `json:"-"` // sensitive
 	Encryption SMTPEncryption `json:"-"` // iota
 	TLSConfig  *tls.Config    `json:"-"` // pointer
-	UseTLS     bool           // Deprecated: Use Encryption type SMTPEncryptionTLS instead
 }

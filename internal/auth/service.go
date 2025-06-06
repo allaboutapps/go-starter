@@ -414,36 +414,72 @@ func (s *Service) Refresh(ctx context.Context, request dto.RefreshRequest) (dto.
 	return result, nil
 }
 
-func (s *Service) Register(ctx context.Context, request dto.RegisterRequest) (dto.LoginResult, error) {
+func (s *Service) Register(ctx context.Context, request dto.RegisterRequest) (dto.RegisterResult, error) {
 	log := util.LogFromContext(ctx).With().Str("username", request.Username.String()).Logger()
 
-	exists, err := models.Users(
+	user, err := models.Users(
 		models.UserWhere.Username.EQ(null.StringFrom(request.Username.String())),
-	).Exists(ctx, s.db)
-	if err != nil {
+	).One(ctx, s.db)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Err(err).Msg("Failed to check whether user exists")
-		return dto.LoginResult{}, err
+		return dto.RegisterResult{}, err
 	}
 
-	if exists {
-		log.Debug().Msg("User with given username already exists")
-		return dto.LoginResult{}, httperrors.ErrConflictUserAlreadyExists
+	if user != nil {
+		if !user.RequiresConfirmation {
+			log.Debug().Msg("User with given username already exists")
+			return dto.RegisterResult{}, httperrors.ErrConflictUserAlreadyExists
+		}
+
+		confirmationTokenInDebounceTimeExists, err := user.ConfirmationTokens(
+			models.ConfirmationTokenWhere.CreatedAt.GT(s.clock.Now().Add(-s.config.Auth.ConfirmationTokenDebounceDuration)),
+			models.ConfirmationTokenWhere.ValidUntil.GT(s.clock.Now()),
+		).Exists(ctx, s.db)
+		if err != nil {
+			log.Err(err).Msg("Failed to check for existing confirmation token")
+			return dto.RegisterResult{}, err
+		}
+
+		if confirmationTokenInDebounceTimeExists {
+			return dto.RegisterResult{
+				RequiresConfirmation: user.RequiresConfirmation,
+			}, nil
+		}
+
+		confirmationToken := models.ConfirmationToken{
+			UserID:     user.ID,
+			ValidUntil: s.clock.Now().Add(s.config.Auth.ConfirmationTokenValidity),
+		}
+
+		if err := confirmationToken.Insert(ctx, s.db, boil.Infer()); err != nil {
+			log.Err(err).Msg("Failed to insert confirmation token")
+			return dto.RegisterResult{}, err
+		}
+
+		return dto.RegisterResult{
+			RequiresConfirmation: user.RequiresConfirmation,
+			ConfirmationToken:    null.StringFrom(confirmationToken.Token),
+		}, nil
 	}
 
 	hash, err := hashing.HashPassword(request.Password, hashing.DefaultArgon2Params)
 	if err != nil {
 		log.Err(err).Msg("Failed to hash user password")
-		return dto.LoginResult{}, httperrors.ErrBadRequestInvalidPassword
+		return dto.RegisterResult{}, httperrors.ErrBadRequestInvalidPassword
 	}
 
-	var result dto.LoginResult
+	result := dto.RegisterResult{
+		RequiresConfirmation: s.config.Auth.RegistrationRequiresConfirmation,
+	}
+
 	if err := db.WithTransaction(ctx, s.db, func(exec boil.ContextExecutor) error {
 		user := &models.User{
-			Username:            null.StringFrom(request.Username.String()),
-			Password:            null.StringFrom(hash),
-			LastAuthenticatedAt: null.TimeFrom(s.clock.Now()),
-			IsActive:            true,
-			Scopes:              s.config.Auth.DefaultUserScopes,
+			Username:             null.StringFrom(request.Username.String()),
+			Password:             null.StringFrom(hash),
+			LastAuthenticatedAt:  null.TimeFrom(s.clock.Now()),
+			IsActive:             !result.RequiresConfirmation,
+			RequiresConfirmation: result.RequiresConfirmation,
+			Scopes:               s.config.Auth.DefaultUserScopes,
 		}
 
 		if err := user.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -460,18 +496,24 @@ func (s *Service) Register(ctx context.Context, request dto.RegisterRequest) (dt
 			return err
 		}
 
-		result, err = s.authenticateUser(ctx, exec, dto.AuthenticateUserRequest{
-			User: mapper.LocalUserToDTO(user),
-		})
-		if err != nil {
-			log.Debug().Err(err).Msg("Failed to authenticate user after registration")
-			return err
+		if result.RequiresConfirmation {
+			confirmationToken := models.ConfirmationToken{
+				UserID:     user.ID,
+				ValidUntil: s.clock.Now().Add(s.config.Auth.ConfirmationTokenValidity),
+			}
+
+			if err := confirmationToken.Insert(ctx, exec, boil.Infer()); err != nil {
+				log.Err(err).Msg("Failed to insert confirmation token")
+				return err
+			}
+
+			result.ConfirmationToken = null.StringFrom(confirmationToken.Token)
 		}
 
 		return nil
 	}); err != nil {
 		log.Debug().Err(err).Msg("Failed to register user")
-		return dto.LoginResult{}, err
+		return dto.RegisterResult{}, err
 	}
 
 	return result, nil
@@ -519,4 +561,60 @@ func (s *Service) DeleteUserAccount(ctx context.Context, request dto.DeleteUserA
 	}
 
 	return nil
+}
+
+func (s *Service) CompleteRegister(ctx context.Context, request dto.CompleteRegisterRequest) (dto.LoginResult, error) {
+	log := util.LogFromContext(ctx)
+
+	var result dto.LoginResult
+	err := db.WithTransaction(ctx, s.db, func(exec boil.ContextExecutor) error {
+		confirmationToken, err := models.ConfirmationTokens(
+			models.ConfirmationTokenWhere.Token.EQ(request.ConfirmationToken),
+			models.ConfirmationTokenWhere.ValidUntil.GT(s.clock.Now()),
+			qm.Load(models.ConfirmationTokenRels.User),
+		).One(ctx, s.db)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				log.Debug().Err(err).Msg("Confirmation token not found")
+				return httperrors.ErrNotFoundTokenNotFound
+			}
+
+			log.Err(err).Msg("Failed to load confirmation token")
+			return err
+		}
+
+		user := confirmationToken.R.User
+		if user.IsActive || !user.RequiresConfirmation {
+			log.Debug().Msg("User already active, skipping confirmation")
+			return nil
+		}
+
+		user.IsActive = true
+		user.RequiresConfirmation = false
+		if _, err := user.Update(ctx, exec, boil.Whitelist(models.UserColumns.IsActive, models.UserColumns.RequiresConfirmation, models.UserColumns.UpdatedAt)); err != nil {
+			log.Err(err).Msg("Failed to update user")
+			return err
+		}
+
+		if _, err := confirmationToken.Delete(ctx, exec); err != nil {
+			log.Err(err).Msg("Failed to delete confirmation token")
+			return err
+		}
+
+		result, err = s.authenticateUser(ctx, exec, dto.AuthenticateUserRequest{
+			User: mapper.LocalUserToDTO(confirmationToken.R.User),
+		})
+		if err != nil {
+			log.Err(err).Msg("Failed to authenticate user")
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Debug().Err(err).Msg("Failed to complete registration")
+		return dto.LoginResult{}, err
+	}
+
+	return result, nil
 }

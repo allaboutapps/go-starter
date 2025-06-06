@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -17,7 +16,7 @@ import (
 
 func TestGetUserInfo(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		res := test.PerformRequest(t, s, "GET", "/api/v1/auth/userinfo", nil, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
@@ -43,7 +42,7 @@ func TestGetUserInfo(t *testing.T) {
 
 func TestGetUserInfoMinimal(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		_, err := models.AppUserProfiles(models.AppUserProfileWhere.UserID.EQ(fix.User1.ID)).DeleteAll(ctx, s.DB)

@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"context"
 	"database/sql"
 	"testing"
 
@@ -18,7 +17,7 @@ import (
 
 func TestInnerJoinWithFilter(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		profiles, err := models.AppUserProfiles(db.InnerJoinWithFilter(models.TableNames.AppUserProfiles,
@@ -50,7 +49,7 @@ func TestInnerJoinWithFilter(t *testing.T) {
 
 func TestInnerJoin(t *testing.T) {
 	test.WithTestDatabase(t, func(sqlDB *sql.DB) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		profiles, err := models.AppUserProfiles(db.InnerJoin(models.TableNames.AppUserProfiles,

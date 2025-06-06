@@ -32,6 +32,7 @@ type Router struct {
 	Management *echo.Group
 	APIV1Auth  *echo.Group
 	APIV1Push  *echo.Group
+	WellKnown  *echo.Group
 }
 
 type Server struct {
@@ -54,7 +55,8 @@ type AuthService interface {
 	Login(context.Context, dto.LoginRequest) (dto.LoginResult, error)
 	Logout(context.Context, dto.LogoutRequest) error
 	Refresh(context.Context, dto.RefreshRequest) (dto.LoginResult, error)
-	Register(context.Context, dto.RegisterRequest) (dto.LoginResult, error)
+	Register(context.Context, dto.RegisterRequest) (dto.RegisterResult, error)
+	CompleteRegister(context.Context, dto.CompleteRegisterRequest) (dto.LoginResult, error)
 	DeleteUserAccount(context.Context, dto.DeleteUserAccountRequest) error
 	ResetPassword(context.Context, dto.ResetPasswordRequest) (dto.LoginResult, error)
 	UpdatePassword(context.Context, dto.UpdatePasswordRequest) (dto.LoginResult, error)

@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -113,7 +112,7 @@ func TestPostLoginUserWithoutPassword(t *testing.T) {
 		}
 
 		fix.User2.Password = null.String{}
-		rowsAff, err := fix.User2.Update(context.Background(), s.DB, boil.Infer())
+		rowsAff, err := fix.User2.Update(t.Context(), s.DB, boil.Infer())
 		require.NoError(t, err)
 		require.Equal(t, int64(1), rowsAff)
 

@@ -61,6 +61,26 @@ paths:
       responses:
         "200":
           description: ModuleName @ Commit (BuildDate)
+  /.well-known/apple-app-site-association:
+    get:
+      description: Returns the Apple App Site Association file.
+      tags:
+      - well-known
+      summary: Apple App Site Association
+      operationId: GetAppleAppSiteAssociationRoute
+      responses:
+        "200":
+          description: Apple App Site Association
+  /.well-known/assetlinks.json:
+    get:
+      description: Returns the Android Digital Asset Links file.
+      tags:
+      - well-known
+      summary: Android Digital Asset Links
+      operationId: GetAndroidDigitalAssetLinksRoute
+      responses:
+        "200":
+          description: Android Digital Asset Links
   /api/v1/auth/account:
     delete:
       security:
@@ -270,8 +290,28 @@ paths:
           schema:
             $ref: '#/definitions/publicHttpError'
   /api/v1/auth/register:
+    get:
+      produces:
+      - text/html
+      tags:
+      - auth
+      summary: Page to complete registration
+      operationId: GetCompleteRegisterRoute
+      parameters:
+      - type: string
+        format: uuid4
+        description: Registration token to complete the registration process
+        name: token
+        in: query
+        required: true
+      responses:
+        "200":
+          description: Page to complete registration
     post:
-      description: Returns an access and refresh token on successful registration
+      description: |
+        Registers a local user. If the registration process requires a confirmation
+        the status code `202` is returned without auth tokens. Afterwards the registration needs to be confirmed
+        using the `POST /api/v1/auth/register/{registrationToken}` endpoint.
       tags:
       - auth
       summary: Registers a local user
@@ -286,6 +326,10 @@ paths:
           description: PostLoginResponse
           schema:
             $ref: '#/definitions/postLoginResponse'
+        "202":
+          description: RegisterResponse
+          schema:
+            $ref: '#/definitions/registerResponse'
         "400":
           description: PublicHTTPValidationError, type `INVALID_PASSWORD`
           schema:
@@ -294,6 +338,27 @@ paths:
           description: PublicHTTPError, type `USER_ALREADY_EXISTS`
           schema:
             $ref: '#/definitions/publicHttpError'
+  /api/v1/auth/register/{registrationToken}:
+    post:
+      description: Completes registration for a local user
+      tags:
+      - auth
+      summary: Complete registration
+      operationId: PostCompleteRegisterRoute
+      parameters:
+      - type: string
+        format: uuid4
+        description: Registration token to complete the registration process
+        name: registrationToken
+        in: path
+        required: true
+      responses:
+        "200":
+          description: PostLoginResponse
+          schema:
+            $ref: '#/definitions/postLoginResponse'
+        "401":
+          description: Unauthorized
   /api/v1/auth/userinfo:
     get:
       security:
@@ -410,193 +475,6 @@ definitions:
       key:
         description: Key of field failing validation
         type: string
-  nullableBool:
-    type: boolean
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Bool
-    example: true
-  nullableBoolSlice:
-    type: array
-    items:
-      type: boolean
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: BoolSlice
-  nullableFloat:
-    type: number
-    format: float
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Float32
-    example: 1.5
-  nullableFloat32:
-    type: number
-    format: float
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Float32
-    example: 1.5
-  nullableFloat32Slice:
-    type: array
-    items:
-      type: number
-      format: float
-      example: 1.5
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Float32Slice
-  nullableFloat64:
-    type: number
-    format: float
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Float64
-    example: 1.5
-  nullableFloat64Slice:
-    type: array
-    items:
-      type: number
-      format: float
-      example: 1.5
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Float64Slice
-  nullableFloatSlice:
-    type: array
-    items:
-      type: number
-      format: float
-      example: 1.5
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Float32Slice
-  nullableInt:
-    type: integer
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Int
-    example: 1234
-  nullableInt16:
-    type: integer
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Int16
-    example: 1234
-  nullableInt16Slice:
-    type: array
-    items:
-      type: integer
-      example: 1234
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Int16Slice
-  nullableInt32:
-    type: integer
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Int32
-    example: 1234
-  nullableInt32Slice:
-    type: array
-    items:
-      type: integer
-      example: 1234
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Int32Slice
-  nullableInt64:
-    type: integer
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Int64
-    example: 1234
-  nullableInt64Slice:
-    type: array
-    items:
-      type: integer
-      example: 1234
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: Int64Slice
-  nullableIntSlice:
-    type: array
-    items:
-      type: integer
-      example: 1234
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: IntSlice
-  nullableString:
-    type: string
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: String
-    example: example
-  nullableStringSlice:
-    type: array
-    items:
-      type: string
-    x-go-type:
-      import:
-        package: github.com/allaboutapps/nullable
-      type: StringSlice
-  nullables:
-    type: object
-    properties:
-      nullableBool:
-        $ref: '#/definitions/nullableBool'
-      nullableBoolSlice:
-        $ref: '#/definitions/nullableBoolSlice'
-      nullableFloat:
-        $ref: '#/definitions/nullableFloat'
-      nullableFloat32:
-        $ref: '#/definitions/nullableFloat32'
-      nullableFloat32Slice:
-        $ref: '#/definitions/nullableFloat32Slice'
-      nullableFloat64:
-        $ref: '#/definitions/nullableFloat64'
-      nullableFloat64Slice:
-        $ref: '#/definitions/nullableFloat64Slice'
-      nullableFloatSlice:
-        $ref: '#/definitions/nullableFloatSlice'
-      nullableInt:
-        $ref: '#/definitions/nullableInt'
-      nullableInt16:
-        $ref: '#/definitions/nullableInt16'
-      nullableInt16Slice:
-        $ref: '#/definitions/nullableInt16Slice'
-      nullableInt32:
-        $ref: '#/definitions/nullableInt32'
-      nullableInt32Slice:
-        $ref: '#/definitions/nullableInt32Slice'
-      nullableInt64:
-        $ref: '#/definitions/nullableInt64'
-      nullableInt64Slice:
-        $ref: '#/definitions/nullableInt64Slice'
-      nullableIntSlice:
-        $ref: '#/definitions/nullableIntSlice'
-      nullableString:
-        $ref: '#/definitions/nullableString'
-      nullableStringSlice:
-        $ref: '#/definitions/nullableStringSlice'
   orderDir:
     type: string
     enum:
@@ -795,6 +673,23 @@ definitions:
         type: string
         maxLength: 500
         example: fcm
+  registerResponse:
+    type: object
+    required:
+    - requiresConfirmation
+    properties:
+      requiresConfirmation:
+        description: Indicates whether the registration process requires email confirmation
+        type: boolean
+        example: true
+parameters:
+  registrationTokenParam:
+    type: string
+    format: uuid4
+    description: Registration token to complete the registration process
+    name: registrationToken
+    in: path
+    required: true
 responses:
   AuthForbiddenResponse:
     description: PublicHTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`

@@ -6,6 +6,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/auth"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/common"
 	"allaboutapps.dev/aw/go-starter/internal/api/handlers/push"
+	"allaboutapps.dev/aw/go-starter/internal/api/handlers/wellknown"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,8 +14,10 @@ func AttachAllRoutes(s *api.Server) {
 	// attach our routes
 	s.Router.Routes = []*echo.Route{
 		auth.DeleteUserAccountRoute(s),
+		auth.GetCompleteRegisterRoute(s),
 		auth.GetUserInfoRoute(s),
 		auth.PostChangePasswordRoute(s),
+		auth.PostCompleteRegisterRoute(s),
 		auth.PostForgotPasswordCompleteRoute(s),
 		auth.PostForgotPasswordRoute(s),
 		auth.PostLoginRoute(s),
@@ -26,5 +29,7 @@ func AttachAllRoutes(s *api.Server) {
 		common.GetSwaggerRoute(s),
 		common.GetVersionRoute(s),
 		push.PutUpdatePushTokenRoute(s),
+		wellknown.GetAndroidDigitalAssetLinksRoute(s),
+		wellknown.GetAppleAppSiteAssociationRoute(s),
 	}
 }

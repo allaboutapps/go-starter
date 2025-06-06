@@ -23,9 +23,9 @@ linters:
     - gosec
 
     # ---
-    # https://github.com/sivchari/tenv
-    # prefer t.Setenv instead of os.Setenv within test code.
-    - tenv
+    # https://github.com/ultimatepate/usetesting
+    # detects when some calls can be replaced by methods from the testing package.
+    - usetesting
 
     # ---
     # https://github.com/polyfloyd/go-errorlint

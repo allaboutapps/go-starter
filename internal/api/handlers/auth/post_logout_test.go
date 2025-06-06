@@ -1,7 +1,6 @@
 package auth_test
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"testing"
@@ -17,7 +16,7 @@ import (
 
 func TestPostLogoutSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		res := test.PerformRequest(t, s, "POST", "/api/v1/auth/logout", nil, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
@@ -33,7 +32,7 @@ func TestPostLogoutSuccess(t *testing.T) {
 
 func TestPostLogoutSuccessWithRefreshToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		payload := test.GenericPayload{
@@ -53,7 +52,7 @@ func TestPostLogoutSuccessWithRefreshToken(t *testing.T) {
 
 func TestPostLogoutSuccessWithUnknownRefreshToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		payload := test.GenericPayload{
@@ -73,7 +72,7 @@ func TestPostLogoutSuccessWithUnknownRefreshToken(t *testing.T) {
 
 func TestPostLogoutInvalidRefreshToken(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-		ctx := context.Background()
+		ctx := t.Context()
 		fix := fixtures.Fixtures()
 		payload := test.GenericPayload{
 			"refresh_token": "not my refresh token",

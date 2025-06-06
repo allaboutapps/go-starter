@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "test.at.aaa.b2b",
+      "sha256_cert_fingerprints": [
+        "BB:A6:3E:A7:91:F4:05:2C:6D:47:8B:1A:3F:C5:9E:0D:7B:2F:1A:E8:D5:6C:10:52:8B:F4:B7:A9:1D:C3:57:43"
+      ]
+    }
+  }
+]

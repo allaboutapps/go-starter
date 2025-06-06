@@ -27,6 +27,7 @@ type EchoServer struct {
 	EnableSecureMiddleware         bool
 	EnableCacheControlMiddleware   bool
 	SecureMiddleware               EchoServerSecureMiddleware
+	WebTemplatesViewsBaseDirAbs    string
 }
 
 type PprofServer struct {
@@ -57,11 +58,16 @@ type AuthServer struct {
 	PasswordResetTokenReuseDuration    time.Duration
 	DefaultUserScopes                  []string
 	LastAuthenticatedAtThreshold       time.Duration
+	RegistrationRequiresConfirmation   bool
+	ConfirmationTokenValidity          time.Duration
+	ConfirmationTokenDebounceDuration  time.Duration
 }
 
 type PathsServer struct {
-	APIBaseDirAbs string
-	MntBaseDirAbs string
+	APIBaseDirAbs               string
+	MntBaseDirAbs               string
+	AppleAppSiteAssociationFile string
+	AndroidAssetlinksFile       string
 }
 
 type ManagementServer struct {
@@ -170,6 +176,7 @@ func DefaultServiceConfigFromEnv() Server {
 				HSTSPreloadEnabled:    util.GetEnvAsBool("SERVER_ECHO_SECURE_MIDDLEWARE_HSTS_PRELOAD_ENABLED", false),
 				ReferrerPolicy:        util.GetEnv("SERVER_ECHO_SECURE_MIDDLEWARE_REFERRER_POLICY", ""),
 			},
+			WebTemplatesViewsBaseDirAbs: util.GetEnv("SERVER_ECHO_WEB_TEMPLATES_VIEWS_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/web/templates/views")),
 		},
 		Pprof: PprofServer{
 			// https://golang.org/pkg/net/http/pprof/
@@ -180,8 +187,10 @@ func DefaultServiceConfigFromEnv() Server {
 		},
 		Paths: PathsServer{
 			// Please ALWAYS work with ABSOLUTE (ABS) paths from ENV_VARS (however you may resolve a project-relative to absolute for the default value)
-			APIBaseDirAbs: util.GetEnv("SERVER_PATHS_API_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/api")),        // /app/api (swagger.yml)
-			MntBaseDirAbs: util.GetEnv("SERVER_PATHS_MNT_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/assets/mnt")), // /app/assets/mnt (user-generated content)
+			APIBaseDirAbs:               util.GetEnv("SERVER_PATHS_API_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/api")),        // /app/api (swagger.yml)
+			MntBaseDirAbs:               util.GetEnv("SERVER_PATHS_MNT_BASE_DIR_ABS", filepath.Join(util.GetProjectRootDir(), "/assets/mnt")), // /app/assets/mnt (user-generated content)
+			AppleAppSiteAssociationFile: util.GetEnv("SERVER_PATHS_APPLE_APP_SITE_ASSOCIATION_FILE", ""),
+			AndroidAssetlinksFile:       util.GetEnv("SERVER_PATHS_ANDROID_ASSETLINKS_FILE", ""),
 		},
 		Auth: AuthServer{
 			AccessTokenValidity:                time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_ACCESS_TOKEN_VALIDITY", 86400)),
@@ -190,6 +199,9 @@ func DefaultServiceConfigFromEnv() Server {
 			PasswordResetTokenReuseDuration:    time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_PASSWORD_RESET_TOKEN_REUSE_DURATION_SECONDS", 0)),
 			DefaultUserScopes:                  util.GetEnvAsStringArr("SERVER_AUTH_DEFAULT_USER_SCOPES", []string{"app"}),
 			LastAuthenticatedAtThreshold:       time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_LAST_AUTHENTICATED_AT_THRESHOLD", 900)),
+			RegistrationRequiresConfirmation:   util.GetEnvAsBool("SERVER_AUTH_REGISTRATION_REQUIRES_CONFIRMATION", false),
+			ConfirmationTokenValidity:          time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_CONFIRMATION_TOKEN_VALIDITY_SECONDS", 86400)),
+			ConfirmationTokenDebounceDuration:  time.Second * time.Duration(util.GetEnvAsInt("SERVER_AUTH_CONFIRMATION_TOKEN_DEBOUNCE_DURATION_SECONDS", 60)),
 		},
 		Management: ManagementServer{
 			Secret:           util.GetMgmtSecret("SERVER_MANAGEMENT_SECRET"),
@@ -213,7 +225,6 @@ func DefaultServiceConfigFromEnv() Server {
 			Password:   util.GetEnv("SERVER_SMTP_PASSWORD", ""),
 			AuthType:   transport.SMTPAuthTypeFromString(util.GetEnv("SERVER_SMTP_AUTH_TYPE", transport.SMTPAuthTypeNone.String())),
 			Encryption: transport.SMTPEncryption(util.GetEnvEnum("SERVER_SMTP_ENCRYPTION", transport.SMTPEncryptionNone.String(), []string{transport.SMTPEncryptionNone.String(), transport.SMTPEncryptionTLS.String(), transport.SMTPEncryptionStartTLS.String()})),
-			UseTLS:     util.GetEnvAsBool("SERVER_SMTP_USE_TLS", false),
 			TLSConfig:  nil,
 		},
 		Frontend: FrontendServer{

@@ -29,7 +29,7 @@ func WithTestServerFromDump(t *testing.T, dumpConfig DatabaseDumpConfig, closure
 // WithTestServerConfigurable returns a fully configured server, allowing for configuration using the provided server config.
 func WithTestServerConfigurable(t *testing.T, config config.Server, closure func(s *api.Server)) {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	WithTestServerConfigurableContext(ctx, t, config, closure)
 }
 
@@ -46,7 +46,7 @@ func WithTestServerConfigurableContext(ctx context.Context, t *testing.T, config
 // WithTestServerConfigurableFromDump returns a fully configured server, allowing for configuration using the provided server config and a database dump to be injected.
 func WithTestServerConfigurableFromDump(t *testing.T, config config.Server, dumpConfig DatabaseDumpConfig, closure func(s *api.Server)) {
 	t.Helper()
-	ctx := context.Background()
+	ctx := t.Context()
 	WithTestServerConfigurableFromDumpContext(ctx, t, config, dumpConfig, closure)
 }
 

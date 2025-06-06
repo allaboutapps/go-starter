@@ -25,57 +25,62 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID                  string            `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Username            null.String       `boil:"username" json:"username,omitempty" toml:"username" yaml:"username,omitempty"`
-	Password            null.String       `boil:"password" json:"password,omitempty" toml:"password" yaml:"password,omitempty"`
-	IsActive            bool              `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
-	Scopes              types.StringArray `boil:"scopes" json:"scopes" toml:"scopes" yaml:"scopes"`
-	LastAuthenticatedAt null.Time         `boil:"last_authenticated_at" json:"last_authenticated_at,omitempty" toml:"last_authenticated_at" yaml:"last_authenticated_at,omitempty"`
-	CreatedAt           time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt           time.Time         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID                   string            `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Username             null.String       `boil:"username" json:"username,omitempty" toml:"username" yaml:"username,omitempty"`
+	Password             null.String       `boil:"password" json:"password,omitempty" toml:"password" yaml:"password,omitempty"`
+	IsActive             bool              `boil:"is_active" json:"is_active" toml:"is_active" yaml:"is_active"`
+	Scopes               types.StringArray `boil:"scopes" json:"scopes" toml:"scopes" yaml:"scopes"`
+	LastAuthenticatedAt  null.Time         `boil:"last_authenticated_at" json:"last_authenticated_at,omitempty" toml:"last_authenticated_at" yaml:"last_authenticated_at,omitempty"`
+	CreatedAt            time.Time         `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt            time.Time         `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	RequiresConfirmation bool              `boil:"requires_confirmation" json:"requires_confirmation" toml:"requires_confirmation" yaml:"requires_confirmation"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var UserColumns = struct {
-	ID                  string
-	Username            string
-	Password            string
-	IsActive            string
-	Scopes              string
-	LastAuthenticatedAt string
-	CreatedAt           string
-	UpdatedAt           string
+	ID                   string
+	Username             string
+	Password             string
+	IsActive             string
+	Scopes               string
+	LastAuthenticatedAt  string
+	CreatedAt            string
+	UpdatedAt            string
+	RequiresConfirmation string
 }{
-	ID:                  "id",
-	Username:            "username",
-	Password:            "password",
-	IsActive:            "is_active",
-	Scopes:              "scopes",
-	LastAuthenticatedAt: "last_authenticated_at",
-	CreatedAt:           "created_at",
-	UpdatedAt:           "updated_at",
+	ID:                   "id",
+	Username:             "username",
+	Password:             "password",
+	IsActive:             "is_active",
+	Scopes:               "scopes",
+	LastAuthenticatedAt:  "last_authenticated_at",
+	CreatedAt:            "created_at",
+	UpdatedAt:            "updated_at",
+	RequiresConfirmation: "requires_confirmation",
 }
 
 var UserTableColumns = struct {
-	ID                  string
-	Username            string
-	Password            string
-	IsActive            string
-	Scopes              string
-	LastAuthenticatedAt string
-	CreatedAt           string
-	UpdatedAt           string
+	ID                   string
+	Username             string
+	Password             string
+	IsActive             string
+	Scopes               string
+	LastAuthenticatedAt  string
+	CreatedAt            string
+	UpdatedAt            string
+	RequiresConfirmation string
 }{
-	ID:                  "users.id",
-	Username:            "users.username",
-	Password:            "users.password",
-	IsActive:            "users.is_active",
-	Scopes:              "users.scopes",
-	LastAuthenticatedAt: "users.last_authenticated_at",
-	CreatedAt:           "users.created_at",
-	UpdatedAt:           "users.updated_at",
+	ID:                   "users.id",
+	Username:             "users.username",
+	Password:             "users.password",
+	IsActive:             "users.is_active",
+	Scopes:               "users.scopes",
+	LastAuthenticatedAt:  "users.last_authenticated_at",
+	CreatedAt:            "users.created_at",
+	UpdatedAt:            "users.updated_at",
+	RequiresConfirmation: "users.requires_confirmation",
 }
 
 // Generated where
@@ -167,35 +172,39 @@ func (w whereHelpertypes_StringArray) GTE(x types.StringArray) qm.QueryMod {
 }
 
 var UserWhere = struct {
-	ID                  whereHelperstring
-	Username            whereHelpernull_String
-	Password            whereHelpernull_String
-	IsActive            whereHelperbool
-	Scopes              whereHelpertypes_StringArray
-	LastAuthenticatedAt whereHelpernull_Time
-	CreatedAt           whereHelpertime_Time
-	UpdatedAt           whereHelpertime_Time
+	ID                   whereHelperstring
+	Username             whereHelpernull_String
+	Password             whereHelpernull_String
+	IsActive             whereHelperbool
+	Scopes               whereHelpertypes_StringArray
+	LastAuthenticatedAt  whereHelpernull_Time
+	CreatedAt            whereHelpertime_Time
+	UpdatedAt            whereHelpertime_Time
+	RequiresConfirmation whereHelperbool
 }{
-	ID:                  whereHelperstring{field: "\"users\".\"id\""},
-	Username:            whereHelpernull_String{field: "\"users\".\"username\""},
-	Password:            whereHelpernull_String{field: "\"users\".\"password\""},
-	IsActive:            whereHelperbool{field: "\"users\".\"is_active\""},
-	Scopes:              whereHelpertypes_StringArray{field: "\"users\".\"scopes\""},
-	LastAuthenticatedAt: whereHelpernull_Time{field: "\"users\".\"last_authenticated_at\""},
-	CreatedAt:           whereHelpertime_Time{field: "\"users\".\"created_at\""},
-	UpdatedAt:           whereHelpertime_Time{field: "\"users\".\"updated_at\""},
+	ID:                   whereHelperstring{field: "\"users\".\"id\""},
+	Username:             whereHelpernull_String{field: "\"users\".\"username\""},
+	Password:             whereHelpernull_String{field: "\"users\".\"password\""},
+	IsActive:             whereHelperbool{field: "\"users\".\"is_active\""},
+	Scopes:               whereHelpertypes_StringArray{field: "\"users\".\"scopes\""},
+	LastAuthenticatedAt:  whereHelpernull_Time{field: "\"users\".\"last_authenticated_at\""},
+	CreatedAt:            whereHelpertime_Time{field: "\"users\".\"created_at\""},
+	UpdatedAt:            whereHelpertime_Time{field: "\"users\".\"updated_at\""},
+	RequiresConfirmation: whereHelperbool{field: "\"users\".\"requires_confirmation\""},
 }
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
 	AppUserProfile      string
 	AccessTokens        string
+	ConfirmationTokens  string
 	PasswordResetTokens string
 	PushTokens          string
 	RefreshTokens       string
 }{
 	AppUserProfile:      "AppUserProfile",
 	AccessTokens:        "AccessTokens",
+	ConfirmationTokens:  "ConfirmationTokens",
 	PasswordResetTokens: "PasswordResetTokens",
 	PushTokens:          "PushTokens",
 	RefreshTokens:       "RefreshTokens",
@@ -205,6 +214,7 @@ var UserRels = struct {
 type userR struct {
 	AppUserProfile      *AppUserProfile         `boil:"AppUserProfile" json:"AppUserProfile" toml:"AppUserProfile" yaml:"AppUserProfile"`
 	AccessTokens        AccessTokenSlice        `boil:"AccessTokens" json:"AccessTokens" toml:"AccessTokens" yaml:"AccessTokens"`
+	ConfirmationTokens  ConfirmationTokenSlice  `boil:"ConfirmationTokens" json:"ConfirmationTokens" toml:"ConfirmationTokens" yaml:"ConfirmationTokens"`
 	PasswordResetTokens PasswordResetTokenSlice `boil:"PasswordResetTokens" json:"PasswordResetTokens" toml:"PasswordResetTokens" yaml:"PasswordResetTokens"`
 	PushTokens          PushTokenSlice          `boil:"PushTokens" json:"PushTokens" toml:"PushTokens" yaml:"PushTokens"`
 	RefreshTokens       RefreshTokenSlice       `boil:"RefreshTokens" json:"RefreshTokens" toml:"RefreshTokens" yaml:"RefreshTokens"`
@@ -227,6 +237,13 @@ func (r *userR) GetAccessTokens() AccessTokenSlice {
 		return nil
 	}
 	return r.AccessTokens
+}
+
+func (r *userR) GetConfirmationTokens() ConfirmationTokenSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ConfirmationTokens
 }
 
 func (r *userR) GetPasswordResetTokens() PasswordResetTokenSlice {
@@ -254,9 +271,9 @@ func (r *userR) GetRefreshTokens() RefreshTokenSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "username", "password", "is_active", "scopes", "last_authenticated_at", "created_at", "updated_at"}
+	userAllColumns            = []string{"id", "username", "password", "is_active", "scopes", "last_authenticated_at", "created_at", "updated_at", "requires_confirmation"}
 	userColumnsWithoutDefault = []string{"is_active", "scopes", "created_at", "updated_at"}
-	userColumnsWithDefault    = []string{"id", "username", "password", "last_authenticated_at"}
+	userColumnsWithDefault    = []string{"id", "username", "password", "last_authenticated_at", "requires_confirmation"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )
@@ -375,6 +392,20 @@ func (o *User) AccessTokens(mods ...qm.QueryMod) accessTokenQuery {
 	)
 
 	return AccessTokens(queryMods...)
+}
+
+// ConfirmationTokens retrieves all the confirmation_token's ConfirmationTokens with an executor.
+func (o *User) ConfirmationTokens(mods ...qm.QueryMod) confirmationTokenQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"confirmation_tokens\".\"user_id\"=?", o.ID),
+	)
+
+	return ConfirmationTokens(queryMods...)
 }
 
 // PasswordResetTokens retrieves all the password_reset_token's PasswordResetTokens with an executor.
@@ -624,6 +655,112 @@ func (userL) LoadAccessTokens(ctx context.Context, e boil.ContextExecutor, singu
 				local.R.AccessTokens = append(local.R.AccessTokens, foreign)
 				if foreign.R == nil {
 					foreign.R = &accessTokenR{}
+				}
+				foreign.R.User = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadConfirmationTokens allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadConfirmationTokens(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`confirmation_tokens`),
+		qm.WhereIn(`confirmation_tokens.user_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load confirmation_tokens")
+	}
+
+	var resultSlice []*ConfirmationToken
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice confirmation_tokens")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on confirmation_tokens")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for confirmation_tokens")
+	}
+
+	if singular {
+		object.R.ConfirmationTokens = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &confirmationTokenR{}
+			}
+			foreign.R.User = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UserID {
+				local.R.ConfirmationTokens = append(local.R.ConfirmationTokens, foreign)
+				if foreign.R == nil {
+					foreign.R = &confirmationTokenR{}
 				}
 				foreign.R.User = local
 				break
@@ -1046,6 +1183,59 @@ func (o *User) AddAccessTokens(ctx context.Context, exec boil.ContextExecutor, i
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &accessTokenR{
+				User: o,
+			}
+		} else {
+			rel.R.User = o
+		}
+	}
+	return nil
+}
+
+// AddConfirmationTokens adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.ConfirmationTokens.
+// Sets related.R.User appropriately.
+func (o *User) AddConfirmationTokens(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ConfirmationToken) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UserID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"confirmation_tokens\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
+				strmangle.WhereClause("\"", "\"", 2, confirmationTokenPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.Token}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UserID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			ConfirmationTokens: related,
+		}
+	} else {
+		o.R.ConfirmationTokens = append(o.R.ConfirmationTokens, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &confirmationTokenR{
 				User: o,
 			}
 		} else {
