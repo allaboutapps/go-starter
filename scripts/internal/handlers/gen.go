@@ -81,46 +81,40 @@ type TempateData struct {
 // that match <methodPrefixes>*<methodSuffix>
 func GenHandlers(printOnly bool) {
 	funcs := []ResolvedFunction{}
+	subPkgsMap := make(map[string]struct{}) // Collect unique package FQDNs here.
 
 	baseModuleName, err := util.GetModuleName(pathModFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Build regex patterns
-	regexPatterns := []string{}
-	for _, prefix := range methodPrefixes {
-		for _, suffixPattern := range methodSuffixes {
-			var pattern string
-			if strings.HasSuffix(suffixPattern, "*") {
-				baseSuffix := suffixPattern[:len(suffixPattern)-1]
-				// Regex: Start, Prefix, Optional(UpperCaseLetter, AnyAlphaNum*), BaseSuffix, Digits*, End
-				pattern = fmt.Sprintf(`^%s([A-Z][a-zA-Z0-9]*)?%s[0-9]*$`, prefix, regexp.QuoteMeta(baseSuffix))
-			} else {
-				// Regex: Start, Prefix, Optional(UpperCaseLetter, AnyAlphaNum*), Suffix, End
-				pattern = fmt.Sprintf(`^%s([A-Z][a-zA-Z0-9]*)?%s$`, prefix, regexp.QuoteMeta(suffixPattern))
-			}
-			regexPatterns = append(regexPatterns, pattern)
+	// Build a single regex to match all desired function names
+	prefixPart := strings.Join(methodPrefixes, "|")
+
+	var suffixParts []string
+	for _, suffixPattern := range methodSuffixes {
+		if strings.HasSuffix(suffixPattern, "*") {
+			// Wildcard '*' is defined to match zero or more digits.
+			baseSuffix := strings.TrimSuffix(suffixPattern, "*")
+			suffixParts = append(suffixParts, regexp.QuoteMeta(baseSuffix)+"[0-9]*")
+		} else {
+			suffixParts = append(suffixParts, regexp.QuoteMeta(suffixPattern))
 		}
 	}
+	suffixPart := strings.Join(suffixParts, "|")
 
-	// Sort patterns: Longer patterns first (heuristic for specificity)
-	sort.Slice(regexPatterns, func(i, j int) bool {
-		return len(regexPatterns[i]) > len(regexPatterns[j])
-	})
+	// The pattern is: (prefix)(ResourceName)(suffix)
+	// e.g. GetUsersRoute, PostSomethingRouteV2
+	// ResourceName is optional (e.g. `GetRoute`), capitalized, and can contain numbers.
+	resourceNamePart := "([A-Z][a-zA-Z0-9]*)?"
 
-	// Compile regexes
-	compiledRegexes := make([]*regexp.Regexp, 0, len(regexPatterns))
-	for _, p := range regexPatterns {
-		re, err := regexp.Compile(p)
-		if err != nil {
-			log.Fatalf("Failed to compile regex '%s': %v", p, err)
-		}
-		compiledRegexes = append(compiledRegexes, re)
+	fullPattern := fmt.Sprintf("^(%s)%s(%s)$", prefixPart, resourceNamePart, suffixPart)
+	routeRegex, err := regexp.Compile(fullPattern)
+	if err != nil {
+		log.Fatalf("Failed to compile route regex: %v", err)
 	}
 
 	set := token.NewFileSet()
-	packageInfoCache := make(map[string]struct{ Name, FQDN string }) // Cache package info
 
 	err = filepath.Walk(pathHandlersRoot, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
@@ -128,42 +122,30 @@ func GenHandlers(printOnly bool) {
 			os.Exit(1)
 		}
 
-		// ignore handler file to be generated, directories, non-go files, test files
-		if path == pathHandlersFile || f.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "test.go") {
+		if path == pathHandlersFile || f.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
 			return nil
 		}
 
-		// Parse the file to get declarations
 		gofile, err := parser.ParseFile(set, path, nil, 0)
 		if err != nil {
 			fmt.Println("Failed to parse package:", err)
 			os.Exit(1)
 		}
 
-		// Get package info (use cache)
 		fileDir := filepath.Dir(path)
 		packageNameFQDN := strings.Replace(fileDir, pathProjectRoot, baseModuleName, 1)
-		pkgInfo, ok := packageInfoCache[packageNameFQDN]
-		if !ok {
-			pkgInfo = struct{ Name, FQDN string }{Name: gofile.Name.Name, FQDN: packageNameFQDN}
-			packageInfoCache[packageNameFQDN] = pkgInfo
-		}
 
-		// Iterate through declarations and match function names
 		for _, d := range gofile.Decls {
 			if fn, isFn := d.(*ast.FuncDecl); isFn {
 				fnName := fn.Name.String()
-				// Check against compiled regexes (longest/most specific first)
-				for _, re := range compiledRegexes {
-					if re.MatchString(fnName) {
-						funcs = append(funcs, ResolvedFunction{
-							FunctionName:    fnName,
-							PackageName:     pkgInfo.Name,
-							PackageNameFQDN: pkgInfo.FQDN,
-						})
-						// Found the most specific match, stop checking regexes for this function
-						break
-					}
+				if routeRegex.MatchString(fnName) {
+					funcs = append(funcs, ResolvedFunction{
+						FunctionName:    fnName,
+						PackageName:     gofile.Name.Name,
+						PackageNameFQDN: packageNameFQDN,
+					})
+					// A function matched, so we need to import its package.
+					subPkgsMap[packageNameFQDN] = struct{}{}
 				}
 			}
 		}
@@ -174,18 +156,6 @@ func GenHandlers(printOnly bool) {
 		log.Fatal(err)
 	}
 
-	// Remove duplicates (if any regexes overlap unexpectedly)
-	uniqueFuncsMap := make(map[string]ResolvedFunction)
-	for _, fun := range funcs {
-		key := fun.PackageNameFQDN + "." + fun.FunctionName
-		uniqueFuncsMap[key] = fun
-	}
-	uniqueFuncs := make([]ResolvedFunction, 0, len(uniqueFuncsMap))
-	for _, fun := range uniqueFuncsMap {
-		uniqueFuncs = append(uniqueFuncs, fun)
-	}
-	funcs = uniqueFuncs // Replace original funcs with unique ones
-
 	// stable sort the functions: first PackageName then FunctionName
 	sort.Slice(funcs[:], func(i, j int) bool {
 		if funcs[i].PackageNameFQDN != funcs[j].PackageNameFQDN {
@@ -194,11 +164,7 @@ func GenHandlers(printOnly bool) {
 		return funcs[i].FunctionName < funcs[j].FunctionName
 	})
 
-	// Collect unique subpackage FQDNs that have matched functions
-	subPkgsMap := make(map[string]struct{})
-	for _, fun := range funcs {
-		subPkgsMap[fun.PackageNameFQDN] = struct{}{}
-	}
+	// Create a slice of package FQDNs from the map.
 	subPkgs := make([]string, 0, len(subPkgsMap))
 	for pkgFQDN := range subPkgsMap {
 		subPkgs = append(subPkgs, pkgFQDN)
