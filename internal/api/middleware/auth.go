@@ -13,6 +13,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/data/mapper"
 	"allaboutapps.dev/aw/go-starter/internal/models"
+	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
@@ -22,9 +23,9 @@ import (
 )
 
 var (
-	ErrBadRequestMalformedToken                = httperrors.NewHTTPError(http.StatusBadRequest, "MALFORMED_TOKEN", "Auth token is malformed")
-	ErrUnauthorizedLastAuthenticatedAtExceeded = httperrors.NewHTTPError(http.StatusUnauthorized, "LAST_AUTHENTICATED_AT_EXCEEDED", "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
-	ErrForbiddenMissingScopes                  = httperrors.NewHTTPError(http.StatusForbidden, "MISSING_SCOPES", "User is missing required scopes")
+	ErrBadRequestMalformedToken                = httperrors.NewHTTPError(http.StatusBadRequest, types.PublicHTTPErrorTypeMALFORMEDTOKEN, "Auth token is malformed")
+	ErrUnauthorizedLastAuthenticatedAtExceeded = httperrors.NewHTTPError(http.StatusUnauthorized, types.PublicHTTPErrorTypeLASTAUTHENTICATEDATEXCEEDED, "LastAuthenticatedAt timestamp exceeds threshold, re-authentication required")
+	ErrForbiddenMissingScopes                  = httperrors.NewHTTPError(http.StatusForbidden, types.PublicHTTPErrorTypeMISSINGSCOPES, "User is missing required scopes")
 	ErrAuthTokenValidationFailed               = errors.New("auth token validation failed")
 )
 

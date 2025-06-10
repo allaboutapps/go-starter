@@ -4,6 +4,26 @@ info:
   version: 0.1.0
 paths: {}
 definitions:
+  PublicHTTPErrorType:
+    type: string
+    description: Type of error returned, should be used for client-side error handling
+    enum:
+      - generic
+      # push
+      - PUSH_TOKEN_ALREADY_EXISTS
+      - OLD_PUSH_TOKEN_NOT_FOUND
+      # files
+      - ZERO_FILE_SIZE
+      # auth
+      - USER_DEACTIVATED
+      - INVALID_PASSWORD
+      - NOT_LOCAL_USER
+      - TOKEN_NOT_FOUND
+      - TOKEN_EXPIRED
+      - USER_ALREADY_EXISTS
+      - MALFORMED_TOKEN
+      - LAST_AUTHENTICATED_AT_EXCEEDED
+      - MISSING_SCOPES
   PublicHTTPError:
     type: object
     required:
@@ -28,9 +48,7 @@ definitions:
         type: string
         example: Forbidden
       type:
-        description: "Type of error returned, should be used for client-side error handling"
-        type: string
-        example: generic
+        $ref: "#/definitions/PublicHTTPErrorType"
   PublicHTTPValidationError:
     allOf:
       - $ref: "#/definitions/PublicHTTPError"

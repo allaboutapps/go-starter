@@ -267,7 +267,7 @@ func validatePayload(c echo.Context, v runtime.Validatable) error {
 
 			valErrs := formatValidationErrors(c.Request().Context(), compositeError)
 
-			return httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
+			return httperrors.NewHTTPValidationError(http.StatusBadRequest, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
 		}
 
 		var validationError *oerrors.Validation
@@ -282,7 +282,7 @@ func validatePayload(c echo.Context, v runtime.Validatable) error {
 				},
 			}
 
-			return httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
+			return httperrors.NewHTTPValidationError(http.StatusBadRequest, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
 		}
 
 		LogFromEchoContext(c).Error().Err(err).Msg("Failed to validate payload, returning generic HTTP error")

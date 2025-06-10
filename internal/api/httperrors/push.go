@@ -2,9 +2,11 @@ package httperrors
 
 import (
 	"net/http"
+
+	"allaboutapps.dev/aw/go-starter/internal/types"
 )
 
 var (
-	ErrConflictPushToken    = NewHTTPError(http.StatusConflict, "PUSH_TOKEN_ALREADY_EXISTS", "The given token already exists.")
-	ErrNotFoundOldPushToken = NewHTTPError(http.StatusNotFound, "OLD_PUSH_TOKEN_NOT_FOUND", "The old push token does not exists. The new token was saved.")
+	ErrConflictPushToken    = NewHTTPError(http.StatusConflict, types.PublicHTTPErrorTypePUSHTOKENALREADYEXISTS, "The given token already exists.")
+	ErrNotFoundOldPushToken = NewHTTPError(http.StatusNotFound, types.PublicHTTPErrorTypeOLDPUSHTOKENNOTFOUND, "The old push token does not exists. The new token was saved.")
 )
