@@ -35,10 +35,9 @@ type PublicHTTPError struct {
 	// Required: true
 	Title *string `json:"title"`
 
-	// Type of error returned, should be used for client-side error handling
-	// Example: generic
+	// type
 	// Required: true
-	Type *string `json:"type"`
+	Type *PublicHTTPErrorType `json:"type"`
 }
 
 // Validate validates this public Http error
@@ -95,11 +94,51 @@ func (m *PublicHTTPError) validateType(formats strfmt.Registry) error {
 		return err
 	}
 
+	if err := validate.Required("type", "body", m.Type); err != nil {
+		return err
+	}
+
+	if m.Type != nil {
+		if err := m.Type.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("type")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("type")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
-// ContextValidate validates this public Http error based on context it is used
+// ContextValidate validate this public Http error based on the context it is used
 func (m *PublicHTTPError) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PublicHTTPError) contextValidateType(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Type != nil {
+		if err := m.Type.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("type")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("type")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

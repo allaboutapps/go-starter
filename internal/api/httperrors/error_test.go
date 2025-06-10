@@ -12,17 +12,17 @@ import (
 )
 
 func TestHTTPErrorSimple(t *testing.T) {
-	e := httperrors.NewHTTPError(http.StatusNotFound, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusNotFound))
+	e := httperrors.NewHTTPError(http.StatusNotFound, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusNotFound))
 	require.Equal(t, "HTTPError 404 (generic): Not Found", e.Error())
 }
 
 func TestHTTPErrorDetail(t *testing.T) {
-	e := httperrors.NewHTTPErrorWithDetail(http.StatusNotFound, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusNotFound), "ToS violation")
+	e := httperrors.NewHTTPErrorWithDetail(http.StatusNotFound, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusNotFound), "ToS violation")
 	require.Equal(t, "HTTPError 404 (generic): Not Found - ToS violation", e.Error())
 }
 
 func TestHTTPErrorInternalError(t *testing.T) {
-	e := httperrors.NewHTTPError(http.StatusInternalServerError, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusInternalServerError))
+	e := httperrors.NewHTTPError(http.StatusInternalServerError, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusInternalServerError))
 
 	e.Internal = sql.ErrConnDone
 
@@ -30,7 +30,7 @@ func TestHTTPErrorInternalError(t *testing.T) {
 }
 
 func TestHTTPErrorAdditionalData(t *testing.T) {
-	e := httperrors.NewHTTPError(http.StatusInternalServerError, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusInternalServerError))
+	e := httperrors.NewHTTPError(http.StatusInternalServerError, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusInternalServerError))
 
 	e.AdditionalData = map[string]interface{}{
 		"key1": "value1",
@@ -51,17 +51,17 @@ var valErrs = append(make([]*types.HTTPValidationErrorDetail, 0, 2), &types.HTTP
 })
 
 func TestHTTPValidationErrorSimple(t *testing.T) {
-	e := httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
+	e := httperrors.NewHTTPValidationError(http.StatusBadRequest, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
 	require.Equal(t, "HTTPValidationError 400 (generic): Bad Request - Validation: test1 (in body.test1): ValidationError, test2 (in body.test2): Validation Error", e.Error())
 }
 
 func TestHTTPValidationErrorDetail(t *testing.T) {
-	e := httperrors.NewHTTPValidationErrorWithDetail(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs, "Did API spec change?")
+	e := httperrors.NewHTTPValidationErrorWithDetail(http.StatusBadRequest, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs, "Did API spec change?")
 	require.Equal(t, "HTTPValidationError 400 (generic): Bad Request - Did API spec change? - Validation: test1 (in body.test1): ValidationError, test2 (in body.test2): Validation Error", e.Error())
 }
 
 func TestHTTPValidationErrorInternalError(t *testing.T) {
-	e := httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
+	e := httperrors.NewHTTPValidationError(http.StatusBadRequest, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
 
 	e.Internal = sql.ErrConnDone
 
@@ -69,7 +69,7 @@ func TestHTTPValidationErrorInternalError(t *testing.T) {
 }
 
 func TestHTTPValidationErrorAdditionalData(t *testing.T) {
-	e := httperrors.NewHTTPValidationError(http.StatusBadRequest, httperrors.HTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
+	e := httperrors.NewHTTPValidationError(http.StatusBadRequest, types.PublicHTTPErrorTypeGeneric, http.StatusText(http.StatusBadRequest), valErrs)
 
 	e.AdditionalData = map[string]interface{}{
 		"key1": "value1",

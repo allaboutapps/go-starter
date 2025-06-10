@@ -76,7 +76,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(echoHTTPError.Code)),
 						Title: swag.String(http.StatusText(http.StatusInternalServerError)),
-						Type:  swag.String(httperrors.HTTPErrorTypeGeneric),
+						Type:  types.PublicHTTPErrorTypeGeneric.Pointer(),
 					},
 					Internal: echoHTTPError.Internal,
 				}
@@ -94,7 +94,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(echoHTTPError.Code)),
 						Title: &msg,
-						Type:  swag.String(httperrors.HTTPErrorTypeGeneric),
+						Type:  types.PublicHTTPErrorTypeGeneric.Pointer(),
 					},
 					Internal: echoHTTPError.Internal,
 				}
@@ -106,7 +106,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(http.StatusInternalServerError)),
 						Title: swag.String(http.StatusText(http.StatusInternalServerError)),
-						Type:  swag.String(httperrors.HTTPErrorTypeGeneric),
+						Type:  types.PublicHTTPErrorTypeGeneric.Pointer(),
 					},
 
 					Internal: err,
@@ -116,7 +116,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(http.StatusInternalServerError)),
 						Title: swag.String(err.Error()),
-						Type:  swag.String(httperrors.HTTPErrorTypeGeneric),
+						Type:  types.PublicHTTPErrorTypeGeneric.Pointer(),
 					},
 				}
 			}

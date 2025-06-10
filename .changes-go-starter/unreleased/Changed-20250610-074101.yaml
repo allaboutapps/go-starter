@@ -1,0 +1,3 @@
+kind: Changed
+body: 'Refactor the public http error to use a enum for the error type. **BREAKING**: All existing errors need to be migrated to use the enum as error type. Therefore the error type keys need to be added to the Enum `PublicHTTPErrorType` and need to be used in the error definition.'
+time: 2025-06-10T07:41:01.744547585Z

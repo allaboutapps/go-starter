@@ -11,11 +11,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const (
-	// HTTPErrorTypeGeneric represents the generic error type returned as default for all HTTP errors without a type defined.
-	HTTPErrorTypeGeneric string = "generic"
-)
-
 // Payload in accordance with RFC 7807 (Problem Details for HTTP APIs) with the exception of the type
 // value not being represented by a URI. https://tools.ietf.org/html/rfc7807 @ 2020-04-27T15:44:37Z
 
@@ -31,21 +26,21 @@ type HTTPValidationError struct {
 	AdditionalData map[string]interface{} `json:"-"`
 }
 
-func NewHTTPError(code int, errorType string, title string) *HTTPError {
+func NewHTTPError(code int, errorType types.PublicHTTPErrorType, title string) *HTTPError {
 	return &HTTPError{
 		PublicHTTPError: types.PublicHTTPError{
 			Code:  swag.Int64(int64(code)),
-			Type:  swag.String(errorType),
+			Type:  errorType.Pointer(),
 			Title: swag.String(title),
 		},
 	}
 }
 
-func NewHTTPErrorWithDetail(code int, errorType string, title string, detail string) *HTTPError {
+func NewHTTPErrorWithDetail(code int, errorType types.PublicHTTPErrorType, title string, detail string) *HTTPError {
 	return &HTTPError{
 		PublicHTTPError: types.PublicHTTPError{
 			Code:   swag.Int64(int64(code)),
-			Type:   swag.String(errorType),
+			Type:   errorType.Pointer(),
 			Title:  swag.String(title),
 			Detail: detail,
 		},
@@ -53,7 +48,7 @@ func NewHTTPErrorWithDetail(code int, errorType string, title string, detail str
 }
 
 func NewFromEcho(e *echo.HTTPError) *HTTPError {
-	return NewHTTPError(e.Code, HTTPErrorTypeGeneric, http.StatusText(e.Code))
+	return NewHTTPError(e.Code, types.PublicHTTPErrorTypeGeneric, http.StatusText(e.Code))
 }
 
 func (e *HTTPError) Error() string {
@@ -86,12 +81,12 @@ func (e *HTTPError) Error() string {
 	return b.String()
 }
 
-func NewHTTPValidationError(code int, errorType string, title string, validationErrors []*types.HTTPValidationErrorDetail) *HTTPValidationError {
+func NewHTTPValidationError(code int, errorType types.PublicHTTPErrorType, title string, validationErrors []*types.HTTPValidationErrorDetail) *HTTPValidationError {
 	return &HTTPValidationError{
 		PublicHTTPValidationError: types.PublicHTTPValidationError{
 			PublicHTTPError: types.PublicHTTPError{
 				Code:  swag.Int64(int64(code)),
-				Type:  swag.String(errorType),
+				Type:  errorType.Pointer(),
 				Title: swag.String(title),
 			},
 			ValidationErrors: validationErrors,
@@ -99,12 +94,12 @@ func NewHTTPValidationError(code int, errorType string, title string, validation
 	}
 }
 
-func NewHTTPValidationErrorWithDetail(code int, errorType string, title string, validationErrors []*types.HTTPValidationErrorDetail, detail string) *HTTPValidationError {
+func NewHTTPValidationErrorWithDetail(code int, errorType types.PublicHTTPErrorType, title string, validationErrors []*types.HTTPValidationErrorDetail, detail string) *HTTPValidationError {
 	return &HTTPValidationError{
 		PublicHTTPValidationError: types.PublicHTTPValidationError{
 			PublicHTTPError: types.PublicHTTPError{
 				Code:   swag.Int64(int64(code)),
-				Type:   swag.String(errorType),
+				Type:   errorType.Pointer(),
 				Title:  swag.String(title),
 				Detail: detail,
 			},
