@@ -101,8 +101,8 @@ RUN mkdir -p /tmp/pgFormatter \
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.12.0/gotestsum_1.12.0_linux_${ARCH}.tar.gz" \
-    && tar xzf "gotestsum_1.12.0_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.12.2/gotestsum_1.12.2_linux_${ARCH}.tar.gz" \
+    && tar xzf "gotestsum_1.12.2_linux_${ARCH}.tar.gz" \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum
 
