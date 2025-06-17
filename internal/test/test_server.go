@@ -4,12 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"testing"
-	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/api/router"
 	"allaboutapps.dev/aw/go-starter/internal/config"
-	"github.com/dropbox/godropbox/time2"
 )
 
 // WithTestServer returns a fully configured server (using the default server config).
@@ -68,36 +66,19 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 	// You may use port 0 to indicate you're not specifying an exact port but you want a free, available port selected by the system
 	config.Echo.ListenAddress = ":0"
 
-	s := api.NewServer(config)
+	// always use the mock clock in tests
+	config.Clock.UseMockClock = true
 
-	// attach the already initialized db
-	s.DB = db
-	s.Clock = time2.NewMockClock(time.Now())
+	// always use the mock pusher in tests
+	config.Push.UseFCMProvider = false
+	config.Push.UseMockProvider = true
 
-	if err := s.InitMailer(); err != nil {
-		t.Fatalf("Failed to init mailer: %v", err)
+	s, err := api.InitNewServerWithDB(config, db)
+	if err != nil {
+		t.Fatalf("Failed to initialize server: %v", err)
 	}
 
-	// attach any other mocks
-	s.Push = NewTestPusher(t, db)
-
-	if err := s.InitI18n(); err != nil {
-		t.Fatalf("Failed to init i18n service: %v", err)
-	}
-
-	if err := s.InitAuthService(); err != nil {
-		t.Fatalf("Failed to init auth service: %v", err)
-	}
-
-	if err := s.InitLocalService(); err != nil {
-		t.Fatalf("Failed to init local service: %v", err)
-	}
-
-	if err := s.InitMetricsService(); err != nil {
-		t.Fatalf("Failed to init metrics ervice: %v", err)
-	}
-
-	err := router.Init(s)
+	err = router.Init(s)
 	if err != nil {
 		t.Fatalf("Failed to init router: %v", err)
 	}
