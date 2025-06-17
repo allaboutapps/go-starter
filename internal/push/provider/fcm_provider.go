@@ -60,7 +60,7 @@ func (p *FCM) Send(token string, title string, message string) push.ProviderSend
 		// convert to original error and determine if the token was at fault
 		var gErr *googleapi.Error
 		if errors.As(err, &gErr) {
-			valid = !(gErr.Code == http.StatusNotFound || gErr.Code == http.StatusBadRequest)
+			valid = (gErr.Code != http.StatusNotFound && gErr.Code != http.StatusBadRequest)
 		}
 	}
 

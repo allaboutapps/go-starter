@@ -190,7 +190,7 @@ func (s *Server) InitMailer() error {
 	case config.MailerTransporterSMTP:
 		s.Mailer = mailer.New(s.Config.Mailer, transport.NewSMTP(s.Config.SMTP))
 	default:
-		return fmt.Errorf("Unsupported mail transporter: %s", s.Config.Mailer.Transporter)
+		return fmt.Errorf("unsupported mail transporter: %s", s.Config.Mailer.Transporter)
 	}
 
 	return s.Mailer.ParseTemplates()

@@ -78,7 +78,7 @@ func GenerateRandomString(n int, ranges []CharRange, extra string) (string, erro
 	var str strings.Builder
 
 	if len(ranges) == 0 && len(extra) == 0 {
-		return "", errors.New("Random string can only be created if set of characters or extra string characters supplied")
+		return "", errors.New("random string can only be created if set of characters or extra string characters supplied")
 	}
 
 	validateFn := func(c byte) bool {

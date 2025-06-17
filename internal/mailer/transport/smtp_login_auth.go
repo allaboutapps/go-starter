@@ -42,7 +42,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 		case "Password:":
 			return a.password, nil
 		default:
-			return nil, fmt.Errorf("Unknown challenge received from server: %q", fromServer)
+			return nil, fmt.Errorf("unknown challenge received from server: %q", fromServer)
 		}
 	}
 
