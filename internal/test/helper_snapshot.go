@@ -191,7 +191,7 @@ func (s snapshoter) SaveUResponseAndValidate(t TestingT, res *httptest.ResponseR
 
 func (s snapshoter) save(t TestingT, dump string) {
 	t.Helper()
-	snapshotName := fmt.Sprintf("%s%s", strings.Replace(t.Name(), "/", "-", -1), s.label)
+	snapshotName := fmt.Sprintf("%s%s", strings.ReplaceAll(t.Name(), "/", "-"), s.label)
 	snapshotAbsPath := filepath.Join(s.location, fmt.Sprintf("%s.golden", snapshotName))
 
 	if s.update || UpdateGoldenGlobal {
@@ -238,7 +238,7 @@ func (s snapshoter) save(t TestingT, dump string) {
 
 func (s snapshoter) saveBytes(t TestingT, dump []byte, fileExtensionOverride ...string) {
 	t.Helper()
-	snapshotName := fmt.Sprintf("%s%s", strings.Replace(t.Name(), "/", "-", -1), s.label)
+	snapshotName := fmt.Sprintf("%s%s", strings.ReplaceAll(t.Name(), "/", "-"), s.label)
 
 	fileExtension := "golden"
 	if len(fileExtensionOverride) > 0 {

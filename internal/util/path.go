@@ -13,9 +13,7 @@ import (
 // empty string will be returned.
 func FileNameWithoutExtension(path string) string {
 	base := filepath.Base(path)
-	if base == "." {
-		return ""
-	} else if base == "/" {
+	if base == "." || base == "/" {
 		return ""
 	}
 
@@ -30,9 +28,7 @@ func FileNameWithoutExtension(path string) string {
 // empty strings will be returned.
 func FileNameAndExtension(path string) (fileName string, extension string) {
 	base := filepath.Base(path)
-	if base == "." {
-		return "", ""
-	} else if base == "/" {
+	if base == "." || base == "/" {
 		return "", ""
 	}
 

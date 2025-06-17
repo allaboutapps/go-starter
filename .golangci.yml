@@ -1,3 +1,4 @@
+version: "2"
 run:
   # also lint files within /scripts. Those have "//go:build scripts" set.
   build-tags:
@@ -31,3 +32,9 @@ linters:
     # https://github.com/polyfloyd/go-errorlint
     # ensure we are comparing errors via errors.Is, types/values via errors.As and wrap errors with %w.
     - errorlint
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling

@@ -38,7 +38,7 @@ func NewDBConnection(ctx context.Context, cfg config.Database) (*sql.DB, error) 
 	}
 
 	if err := db.PingContext(ctx); err != nil {
-		return nil, fmt.Errorf("Failed to ping DB: %w", err)
+		return nil, fmt.Errorf("failed to ping DB: %w", err)
 	}
 
 	return db, nil

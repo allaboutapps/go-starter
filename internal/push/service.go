@@ -61,7 +61,7 @@ func (s *Service) GetProviderCount() int {
 
 func (s *Service) SendToUser(ctx context.Context, user *dto.User, title string, message string) error {
 	if s.GetProviderCount() < 1 {
-		return errors.New("No provider found")
+		return errors.New("no provider found")
 	}
 	log := util.LogFromContext(ctx)
 
