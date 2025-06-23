@@ -10,7 +10,6 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/labstack/echo/v4"
@@ -114,7 +113,7 @@ func TestWithTestServer(t *testing.T) {
 }
 
 func TestWithTestServerFromDump(t *testing.T) {
-	dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/plain.sql")
+	dumpFile := filepath.Join(util.GetProjectRootDir(), "/test/testdata/plain.sql")
 
 	serverConfig := config.DefaultServiceConfigFromEnv()
 	dumpConfig := test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true, ApplyTestFixtures: true}
