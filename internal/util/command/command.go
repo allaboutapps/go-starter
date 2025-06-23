@@ -26,11 +26,14 @@ func WithServer(ctx context.Context, config config.Server, f func(ctx context.Co
 		}))
 	}
 
-	s := api.NewServer(config).InitCmd()
+	s, err := api.InitNewServer(config)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize server")
+	}
 
 	start := s.Clock.Now()
 
-	err := f(ctx, s)
+	err = f(ctx, s)
 
 	elapsed := time.Since(start)
 	log.Info().Dur("duration", elapsed).Msg("Command execution finished")

@@ -3,7 +3,7 @@
 ### -----------------------
 
 # first is default target when running "make" without args
-build: ##- Default 'make' target: sql, swagger, go-generate, go-format, go-build and lint.
+build: ##- Default 'make' target: sql, swagger, go-generate-handlers, go-format, go-build and lint.
 	@$(MAKE) build-pre
 	@$(MAKE) go-format
 	@$(MAKE) go-build
@@ -38,8 +38,8 @@ info-go: ##- (opt) Prints go.mod updates, module-name and current go version.
 lint: check-gen-dirs check-script-dir check-handlers check-embedded-modules-go-not go-lint  ##- Runs golangci-lint and make check-*.
 
 # these recipies may execute in parallel
-build-pre: sql swagger ##- (opt) Runs pre-build related targets (sql, swagger, go-generate).
-	@$(MAKE) go-generate
+build-pre: sql swagger go-generate ##- (opt) Runs pre-build related targets (sql, swagger, go-generate-handlers, go-generate).
+	@$(MAKE) go-generate-handlers
 
 go-format: ##- (opt) Runs go format.
 	go fmt ./...
@@ -50,8 +50,11 @@ go-build: ##- (opt) Runs go build.
 go-lint: ##- (opt) Runs golangci-lint.
 	golangci-lint run --timeout 5m
 
-go-generate: ##- (opt) Generates the internal/api/handlers/handlers.go binding.
+go-generate-handlers: ##- (opt) Generates the internal/api/handlers/handlers.go binding.
 	gsdev handlers gen
+
+go-generate: ##- Runs go generate.
+	@go generate ./...
 
 check-handlers: ##- (opt) Checks if implemented handlers match their spec (path).
 	gsdev handlers check
