@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -9,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -50,4 +52,22 @@ func WithServer(ctx context.Context, config config.Server, f func(ctx context.Co
 	}
 
 	return nil
+}
+
+func NewSubcommandGroup(subcommand string, subcommands ...*cobra.Command) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   fmt.Sprintf("%s <subcommand>", subcommand),
+		Short: fmt.Sprintf("%s related subcommands", subcommand),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := cmd.Help(); err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cmd.AddCommand(subcommands...)
+
+	return cmd
 }
