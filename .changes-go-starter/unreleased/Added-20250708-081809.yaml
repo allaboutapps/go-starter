@@ -1,0 +1,3 @@
+kind: Added
+body: Add a test executing the datbase migrations up, down and up again
+time: 2025-07-08T08:18:09.840418588Z
