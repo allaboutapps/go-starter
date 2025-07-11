@@ -71,8 +71,8 @@ func runLiveness(ctx context.Context, config config.Server, flags LivenessFlags)
 
 	db, err := sql.Open("postgres", config.Database.ConnectionString())
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to connect to the database")
-		return nil, err
+		log.Error().Err(err).Msg("Failed to open the database")
+		return nil, fmt.Errorf("failed to open the database: %w", err)
 	}
 	defer db.Close()
 
@@ -82,7 +82,7 @@ func runLiveness(ctx context.Context, config config.Server, flags LivenessFlags)
 	str, errs := common.ProbeLiveness(livenessCtx, db, config.Management.ProbeWriteablePathsAbs, config.Management.ProbeWriteableTouchfile)
 
 	if flags.Verbose {
-		fmt.Print(str)
+		log.Info().Msg(str)
 	}
 
 	return errs, nil

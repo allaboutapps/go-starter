@@ -99,16 +99,16 @@ type ResetPasswordRequest struct {
 	NewPassword string
 }
 
-func NewUsername(val string) Username {
-	return Username{val: val}
-}
-
 type Username struct {
 	val string
 }
 
+func NewUsername(val string) Username {
+	return Username{val: val}
+}
+
 func (u Username) String() string {
-	return util.ToUsernameFormat(string(u.val))
+	return util.ToUsernameFormat(u.val)
 }
 
 type InitPasswordResetRequest struct {

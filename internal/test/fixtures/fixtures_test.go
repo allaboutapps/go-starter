@@ -9,6 +9,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -16,19 +17,12 @@ import (
 func TestFixturesReload(t *testing.T) {
 	test.WithTestDatabase(t, func(db *sql.DB) {
 		err := fixtures.Fixtures().User1.Reload(t.Context(), db)
-
-		if err != nil {
-			t.Error("failed to reload")
-		}
-
-		// fmt.Println(user1)
+		require.NoError(t, err)
 	})
-
 }
 
 func TestInsert(t *testing.T) {
 	test.WithTestDatabase(t, func(db *sql.DB) {
-
 		userNew := models.User{
 			ID:       "6d00d09b-fab3-43d8-a163-279fe7ba533e",
 			IsActive: true,
@@ -38,20 +32,15 @@ func TestInsert(t *testing.T) {
 		}
 
 		err := userNew.Insert(t.Context(), db, boil.Infer())
-
-		if err != nil {
-			t.Error("failed to insert")
-		}
+		require.NoError(t, err)
 	})
-
 }
 
 func TestUpdate(t *testing.T) {
 	test.WithTestDatabase(t, func(db *sql.DB) {
-
 		originalUser1 := fixtures.Fixtures().User1
 
-		updatedUser1 := models.User(*originalUser1)
+		updatedUser1 := *originalUser1
 
 		updatedUser1.Username = null.StringFrom("user_updated@example.com")
 
@@ -75,17 +64,14 @@ func TestUpdate(t *testing.T) {
 		if updatedUser1.Username != originalUser1.Username {
 			t.Fatalf("names don't match!")
 		}
-
 	})
 
 	// with another testdatabase:
 	test.WithTestDatabase(t, func(db *sql.DB) {
-
 		originalUser1 := fixtures.Fixtures().User1
 
 		// ensure our fixture is the same again!
 		if originalUser1.Username != null.StringFrom("user1@example.com") {
-
 			err := originalUser1.Reload(t.Context(), db)
 
 			if err != nil {
@@ -98,9 +84,7 @@ func TestUpdate(t *testing.T) {
 
 			t.Fatalf("fixture was modified!")
 		}
-
 	})
-
 }
 
 func TestInsertableInterface(t *testing.T) {

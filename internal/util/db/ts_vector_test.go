@@ -10,32 +10,32 @@ import (
 
 func TestSearchStringToTSQuery(t *testing.T) {
 	expected := "'abcde':* & '12345':* & 'xyz':*"
-	in := swag.String("    abcde 12345 xyz   ")
-	out := db.SearchStringToTSQuery(in)
+	search := swag.String("    abcde 12345 xyz   ")
+	out := db.SearchStringToTSQuery(search)
 	assert.Equal(t, expected, out)
 
 	expected = "'abcde':*"
-	in = swag.String("abcde")
-	out = db.SearchStringToTSQuery(in)
+	search = swag.String("abcde")
+	out = db.SearchStringToTSQuery(search)
 	assert.Equal(t, expected, out)
 
 	expected = "'Hello':* & 'world':* & 'lorem':* & '12345':* & 'ipsum':* & 'abc':* & 'def':*"
-	in = swag.String("    Hello  world lorem 12345               ipsum  abc def  ")
-	out = db.SearchStringToTSQuery(in)
+	search = swag.String("    Hello  world lorem 12345               ipsum  abc def  ")
+	out = db.SearchStringToTSQuery(search)
 	assert.Equal(t, expected, out)
 
 	expected = ""
-	in = nil
-	out = db.SearchStringToTSQuery(in)
+	search = nil
+	out = db.SearchStringToTSQuery(search)
 	assert.Equal(t, expected, out)
 
 	expected = ""
-	in = swag.String("")
-	out = db.SearchStringToTSQuery(in)
+	search = swag.String("")
+	out = db.SearchStringToTSQuery(search)
 	assert.Equal(t, expected, out)
 
 	expected = ""
-	in = swag.String("                ''   '    '    '      ")
-	out = db.SearchStringToTSQuery(in)
+	search = swag.String("                ''   '    '    '      ")
+	out = db.SearchStringToTSQuery(search)
 	assert.Equal(t, expected, out)
 }

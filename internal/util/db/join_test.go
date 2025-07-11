@@ -67,38 +67,38 @@ func TestInnerJoin(t *testing.T) {
 }
 
 func TestLeftOuterJoinWithFilter(t *testing.T) {
-	q := models.NewQuery(
+	query := models.NewQuery(
 		qm.Select("*"),
 		qm.From("users"),
 		db.LeftOuterJoinWithFilter("users", "id", "app_user_profiles", "user_id", "first_name", "Max"),
 	)
 
-	sql, args := queries.BuildQuery(q)
+	sql, args := queries.BuildQuery(query)
 
 	test.Snapshoter.Label("SQL").Save(t, sql)
-	test.Snapshoter.Label("Args").Save(t, args)
+	test.Snapshoter.Label("Args").Save(t, args...)
 
-	q = models.NewQuery(
+	query = models.NewQuery(
 		qm.Select("*"),
 		qm.From("users"),
 		db.LeftOuterJoinWithFilter("users", "id", "app_user_profiles", "user_id", "first_name", "Max", "app_user_profiles"),
 	)
 
-	sql, args = queries.BuildQuery(q)
+	sql, args = queries.BuildQuery(query)
 
 	test.Snapshoter.Label("SQL").Save(t, sql)
-	test.Snapshoter.Label("Args").Save(t, args)
+	test.Snapshoter.Label("Args").Save(t, args...)
 }
 
 func TestLeftOuterJoin(t *testing.T) {
-	q := models.NewQuery(
+	query := models.NewQuery(
 		qm.Select("*"),
 		qm.From("users"),
 		db.LeftOuterJoin("users", "id", "app_user_profiles", "user_id"),
 	)
 
-	sql, args := queries.BuildQuery(q)
+	sql, args := queries.BuildQuery(query)
 
 	test.Snapshoter.Label("SQL").Save(t, sql)
-	test.Snapshoter.Label("Args").Save(t, args)
+	test.Snapshoter.Label("Args").Save(t, args...)
 }

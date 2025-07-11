@@ -25,7 +25,7 @@ type Database struct {
 	Username         string
 	Password         string `json:"-"` // sensitive
 	Database         string
-	AdditionalParams map[string]string `json:",omitempty"` // Optional additional connection parameters mapped into the connection string
+	AdditionalParams map[string]string `json:"additionalParams,omitempty"` // Optional additional connection parameters mapped into the connection string
 	MaxOpenConns     int
 	MaxIdleConns     int
 	ConnMaxLifetime  time.Duration
@@ -33,11 +33,11 @@ type Database struct {
 
 // ConnectionString generates a connection string to be passed to sql.Open or equivalents, assuming Postgres syntax
 func (c Database) ConnectionString() string {
-	var b strings.Builder
-	b.WriteString(fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s", c.Host, c.Port, c.Username, c.Password, c.Database))
+	var builder strings.Builder
+	builder.WriteString(fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s", c.Host, c.Port, c.Username, c.Password, c.Database))
 
 	if _, ok := c.AdditionalParams["sslmode"]; !ok {
-		b.WriteString(" sslmode=disable")
+		builder.WriteString(" sslmode=disable")
 	}
 
 	if len(c.AdditionalParams) > 0 {
@@ -49,9 +49,9 @@ func (c Database) ConnectionString() string {
 		sort.Strings(params)
 
 		for _, param := range params {
-			fmt.Fprintf(&b, " %s=%s", param, c.AdditionalParams[param])
+			fmt.Fprintf(&builder, " %s=%s", param, c.AdditionalParams[param])
 		}
 	}
 
-	return b.String()
+	return builder.String()
 }

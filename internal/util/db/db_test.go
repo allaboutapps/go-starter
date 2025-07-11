@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/models"
@@ -20,7 +21,7 @@ func TestWithTransactionSuccess(t *testing.T) {
 
 		count, err := models.Users().Count(ctx, sqlDB)
 		require.NoError(t, err)
-		assert.Greater(t, count, int64(0))
+		assert.Positive(t, count)
 
 		err = db.WithTransaction(ctx, sqlDB, func(tx boil.ContextExecutor) error {
 			newUser := models.User{
@@ -30,7 +31,7 @@ func TestWithTransactionSuccess(t *testing.T) {
 			}
 
 			if err := newUser.Insert(ctx, tx, boil.Infer()); err != nil {
-				return err
+				return fmt.Errorf("failed to insert user: %w", err)
 			}
 
 			newCount, err := models.Users().Count(ctx, tx)
@@ -39,7 +40,7 @@ func TestWithTransactionSuccess(t *testing.T) {
 
 			delCnt, err := models.Users().DeleteAll(ctx, tx)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to delete all users: %w", err)
 			}
 			assert.Equal(t, newCount, delCnt)
 
@@ -63,7 +64,7 @@ func TestWithTransactionWithError(t *testing.T) {
 
 		count, err := models.Users().Count(ctx, sqlDB)
 		require.NoError(t, err)
-		assert.Greater(t, count, int64(0))
+		assert.Positive(t, count)
 
 		err = db.WithTransaction(ctx, sqlDB, func(tx boil.ContextExecutor) error {
 			newUser := models.User{
@@ -108,10 +109,9 @@ func TestWithTransactionWithPanic(t *testing.T) {
 
 		count, err := models.Users().Count(ctx, sqlDB)
 		require.NoError(t, err)
-		assert.Greater(t, count, int64(0))
+		assert.Positive(t, count)
 
 		panicFunc := func() {
-			//nolint:errcheck
 			_ = db.WithTransaction(ctx, sqlDB, func(tx boil.ContextExecutor) error {
 				newUser := models.User{
 					IsActive: true,
@@ -157,7 +157,7 @@ func TestDBTypeConversions(t *testing.T) {
 
 	f := 19.9999
 	res2 := db.NullFloat32FromFloat64Ptr(&f)
-	assert.Equal(t, float32(19.9999), res2.Float32)
+	assert.InDelta(t, float32(f), res2.Float32, 0.0001)
 	assert.True(t, res2.Valid)
 
 	res2 = db.NullFloat32FromFloat64Ptr(nil)

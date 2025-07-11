@@ -19,6 +19,8 @@ func GetMockClock(t *testing.T, clock time2.Clock) *time2.MockClock {
 }
 
 func SetMockClock(t *testing.T, s *api.Server, time time.Time) {
+	t.Helper()
+
 	mockClock := GetMockClock(t, s.Clock)
 
 	mockClock.Set(time)

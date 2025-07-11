@@ -33,10 +33,13 @@ const (
 //
 // Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
 func BindAndValidateBody(c echo.Context, v runtime.Validatable) error {
-	binder := c.Echo().Binder.(*echo.DefaultBinder)
+	binder, ok := c.Echo().Binder.(*echo.DefaultBinder)
+	if !ok {
+		return fmt.Errorf("failed to get binder as *echo.DefaultBinder, got %T", c.Echo().Binder)
+	}
 
 	if err := binder.BindBody(c, v); err != nil {
-		return err
+		return fmt.Errorf("failed to bind body: %w", err)
 	}
 
 	return validatePayload(c, v)
@@ -47,14 +50,17 @@ func BindAndValidateBody(c echo.Context, v runtime.Validatable) error {
 //
 // Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
 func BindAndValidatePathAndQueryParams(c echo.Context, v runtime.Validatable) error {
-	binder := c.Echo().Binder.(*echo.DefaultBinder)
+	binder, ok := c.Echo().Binder.(*echo.DefaultBinder)
+	if !ok {
+		return fmt.Errorf("failed to get binder as *echo.DefaultBinder, got %T", c.Echo().Binder)
+	}
 
 	if err := binder.BindPathParams(c, v); err != nil {
-		return err
+		return fmt.Errorf("failed to bind path params: %w", err)
 	}
 
 	if err := binder.BindQueryParams(c, v); err != nil {
-		return err
+		return fmt.Errorf("failed to bind query params: %w", err)
 	}
 
 	return validatePayload(c, v)
@@ -65,10 +71,13 @@ func BindAndValidatePathAndQueryParams(c echo.Context, v runtime.Validatable) er
 //
 // Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
 func BindAndValidatePathParams(c echo.Context, v runtime.Validatable) error {
-	binder := c.Echo().Binder.(*echo.DefaultBinder)
+	binder, ok := c.Echo().Binder.(*echo.DefaultBinder)
+	if !ok {
+		return fmt.Errorf("failed to get binder as *echo.DefaultBinder, got %T", c.Echo().Binder)
+	}
 
 	if err := binder.BindPathParams(c, v); err != nil {
-		return err
+		return fmt.Errorf("failed to bind path params: %w", err)
 	}
 
 	return validatePayload(c, v)
@@ -79,10 +88,13 @@ func BindAndValidatePathParams(c echo.Context, v runtime.Validatable) error {
 //
 // Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
 func BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error {
-	binder := c.Echo().Binder.(*echo.DefaultBinder)
+	binder, ok := c.Echo().Binder.(*echo.DefaultBinder)
+	if !ok {
+		return fmt.Errorf("failed to get binder as *echo.DefaultBinder, got %T", c.Echo().Binder)
+	}
 
 	if err := binder.BindQueryParams(c, v); err != nil {
-		return err
+		return fmt.Errorf("failed to bind query params: %w", err)
 	}
 
 	return validatePayload(c, v)
@@ -112,9 +124,9 @@ func BindAndValidateQueryParams(c echo.Context, v runtime.Validatable) error {
 // to be structured differently. If you do not require parsing of both body and params, additional structs can be omitted.
 //
 // Returns an error that can directly be returned from an echo handler and sent to the client should binding or validating of any model fail.
-func BindAndValidate(c echo.Context, v runtime.Validatable, vs ...runtime.Validatable) error {
+func BindAndValidate(c echo.Context, v runtime.Validatable, validatables ...runtime.Validatable) error {
 	// TODO error handling for all occurrences of Bind() due to JSON unmarshal type mismatches
-	if len(vs) == 0 {
+	if len(validatables) == 0 {
 		if err := defaultEchoBindAll(c, v); err != nil {
 			return err
 		}
@@ -127,17 +139,17 @@ func BindAndValidate(c echo.Context, v runtime.Validatable, vs ...runtime.Valida
 	if c.Request().Body != nil {
 		reqBody, err = io.ReadAll(c.Request().Body)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to read request body: %w", err)
 		}
 	}
 
 	if err = restoreBindAndValidate(c, reqBody, v); err != nil {
-		return err
+		return fmt.Errorf("failed to restore bind and validate: %w", err)
 	}
 
-	for _, vv := range vs {
+	for _, vv := range validatables {
 		if err = restoreBindAndValidate(c, reqBody, vv); err != nil {
-			return err
+			return fmt.Errorf("failed to restore bind and validate: %w", err)
 		}
 	}
 
@@ -153,43 +165,47 @@ func ValidateAndReturn(c echo.Context, code int, v runtime.Validatable) error {
 		return err
 	}
 
-	return c.JSON(code, v)
+	if err := c.JSON(code, v); err != nil {
+		return fmt.Errorf("failed to return JSON: %w", err)
+	}
+
+	return nil
 }
 
 func ParseFileUpload(c echo.Context, formNameFile string, allowedMIMETypes []string) (*multipart.FileHeader, multipart.File, *mimetype.MIME, error) {
 	log := LogFromEchoContext(c)
 
-	fh, err := c.FormFile(formNameFile)
+	fileHeader, err := c.FormFile(formNameFile)
 	if err != nil {
 		log.Debug().Err(err).Msg("Failed to get form file")
-		return nil, nil, nil, err
+		return nil, nil, nil, fmt.Errorf("failed to get form file: %w", err)
 	}
 
-	file, err := fh.Open()
+	file, err := fileHeader.Open()
 	if err != nil {
-		log.Debug().Err(err).Str("filename", fh.Filename).Int64("fileSize", fh.Size).Msg("Failed to open uploaded file")
-		return nil, nil, nil, err
+		log.Debug().Err(err).Str("filename", fileHeader.Filename).Int64("fileSize", fileHeader.Size).Msg("Failed to open uploaded file")
+		return nil, nil, nil, fmt.Errorf("failed to open uploaded file: %w", err)
 	}
 
-	if fh.Size < 1 {
-		log.Debug().Err(err).Str("filename", fh.Filename).Int64("fileSize", fh.Size).Msg("File size can't be 0")
+	if fileHeader.Size < 1 {
+		log.Debug().Err(err).Str("filename", fileHeader.Filename).Int64("fileSize", fileHeader.Size).Msg("File size can't be 0")
 		return nil, nil, nil, httperrors.ErrBadRequestZeroFileSize
 	}
 
 	mime, err := mimetype.DetectReader(file)
 	if err != nil {
-		log.Debug().Err(err).Str("filename", fh.Filename).Int64("fileSize", fh.Size).Msg("Failed to detect MIME type of uploaded file")
+		log.Debug().Err(err).Str("filename", fileHeader.Filename).Int64("fileSize", fileHeader.Size).Msg("Failed to detect MIME type of uploaded file")
 		file.Close()
-		return nil, nil, nil, err
+		return nil, nil, nil, fmt.Errorf("failed to detect MIME type of uploaded file: %w", err)
 	}
 
 	// ! Important: we *MUST* reset the reader back to 0, since `minetype.DetectReader` reads the beginning of the
 	// ! file in order to detect it's MIME type. Continuing to use the reader without resetting it results in a
 	// ! corrupted file unable to be processed or opened otherwise.
 	if _, err = file.Seek(0, io.SeekStart); err != nil {
-		log.Debug().Err(err).Str("filename", fh.Filename).Int64("fileSize", fh.Size).Msg("Failed to reset reader of uploaded file to start")
+		log.Debug().Err(err).Str("filename", fileHeader.Filename).Int64("fileSize", fileHeader.Size).Msg("Failed to reset reader of uploaded file to start")
 		file.Close()
-		return nil, nil, nil, err
+		return nil, nil, nil, fmt.Errorf("failed to reset reader of uploaded file to start: %w", err)
 	}
 
 	allowed := false
@@ -198,12 +214,13 @@ func ParseFileUpload(c echo.Context, formNameFile string, allowedMIMETypes []str
 			log.Debug().
 				Str("mimeType", mime.String()).
 				Str("mimeTypeFileExtension", mime.Extension()).
-				Str("filename", fh.Filename).
-				Int64("fileSize", fh.Size).
+				Str("filename", fileHeader.Filename).
+				Int64("fileSize", fileHeader.Size).
 				Str("allowedMIMEType", allowedType).
 				Msg("MIME type of uploaded file is allowed, processing")
 
 			allowed = true
+
 			break
 		}
 	}
@@ -212,14 +229,15 @@ func ParseFileUpload(c echo.Context, formNameFile string, allowedMIMETypes []str
 		log.Debug().
 			Str("mimeType", mime.String()).
 			Str("mimeTypeFileExtension", mime.Extension()).
-			Str("filename", fh.Filename).
-			Int64("fileSize", fh.Size).
+			Str("filename", fileHeader.Filename).
+			Int64("fileSize", fileHeader.Size).
 			Msg("MIME type of uploaded file is not allowed, rejecting")
 		file.Close()
+
 		return nil, nil, nil, echo.ErrUnsupportedMediaType
 	}
 
-	return fh, file, mime, nil
+	return fileHeader, file, mime, nil
 }
 
 func StreamFile(c echo.Context, code int, mediaType string, fileName string, r io.ReadCloser) error {
@@ -233,7 +251,12 @@ func StreamFile(c echo.Context, code int, mediaType string, fileName string, r i
 	SetOrAppendHeader(c.Response().Header(), echo.HeaderAccessControlExposeHeaders, echo.HeaderContentDisposition)
 
 	defer r.Close()
-	return c.Stream(code, mediaType, r)
+
+	if err := c.Stream(code, mediaType, r); err != nil {
+		return fmt.Errorf("failed to stream file: %w", err)
+	}
+
+	return nil
 }
 
 func SetOrAppendHeader(header http.Header, key string, values ...string) {
@@ -260,7 +283,6 @@ func restoreBindAndValidate(c echo.Context, reqBody []byte, v runtime.Validatabl
 
 func validatePayload(c echo.Context, v runtime.Validatable) error {
 	if err := v.Validate(strfmt.Default); err != nil {
-
 		var compositeError *oerrors.CompositeError
 		if errors.As(err, &compositeError) {
 			LogFromEchoContext(c).Debug().Errs("validation_errors", compositeError.Errors).Msg("Payload did match schema, returning HTTP validation error")
@@ -286,7 +308,8 @@ func validatePayload(c echo.Context, v runtime.Validatable) error {
 		}
 
 		LogFromEchoContext(c).Error().Err(err).Msg("Failed to validate payload, returning generic HTTP error")
-		return err
+
+		return fmt.Errorf("failed to validate payload: %w", err)
 	}
 
 	return nil
@@ -303,40 +326,47 @@ func validatePayload(c echo.Context, v runtime.Validatable) error {
 // This upstream security fix does not directly affect us, as our goswagger generated params/query structs
 // and body structs are separated from each other and cannot collide/overwrite props.
 // https://github.com/labstack/echo/commit/4d626c210d3946814a30d545adf9b8f2296686a7#diff-aade326d3512b5a2ada6faa791ddec468f2a0adedb352339c9e314e74c8949d2
-func defaultEchoBindAll(c echo.Context, v runtime.Validatable) (err error) {
-
-	binder := c.Echo().Binder.(*echo.DefaultBinder)
+func defaultEchoBindAll(c echo.Context, v runtime.Validatable) error {
+	binder, ok := c.Echo().Binder.(*echo.DefaultBinder)
+	if !ok {
+		return fmt.Errorf("failed to get binder as *echo.DefaultBinder, got %T", c.Echo().Binder)
+	}
 
 	if err := binder.BindPathParams(c, v); err != nil {
-		return err
+		return fmt.Errorf("failed to bind path params: %w", err)
 	}
-	if err = binder.BindQueryParams(c, v); err != nil {
-		return err
+	if err := binder.BindQueryParams(c, v); err != nil {
+		return fmt.Errorf("failed to bind query params: %w", err)
 	}
 
-	return binder.BindBody(c, v)
+	if err := binder.BindBody(c, v); err != nil {
+		return fmt.Errorf("failed to bind body: %w", err)
+	}
+
+	return nil
 }
 
-func formatValidationErrors(ctx context.Context, err *oerrors.CompositeError) []*types.HTTPValidationErrorDetail {
-	valErrs := make([]*types.HTTPValidationErrorDetail, 0, len(err.Errors))
-	for _, e := range err.Errors {
+func formatValidationErrors(ctx context.Context, compositeError *oerrors.CompositeError) []*types.HTTPValidationErrorDetail {
+	valErrs := make([]*types.HTTPValidationErrorDetail, 0, len(compositeError.Errors))
+	for _, err := range compositeError.Errors {
 		var compositeError *oerrors.CompositeError
-		if errors.As(e, &compositeError) {
+		if errors.As(err, &compositeError) {
 			valErrs = append(valErrs, formatValidationErrors(ctx, compositeError)...)
 			continue
 		}
 
 		var validationError *oerrors.Validation
-		if errors.As(e, &validationError) {
+		if errors.As(err, &validationError) {
 			valErrs = append(valErrs, &types.HTTPValidationErrorDetail{
 				Key:   &validationError.Name,
 				In:    &validationError.In,
 				Error: swag.String(validationError.Error()),
 			})
+
 			continue
 		}
 
-		LogFromContext(ctx).Warn().Err(e).Str("err_type", fmt.Sprintf("%T", e)).Msg("Received unknown error type while validating payload, skipping")
+		LogFromContext(ctx).Warn().Err(err).Str("err_type", fmt.Sprintf("%T", err)).Msg("Received unknown error type while validating payload, skipping")
 	}
 
 	return valErrs

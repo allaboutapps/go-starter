@@ -1,4 +1,2 @@
-([]interface {}) (len=2) {
-  (string) (len=12) "%Max.Muster%",
-  (string) (len=3) "Max"
-}
+(string) (len=12) "%Max.Muster%"
+(string) (len=3) "Max"

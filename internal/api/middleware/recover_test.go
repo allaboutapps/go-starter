@@ -1,7 +1,6 @@
 package middleware_test
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -24,9 +23,9 @@ func TestLogErrorFuncWithRequestInfo(t *testing.T) {
 		}))
 
 		s.Echo.POST(path, func(c echo.Context) error {
-
+			// trigger the recover middleware by triggering a nil pointer dereference
 			var val *int
-			fmt.Println(*val)
+			_ = *val
 
 			return c.NoContent(http.StatusNoContent)
 		})

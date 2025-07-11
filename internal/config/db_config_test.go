@@ -59,7 +59,6 @@ func TestDatabaseConnectionString(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // NOTE: https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.config.ConnectionString(); got != tt.want {
 				t.Errorf("invalid connection string, got %q, want %q", got, tt.want)

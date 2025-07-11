@@ -36,7 +36,7 @@ func TestOr(t *testing.T) {
 	sql, args := buildOrQuery(t, qms)
 
 	test.Snapshoter.Label("SQL").Save(t, sql)
-	test.Snapshoter.Label("Args").Save(t, args)
+	test.Snapshoter.Label("Args").Save(t, args...)
 }
 
 func TestOrSingle(t *testing.T) {
@@ -58,7 +58,7 @@ func buildOrQuery(t *testing.T, qms []qm.QueryMod) (string, []interface{}) {
 	t.Helper()
 
 	o := db.CombineWithOr(qms)
-	require.Greater(t, len(o), 0)
+	require.NotEmpty(t, o)
 
 	o = append(o, qm.Select("*"), qm.From("users"))
 	q := models.NewQuery(o...)

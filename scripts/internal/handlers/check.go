@@ -19,23 +19,23 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func CheckHandlers(printAll bool) error {
-	// https://golangbyexample.com/print-output-text-color-console/
-	// https://gist.github.com/ik5/d8ecde700972d4378d87
-	warningLine := "\033[1;33m%s\033[0m\n"
-
 	// we initialize a minimal echo server without any other deps
 	// so we can attach the current defined routes and read them
-	zerolog.SetGlobalLevel(zerolog.Disabled)
+	log.Logger = log.Output(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+		w.TimeFormat = "15:04:05"
+	}))
+
 	defaultConfig := config.DefaultServiceConfigFromEnv()
 	defaultConfig.Echo.ListenAddress = ":0"
 
 	s := api.NewServer(defaultConfig)
 	err := router.Init(s)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to initialize router: %w", err)
 	}
 
 	// swaggerspec vs routes
@@ -44,15 +44,14 @@ func CheckHandlers(printAll bool) error {
 
 	var wg sync.WaitGroup
 
-	for _, tt := range routes {
-		tt := tt // NOTE: https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables
+	for _, route := range routes {
 		wg.Add(1)
-		go func() {
 
+		go func() {
 			defer wg.Done()
 
 			// replace named echo ":param" to swagger path params "{param}" (curly braces) to properly match paths
-			fragments := strings.Split(tt.Path, "/")
+			fragments := strings.Split(route.Path, "/")
 
 			for i, fragment := range fragments {
 				if strings.HasPrefix(fragment, ":") {
@@ -62,22 +61,18 @@ func CheckHandlers(printAll bool) error {
 
 			swaggerPath := strings.Join(fragments, "/")
 
-			ok := swaggerSpec.Handlers[tt.Method][swaggerPath]
+			ok := swaggerSpec.Handlers[route.Method][swaggerPath]
 
 			if !ok {
-				fmt.Printf(warningLine, tt.Method+" "+tt.Path+"\n    WARNING: Missing swagger spec in api/swagger.yml!")
-			} else {
-				if printAll {
-					fmt.Println(tt.Method + " " + tt.Path)
-				}
+				log.Warn().Msgf("%s %s\n    WARNING: Missing swagger spec in api/swagger.yml!", route.Method, route.Path)
+			} else if printAll {
+				log.Info().Msgf("%s %s", route.Method, route.Path)
 			}
-
 		}()
 	}
 
 	for method, v := range swaggerSpec.Handlers {
 		for path := range v {
-
 			// NOTE: https://github.com/golang/go/wiki/CommonMistakes#using-goroutines-on-loop-iterator-variables
 			ttMethod := method
 			ttPath := path
@@ -85,7 +80,6 @@ func CheckHandlers(printAll bool) error {
 			wg.Add(1)
 
 			go func() {
-
 				defer wg.Done()
 
 				// replace named swagger path params "{param}" to echo ":param" (dotted) to properly match paths
@@ -109,16 +103,15 @@ func CheckHandlers(printAll bool) error {
 				}
 
 				if !hasMatch {
-					fmt.Printf(warningLine, ttMethod+" "+echoPath+"\n    WARNING: Missing route implementation in internal/api/handlers/*!")
+					log.Warn().Msgf("%s %s\n    WARNING: Missing route implementation in internal/api/handlers/*!", ttMethod, echoPath)
 				}
-
 			}()
 		}
 	}
 
 	// we have our routes, the server is no longer needed.
 	if errs := s.Shutdown(context.Background()); len(errs) > 0 {
-		fmt.Println("Failed to stop introspection server")
+		log.Error().Errs("shutdownErrors", errs).Msg("Failed to stop introspection server")
 	}
 
 	wg.Wait()

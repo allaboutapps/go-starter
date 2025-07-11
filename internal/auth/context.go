@@ -14,14 +14,14 @@ import (
 func EnrichContextWithCredentials(ctx context.Context, result Result) context.Context {
 	// Retrieve current logger associated with context and extend it ID of authenticated user
 	l := util.LogFromContext(ctx).With().Str("userID", result.User.ID).Logger()
-	c := l.WithContext(ctx)
+	ctx = l.WithContext(ctx)
 
 	// Store authenticated user's instance in context
-	c = context.WithValue(c, util.CTXKeyUser, result.User)
+	ctx = context.WithValue(ctx, util.CTXKeyUser, result.User)
 	// Store access token used for authentication in context
-	c = context.WithValue(c, util.CTXKeyAccessToken, result.Token)
+	ctx = context.WithValue(ctx, util.CTXKeyAccessToken, result.Token)
 
-	return c
+	return ctx
 }
 
 // EnrichEchoContextWithCredentials stores the provided credentials in the form of user and access token user for authentication

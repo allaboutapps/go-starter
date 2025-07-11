@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
@@ -20,8 +21,9 @@ func getUserInfoHandler(s *api.Server) echo.HandlerFunc {
 		log := util.LogFromContext(ctx)
 
 		var err error
-		user.Profile, err = s.Auth.GetAppUserProfileIfExists(ctx, user.ID)
-		if err != nil {
+
+		user.Profile, err = s.Auth.GetAppUserProfile(ctx, user.ID)
+		if err != nil && !errors.Is(err, auth.ErrNotFound) {
 			log.Debug().Err(err).Msg("Failed to get user profile")
 			return err
 		}

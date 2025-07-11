@@ -9,54 +9,54 @@ import (
 // GetMapFromStructByTag returns a map of a given struct using a tag name as key and
 // the string of the property value as value.
 // inspired by: https://stackoverflow.com/questions/55879028/golang-get-structs-field-name-by-json-tag
-func GetMapFromStructByTag(tag string, s interface{}) map[string]string {
+func GetMapFromStructByTag(tag string, input any) map[string]string {
 	res := make(map[string]string)
 
-	rt := reflect.TypeOf(s)
-	if rt.Kind() != reflect.Struct {
+	inputType := reflect.TypeOf(input)
+	if inputType.Kind() != reflect.Struct {
 		return res
 	}
 
-	rv := reflect.ValueOf(s)
+	val := reflect.ValueOf(input)
 
-	for i := 0; i < rt.NumField(); i++ {
-		f := rt.Field(i)
-		v := strings.Split(f.Tag.Get(tag), ",")[0] // use split to ignore tag "options" like omitempty, etc.
-		if v == "" {
+	for i := 0; i < inputType.NumField(); i++ {
+		f := inputType.Field(i)
+		tagvalue := strings.Split(f.Tag.Get(tag), ",")[0] // use split to ignore tag "options" like omitempty, etc.
+		if tagvalue == "" {
 			continue
 		}
-		fs := rv.Field(i)
-		if fs.Kind() == reflect.Ptr {
-			if !fs.IsNil() {
-				res[v] = fmt.Sprintf("%v", fs.Elem().Interface())
+		field := val.Field(i)
+		if field.Kind() == reflect.Ptr {
+			if !field.IsNil() {
+				res[tagvalue] = fmt.Sprintf("%v", field.Elem().Interface())
 			}
 		} else {
-			res[v] = fmt.Sprintf("%v", fs.Interface())
+			res[tagvalue] = fmt.Sprintf("%v", field.Interface())
 		}
 	}
 
 	return res
 }
 
-func GetMapFromStruct(s interface{}) map[string]string {
+func GetMapFromStruct(input any) map[string]string {
 	res := make(map[string]string)
 
-	rt := reflect.TypeOf(s)
-	if rt.Kind() != reflect.Struct {
+	inputType := reflect.TypeOf(input)
+	if inputType.Kind() != reflect.Struct {
 		return res
 	}
 
-	rv := reflect.ValueOf(s)
+	val := reflect.ValueOf(input)
 
-	for i := 0; i < rt.NumField(); i++ {
-		f := rt.Field(i)
-		fs := rv.Field(i)
-		if fs.Kind() == reflect.Ptr {
-			if !fs.IsNil() {
-				res[f.Name] = fmt.Sprintf("%v", fs.Elem().Interface())
+	for i := 0; i < inputType.NumField(); i++ {
+		field := inputType.Field(i)
+		fieldValue := val.Field(i)
+		if fieldValue.Kind() == reflect.Ptr {
+			if !fieldValue.IsNil() {
+				res[field.Name] = fmt.Sprintf("%v", fieldValue.Elem().Interface())
 			}
 		} else {
-			res[f.Name] = fmt.Sprintf("%v", fs.Interface())
+			res[field.Name] = fmt.Sprintf("%v", fieldValue.Interface())
 		}
 	}
 

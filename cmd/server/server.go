@@ -34,7 +34,7 @@ func New() *cobra.Command {
 		Long: `Starts the stateless RESTful JSON server
 	
 	Requires configuration through ENV and
-	and a fully migrated PostgreSQL database.`,
+	a fully migrated PostgreSQL database.`,
 		Run: func(_ *cobra.Command, _ []string) {
 			runServer(flags)
 		},
@@ -62,7 +62,6 @@ func runServer(flags Flags) {
 			if len(errs) > 0 {
 				log.Fatal().Errs("errs", errs).Msg("Unhealthy.")
 			}
-
 		}
 
 		if flags.ApplyMigrations {

@@ -3,9 +3,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -16,13 +16,14 @@ var handlersCmd = &cobra.Command{
 	Short: "Handlers related subcommands",
 	Run: func(cmd *cobra.Command, _ []string /* args */) {
 		if err := cmd.Help(); err != nil {
-			fmt.Println(err)
+			log.Error().Err(err).Msg("Failed to print help")
 			os.Exit(1)
 		}
 		os.Exit(0)
 	},
 }
 
+//nolint:gochecknoinits
 func init() {
 	rootCmd.AddCommand(handlersCmd)
 }

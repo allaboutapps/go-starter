@@ -15,7 +15,6 @@ import (
 
 func TestGetHealthySuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
-
 		// explicitly set touchfile that no other test has (so we can explicitly remove it beforehand.)
 		s.Config.Management.ProbeWriteableTouchfile = ".healthy-test"
 
@@ -33,12 +32,11 @@ func TestGetHealthySuccess(t *testing.T) {
 		firstTouchTime := make([]time.Time, len(s.Config.Management.ProbeWriteablePathsAbs))
 
 		// expect a new touchfiles were written
-		for _, writeablePath := range s.Config.Management.ProbeWriteablePathsAbs {
+		for i, writeablePath := range s.Config.Management.ProbeWriteablePathsAbs {
 			filePath := path.Join(writeablePath, s.Config.Management.ProbeWriteableTouchfile)
 			stat, err := os.Stat(filePath)
 			require.NoErrorf(t, err, "Expected to have %v", filePath)
-
-			firstTouchTime = append(firstTouchTime, stat.ModTime())
+			firstTouchTime[i] = stat.ModTime()
 		}
 
 		res = test.PerformRequest(t, s, "GET", "/-/healthy?mgmt-secret="+s.Config.Management.Secret, nil, nil)

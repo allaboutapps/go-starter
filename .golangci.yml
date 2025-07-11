@@ -5,36 +5,139 @@ run:
     - scripts
 linters:
   enable:
-    # https://github.com/golangci/golangci-lint#enabled-by-default-linters
-    # Additional linters you want to activate may be specified here...
-
-    # ---
-    # https://github.com/mgechev/revive
-    # replacement for the now deprecated official golint linter, see https://github.com/golang/go/issues/38968
     - revive
-
-    # ---
-    # https://github.com/maratori/testpackage
-    # used to enforce blackbox testing
     - testpackage
-
-    # ---
-    # https://github.com/securego/gosec
-    # inspects source code for security problems by scanning the Go AST.
     - gosec
-
-    # ---
-    # https://github.com/ultimatepate/usetesting
-    # detects when some calls can be replaced by methods from the testing package.
     - usetesting
-
-    # ---
-    # https://github.com/polyfloyd/go-errorlint
-    # ensure we are comparing errors via errors.Is, types/values via errors.As and wrap errors with %w.
     - errorlint
+    - asasalint
+    - asciicheck
+    - bidichk
+    - canonicalheader
+    - containedctx
+    - copyloopvar
+    - decorder
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - errchkjson
+    - errname
+    - exptostd
+    - fatcontext
+    - forbidigo
+    - forcetypeassert
+    - funcorder
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - gochecksumtype
+    - goconst
+    - gocritic
+    - gocyclo
+    - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - interfacebloat
+    - ireturn
+    - makezero
+    - mirror
+    - misspell
+    - mnd
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnesserr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    - recvcheck
+    - rowserrcheck
+    - sqlclosecheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - testifylint
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - zerologlint
   exclusions:
     presets:
       - comments
       - common-false-positives
       - legacy
       - std-error-handling
+  settings:
+    wrapcheck:
+      ignore-package-globs:
+      - "*/internal/*"
+    varnamelen:
+      ignore-names:
+        - tt
+      ignore-decls:
+        - c echo.Context
+        - t testing.T
+        - t TestingT
+        - s *api.Server
+        - u *url.URL
+        - i int
+        - n int
+        - n int32
+        - tx boil.ContextExecutor
+        - exec boil.ContextExecutor
+        - db *sql.DB
+        - v runtime.Validatable
+        - r io.ReadCloser
+        - ok bool
+        - wg sync.WaitGroup
+        - d time.Time
+        - e *echo.Echo
+        - tx *sql.Tx
+        - re *regexp.Regexp
+        - to string
+        - f FixtureMap
+        - le *zerolog.Event
+    ireturn:
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        - github.com/volatiletech/sqlboiler/v4/queries/qm.QueryMod
+        - github.com/labstack/echo/v4.Context
+        - github.com/dropbox/godropbox/time2.Clock
+    godox:
+      keywords:
+        - "FIXME"
+    forbidigo:
+      forbid:
+        - pattern: "^(fmt\\.Print(|f|ln)|print|println)$"
+        - pattern: "boil\\.WithDebug"
+    mnd:
+      ignored-numbers:
+        - '0644'
+        - '0755'
+      ignored-files:
+        - internal/config/server_config.go
+    gocritic:
+      disabled-checks:
+        - regexpMust

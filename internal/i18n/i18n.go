@@ -37,7 +37,6 @@ type Data map[string]string
 //
 // Note that Service is typically created and owned by the api.Server (use it via s.I18n)
 func New(config config.I18n) (*Service, error) {
-
 	bundle := i18n.NewBundle(config.DefaultLanguage)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
@@ -45,7 +44,7 @@ func New(config config.I18n) (*Service, error) {
 	files, err := os.ReadDir(config.BundleDirAbs)
 	if err != nil {
 		log.Err(err).Str("dir", config.BundleDirAbs).Msg("Failed to read i18n bundle directory")
-		return nil, err
+		return nil, fmt.Errorf("failed to read i18n bundle directory: %w", err)
 	}
 
 	for _, file := range files {
@@ -57,9 +56,8 @@ func New(config config.I18n) (*Service, error) {
 		_, err := bundle.LoadMessageFile(filepath.Join(config.BundleDirAbs, file.Name()))
 		if err != nil {
 			log.Err(err).Str("file", file.Name()).Msg("Failed to load i18n message file")
-			return nil, err
+			return nil, fmt.Errorf("failed to load i18n message file: %w", err)
 		}
-
 	}
 
 	tags := bundle.LanguageTags()
@@ -69,7 +67,7 @@ func New(config config.I18n) (*Service, error) {
 		if tag == language.Und {
 			err := fmt.Errorf("undetermined language at index %v in i18n message bundle: %v", tagIndex, tags)
 			log.Err(err).Int("index", tagIndex).Str("tags", fmt.Sprintf("%v", tags)).Msg("Invalid i18n message bundle or default language.")
-			return nil, err
+			return nil, fmt.Errorf("invalid i18n message bundle or default language: %w", err)
 		}
 	}
 
@@ -103,7 +101,6 @@ func (m *Service) Translate(key string, lang language.Tag, data ...Data) string 
 //
 // This method may be useful for conditional translation rendering (if key is available, use that, else...).
 func (m *Service) TranslateMaybe(key string, lang language.Tag, data ...Data) (string, error) {
-
 	localizeConfig := &i18n.LocalizeConfig{
 		MessageID: key,
 	}
@@ -144,7 +141,6 @@ func (m *Service) TranslatePlural(cldrKey string, count interface{}, lang langua
 //
 // This method may be useful for conditional plural translation rendering (if key is available, use that, else...).
 func (m *Service) TranslatePluralMaybe(cldrKey string, count interface{}, lang language.Tag, data ...Data) (string, error) {
-
 	localizeConfig := &i18n.LocalizeConfig{
 		MessageID:   cldrKey,
 		PluralCount: count,
@@ -166,20 +162,9 @@ func (m *Service) TranslatePluralMaybe(cldrKey string, count interface{}, lang l
 	return m.translateConfigurable(lang, localizeConfig)
 }
 
-// translateConfigurable is used internally for fully configurable translations according to our configured language precedence semantics (new Localizer per call).
-func (m *Service) translateConfigurable(lang language.Tag, localizeConfig *i18n.LocalizeConfig) (string, error) {
-
-	// We benchmarked precaching all known []i18n.NewLocalizer during initialization,
-	// but it doesn't make a significant difference even with 10000 concurrent * 8 .Translate calls.
-	// Thus we take the easy route and initialize a new localizer with each .Translate or .TranslatePlural call.
-	localizer := i18n.NewLocalizer(m.bundle, lang.String())
-	return localizer.Localize(localizeConfig)
-}
-
 // ParseAcceptLanguage takes the value of the Accept-Language header and returns
 // the best matched language using the matcher.
 func (m *Service) ParseAcceptLanguage(lang string) language.Tag {
-
 	// we deliberately ignore the error returned here, as it will be nil and the matcher will simply pick the default language
 	// this allows us to skip any malformed Accept-Language headers without returning 500 errors to the client
 	// additionally, we don't really care about the q-factor weighting or confidence, the first match will be picked (with a fallback to config.DefaultLanguage)
@@ -208,4 +193,19 @@ func (m *Service) ParseLang(lang string) language.Tag {
 // Tags returns the parsed and priority ordered []language.Tag (your config.DefaultLanguage will be on position 0)
 func (m *Service) Tags() []language.Tag {
 	return m.bundle.LanguageTags()
+}
+
+// translateConfigurable is used internally for fully configurable translations according to our configured language precedence semantics (new Localizer per call).
+func (m *Service) translateConfigurable(lang language.Tag, localizeConfig *i18n.LocalizeConfig) (string, error) {
+	// We benchmarked precaching all known []i18n.NewLocalizer during initialization,
+	// but it doesn't make a significant difference even with 10000 concurrent * 8 .Translate calls.
+	// Thus we take the easy route and initialize a new localizer with each .Translate or .TranslatePlural call.
+	localizer := i18n.NewLocalizer(m.bundle, lang.String())
+
+	msg, err := localizer.Localize(localizeConfig)
+	if err != nil {
+		return msg, fmt.Errorf("failed to localize: %w", err)
+	}
+
+	return msg, nil
 }

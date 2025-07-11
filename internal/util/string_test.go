@@ -78,5 +78,5 @@ func TestContainsAll(t *testing.T) {
 func TestEmptyIfNil(t *testing.T) {
 	s := "Lorem ipsum"
 	assert.Equal(t, s, util.EmptyIfNil(&s))
-	assert.Equal(t, "", util.EmptyIfNil(nil))
+	assert.Empty(t, util.EmptyIfNil(nil))
 }

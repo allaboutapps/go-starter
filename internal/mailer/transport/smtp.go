@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/smtp"
+	"strconv"
 
 	"github.com/jordan-wright/email"
 )
@@ -15,33 +16,37 @@ type SMTPMailTransport struct {
 }
 
 func NewSMTP(config SMTPMailTransportConfig) *SMTPMailTransport {
-	m := &SMTPMailTransport{
+	mailTransport := &SMTPMailTransport{
 		config: config,
-		addr:   net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)),
+		addr:   net.JoinHostPort(config.Host, strconv.Itoa(config.Port)),
 		auth:   nil,
 	}
 
 	switch config.AuthType {
 	case SMTPAuthTypePlain:
-		m.auth = smtp.PlainAuth("", config.Username, config.Password, config.Host)
+		mailTransport.auth = smtp.PlainAuth("", config.Username, config.Password, config.Host)
 	case SMTPAuthTypeCRAMMD5:
-		m.auth = smtp.CRAMMD5Auth(config.Username, config.Password)
+		mailTransport.auth = smtp.CRAMMD5Auth(config.Username, config.Password)
 	case SMTPAuthTypeLogin:
-		m.auth = LoginAuth(config.Username, config.Password, config.Host)
+		mailTransport.auth = LoginAuth(config.Username, config.Password, config.Host)
 	}
 
-	return m
+	return mailTransport
 }
 
 func (m *SMTPMailTransport) Send(mail *email.Email) error {
+	var err error
+
 	switch m.config.Encryption {
 	case SMTPEncryptionNone:
-		return mail.Send(m.addr, m.auth)
+		err = mail.Send(m.addr, m.auth)
 	case SMTPEncryptionTLS:
-		return mail.SendWithTLS(m.addr, m.auth, m.config.TLSConfig)
+		err = mail.SendWithTLS(m.addr, m.auth, m.config.TLSConfig)
 	case SMTPEncryptionStartTLS:
-		return mail.SendWithStartTLS(m.addr, m.auth, m.config.TLSConfig)
+		err = mail.SendWithStartTLS(m.addr, m.auth, m.config.TLSConfig)
 	default:
 		return fmt.Errorf("invalid SMTP encryption %q", m.config.Encryption)
 	}
+
+	return fmt.Errorf("failed to send email: %w", err)
 }

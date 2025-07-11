@@ -34,7 +34,7 @@ func NewService(config config.Server, db *sql.DB, clock time2.Clock) *Service {
 	}
 }
 
-func (s *Service) GetAppUserProfileIfExists(ctx context.Context, userID string) (*dto.AppUserProfile, error) {
+func (s *Service) GetAppUserProfile(ctx context.Context, userID string) (*dto.AppUserProfile, error) {
 	log := util.LogFromContext(ctx).With().Str("userID", userID).Logger()
 
 	aup, err := models.AppUserProfiles(
@@ -43,7 +43,7 @@ func (s *Service) GetAppUserProfileIfExists(ctx context.Context, userID string) 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			log.Debug().Err(err).Msg("AppUserProfile not found")
-			return nil, nil
+			return nil, ErrNotFound
 		}
 
 		log.Err(err).Msg("Failed to get AppUserProfile")
@@ -306,63 +306,6 @@ func (s *Service) Login(ctx context.Context, request dto.LoginRequest) (dto.Logi
 	return result, nil
 }
 
-func (s *Service) authenticateUser(ctx context.Context, exec boil.ContextExecutor, request dto.AuthenticateUserRequest) (dto.LoginResult, error) {
-	log := util.LogFromContext(ctx)
-
-	result := dto.LoginResult{
-		TokenType: TokenTypeBearer,
-		ExpiresIn: int64(s.config.Auth.AccessTokenValidity.Seconds()),
-	}
-
-	if request.InvalidateExistingTokens {
-		if _, err := models.AccessTokens(
-			models.AccessTokenWhere.UserID.EQ(request.User.ID),
-		).DeleteAll(ctx, exec); err != nil {
-			log.Err(err).Msg("Failed to delete existing access tokens")
-			return dto.LoginResult{}, err
-		}
-
-		if _, err := models.RefreshTokens(
-			models.RefreshTokenWhere.UserID.EQ(request.User.ID),
-		).DeleteAll(ctx, exec); err != nil {
-			log.Err(err).Msg("Failed to delete existing refresh tokens")
-			return dto.LoginResult{}, err
-		}
-	}
-
-	accessToken := models.AccessToken{
-		ValidUntil: s.clock.Now().Add(s.config.Auth.AccessTokenValidity),
-		UserID:     request.User.ID,
-	}
-
-	if err := accessToken.Insert(ctx, exec, boil.Infer()); err != nil {
-		log.Err(err).Msg("Failed to insert access token")
-		return dto.LoginResult{}, err
-	}
-
-	refreshToken := models.RefreshToken{
-		UserID: request.User.ID,
-	}
-
-	if err := refreshToken.Insert(ctx, exec, boil.Infer()); err != nil {
-		log.Err(err).Msg("Failed to insert refresh token")
-		return dto.LoginResult{}, err
-	}
-
-	u := request.User.ToModels()
-	u.LastAuthenticatedAt = null.TimeFrom(s.clock.Now())
-
-	if _, err := u.Update(ctx, exec, boil.Whitelist(models.UserColumns.LastAuthenticatedAt, models.UserColumns.UpdatedAt)); err != nil {
-		log.Err(err).Msg("Failed to update user last authenticated time")
-		return dto.LoginResult{}, err
-	}
-
-	result.AccessToken = accessToken.Token
-	result.RefreshToken = refreshToken.Token
-
-	return result, nil
-}
-
 func (s *Service) Refresh(ctx context.Context, request dto.RefreshRequest) (dto.LoginResult, error) {
 	log := util.LogFromContext(ctx)
 
@@ -615,6 +558,63 @@ func (s *Service) CompleteRegister(ctx context.Context, request dto.CompleteRegi
 		log.Debug().Err(err).Msg("Failed to complete registration")
 		return dto.LoginResult{}, err
 	}
+
+	return result, nil
+}
+
+func (s *Service) authenticateUser(ctx context.Context, exec boil.ContextExecutor, request dto.AuthenticateUserRequest) (dto.LoginResult, error) {
+	log := util.LogFromContext(ctx)
+
+	result := dto.LoginResult{
+		TokenType: TokenTypeBearer,
+		ExpiresIn: int64(s.config.Auth.AccessTokenValidity.Seconds()),
+	}
+
+	if request.InvalidateExistingTokens {
+		if _, err := models.AccessTokens(
+			models.AccessTokenWhere.UserID.EQ(request.User.ID),
+		).DeleteAll(ctx, exec); err != nil {
+			log.Err(err).Msg("Failed to delete existing access tokens")
+			return dto.LoginResult{}, err
+		}
+
+		if _, err := models.RefreshTokens(
+			models.RefreshTokenWhere.UserID.EQ(request.User.ID),
+		).DeleteAll(ctx, exec); err != nil {
+			log.Err(err).Msg("Failed to delete existing refresh tokens")
+			return dto.LoginResult{}, err
+		}
+	}
+
+	accessToken := models.AccessToken{
+		ValidUntil: s.clock.Now().Add(s.config.Auth.AccessTokenValidity),
+		UserID:     request.User.ID,
+	}
+
+	if err := accessToken.Insert(ctx, exec, boil.Infer()); err != nil {
+		log.Err(err).Msg("Failed to insert access token")
+		return dto.LoginResult{}, err
+	}
+
+	refreshToken := models.RefreshToken{
+		UserID: request.User.ID,
+	}
+
+	if err := refreshToken.Insert(ctx, exec, boil.Infer()); err != nil {
+		log.Err(err).Msg("Failed to insert refresh token")
+		return dto.LoginResult{}, err
+	}
+
+	u := request.User.ToModels()
+	u.LastAuthenticatedAt = null.TimeFrom(s.clock.Now())
+
+	if _, err := u.Update(ctx, exec, boil.Whitelist(models.UserColumns.LastAuthenticatedAt, models.UserColumns.UpdatedAt)); err != nil {
+		log.Err(err).Msg("Failed to update user last authenticated time")
+		return dto.LoginResult{}, err
+	}
+
+	result.AccessToken = accessToken.Token
+	result.RefreshToken = refreshToken.Token
 
 	return result, nil
 }

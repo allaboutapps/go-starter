@@ -21,11 +21,15 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
+const (
+	helloWorld = "Hello World!"
+)
+
 func TestSnapshot(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	a := struct {
+	data := struct {
 		A string
 		B int
 		C bool
@@ -37,9 +41,7 @@ func TestSnapshot(t *testing.T) {
 		D: swag.String("bar"),
 	}
 
-	b := "Hello World!"
-
-	test.Snapshoter.Save(t, a, b)
+	test.Snapshoter.Save(t, data, helloWorld)
 }
 
 func TestSnapshotWithReplacer(t *testing.T) {
@@ -48,7 +50,7 @@ func TestSnapshotWithReplacer(t *testing.T) {
 	}
 	randID, err := util.GenerateRandomBase64String(20)
 	require.NoError(t, err)
-	a := struct {
+	data := struct {
 		ID string
 		A  string
 		B  int
@@ -67,14 +69,14 @@ func TestSnapshotWithReplacer(t *testing.T) {
 		require.NoError(t, err)
 		return re.ReplaceAllString(s, "ID: <redacted>,")
 	}
-	test.Snapshoter.Replacer(replacer).Save(t, a)
+	test.Snapshoter.Replacer(replacer).Save(t, data)
 }
 
 func TestSnapshotShouldFail(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	a := struct {
+	data := struct {
 		A string
 		B int
 		C bool
@@ -86,13 +88,11 @@ func TestSnapshotShouldFail(t *testing.T) {
 		D: swag.String("bar"),
 	}
 
-	b := "Hello World!"
-
 	tMock := new(mocks.TestingT)
 	tMock.On("Helper").Return()
 	tMock.On("Name").Return("TestSnapshotShouldFail")
 	tMock.On("Error", mock.Anything).Return()
-	test.Snapshoter.Save(tMock, a, b)
+	test.Snapshoter.Save(tMock, data, helloWorld)
 	tMock.AssertNotCalled(t, "Fatal")
 	tMock.AssertNotCalled(t, "Fatalf")
 	tMock.AssertCalled(t, "Error", mock.Anything)
@@ -102,7 +102,7 @@ func TestSnapshotWithUpdate(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	a := struct {
+	data := struct {
 		A string
 		B int
 		C bool
@@ -114,13 +114,11 @@ func TestSnapshotWithUpdate(t *testing.T) {
 		D: swag.String("bar"),
 	}
 
-	b := "Hello World!"
-
 	tMock := new(mocks.TestingT)
 	tMock.On("Helper").Return()
 	tMock.On("Name").Return("TestSnapshotWithUpdate")
 	tMock.On("Errorf", mock.Anything, mock.Anything).Return()
-	test.Snapshoter.Update(true).Save(tMock, a, b)
+	test.Snapshoter.Update(true).Save(tMock, data, helloWorld)
 	tMock.AssertNotCalled(t, "Error")
 	tMock.AssertNotCalled(t, "Fatal")
 	tMock.AssertCalled(t, "Errorf", mock.Anything, mock.Anything)
@@ -130,7 +128,7 @@ func TestSnapshotNotExists(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	a := struct {
+	data := struct {
 		A string
 		B int
 		C bool
@@ -141,8 +139,6 @@ func TestSnapshotNotExists(t *testing.T) {
 		C: true,
 		D: swag.String("bar"),
 	}
-
-	b := "Hello World!"
 
 	defer func() {
 		os.Remove(filepath.Join(test.DefaultSnapshotDirPathAbs, "TestSnapshotNotExists.golden"))
@@ -155,7 +151,7 @@ func TestSnapshotNotExists(t *testing.T) {
 	tMock.On("Fatal", mock.Anything).Return()
 	tMock.On("Error", mock.Anything).Return()
 	tMock.On("Errorf", mock.Anything, mock.Anything).Return()
-	test.Snapshoter.Save(tMock, a, b)
+	test.Snapshoter.Save(tMock, data, helloWorld)
 	tMock.AssertNotCalled(t, "Error")
 	tMock.AssertNotCalled(t, "Fatal")
 	tMock.AssertCalled(t, "Errorf", mock.Anything, mock.Anything)
@@ -167,7 +163,7 @@ func TestSnapshotSkipFields(t *testing.T) {
 	}
 	randID, err := util.GenerateRandomBase64String(20)
 	require.NoError(t, err)
-	a := struct {
+	data := struct {
 		ID string
 		A  string
 		B  int
@@ -181,7 +177,7 @@ func TestSnapshotSkipFields(t *testing.T) {
 		D:  swag.String("bar"),
 	}
 
-	test.Snapshoter.Skip([]string{"ID"}).Save(t, a)
+	test.Snapshoter.Skip([]string{"ID"}).Save(t, data)
 }
 
 func TestSnapshotSkipPrefixedFields(t *testing.T) {
@@ -189,7 +185,7 @@ func TestSnapshotSkipPrefixedFields(t *testing.T) {
 		t.Skip()
 	}
 
-	a := struct {
+	data := struct {
 		ID            string
 		OtherIDStr    string
 		OtherIDInt    int
@@ -209,7 +205,7 @@ func TestSnapshotSkipPrefixedFields(t *testing.T) {
 		},
 	}
 
-	test.Snapshoter.Skip([]string{"ID"}).Save(t, a)
+	test.Snapshoter.Skip([]string{"ID"}).Save(t, data)
 }
 
 func TestSnapshotSkipMultilineFields(t *testing.T) {
@@ -218,7 +214,7 @@ func TestSnapshotSkipMultilineFields(t *testing.T) {
 	}
 	randID, err := util.GenerateRandomBase64String(20)
 	require.NoError(t, err)
-	a := struct {
+	data := struct {
 		ID string
 		A  string
 		B  int
@@ -246,14 +242,14 @@ func TestSnapshotSkipMultilineFields(t *testing.T) {
 		},
 	}
 
-	test.Snapshoter.Skip([]string{"ID", "D", "E", "F"}).Save(t, a)
+	test.Snapshoter.Skip([]string{"ID", "D", "E", "F"}).Save(t, data)
 }
 
 func TestSnapshotWithLabel(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	a := struct {
+	data := struct {
 		A string
 		B int
 		C bool
@@ -265,17 +261,15 @@ func TestSnapshotWithLabel(t *testing.T) {
 		D: swag.String("bar"),
 	}
 
-	b := "Hello World!"
-
-	test.Snapshoter.Label("_A").Save(t, a)
-	test.Snapshoter.Label("_B").Save(t, b)
+	test.Snapshoter.Label("_A").Save(t, data)
+	test.Snapshoter.Label("_B").Save(t, helloWorld)
 }
 
 func TestSnapshotWithLocation(t *testing.T) {
 	if test.UpdateGoldenGlobal {
 		t.Skip()
 	}
-	a := struct {
+	data := struct {
 		A string
 		B int
 		C bool
@@ -288,7 +282,7 @@ func TestSnapshotWithLocation(t *testing.T) {
 	}
 
 	location := filepath.Join(util.GetProjectRootDir(), "/internal/test/testdata")
-	test.Snapshoter.Location(location).Save(t, a)
+	test.Snapshoter.Location(location).Save(t, data)
 }
 
 func TestSaveResponseAndValidate(t *testing.T) {

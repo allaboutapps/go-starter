@@ -13,6 +13,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPostRefreshSuccess(t *testing.T) {
@@ -37,7 +38,7 @@ func TestPostRefreshSuccess(t *testing.T) {
 		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 
 		err := fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
 
@@ -64,7 +65,7 @@ func TestPostRefreshDeactivatedUser(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.ErrForbiddenUserDeactivated)
 
 		err := fix.UserDeactivatedRefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 

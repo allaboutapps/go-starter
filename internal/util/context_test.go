@@ -7,6 +7,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type contextKey string
@@ -42,7 +43,8 @@ func TestDetachContextWithCancel(t *testing.T) {
 		t.Log("Detached context is not cancelled")
 	}
 
-	res := detachedContext.Value(key).(int)
+	res, ok := detachedContext.Value(key).(int)
+	require.True(t, ok)
 	assert.Equal(t, val, res)
 }
 
@@ -78,6 +80,7 @@ func TestDetachContextWithDeadline(t *testing.T) {
 		t.Log("Detached context is not cancelled")
 	}
 
-	res := detachedContext.Value(key).(int)
+	res, ok := detachedContext.Value(key).(int)
+	require.True(t, ok)
 	assert.Equal(t, val, res)
 }

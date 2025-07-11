@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"allaboutapps.dev/aw/go-starter/internal/push"
@@ -26,7 +27,7 @@ func NewFCM(config FCMConfig, opts ...option.ClientOption) (*FCM, error) {
 	ctx := context.Background()
 	fcmService, err := fcm.NewService(ctx, opts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create FCM service: %w", err)
 	}
 
 	return &FCM{
@@ -56,7 +57,6 @@ func (p *FCM) Send(token string, title string, message string) push.ProviderSend
 	_, err := p.service.Projects.Messages.Send("projects/"+p.Config.ProjectID, messageRequest).Do()
 	valid := true
 	if err != nil {
-
 		// convert to original error and determine if the token was at fault
 		var gErr *googleapi.Error
 		if errors.As(err, &gErr) {

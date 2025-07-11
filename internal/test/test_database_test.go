@@ -54,7 +54,6 @@ func TestWithTestDatabaseConcurrentUsage(t *testing.T) {
 func TestWithTestDatabase(t *testing.T) {
 	test.WithTestDatabase(t, func(db1 *sql.DB) {
 		test.WithTestDatabase(t, func(db2 *sql.DB) {
-
 			var db1Name string
 			err := db1.QueryRow("SELECT current_database();").Scan(&db1Name)
 			if err != nil {
@@ -73,12 +72,10 @@ func TestWithTestDatabase(t *testing.T) {
 }
 
 func TestWithTestDatabaseFromDump(t *testing.T) {
-
 	dumpFile := filepath.Join(pUtil.GetProjectRootDir(), "/test/testdata/users.sql")
 
 	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db1 *sql.DB) {
 		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db2 *sql.DB) {
-
 			var db1Name string
 			if err := db1.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
 				t.Fatal(err)
@@ -116,7 +113,6 @@ func TestWithTestDatabaseFromDumpAutoMigrateAndTestFixtures(t *testing.T) {
 	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db0 *sql.DB) {
 		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true}, func(db1 *sql.DB) {
 			test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true, ApplyTestFixtures: true}, func(db2 *sql.DB) {
-
 				// db0: has only a plain dump
 				// db1: has migrations
 				// db2: has migrations and testFixtures
@@ -158,7 +154,6 @@ func TestWithTestDatabaseFromDumpGorp(t *testing.T) {
 
 	// migrate transforms gorp_migratons to migrations
 	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true}, func(db *sql.DB) {
-
 		// check that we properly renamed the "gorp_migrations" migration tracking table to config.DatabaseMigrationTable
 		var migrationsTableName string
 		if err := db.QueryRow(fmt.Sprintf("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s';", config.DatabaseMigrationTable)).Scan(&migrationsTableName); err != nil {
@@ -184,7 +179,6 @@ func TestWithTestDatabaseFromDumpGorp(t *testing.T) {
 
 	// with no migrate, gorp_migrations still exists:
 	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: false}, func(db *sql.DB) {
-
 		// check that "gorp_migrations" migration tracking table still exists (as we have not set ApplyMigrations to true!)
 		var migrationsTableName string
 		if err := db.QueryRow("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gorp_migrations';").Scan(&migrationsTableName); err != nil {
@@ -198,7 +192,6 @@ func TestWithTestDatabaseFromDumpGorp(t *testing.T) {
 func TestWithTestDatabaseEmpty(t *testing.T) {
 	test.WithTestDatabaseEmpty(t, func(db1 *sql.DB) {
 		test.WithTestDatabaseEmpty(t, func(db2 *sql.DB) {
-
 			var db1Name string
 			err := db1.QueryRow("SELECT current_database();").Scan(&db1Name)
 			if err != nil {

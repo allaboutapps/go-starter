@@ -44,13 +44,13 @@ func ExampleWhereJSON() {
 		Age:     &age,
 	}
 
-	q := models.NewQuery(
+	query := models.NewQuery(
 		qm.Select("*"),
 		qm.From("users"),
 		db.WhereJSON("users", "profile", filter),
 	)
 
-	sql, args := queries.BuildQuery(q)
+	sql, args := queries.BuildQuery(query)
 
 	fmt.Println(sql)
 	fmt.Print("[")

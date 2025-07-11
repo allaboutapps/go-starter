@@ -37,29 +37,31 @@ func New(config config.Mailer, transport transport.MailTransporter) *Mailer {
 	}
 }
 
-func NewWithConfig(cfg config.Mailer, smtpConfig transport.SMTPMailTransportConfig) (m *Mailer, err error) {
+func NewWithConfig(cfg config.Mailer, smtpConfig transport.SMTPMailTransportConfig) (*Mailer, error) {
+	var mailer *Mailer
+
 	switch config.MailerTransporter(cfg.Transporter) {
 	case config.MailerTransporterMock:
 		log.Warn().Msg("Initializing mock mailer")
-		m = New(cfg, transport.NewMock())
+		mailer = New(cfg, transport.NewMock())
 	case config.MailerTransporterSMTP:
-		m = New(cfg, transport.NewSMTP(smtpConfig))
+		mailer = New(cfg, transport.NewSMTP(smtpConfig))
 	default:
 		return nil, fmt.Errorf("unsupported mail transporter: %s", cfg.Transporter)
 	}
 
-	if err := m.ParseTemplates(); err != nil {
+	if err := mailer.ParseTemplates(); err != nil {
 		return nil, fmt.Errorf("failed to parse mailer templates: %w", err)
 	}
 
-	return m, nil
+	return mailer, nil
 }
 
 func (m *Mailer) ParseTemplates() error {
 	files, err := os.ReadDir(m.Config.WebTemplatesEmailBaseDirAbs)
 	if err != nil {
 		log.Error().Str("dir", m.Config.WebTemplatesEmailBaseDirAbs).Err(err).Msg("Failed to read email templates directory while parsing templates")
-		return err
+		return fmt.Errorf("failed to read email templates directory while parsing templates: %w", err)
 	}
 
 	for _, file := range files {
@@ -67,13 +69,13 @@ func (m *Mailer) ParseTemplates() error {
 			continue
 		}
 
-		t, err := template.ParseGlob(filepath.Join(m.Config.WebTemplatesEmailBaseDirAbs, file.Name(), "**"))
+		tmpl, err := template.ParseGlob(filepath.Join(m.Config.WebTemplatesEmailBaseDirAbs, file.Name(), "**"))
 		if err != nil {
 			log.Error().Str("template", file.Name()).Err(err).Msg("Failed to parse email template files as glob")
-			return err
+			return fmt.Errorf("failed to parse email template files as glob: %w", err)
 		}
 
-		m.Templates[file.Name()] = t
+		m.Templates[file.Name()] = tmpl
 	}
 
 	return nil
@@ -82,7 +84,7 @@ func (m *Mailer) ParseTemplates() error {
 func (m *Mailer) SendPasswordReset(ctx context.Context, to string, passwordResetLink string) error {
 	log := util.LogFromContext(ctx).With().Str("component", "mailer").Str("email_template", emailTemplatePasswordReset).Logger()
 
-	t, ok := m.Templates[emailTemplatePasswordReset]
+	tmpl, ok := m.Templates[emailTemplatePasswordReset]
 	if !ok {
 		log.Error().Msg("Password reset email template not found")
 		return ErrEmailTemplateNotFound
@@ -93,26 +95,26 @@ func (m *Mailer) SendPasswordReset(ctx context.Context, to string, passwordReset
 	}
 
 	var buf bytes.Buffer
-	if err := t.Execute(&buf, data); err != nil {
+	if err := tmpl.Execute(&buf, data); err != nil {
 		log.Error().Err(err).Msg("Failed to execute password reset email template")
-		return err
+		return fmt.Errorf("failed to execute password reset email template: %w", err)
 	}
 
-	e := email.NewEmail()
+	mail := email.NewEmail()
 
-	e.From = m.Config.DefaultSender
-	e.To = []string{to}
-	e.Subject = "Password reset"
-	e.HTML = buf.Bytes()
+	mail.From = m.Config.DefaultSender
+	mail.To = []string{to}
+	mail.Subject = "Password reset"
+	mail.HTML = buf.Bytes()
 
 	if !m.Config.Send {
 		log.Warn().Str("to", to).Str("passwordResetLink", passwordResetLink).Msg("Sending has been disabled in mailer config, skipping password reset email")
 		return nil
 	}
 
-	if err := m.Transport.Send(e); err != nil {
+	if err := m.Transport.Send(mail); err != nil {
 		log.Debug().Err(err).Msg("Failed to send password reset email")
-		return err
+		return fmt.Errorf("failed to send password reset email: %w", err)
 	}
 
 	log.Debug().Msg("Successfully sent password reset email")
@@ -123,7 +125,7 @@ func (m *Mailer) SendPasswordReset(ctx context.Context, to string, passwordReset
 func (m *Mailer) SendAccountConfirmation(ctx context.Context, to string, payload dto.ConfirmatioNotificationPayload) error {
 	log := util.LogFromContext(ctx)
 
-	t, ok := m.Templates[emailTemplateAccountConfirmation]
+	tmpl, ok := m.Templates[emailTemplateAccountConfirmation]
 	if !ok {
 		log.Error().Msg("Account confirmation email template not found")
 		return ErrEmailTemplateNotFound
@@ -134,26 +136,26 @@ func (m *Mailer) SendAccountConfirmation(ctx context.Context, to string, payload
 	}
 
 	var buf bytes.Buffer
-	if err := t.Execute(&buf, data); err != nil {
+	if err := tmpl.Execute(&buf, data); err != nil {
 		log.Error().Err(err).Msg("Failed to execute account confirmation email template")
-		return err
+		return fmt.Errorf("failed to execute account confirmation email template: %w", err)
 	}
 
-	e := email.NewEmail()
+	mail := email.NewEmail()
 
-	e.From = m.Config.DefaultSender
-	e.To = []string{to}
-	e.Subject = "Account confirmation"
-	e.HTML = buf.Bytes()
+	mail.From = m.Config.DefaultSender
+	mail.To = []string{to}
+	mail.Subject = "Account confirmation"
+	mail.HTML = buf.Bytes()
 
 	if !m.Config.Send {
 		log.Warn().Str("to", to).Msg("Sending has been disabled in mailer config, skipping account confirmation email")
 		return nil
 	}
 
-	if err := m.Transport.Send(e); err != nil {
+	if err := m.Transport.Send(mail); err != nil {
 		log.Debug().Err(err).Msg("Failed to send account confirmation email")
-		return err
+		return fmt.Errorf("failed to send account confirmation email: %w", err)
 	}
 
 	return nil

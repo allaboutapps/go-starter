@@ -153,7 +153,7 @@ func TestPostForgotPasswordUnknownUser(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		cnt, err := models.PasswordResetTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
 		mail := test.GetLastSentMail(t, s.Mailer)
@@ -174,7 +174,7 @@ func TestPostForgotPasswordDeactivatedUser(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		cnt, err := models.PasswordResetTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
 		mail := test.GetLastSentMail(t, s.Mailer)
@@ -200,7 +200,7 @@ func TestPostForgotPasswordUserWithoutPassword(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		cnt, err := models.PasswordResetTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(0), cnt)
 
 		mail := test.GetLastSentMail(t, s.Mailer)
@@ -245,7 +245,7 @@ func TestPostForgotPasswordBadRequest(t *testing.T) {
 				test.Snapshoter.Save(t, response)
 
 				cnt, err := models.PasswordResetTokens().Count(ctx, s.DB)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, int64(0), cnt)
 
 				mail := test.GetLastSentMail(t, s.Mailer)

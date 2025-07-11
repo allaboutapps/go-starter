@@ -28,11 +28,11 @@ func New() *cobra.Command {
 func runEnv() {
 	config := config.DefaultServiceConfigFromEnv()
 
-	c, err := json.MarshalIndent(config, "", "  ")
-
+	result, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to marshal the env")
 	}
 
-	fmt.Println(string(c))
+	//nolint:forbidigo
+	fmt.Println(string(result))
 }

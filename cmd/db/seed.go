@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"allaboutapps.dev/aw/go-starter/internal/api"
 	"allaboutapps.dev/aw/go-starter/internal/config"
@@ -50,18 +51,17 @@ func ApplySeedFixtures(ctx context.Context, config config.Server) error {
 
 	db, err := sql.Open("postgres", config.Database.ConnectionString())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open the database: %w", err)
 	}
 
 	defer db.Close()
 
 	if err := db.PingContext(ctx); err != nil {
-		return err
+		return fmt.Errorf("failed to ping the database: %w", err)
 	}
 
 	// insert fixtures in an auto-managed db transaction
 	return dbutil.WithTransaction(ctx, db, func(tx boil.ContextExecutor) error {
-
 		fixtures := data.Upserts()
 
 		for _, fixture := range fixtures {

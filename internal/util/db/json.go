@@ -51,6 +51,7 @@ func WhereJSON(table string, column string, filter interface{}) qm.QueryMod {
 	if len(qms) == 0 {
 		panic(errors.New("filter resulted in empty query"))
 	}
+
 	return qm.Expr(qms...)
 }
 
@@ -61,64 +62,64 @@ func whereJSON(table string, column string, filter interface{}, level int) []qm.
 
 	qms := make([]qm.QueryMod, 0)
 
-	rt := reflect.TypeOf(filter)
-	switch rt.Kind() {
+	filterType := reflect.TypeOf(filter)
+	switch filterType.Kind() {
 	case reflect.Struct:
-		rv := reflect.ValueOf(filter)
-		for i := 0; i < rt.NumField(); i++ {
-			f := rt.Field(i)
+		filterValue := reflect.ValueOf(filter)
+		for i := 0; i < filterType.NumField(); i++ {
+			field := filterType.Field(i)
 
 			// skip unexported fields as we cannot retrieve their values
-			if len(f.PkgPath) != 0 {
+			if len(field.PkgPath) != 0 {
 				continue
 			}
 
-			k := strings.Split(f.Tag.Get("json"), ",")[0]
-			if k == "-" {
+			jsonkey := strings.Split(field.Tag.Get("json"), ",")[0]
+			if jsonkey == "-" {
 				continue
 			}
 
-			fs := rv.Field(i)
-			if fs.Kind() != reflect.Struct && k == "" {
+			filterValueField := filterValue.Field(i)
+			if filterValueField.Kind() != reflect.Struct && jsonkey == "" {
 				continue
 			}
 
 			isArray := false
-			var v interface{}
-			switch fs.Kind() {
+			var val interface{}
+			switch filterValueField.Kind() {
 			case reflect.Struct:
-				qms = append(qms, whereJSON(table, column, fs.Interface(), level+1)...)
+				qms = append(qms, whereJSON(table, column, filterValueField.Interface(), level+1)...)
 				continue
 			case reflect.Ptr:
-				if !fs.IsValid() || fs.IsNil() {
+				if !filterValueField.IsValid() || filterValueField.IsNil() {
 					continue
 				}
-				if fs.Elem().Kind() == reflect.Array ||
-					fs.Elem().Kind() == reflect.Slice {
+				if filterValueField.Elem().Kind() == reflect.Array ||
+					filterValueField.Elem().Kind() == reflect.Slice {
 					isArray = true
 				}
-				v = fs.Elem().Interface()
+				val = filterValueField.Elem().Interface()
 			case reflect.Array,
 				reflect.Slice:
-				if !fs.IsValid() || fs.IsNil() {
+				if !filterValueField.IsValid() || filterValueField.IsNil() {
 					continue
 				}
 				isArray = true
-				v = fs.Interface()
+				val = filterValueField.Interface()
 			default:
-				v = fs.Interface()
+				val = filterValueField.Interface()
 			}
 
 			if isArray {
-				qms = append(qms, qm.Where(fmt.Sprintf("%s.%s->'%s' <@ to_jsonb(?::text[])", table, column, k), pq.Array(v)))
+				qms = append(qms, qm.Where(fmt.Sprintf("%s.%s->'%s' <@ to_jsonb(?::text[])", table, column, jsonkey), pq.Array(val)))
 			} else {
-				qms = append(qms, qm.Where(fmt.Sprintf("%s.%s->>'%s' = ?", table, column, k), v))
+				qms = append(qms, qm.Where(fmt.Sprintf("%s.%s->>'%s' = ?", table, column, jsonkey), val))
 			}
 		}
 	case reflect.String:
 		qms = append(qms, qm.Where(fmt.Sprintf("%s.%s::text = ?", table, column), filter))
 	default:
-		panic(fmt.Errorf("invalid filter type %v", rt.Kind()))
+		panic(fmt.Errorf("invalid filter type %v", filterType.Kind()))
 	}
 
 	return qms

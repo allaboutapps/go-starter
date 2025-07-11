@@ -3,11 +3,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"allaboutapps.dev/aw/go-starter/scripts/internal/util"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +28,7 @@ Utility commands while developing go-starter based projects.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Error().Err(err).Msg("Failed to execute root command")
 		os.Exit(1)
 	}
 }

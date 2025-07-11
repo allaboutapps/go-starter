@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"math"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
@@ -12,33 +13,36 @@ import (
 
 type TxFn func(boil.ContextExecutor) error
 
-func WithTransaction(ctx context.Context, db *sql.DB, fn TxFn) error {
-	return WithConfiguredTransaction(ctx, db, nil, fn)
+func WithTransaction(ctx context.Context, db *sql.DB, txHandler TxFn) error {
+	return WithConfiguredTransaction(ctx, db, nil, txHandler)
 }
 
-func WithConfiguredTransaction(ctx context.Context, db *sql.DB, options *sql.TxOptions, fn TxFn) error {
+func WithConfiguredTransaction(ctx context.Context, db *sql.DB, options *sql.TxOptions, txHandler TxFn) error {
 	tx, err := db.BeginTx(ctx, options)
 	if err != nil {
 		util.LogFromContext(ctx).Warn().Err(err).Msg("Failed to start transaction")
-		return err
+		return fmt.Errorf("failed to start transaction: %w", err)
 	}
 
 	defer func() {
-		if p := recover(); p != nil {
-			util.LogFromContext(ctx).Error().Interface("p", p).Msg("Recovered from panic, rolling back transaction and panicking again")
+		cause := recover()
+
+		switch {
+		case cause != nil:
+			util.LogFromContext(ctx).Error().Interface("cause", cause).Msg("Recovered from panic, rolling back transaction and panicking again")
 
 			if txErr := tx.Rollback(); txErr != nil {
 				util.LogFromContext(ctx).Warn().Err(txErr).Msg("Failed to roll back transaction after recovering from panic")
 			}
 
-			panic(p)
-		} else if err != nil {
+			panic(cause)
+		case err != nil:
 			util.LogFromContext(ctx).Warn().Err(err).Msg("Received error, rolling back transaction")
 
 			if txErr := tx.Rollback(); txErr != nil {
 				util.LogFromContext(ctx).Warn().Err(txErr).Msg("Failed to roll back transaction after receiving error")
 			}
-		} else {
+		default:
 			err = tx.Commit()
 			if err != nil {
 				util.LogFromContext(ctx).Warn().Err(err).Msg("Failed to commit transaction")
@@ -46,15 +50,19 @@ func WithConfiguredTransaction(ctx context.Context, db *sql.DB, options *sql.TxO
 		}
 	}()
 
-	err = fn(tx)
+	err = txHandler(tx)
+	if err != nil {
+		return fmt.Errorf("failed to execute transaction: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func NullIntFromInt64Ptr(i *int64) null.Int {
 	if i == nil {
 		return null.NewInt(0, false)
 	}
+
 	return null.NewInt(int(*i), true)
 }
 
@@ -62,6 +70,7 @@ func NullFloat32FromFloat64Ptr(f *float64) null.Float32 {
 	if f == nil {
 		return null.NewFloat32(0.0, false)
 	}
+
 	return null.NewFloat32(float32(*f), true)
 }
 
@@ -69,6 +78,7 @@ func NullIntFromInt16Ptr(i *int16) null.Int {
 	if i == nil {
 		return null.NewInt(0, false)
 	}
+
 	return null.NewInt(int(*i), true)
 }
 

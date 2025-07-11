@@ -8,6 +8,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWaitTimeoutErr(t *testing.T) {
@@ -42,6 +43,6 @@ func TestWaitTimeoutErr(t *testing.T) {
 
 	// ok (after timeout).
 	err = util.WaitTimeout(&wg, 800*time.Second)
-	assert.Equal(t, nil, err)
+	require.NoError(t, err)
 	assert.Equal(t, int32(4), atomic.LoadInt32(&n))
 }

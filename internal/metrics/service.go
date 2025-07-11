@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/metrics/users"
@@ -37,7 +38,7 @@ func (s *Service) RegisterMetrics(ctx context.Context) error {
 	for _, metric := range metrics {
 		if err := prometheus.Register(metric); err != nil {
 			log.Error().Err(err).Msg("Failed to register metric")
-			return err
+			return fmt.Errorf("failed to register metric: %w", err)
 		}
 	}
 

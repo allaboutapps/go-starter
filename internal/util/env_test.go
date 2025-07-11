@@ -93,24 +93,24 @@ func TestGetEnvAsUint8(t *testing.T) {
 func TestGetEnvAsBool(t *testing.T) {
 	testVarKey := "TEST_ONLY_FOR_UNIT_TEST_BOOL"
 	res := util.GetEnvAsBool(testVarKey, true)
-	assert.Equal(t, true, res)
+	assert.True(t, res)
 
 	t.Setenv(testVarKey, "f")
 	defer os.Unsetenv(testVarKey)
 	res = util.GetEnvAsBool(testVarKey, true)
-	assert.Equal(t, false, res)
+	assert.False(t, res)
 
 	t.Setenv(testVarKey, "0")
 	res = util.GetEnvAsBool(testVarKey, true)
-	assert.Equal(t, false, res)
+	assert.False(t, res)
 
 	t.Setenv(testVarKey, "false")
 	res = util.GetEnvAsBool(testVarKey, true)
-	assert.Equal(t, false, res)
+	assert.False(t, res)
 
 	t.Setenv(testVarKey, "3x")
 	res = util.GetEnvAsBool(testVarKey, true)
-	assert.Equal(t, true, res)
+	assert.True(t, res)
 }
 
 func TestGetEnvAsURL(t *testing.T) {

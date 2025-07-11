@@ -37,36 +37,36 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 			return err
 		}
 
-		if result.RequiresConfirmation {
-			if result.ConfirmationToken.Valid {
-				confirmationLink, err := url.ConfirmationDeeplinkURL(s.Config, result.ConfirmationToken.String)
-				if err != nil {
-					log.Debug().Err(err).Msg("Failed to generate confirmation link")
-					return err
-				}
-
-				if err := s.Mailer.SendAccountConfirmation(ctx, username.String(), dto.ConfirmatioNotificationPayload{
-					ConfirmationLink: confirmationLink.String(),
-				}); err != nil {
-					log.Debug().Err(err).Msg("Failed to send confirmation email")
-					return err
-				}
+		if !result.RequiresConfirmation {
+			loginResult, err := s.Auth.Login(ctx, dto.LoginRequest{
+				Username: username,
+				Password: swag.StringValue(body.Password),
+			})
+			if err != nil {
+				log.Debug().Err(err).Msg("Failed to authenticate user after registration")
+				return err
 			}
 
-			return util.ValidateAndReturn(c, http.StatusAccepted, &types.RegisterResponse{
-				RequiresConfirmation: swag.Bool(result.RequiresConfirmation),
-			})
+			return util.ValidateAndReturn(c, http.StatusOK, loginResult.ToTypes())
 		}
 
-		loginResult, err := s.Auth.Login(ctx, dto.LoginRequest{
-			Username: username,
-			Password: swag.StringValue(body.Password),
+		if result.ConfirmationToken.Valid {
+			confirmationLink, err := url.ConfirmationDeeplinkURL(s.Config, result.ConfirmationToken.String)
+			if err != nil {
+				log.Debug().Err(err).Msg("Failed to generate confirmation link")
+				return err
+			}
+
+			if err := s.Mailer.SendAccountConfirmation(ctx, username.String(), dto.ConfirmatioNotificationPayload{
+				ConfirmationLink: confirmationLink.String(),
+			}); err != nil {
+				log.Debug().Err(err).Msg("Failed to send confirmation email")
+				return err
+			}
+		}
+
+		return util.ValidateAndReturn(c, http.StatusAccepted, &types.RegisterResponse{
+			RequiresConfirmation: swag.Bool(result.RequiresConfirmation),
 		})
-		if err != nil {
-			log.Debug().Err(err).Msg("Failed to authenticate user after registration")
-			return err
-		}
-
-		return util.ValidateAndReturn(c, http.StatusOK, loginResult.ToTypes())
 	}
 }

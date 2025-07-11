@@ -52,15 +52,15 @@ func NewFromEcho(e *echo.HTTPError) *HTTPError {
 }
 
 func (e *HTTPError) Error() string {
-	var b strings.Builder
+	var builder strings.Builder
 
-	fmt.Fprintf(&b, "HTTPError %d (%s): %s", *e.Code, *e.Type, *e.Title)
+	fmt.Fprintf(&builder, "HTTPError %d (%s): %s", *e.Code, *e.Type, *e.Title)
 
 	if len(e.Detail) > 0 {
-		fmt.Fprintf(&b, " - %s", e.Detail)
+		fmt.Fprintf(&builder, " - %s", e.Detail)
 	}
 	if e.Internal != nil {
-		fmt.Fprintf(&b, ", %v", e.Internal)
+		fmt.Fprintf(&builder, ", %v", e.Internal)
 	}
 	if len(e.AdditionalData) > 0 {
 		keys := make([]string, 0, len(e.AdditionalData))
@@ -69,16 +69,16 @@ func (e *HTTPError) Error() string {
 		}
 		sort.Strings(keys)
 
-		b.WriteString(". Additional: ")
+		builder.WriteString(". Additional: ")
 		for i, k := range keys {
-			fmt.Fprintf(&b, "%s=%v", k, e.AdditionalData[k])
+			fmt.Fprintf(&builder, "%s=%v", k, e.AdditionalData[k])
 			if i < len(keys)-1 {
-				b.WriteString(", ")
+				builder.WriteString(", ")
 			}
 		}
 	}
 
-	return b.String()
+	return builder.String()
 }
 
 func NewHTTPValidationError(code int, errorType types.PublicHTTPErrorType, title string, validationErrors []*types.HTTPValidationErrorDetail) *HTTPValidationError {
@@ -109,15 +109,15 @@ func NewHTTPValidationErrorWithDetail(code int, errorType types.PublicHTTPErrorT
 }
 
 func (e *HTTPValidationError) Error() string {
-	var b strings.Builder
+	var builder strings.Builder
 
-	fmt.Fprintf(&b, "HTTPValidationError %d (%s): %s", *e.Code, *e.Type, *e.Title)
+	fmt.Fprintf(&builder, "HTTPValidationError %d (%s): %s", *e.Code, *e.Type, *e.Title)
 
 	if len(e.Detail) > 0 {
-		fmt.Fprintf(&b, " - %s", e.Detail)
+		fmt.Fprintf(&builder, " - %s", e.Detail)
 	}
 	if e.Internal != nil {
-		fmt.Fprintf(&b, ", %v", e.Internal)
+		fmt.Fprintf(&builder, ", %v", e.Internal)
 	}
 	if len(e.AdditionalData) > 0 {
 		keys := make([]string, 0, len(e.AdditionalData))
@@ -126,22 +126,22 @@ func (e *HTTPValidationError) Error() string {
 		}
 		sort.Strings(keys)
 
-		b.WriteString(". Additional: ")
+		builder.WriteString(". Additional: ")
 		for i, k := range keys {
-			fmt.Fprintf(&b, "%s=%v", k, e.AdditionalData[k])
+			fmt.Fprintf(&builder, "%s=%v", k, e.AdditionalData[k])
 			if i < len(keys)-1 {
-				b.WriteString(", ")
+				builder.WriteString(", ")
 			}
 		}
 	}
 
-	b.WriteString(" - Validation: ")
+	builder.WriteString(" - Validation: ")
 	for i, ve := range e.ValidationErrors {
-		fmt.Fprintf(&b, "%s (in %s): %s", *ve.Key, *ve.In, *ve.Error)
+		fmt.Fprintf(&builder, "%s (in %s): %s", *ve.Key, *ve.In, *ve.Error)
 		if i < len(e.ValidationErrors)-1 {
-			b.WriteString(", ")
+			builder.WriteString(", ")
 		}
 	}
 
-	return b.String()
+	return builder.String()
 }

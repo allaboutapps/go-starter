@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -72,19 +73,19 @@ type HeaderLogReplacer func(header http.Header) http.Header
 // DefaultHeaderLogReplacer replaces all Authorization, X-CSRF-Token and Proxy-Authorization
 // header entries with a redacted string, indicating their presence without revealing actual,
 // potentially sensitive values in the logs.
-func DefaultHeaderLogReplacer(header http.Header) http.Header {
+func DefaultHeaderLogReplacer(headers http.Header) http.Header {
 	sanitizedHeader := http.Header{}
 
-	for k, vv := range header {
-		shouldRedact := strings.EqualFold(k, echo.HeaderAuthorization) ||
-			strings.EqualFold(k, echo.HeaderXCSRFToken) ||
-			strings.EqualFold(k, "Proxy-Authorization")
+	for key, value := range headers {
+		shouldRedact := strings.EqualFold(key, echo.HeaderAuthorization) ||
+			strings.EqualFold(key, echo.HeaderXCSRFToken) ||
+			strings.EqualFold(key, "Proxy-Authorization")
 
-		for _, v := range vv {
+		for _, v := range value {
 			if shouldRedact {
-				sanitizedHeader.Add(k, "*****REDACTED*****")
+				sanitizedHeader.Add(key, "*****REDACTED*****")
 			} else {
-				sanitizedHeader.Add(k, v)
+				sanitizedHeader.Add(key, v)
 			}
 		}
 	}
@@ -181,36 +182,36 @@ func LoggerWithConfig(config LoggerConfig, output ...io.Writer) echo.MiddlewareF
 			req := c.Request()
 			res := c.Response()
 
-			id := req.Header.Get(echo.HeaderXRequestID)
-			if len(id) == 0 {
-				id = res.Header().Get(echo.HeaderXRequestID)
+			requestID := req.Header.Get(echo.HeaderXRequestID)
+			if len(requestID) == 0 {
+				requestID = res.Header().Get(echo.HeaderXRequestID)
 			}
 
-			in := req.Header.Get(echo.HeaderContentLength)
-			if len(in) == 0 {
-				in = "0"
+			contentLength := req.Header.Get(echo.HeaderContentLength)
+			if len(contentLength) == 0 {
+				contentLength = "0"
 			}
 
-			l := log.With().
+			logger := log.With().
 				Dict("req", zerolog.Dict().
-					Str("id", id).
+					Str("id", requestID).
 					Str("host", req.Host).
 					Str("method", req.Method).
 					Str("url", req.URL.String()).
-					Str("bytes_in", in),
+					Str("bytes_in", contentLength),
 				).Logger()
 
 			if len(output) > 0 {
-				l = l.Output(output[0])
+				logger = logger.Output(output[0])
 			}
 
 			if config.LogCaller {
 				// Caller uses https://pkg.go.dev/runtime#Caller underneath and might decrease the performance.
-				l = l.With().Caller().Logger()
+				logger = logger.With().Caller().Logger()
 			}
 
-			le := l.WithLevel(config.Level)
-			req = req.WithContext(l.WithContext(context.WithValue(req.Context(), util.CTXKeyRequestID, id)))
+			le := logger.WithLevel(config.Level)
+			req = req.WithContext(logger.WithContext(context.WithValue(req.Context(), util.CTXKeyRequestID, requestID)))
 
 			if config.LogRequestBody && !config.RequestBodyLogSkipper(req) {
 				var reqBody []byte
@@ -218,8 +219,8 @@ func LoggerWithConfig(config LoggerConfig, output ...io.Writer) echo.MiddlewareF
 				if req.Body != nil {
 					reqBody, err = io.ReadAll(req.Body)
 					if err != nil {
-						l.Error().Err(err).Msg("Failed to read body while logging request")
-						return err
+						logger.Error().Err(err).Msg("Failed to read body while logging request")
+						return fmt.Errorf("failed to read body while logging request: %w", err)
 					}
 
 					req.Body = io.NopCloser(bytes.NewBuffer(reqBody))
@@ -301,13 +302,33 @@ func (w *bodyDumpResponseWriter) WriteHeader(code int) {
 }
 
 func (w *bodyDumpResponseWriter) Write(b []byte) (int, error) {
-	return w.Writer.Write(b)
+	n, err := w.Writer.Write(b)
+	if err != nil {
+		return 0, fmt.Errorf("failed to write response body: %w", err)
+	}
+
+	return n, nil
 }
 
 func (w *bodyDumpResponseWriter) Flush() {
-	w.ResponseWriter.(http.Flusher).Flush()
+	flusher, ok := w.ResponseWriter.(http.Flusher)
+	if !ok {
+		panic(fmt.Sprintf("failed to get flusher as http.Flusher, got %T", w.ResponseWriter))
+	}
+
+	flusher.Flush()
 }
 
 func (w *bodyDumpResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	return w.ResponseWriter.(http.Hijacker).Hijack()
+	hijacker, ok := w.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, fmt.Errorf("failed to get hijacker as http.Hijacker, got %T", w.ResponseWriter)
+	}
+
+	conn, rw, err := hijacker.Hijack()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to hijack connection: %w", err)
+	}
+
+	return conn, rw, nil
 }

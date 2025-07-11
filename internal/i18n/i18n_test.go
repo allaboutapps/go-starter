@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -41,9 +42,9 @@ func TestServerProvidedI18n(t *testing.T) {
 
 		if msgFilesCount == 0 {
 			// no i18n bundles were available, as the defaultLanguage is a tag itself, check for len 1
-			assert.Equal(t, len(s.I18n.Tags()), 1)
+			assert.Len(t, s.I18n.Tags(), 1)
 		} else {
-			assert.Equal(t, len(s.I18n.Tags()), msgFilesCount)
+			assert.Len(t, s.I18n.Tags(), msgFilesCount)
 		}
 
 		msg := s.I18n.Translate("this.key.will.never.exist", s.Config.I18n.DefaultLanguage)
@@ -64,7 +65,7 @@ func TestI18n(t *testing.T) {
 
 	assert.Equal(t, language.English, srv.Tags()[0])
 	assert.Equal(t, language.German, srv.Tags()[1])
-	assert.Equal(t, 2, len(srv.Tags()))
+	assert.Len(t, srv.Tags(), 2)
 
 	msg := srv.Translate("Test.Welcome", language.German, i18n.Data{"Name": "Hans"})
 	assert.Equal(t, "Guten Tag Hans", msg)
@@ -103,25 +104,25 @@ func TestI18n(t *testing.T) {
 	assert.Equal(t, "This key only exists in DE", msg)
 
 	msg, err = srv.TranslateMaybe("Test.String.DE.only", language.English)
-	assert.Error(t, err)
-	assert.Equal(t, "", msg) // no fallback!
+	require.Error(t, err)
+	assert.Empty(t, msg) // no fallback!
 
 	msg = srv.Translate("Test.String.EN.only", language.English)
 	assert.Equal(t, "This key only exists in EN", msg)
 
 	msg, err = srv.TranslateMaybe("Test.String.EN.only", language.German)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Equal(t, "This key only exists in EN", msg) // fallback (but error)
 
 	msg = srv.Translate("Test.String.EN.only", language.German)
 	assert.Equal(t, "Test.String.EN.only", msg)
 
 	msg = srv.Translate("", language.German) // empty key
-	assert.Equal(t, "", msg)
+	assert.Empty(t, msg)
 
 	msg, err = srv.TranslateMaybe("", language.German) // empty key
-	assert.Error(t, err)
-	assert.Equal(t, "", msg)
+	require.Error(t, err)
+	assert.Empty(t, msg)
 
 	// ensure language subvariants are supported
 	deAt := srv.ParseLang("de-AT")
@@ -142,13 +143,13 @@ func TestI18nConcurrentUsage(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		go func(index int) {
-			msg := srv.Translate("Test.Welcome", language.German, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			msg := srv.Translate("Test.Welcome", language.German, i18n.Data{"Name": strconv.Itoa(index)})
 			assert.Equal(t, fmt.Sprintf("Guten Tag %v", index), msg)
 
-			msg = srv.Translate("Test.Welcome", language.English, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			msg = srv.Translate("Test.Welcome", language.English, i18n.Data{"Name": strconv.Itoa(index)})
 			assert.Equal(t, fmt.Sprintf("Welcome %v", index), msg)
 
-			msg = srv.Translate("Test.Welcome", language.Spanish, i18n.Data{"Name": fmt.Sprintf("%v", index)})
+			msg = srv.Translate("Test.Welcome", language.Spanish, i18n.Data{"Name": strconv.Itoa(index)})
 			assert.Equal(t, fmt.Sprintf("Welcome %v", index), msg)
 
 			msg = srv.Translate("Test.Welcome", language.English, i18n.Data{"Name": "Franz"})
@@ -181,7 +182,7 @@ func TestI18nOtherDefault(t *testing.T) {
 
 	assert.Equal(t, language.German, srv.Tags()[0])
 	assert.Equal(t, language.English, srv.Tags()[1])
-	assert.Equal(t, 2, len(srv.Tags()))
+	assert.Len(t, srv.Tags(), 2)
 }
 
 func TestI18nInexistantDefault(t *testing.T) {
@@ -194,7 +195,7 @@ func TestI18nInexistantDefault(t *testing.T) {
 	assert.Equal(t, language.Italian, srv.Tags()[0])
 	assert.Equal(t, language.German, srv.Tags()[1])
 	assert.Equal(t, language.English, srv.Tags()[2])
-	assert.Equal(t, 3, len(srv.Tags()))
+	assert.Len(t, srv.Tags(), 3)
 }
 
 func TestI18nEmpty(t *testing.T) {
@@ -203,7 +204,7 @@ func TestI18nEmpty(t *testing.T) {
 		BundleDirAbs:    filepath.Join(util.GetProjectRootDir(), "/internal/i18n/testdata/i18n-empty"),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, 1, len(srv.Tags())) // the DefaultLanguage should still be set!
+	assert.Len(t, srv.Tags(), 1) // the DefaultLanguage should still be set!
 	assert.Equal(t, language.Italian, srv.Tags()[0])
 
 	tag := srv.ParseAcceptLanguage("de,en-US;q=0.7,en;q=0.3")
@@ -213,15 +214,15 @@ func TestI18nEmpty(t *testing.T) {
 	assert.Equal(t, "no.test.key.exists", msg)
 
 	msg, err = srv.TranslateMaybe("no.test.key.exists", tag)
-	assert.Error(t, err)
-	assert.Equal(t, "", msg)
+	require.Error(t, err)
+	assert.Empty(t, msg)
 
 	msg = srv.Translate("no.test.key.exists", language.Ukrainian)
 	assert.Equal(t, "no.test.key.exists", msg)
 
 	msg, err = srv.TranslateMaybe("no.test.key.exists", language.Ukrainian)
-	assert.Error(t, err)
-	assert.Equal(t, "", msg)
+	require.Error(t, err)
+	assert.Empty(t, msg)
 }
 
 func TestI18nSpecialized(t *testing.T) {
@@ -231,7 +232,7 @@ func TestI18nSpecialized(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	assert.Equal(t, 4, len(srv.Tags())) // specialized subvariant is default
+	assert.Len(t, srv.Tags(), 4) // specialized subvariant is default
 	assert.Equal(t, language.AmericanEnglish, srv.Tags()[0])
 
 	msg := srv.Translate("test.punchline", language.AmericanEnglish)
@@ -262,7 +263,7 @@ func TestReservedKeywordsResolve(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	assert.Equal(t, 2, len(srv.Tags()))
+	assert.Len(t, srv.Tags(), 2)
 
 	// single reserved word (not yet mapped, requires 2 keywords at least)
 	msg := srv.Translate("reserved1.zero", language.English)
@@ -386,7 +387,6 @@ func TestReservedKeywordsResolve(t *testing.T) {
 
 	msg = srv.Translate("reserved.plain3.test", language.English)
 	assert.Equal(t, "reserved.plain3.test", msg)
-
 }
 
 func TestI18nPlural(t *testing.T) {
@@ -396,7 +396,7 @@ func TestI18nPlural(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	assert.Equal(t, 2, len(srv.Tags()))
+	assert.Len(t, srv.Tags(), 2)
 
 	msg := srv.TranslatePlural("cats", 0, language.AmericanEnglish)
 	assert.Equal(t, "I've 0 cats.", msg) // zero is not supported for CLDR English, "I don't have a cat." is not possible!
@@ -417,14 +417,14 @@ func TestI18nPlural(t *testing.T) {
 	assert.Equal(t, "I've -2 cats.", msg)
 
 	msg, err = srv.TranslatePluralMaybe("cats", -2, language.English)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "I've -2 cats.", msg)
 
 	msg = srv.TranslatePlural("cats", nil, language.English)
 	assert.Equal(t, "I've <nil> cats.", msg) // invalid count
 
 	msg, err = srv.TranslatePluralMaybe("cats", nil, language.English)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "I've <nil> cats.", msg) // invalid count
 
 	msg = srv.TranslatePlural("cats", "many", language.English)
@@ -450,8 +450,8 @@ func TestI18nPlural(t *testing.T) {
 	assert.Equal(t, "cats (count=viele)", msg) // internal failed to translate plural!
 
 	msg, err = srv.TranslatePluralMaybe("cats", "viele", language.German)
-	assert.Error(t, err)
-	assert.Equal(t, "", msg) // empty string for errors!
+	require.Error(t, err)
+	assert.Empty(t, msg) // empty string for errors!
 
 	// overwrite Count
 	msg = srv.TranslatePlural("cats", 8, language.German, i18n.Data{"Count": "zu viele"})
@@ -479,8 +479,8 @@ func TestI18nPlural(t *testing.T) {
 	assert.Equal(t, "this.key.will.never.exist (count=<nil>)", msg)
 
 	msg, err = srv.TranslatePluralMaybe("this.key.will.never.exist", nil, language.English)
-	assert.Error(t, err)
-	assert.Equal(t, "", msg) // empty string for errors!
+	require.Error(t, err)
+	assert.Empty(t, msg) // empty string for errors!
 }
 
 func TestI18nUndetermined(t *testing.T) {
@@ -490,7 +490,10 @@ func TestI18nUndetermined(t *testing.T) {
 	})
 
 	require.Error(t, err)
-	assert.Equal(t, err, errors.New("undetermined language at index 1 in i18n message bundle: [en und]"))
+
+	unwrappedErr := errors.Unwrap(err)
+	require.Error(t, unwrappedErr)
+	assert.Equal(t, unwrappedErr, errors.New("undetermined language at index 1 in i18n message bundle: [en und]"))
 }
 
 func TestI18nUndeterminedDefaultLanguage(t *testing.T) {
@@ -500,7 +503,10 @@ func TestI18nUndeterminedDefaultLanguage(t *testing.T) {
 	})
 
 	require.Error(t, err)
-	assert.Equal(t, err, errors.New("undetermined language at index 0 in i18n message bundle: [und de en]"))
+
+	unwrappedErr := errors.Unwrap(err)
+	require.Error(t, unwrappedErr)
+	assert.Equal(t, unwrappedErr, errors.New("undetermined language at index 0 in i18n message bundle: [und de en]"))
 }
 
 func TestI18nInvalidToml(t *testing.T) {
