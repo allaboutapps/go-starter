@@ -4,6 +4,7 @@ package api
 
 import (
 	"database/sql"
+	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/config"
@@ -35,7 +36,7 @@ var authServiceSet = wire.NewSet(
 func InitNewServer(
 	_ config.Server,
 ) (*Server, error) {
-	wire.Build(serviceSet, NewDB)
+	wire.Build(serviceSet, NewDB, NoTest)
 	return new(Server), nil
 }
 
@@ -44,6 +45,7 @@ func InitNewServer(
 func InitNewServerWithDB(
 	_ config.Server,
 	_ *sql.DB,
+	t ...*testing.T,
 ) (*Server, error) {
 	wire.Build(serviceSet)
 	return new(Server), nil

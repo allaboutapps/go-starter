@@ -66,14 +66,11 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 	// You may use port 0 to indicate you're not specifying an exact port but you want a free, available port selected by the system
 	config.Echo.ListenAddress = ":0"
 
-	// always use the mock clock in tests
-	config.Clock.UseMockClock = true
-
 	// always use the mock pusher in tests
 	config.Push.UseFCMProvider = false
 	config.Push.UseMockProvider = true
 
-	s, err := api.InitNewServerWithDB(config, db)
+	s, err := api.InitNewServerWithDB(config, db, t)
 	if err != nil {
 		t.Fatalf("Failed to initialize server: %v", err)
 	}

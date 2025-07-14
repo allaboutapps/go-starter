@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"testing"
 	"time"
 
 	"allaboutapps.dev/aw/go-starter/internal/auth"
@@ -45,10 +46,12 @@ func NewPush(cfg config.Server, db *sql.DB) (*push.Service, error) {
 	return pusher, nil
 }
 
-func NewClock(config config.Server) time2.Clock {
+func NewClock(t ...*testing.T) time2.Clock {
 	var clock time2.Clock
 
-	if config.Clock.UseMockClock {
+	useMock := len(t) > 0 && t[0] != nil
+
+	if useMock {
 		clock = time2.NewMockClock(time.Now())
 	} else {
 		clock = time2.DefaultClock
@@ -71,4 +74,8 @@ func NewDB(config config.Server) (*sql.DB, error) {
 
 func NewI18N(config config.Server) (*i18n.Service, error) {
 	return i18n.New(config.I18n)
+}
+
+func NoTest() []*testing.T {
+	return nil
 }
