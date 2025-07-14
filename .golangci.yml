@@ -55,7 +55,6 @@ linters:
     - nilnesserr
     - nilnil
     - noctx
-    - nolintlint
     - nonamedreturns
     - nosprintfhostport
     - prealloc
@@ -67,7 +66,6 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - tagalign
-    - tagliatelle
     - testableexamples
     - testifylint
     - thelper
@@ -93,10 +91,9 @@ linters:
     varnamelen:
       ignore-names:
         - tt
+        - t
       ignore-decls:
         - c echo.Context
-        - t testing.T
-        - t TestingT
         - s *api.Server
         - u *url.URL
         - i int
@@ -138,6 +135,7 @@ linters:
         - '0755'
       ignored-files:
         - internal/config/server_config.go
+        - fixtures.go
     gocritic:
       disabled-checks:
         - regexpMust
