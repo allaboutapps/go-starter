@@ -48,5 +48,9 @@ func (m *SMTPMailTransport) Send(mail *email.Email) error {
 		return fmt.Errorf("invalid SMTP encryption %q", m.config.Encryption)
 	}
 
-	return fmt.Errorf("failed to send email: %w", err)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	return nil
 }
