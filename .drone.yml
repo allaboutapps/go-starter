@@ -65,7 +65,7 @@ alias:
   #     container: [app]
   #     tag: *IMAGE_DEPLOY_TAG
   #     gcr_service_account_email: drone-ci-a3cloud@a3cloud-192413.iam.gserviceaccount.com
-  #     mgmt_repo: https://git.allaboutapps.at/scm/aw/a3cloud-mgmt.git
+  #     mgmt_repo: https://github.com/allaboutapps/a3cloud-mgmt.git
   #     mgmt_git_email: infrastructure+drone@allaboutapps.at
 
   # ENV variables for executing within the test env (similar to the env in docker-compose.yml)
@@ -97,7 +97,7 @@ alias:
     SERVER_MANAGEMENT_SECRET: "mgmt-secret"
 
   # Which build events should trigger the main pipeline (defaults to all)
-  - &BUILD_EVENTS [push, pull_request, tag]
+  - &BUILD_EVENTS [push, tag]
 
   # Pipeline merge helper: only execute if build event received
   - &WHEN_BUILD_EVENT
@@ -205,7 +205,7 @@ pipeline:
       - make test-scripts
     environment: *TEST_ENV
     when:
-      repo: AW/go-starter
+      repo: allaboutapps/AW-go-starter
       event: *BUILD_EVENTS
 
   "git-compare-go-starter":
@@ -351,7 +351,7 @@ pipeline:
   # DEPLOYMENT go-starter
   # Purpose: go-starter drone specific publish and deployment steps
   # NOTE: you do not need to uncomment them for our customer projects
-  # These steps won't be executed unless we work in the main "AW/go-starter" repo
+  # These steps won't be executed unless we work in the main "allaboutapps/AW-go-starter" repo
   # ---------------------------------------------------------------------------
 
   "go-starter publish ${DRONE_BRANCH}_${DRONE_COMMIT_SHA:0:10}":
@@ -376,9 +376,9 @@ pipeline:
       - ${DRONE_BRANCH/\//-}
       - "${DRONE_COMMIT_SHA:0:10}"
     when:
-      repo: AW/go-starter
-      branch: [master, mr/a3cloud, mr/liveness-probing]
-      event: [push, pull_request, tag]
+      repo: allaboutapps/AW-go-starter
+      branch: [master]
+      event: [push, tag]
 
   "go-starter deploy ${DRONE_COMMIT_SHA:0:10} to allaboutapps-go-starter-dev (auto)":
     group: go-starter-deploy
@@ -398,7 +398,7 @@ pipeline:
     container: [app]
     tag: *IMAGE_DEPLOY_TAG
     gcr_service_account_email: drone-ci-a3cloud@a3cloud-192413.iam.gserviceaccount.com
-    mgmt_repo: https://git.allaboutapps.at/scm/aw/a3cloud-mgmt.git
+    mgmt_repo: https://github.com/allaboutapps/a3cloud-mgmt.git
     mgmt_git_email: infrastructure+drone@allaboutapps.at
     namespace: allaboutapps-go-starter-dev
     mgmt_deployment_yaml: namespaces/allaboutapps-go-starter-dev/app.deployment.yaml
@@ -408,9 +408,9 @@ pipeline:
     job: pre-sync-migration
     mgmt_job_yaml: namespaces/allaboutapps-go-starter-dev/application.yaml
     when:
-      repo: AW/go-starter
-      branch: [master, mr/a3cloud, mr/liveness-probing]
-      event: [push, pull_request, tag]
+      repo: allaboutapps/AW-go-starter
+      branch: [master]
+      event: [push, tag]
 
 # Long living services where the startup order does not matter (otherwise use detach: true)
 services:
