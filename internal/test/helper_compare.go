@@ -14,29 +14,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func CompareFileHashes(t *testing.T, expectedFile string, actualFile string) {
+func CompareFileHashes(t *testing.T, expectedFilePath string, actualFilePath string) {
 	t.Helper()
 
-	ef, err := os.Open(expectedFile)
+	expectedFile, err := os.Open(expectedFilePath)
 	require.NoError(t, err)
-	defer ef.Close()
+	defer expectedFile.Close()
 
-	eh := sha256.New()
-	_, err = io.Copy(eh, ef)
-	require.NoError(t, err)
-
-	af, err := os.Open(actualFile)
-	require.NoError(t, err)
-	defer af.Close()
-
-	ah := sha256.New()
-	_, err = io.Copy(ah, af)
+	expectedHash := sha256.New()
+	_, err = io.Copy(expectedHash, expectedFile)
 	require.NoError(t, err)
 
-	assert.Equal(t, eh.Sum(nil), ah.Sum(nil))
+	actualFile, err := os.Open(actualFilePath)
+	require.NoError(t, err)
+	defer actualFile.Close()
+
+	actualhash := sha256.New()
+	_, err = io.Copy(actualhash, actualFile)
+	require.NoError(t, err)
+
+	assert.Equal(t, expectedHash.Sum(nil), actualhash.Sum(nil))
 }
 
 func CompareAllPayload(t *testing.T, base map[string]interface{}, toCheck map[string]string, skipKeys map[string]bool, keyConvertFunc ...func(string) string) {
+	t.Helper()
+
 	var keyFunc func(string) string
 	if len(keyConvertFunc) > 0 {
 		keyFunc = keyConvertFunc[0]
@@ -45,35 +47,28 @@ func CompareAllPayload(t *testing.T, base map[string]interface{}, toCheck map[st
 			return s
 		}
 	}
-	for k, v := range base {
-		if skipKeys[k] {
+	for key, val := range base {
+		if skipKeys[key] {
 			continue
 		}
 
-		strV := fmt.Sprintf("%v", v)
-		//revive:disable-next-line:var-naming
-		//nolint:revive
-		kConv := keyFunc(k)
-		compareStrV := fmt.Sprintf("%v", toCheck[kConv])
-
 		// checks with contains because of dateTime and null.String struct
-		contains := strings.Contains(compareStrV, strV)
-		assert.Truef(t, contains, "Expected for %s: '%s'. Got: '%s'", k, strV, compareStrV)
+		contains := strings.Contains(toCheck[keyFunc(key)], fmt.Sprintf("%v", val))
+		assert.Truef(t, contains, "Expected for %s: '%s'. Got: '%s'", key, val, toCheck[keyFunc(key)])
 	}
 }
 
 func CompareAll(t *testing.T, base map[string]string, toCheck map[string]string, skipKeys map[string]bool) {
-	for k, v := range base {
-		if skipKeys[k] {
+	t.Helper()
+
+	for key, val := range base {
+		if skipKeys[key] {
 			continue
 		}
 
-		strV := fmt.Sprintf("%v", v)
-		compareStrV := fmt.Sprintf("%v", toCheck[k])
-
 		// checks with contains because of dateTime and null.String struct
-		contains := strings.Contains(compareStrV, strV)
-		assert.Truef(t, contains, "Expected for %s: '%s'. Got: '%s'", k, strV, compareStrV)
+		contains := strings.Contains(toCheck[key], val)
+		assert.Truef(t, contains, "Expected for %s: '%s'. Got: '%s'", key, val, toCheck[key])
 	}
 }
 

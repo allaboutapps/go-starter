@@ -13,11 +13,15 @@ type echoRenderer struct {
 	templates map[templates.ViewTemplate]*template.Template
 }
 
-func (t *echoRenderer) Render(w io.Writer, name string, data interface{}, _ echo.Context) error {
+func (t *echoRenderer) Render(writer io.Writer, name string, data interface{}, _ echo.Context) error {
 	tmplHTML, ok := t.templates[templates.ViewTemplate(name)]
 	if !ok {
 		return fmt.Errorf("template not found: %s", name)
 	}
 
-	return tmplHTML.Execute(w, data)
+	if err := tmplHTML.Execute(writer, data); err != nil {
+		return fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	return nil
 }

@@ -22,11 +22,11 @@ func TestSwaggerYAMLRetrieval(t *testing.T) {
 		assert.Equal(t, "no-cache", res.Header().Get("Pragma"))
 
 		// caching: unset
-		assert.Equal(t, "", res.Header().Get("ETag"))
-		assert.Equal(t, "", res.Header().Get("If-Modified-Since"))
-		assert.Equal(t, "", res.Header().Get("If-Match"))
-		assert.Equal(t, "", res.Header().Get("If-None-Match"))
-		assert.Equal(t, "", res.Header().Get("If-Range"))
-		assert.Equal(t, "", res.Header().Get("If-Unmodified-Since"))
+		assert.Empty(t, res.Header().Get("ETag"))
+		assert.Empty(t, res.Header().Get("If-Modified-Since"))
+		assert.Empty(t, res.Header().Get("If-Match"))
+		assert.Empty(t, res.Header().Get("If-None-Match"))
+		assert.Empty(t, res.Header().Get("If-Range"))
+		assert.Empty(t, res.Header().Get("If-Unmodified-Since"))
 	})
 }

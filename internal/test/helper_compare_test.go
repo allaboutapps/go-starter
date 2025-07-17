@@ -20,15 +20,15 @@ func TestCompareFileHashes(t *testing.T) {
 	newFilePath := tmpDir + "example2.jpg"
 	filePath := filepath.Join(util.GetProjectRootDir(), "test", "testdata", "example.jpg")
 
-	in, err := os.Open(filePath)
+	file1, err := os.Open(filePath)
 	require.NoError(t, err)
-	defer in.Close()
+	defer file1.Close()
 
-	out, err := os.Create(newFilePath)
+	file2, err := os.Create(newFilePath)
 	require.NoError(t, err)
-	defer out.Close()
+	defer file2.Close()
 
-	_, err = io.Copy(out, in)
+	_, err = io.Copy(file2, file1)
 	require.NoError(t, err)
 	require.FileExists(t, newFilePath)
 
@@ -43,7 +43,7 @@ func TestCompareAllPayload(t *testing.T) {
 		"D":   true,
 		"E":   "2020-02-01",
 		"F":   conv.UUID4(strfmt.UUID4("0862573e-6ccb-4684-847d-276d3364e91e")),
-		"X_Y": "skiped",
+		"X_Y": "skipped",
 	}
 	response := map[string]string{
 		"A": "1",
@@ -66,11 +66,9 @@ func TestCompareAllPayload(t *testing.T) {
 		"d":   true,
 		"e":   "2020-02-01",
 		"F":   conv.UUID4(strfmt.UUID4("0862573e-6ccb-4684-847d-276d3364e91e")),
-		"X_Y": "skiped",
+		"X_Y": "skipped",
 	}
-	test.CompareAllPayload(t, payload, response, toSkip, func(s string) string {
-		return strings.ToUpper(s)
-	})
+	test.CompareAllPayload(t, payload, response, toSkip, strings.ToUpper)
 }
 
 func TestCompareAll(t *testing.T) {
@@ -81,7 +79,7 @@ func TestCompareAll(t *testing.T) {
 		"D":   "true",
 		"E":   "2020-02-01",
 		"F":   strfmt.UUID4("0862573e-6ccb-4684-847d-276d3364e91e").String(),
-		"X_Y": "skiped",
+		"X_Y": "skipped",
 	}
 	response := map[string]string{
 		"A": "1",

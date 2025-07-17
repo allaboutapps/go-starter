@@ -10,6 +10,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEnsureDeadline(t *testing.T) {
@@ -27,7 +28,6 @@ func TestDummyDeadlineWithinOneSec(t *testing.T) {
 
 	receivedDeadline := ensureProbeDeadlineFromContext(ctx)
 	assert.WithinDuration(t, time.Now().Add(1*time.Second), receivedDeadline, 100*time.Millisecond)
-
 }
 
 func TestProbeDatabasePingableDeadline(t *testing.T) {
@@ -64,5 +64,6 @@ func TestProbePathWriteableTouchContextDeadline(t *testing.T) {
 
 func TestProbePathWriteableTouchInaccessable(t *testing.T) {
 	_, err := probePathWriteableTouch(t.Context(), "/this/path/does/not/exist", ".touch")
-	assert.True(t, os.IsNotExist(err))
+	require.Error(t, err)
+	assert.ErrorIs(t, err, os.ErrNotExist)
 }

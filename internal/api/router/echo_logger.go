@@ -7,7 +7,7 @@ type echoLogger struct {
 	log   zerolog.Logger
 }
 
-func (l *echoLogger) Write(p []byte) (n int, err error) {
+func (l *echoLogger) Write(p []byte) (int, error) {
 	l.log.WithLevel(l.level).Msgf("%s", p)
 	return len(p), nil
 }

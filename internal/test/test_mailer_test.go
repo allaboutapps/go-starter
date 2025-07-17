@@ -16,42 +16,42 @@ func TestWithTestMailer(t *testing.T) {
 	//nolint:gosec
 	passwordResetLink := "http://localhost/password/reset/12345"
 
-	m1 := test.NewTestMailer(t)
-	m2 := test.NewTestMailer(t)
-	err := m1.SendPasswordReset(ctx, fix.User1.Username.String, passwordResetLink)
+	mailer1 := test.NewTestMailer(t)
+	mailer2 := test.NewTestMailer(t)
+	err := mailer1.SendPasswordReset(ctx, fix.User1.Username.String, passwordResetLink)
 	require.NoError(t, err)
 
 	sender2 := "test2@example.com"
-	m2.Config.DefaultSender = sender2
-	err = m2.SendPasswordReset(ctx, fix.User1.Username.String, passwordResetLink)
+	mailer2.Config.DefaultSender = sender2
+	err = mailer2.SendPasswordReset(ctx, fix.User1.Username.String, passwordResetLink)
 	require.NoError(t, err)
 
-	mt1 := test.GetTestMailerMockTransport(t, m1)
+	mt1 := test.GetTestMailerMockTransport(t, mailer1)
 	mail := mt1.GetLastSentMail()
 	mails := mt1.GetSentMails()
 
-	assert.Equal(t, mail, test.GetLastSentMail(t, m1))
-	assert.Equal(t, mails, test.GetSentMails(t, m1))
+	assert.Equal(t, mail, test.GetLastSentMail(t, mailer1))
+	assert.Equal(t, mails, test.GetSentMails(t, mailer1))
 
 	require.NotNil(t, mail)
 	require.Len(t, mails, 1)
-	assert.Equal(t, m1.Config.DefaultSender, mail.From)
+	assert.Equal(t, mailer1.Config.DefaultSender, mail.From)
 	assert.Len(t, mail.To, 1)
 	assert.Equal(t, fix.User1.Username.String, mail.To[0])
 	assert.Equal(t, test.TestMailerDefaultSender, mail.From)
 	assert.Equal(t, "Password reset", mail.Subject)
 	assert.Contains(t, string(mail.HTML), passwordResetLink)
 
-	mt2 := test.GetTestMailerMockTransport(t, m2)
+	mt2 := test.GetTestMailerMockTransport(t, mailer2)
 	mail = mt2.GetLastSentMail()
 	mails = mt2.GetSentMails()
 
-	assert.Equal(t, mail, test.GetLastSentMail(t, m2))
-	assert.Equal(t, mails, test.GetSentMails(t, m2))
+	assert.Equal(t, mail, test.GetLastSentMail(t, mailer2))
+	assert.Equal(t, mails, test.GetSentMails(t, mailer2))
 
 	require.NotNil(t, mail)
 	require.Len(t, mails, 1)
-	assert.Equal(t, m2.Config.DefaultSender, mail.From)
+	assert.Equal(t, mailer2.Config.DefaultSender, mail.From)
 	assert.Len(t, mail.To, 1)
 	assert.Equal(t, fix.User1.Username.String, mail.To[0])
 	assert.Equal(t, sender2, mail.From)

@@ -11,14 +11,15 @@ type MetricsCollector interface {
 }
 
 const (
-	MetricNameTotalUserCount = "total_user_count"
+	MetricNameTotalUsers = "total_users"
 )
 
 func Metrics(ctx context.Context, collector MetricsCollector) []prometheus.Collector {
 	return []prometheus.Collector{
 		prometheus.NewGaugeFunc(
 			prometheus.GaugeOpts{
-				Name: MetricNameTotalUserCount,
+				Name: MetricNameTotalUsers,
+				Help: "Total users",
 			},
 			func() float64 { return collector.GetTotalUsersCount(ctx) },
 		),

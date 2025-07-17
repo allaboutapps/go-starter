@@ -23,10 +23,15 @@ var handlersGenCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		handlers.GenHandlers(printOnly)
+
+		err = handlers.GenHandlers(printOnly)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
+//nolint:gochecknoinits
 func init() {
 	handlersCmd.AddCommand(handlersGenCmd)
 	handlersGenCmd.Flags().Bool(printOnlyFlag, false, "Print all checked handlers regardless of errors.")

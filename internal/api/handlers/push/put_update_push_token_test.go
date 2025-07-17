@@ -22,7 +22,7 @@ func TestPutUpdatePushTokenSuccess(t *testing.T) {
 
 		//nolint:gosec
 		testToken := "869f6deb-73e6-4691-9d40-2a2a794006cf"
-		testProvider := "fcm"
+		testProvider := models.ProviderTypeFCM
 
 		payload := test.GenericPayload{
 			"newToken": testToken,
@@ -51,7 +51,7 @@ func TestPutUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 
 		oldPushToken := models.PushToken{
 			Token:    oldToken,
-			Provider: "fcm",
+			Provider: models.ProviderTypeFCM,
 			UserID:   fix.User1.ID,
 		}
 		err := oldPushToken.Insert(ctx, s.DB, boil.Infer())
@@ -59,7 +59,7 @@ func TestPutUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 
 		//nolint:gosec
 		testToken := "af55b6cf-1fb0-4bb7-960c-25268a5ce7c3"
-		testProvider := "fcm"
+		testProvider := models.ProviderTypeFCM
 
 		payload := test.GenericPayload{
 			"newToken": testToken,
@@ -78,7 +78,7 @@ func TestPutUpdatePushTokenSuccessWithOldToken(t *testing.T) {
 		assert.Equal(t, fix.User1.ID, newToken.UserID)
 
 		err = oldPushToken.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
 
@@ -92,13 +92,13 @@ func TestPutUpdatePushTokenWithDuplicateToken(t *testing.T) {
 
 		oldPushToken := models.PushToken{
 			Token:    oldToken,
-			Provider: "fcm",
+			Provider: models.ProviderTypeFCM,
 			UserID:   fix.User1.ID,
 		}
 		err := oldPushToken.Insert(ctx, s.DB, boil.Infer())
 		require.NoError(t, err)
 
-		testProvider := "fcm"
+		testProvider := models.ProviderTypeFCM
 		payload := test.GenericPayload{
 			"newToken": oldToken,
 			"provider": testProvider,
@@ -106,16 +106,16 @@ func TestPutUpdatePushTokenWithDuplicateToken(t *testing.T) {
 		}
 
 		oldCnt, err := fix.User1.PushTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		res := test.PerformRequest(t, s, "PUT", "/api/v1/push/token", payload, test.HeadersWithAuth(t, fix.User1AccessToken1.Token))
 		test.RequireHTTPError(t, res, httperrors.ErrConflictPushToken)
 
 		err = oldPushToken.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		cnt, err := fix.User1.PushTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, oldCnt, cnt)
 	})
 }
@@ -130,18 +130,18 @@ func TestPutUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
 
 		oldPushToken := models.PushToken{
 			Token:    oldToken,
-			Provider: "fcm",
+			Provider: models.ProviderTypeFCM,
 			UserID:   fix.User1.ID,
 		}
 		err := oldPushToken.Insert(ctx, s.DB, boil.Infer())
 		require.NoError(t, err)
 
 		oldCnt, err := fix.User1.PushTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		//nolint:gosec
 		testToken := "8e4ad85f-cbb6-4ef3-a455-d9d8bd8917b3"
-		testProvider := "fcm"
+		testProvider := models.ProviderTypeFCM
 
 		payload := test.GenericPayload{
 			"newToken": testToken,
@@ -160,10 +160,10 @@ func TestPutUpdatePushTokenWithOldTokenNotfound(t *testing.T) {
 		assert.Equal(t, fix.User1.ID, newToken.UserID)
 
 		err = oldPushToken.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		cnt, err := fix.User1.PushTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, oldCnt+1, cnt)
 	})
 }

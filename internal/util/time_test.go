@@ -87,7 +87,6 @@ func TestEndOfMonth(t *testing.T) {
 
 	expected = time.Date(2021, 1, 31, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, expected, util.TruncateTime(res))
-
 }
 
 func TestEndOfPreviousMonth(t *testing.T) {

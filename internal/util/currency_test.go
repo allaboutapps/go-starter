@@ -35,7 +35,6 @@ func TestCurrencyConversion(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			in := int64(tt.val)
 			res := util.Int64PtrWithCentsToFloat64Ptr(&in)

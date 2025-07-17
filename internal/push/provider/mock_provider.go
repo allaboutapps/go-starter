@@ -21,10 +21,14 @@ func (p *Mock) GetProviderType() push.ProviderType {
 	return p.Type
 }
 
+const (
+	expectedTokenLength = 40
+)
+
 func (p *Mock) Send(token string, title string, message string) push.ProviderSendResponse {
 	valid := true
 	var err error
-	if len(token) < 40 {
+	if len(token) < expectedTokenLength {
 		valid = false
 		err = errors.New("invalid token")
 	}

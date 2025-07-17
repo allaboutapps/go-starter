@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -48,24 +49,21 @@ func DotEnvTryLoad(absolutePathToEnvFile string, setEnvFn envSetter) {
 // For tests (and ENV var autoreset) use t.Setenv:
 // DotEnvLoad("/path/to/my.env.test.local", func(k string, v string) error { t.Setenv(k, v); return nil })
 func DotEnvLoad(absolutePathToEnvFile string, setEnvFn envSetter) error {
-
 	file, err := os.Open(absolutePathToEnvFile)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open .env file: %w", err)
 	}
 
 	defer file.Close()
 
 	envs, err := gotenv.StrictParse(file)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse .env file: %w", err)
 	}
 
 	for key, value := range envs {
 		if err := setEnvFn(key, value); err != nil {
-			return err
+			return fmt.Errorf("failed to set environment variable: %w", err)
 		}
 	}
 

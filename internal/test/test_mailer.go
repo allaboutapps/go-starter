@@ -42,13 +42,13 @@ func newMailerWithTransporter(t *testing.T, transporter transport.MailTransporte
 	config := config.DefaultServiceConfigFromEnv().Mailer
 	config.DefaultSender = TestMailerDefaultSender
 
-	m := mailer.New(config, transporter)
+	mailer := mailer.New(config, transporter)
 
-	if err := m.ParseTemplates(); err != nil {
+	if err := mailer.ParseTemplates(); err != nil {
 		t.Fatal("Failed to parse mailer templates", err)
 	}
 
-	return m
+	return mailer
 }
 
 func GetLastSentMail(t *testing.T, m *mailer.Mailer) *email.Email {

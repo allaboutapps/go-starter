@@ -1,4 +1,2 @@
-([]interface {}) (len=2) {
-  (string) (len=10) "%mus\\%ter%",
-  (string) (len=7) "%m\\_ax%"
-}
+(string) (len=10) "%mus\\%ter%"
+(string) (len=7) "%m\\_ax%"

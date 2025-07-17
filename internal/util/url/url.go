@@ -1,6 +1,7 @@
 package url
 
 import (
+	"fmt"
 	"net/url"
 	"path"
 
@@ -15,7 +16,7 @@ const (
 func PasswordResetDeeplinkURL(config config.Server, token string) (*url.URL, error) {
 	u, err := url.Parse(config.Frontend.BaseURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse the base URL: %w", err)
 	}
 
 	u.Path = path.Join(u.Path, config.Frontend.PasswordResetEndpoint)
@@ -30,7 +31,7 @@ func PasswordResetDeeplinkURL(config config.Server, token string) (*url.URL, err
 func ConfirmationDeeplinkURL(config config.Server, token string) (*url.URL, error) {
 	u, err := url.Parse(config.Echo.BaseURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse the base URL: %w", err)
 	}
 
 	u.Path = path.Join(u.Path, accountConfirmationPath)
@@ -45,7 +46,7 @@ func ConfirmationDeeplinkURL(config config.Server, token string) (*url.URL, erro
 func ConfirmationRequestURL(config config.Server, token string) (*url.URL, error) {
 	u, err := url.Parse(config.Echo.BaseURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse the base URL: %w", err)
 	}
 
 	u.Path = path.Join(u.Path, accountConfirmationPath, token)

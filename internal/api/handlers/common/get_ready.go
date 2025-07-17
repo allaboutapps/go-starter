@@ -19,11 +19,8 @@ func GetReadyRoute(s *api.Server) *echo.Route {
 // Structured upon https://prometheus.io/docs/prometheus/latest/management_api/
 func getReadyHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		if !s.Ready() {
-			// We use 521 to indicate an error state
-			// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
-			return c.String(521, "Not ready.")
+			return c.String(httpStatusDown, "Not ready.")
 		}
 
 		// General Timeout and associated context.
@@ -34,9 +31,7 @@ func getReadyHandler(s *api.Server) echo.HandlerFunc {
 
 		// Finally return the health status according to the seen states
 		if ctx.Err() != nil || len(errs) != 0 {
-			// We use 521 to indicate this error state
-			// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
-			return c.String(521, "Not ready.")
+			return c.String(httpStatusDown, "Not ready.")
 		}
 
 		return c.String(http.StatusOK, "Ready.")

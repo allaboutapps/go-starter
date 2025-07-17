@@ -13,17 +13,17 @@ type loginAuth struct {
 }
 
 func LoginAuth(username string, password string, host ...string) smtp.Auth {
-	a := &loginAuth{
+	auth := &loginAuth{
 		username: []byte(username),
 		password: []byte(password),
 		host:     "",
 	}
 
 	if len(host) > 0 {
-		a.host = host[0]
+		auth.host = host[0]
 	}
 
-	return a
+	return auth
 }
 
 func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {

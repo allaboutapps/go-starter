@@ -128,7 +128,6 @@ type Server struct {
 // (and it would be a bad thing to do anyways with parallel testing).
 // Do NOT use os.Setenv / os.Unsetenv in tests utilizing DefaultServiceConfigFromEnv()!
 func DefaultServiceConfigFromEnv() Server {
-
 	// An `.env.local` file in your project root can override the currently set ENV variables.
 	//
 	// We never automatically apply `.env.local` when running "go test" as these ENV variables
@@ -264,5 +263,4 @@ func DefaultServiceConfigFromEnv() Server {
 			UseMockClock: util.GetEnvAsBool("SERVER_CLOCK_USE_MOCK", false),
 		},
 	}
-
 }

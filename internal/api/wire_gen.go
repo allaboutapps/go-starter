@@ -7,10 +7,10 @@
 package api
 
 import (
+	"allaboutapps.dev/aw/go-starter/internal/auth"
 	"allaboutapps.dev/aw/go-starter/internal/config"
 	"allaboutapps.dev/aw/go-starter/internal/data/local"
 	"allaboutapps.dev/aw/go-starter/internal/metrics"
-	"allaboutapps.dev/aw/go-starter/internal/persistence"
 	"database/sql"
 	"github.com/google/wire"
 )
@@ -23,7 +23,7 @@ import (
 
 // InitNewServer returns a new Server instance.
 func InitNewServer(server config.Server) (*Server, error) {
-	db, err := persistence.NewDB(server)
+	db, err := NewDB(server)
 	if err != nil {
 		return nil, err
 	}
@@ -84,5 +84,9 @@ var serviceSet = wire.NewSet(
 	NewPush,
 	NewMailer,
 	NewI18N,
-	NewAuthService, local.NewService, metrics.New, NewClock,
+	authServiceSet, local.NewService, metrics.New, NewClock,
+)
+
+var authServiceSet = wire.NewSet(
+	NewAuthService, wire.Bind(new(AuthService), new(*auth.Service)),
 )

@@ -2,6 +2,10 @@ package util
 
 import "github.com/go-openapi/swag"
 
+const (
+	centFactor = 100
+)
+
 func Int64PtrWithCentsToFloat64Ptr(c *int64) *float64 {
 	if c == nil {
 		return nil
@@ -11,7 +15,7 @@ func Int64PtrWithCentsToFloat64Ptr(c *int64) *float64 {
 }
 
 func Int64WithCentsToFloat64Ptr(c int64) *float64 {
-	return swag.Float64(float64(c) / 100.0)
+	return swag.Float64(float64(c) / centFactor)
 }
 
 func IntPtrWithCentsToFloat64Ptr(c *int) *float64 {
@@ -23,7 +27,7 @@ func IntPtrWithCentsToFloat64Ptr(c *int) *float64 {
 }
 
 func IntWithCentsToFloat64Ptr(c int) *float64 {
-	return swag.Float64(float64(c) / 100.0)
+	return swag.Float64(float64(c) / centFactor)
 }
 
 func Float64PtrToInt64PtrWithCents(f *float64) *int64 {
@@ -35,11 +39,11 @@ func Float64PtrToInt64PtrWithCents(f *float64) *int64 {
 }
 
 func Float64PtrToInt64WithCents(f *float64) int64 {
-	return int64(swag.Float64Value(f) * 100)
+	return int64(swag.Float64Value(f) * centFactor)
 }
 
 func Float64ToInt64WithCents(f float64) int64 {
-	return int64(f * 100)
+	return int64(f * centFactor)
 }
 
 func Float64PtrToIntPtrWithCents(f *float64) *int {
@@ -51,5 +55,5 @@ func Float64PtrToIntPtrWithCents(f *float64) *int {
 }
 
 func Float64PtrToIntWithCents(f *float64) int {
-	return int(swag.Float64Value(f) * 100)
+	return int(swag.Float64Value(f) * centFactor)
 }

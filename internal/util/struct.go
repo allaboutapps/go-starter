@@ -12,7 +12,6 @@ import (
 // Parameter interfaceObject must be given as a pointer to an interface,
 // for example (*Insertable)(nil), where Insertable is an interface name.
 func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]T, error) {
-
 	// Verify if structPtr is a pointer to a struct
 	inputParamStructType := reflect.TypeOf(structPtr)
 	if inputParamStructType == nil ||
@@ -26,7 +25,6 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 	if inputParamIfcType == nil ||
 		inputParamIfcType.Kind() != reflect.Ptr ||
 		inputParamIfcType.Elem().Kind() != reflect.Interface {
-
 		return nil, errors.New("invalid input interfaceObject param: should be a pointer to an interface")
 	}
 
@@ -41,7 +39,6 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 
 	// Getting the VisibleFields returns all public fields in the struct
 	for i, field := range reflect.VisibleFields(structType) {
-
 		// Check if the field can be exported.
 		// Interface() can be called only on exportable fields.
 		if !field.IsExported() {
@@ -52,12 +49,11 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 
 		// Depending on the field type, different checks apply.
 		switch field.Type.Kind() {
-
 		case reflect.Pointer:
-
 			// Let's check if it implements the interface.
 			if field.Type.Implements(interfaceType) {
 				// Great, we can add it to the return slice
+				//nolint:forcetypeassert
 				retFields = append(retFields, fieldValue.Interface().(T))
 			}
 
@@ -70,6 +66,7 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 			// Now we can check if it's the same interface.
 			if field.Type.Implements(interfaceType) {
 				// Great, we can add it to the return slice
+				//nolint:forcetypeassert
 				retFields = append(retFields, fieldValue.Interface().(T))
 			}
 
@@ -82,15 +79,14 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 	return retFields, nil
 }
 
-// IsStructInitialized checks if all the struct fields are initalized (not zero).
+// IsStructInitialized checks if all the struct fields are initialized (not zero).
 // Members of the struct such as empty strings or numbers set to zero are interpreted as a zero value!
 // Parameter structPtr needs to be a pointer to a struct.
-func IsStructInitialized(structPtr interface{}) (err error) {
+func IsStructInitialized(structPtr interface{}) error {
 	inputType := reflect.TypeOf(structPtr)
 	if inputType == nil ||
 		inputType.Kind() != reflect.Pointer ||
 		inputType.Elem().Kind() != reflect.Struct {
-
 		return errors.New("invalid input structPtr param: should be a pointer to a struct")
 	}
 
@@ -98,6 +94,7 @@ func IsStructInitialized(structPtr interface{}) (err error) {
 	structVal := reflect.ValueOf(structPtr).Elem()
 	structType := inputType.Elem()
 
+	var err error
 	for i := 0; i < structVal.NumField(); i++ {
 		field := structVal.Field(i)
 		if field.IsValid() && field.IsZero() {

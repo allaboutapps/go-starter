@@ -89,7 +89,7 @@ func TestMetricsEnabled(t *testing.T) {
 		expectedTotalUserCount, err := models.Users().Count(t.Context(), s.DB)
 		require.NoError(t, err)
 
-		assert.Contains(t, result, fmt.Sprintf("%s %d", users.MetricNameTotalUserCount, expectedTotalUserCount))
+		assert.Contains(t, result, fmt.Sprintf("%s %d", users.MetricNameTotalUsers, expectedTotalUserCount))
 
 		// expect sqlstats metrics
 		assert.Contains(t, result, "go_sql_stats_connections")

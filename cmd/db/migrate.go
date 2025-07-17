@@ -24,11 +24,6 @@ func newMigrate() *cobra.Command {
 	}
 }
 
-func init() {
-	// pin migrate to use the globally defined `migrations` table identifier
-	migrate.SetTable(config.DatabaseMigrationTable)
-}
-
 func migrateCmdFunc() {
 	err := command.WithServer(context.Background(), config.DefaultServiceConfigFromEnv(), func(ctx context.Context, s *api.Server) error {
 		log := util.LogFromContext(ctx)
@@ -51,20 +46,23 @@ func migrateCmdFunc() {
 func ApplyMigrations(ctx context.Context, serviceConfig config.Server) (int, error) {
 	log := util.LogFromContext(ctx)
 
+	// pin migrate to use the globally defined `migrations` table identifier
+	migrate.SetTable(config.DatabaseMigrationTable)
+
 	db, err := sql.Open("postgres", serviceConfig.Database.ConnectionString())
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to open the database: %w", err)
 	}
 	defer db.Close()
 
 	if err := db.PingContext(ctx); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to ping the database: %w", err)
 	}
 
 	// In case an old default sql-migrate migration table (named "gorp_migrations") still exists we rename it to the new name equivalent
 	// in sync with the settings in dbconfig.yml and config.DatabaseMigrationTable.
 	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to rename migrations table: %w", err)
 	}
 
 	migrations := &migrate.FileMigrationSource{
@@ -74,7 +72,7 @@ func ApplyMigrations(ctx context.Context, serviceConfig config.Server) (int, err
 	missingMigrations, _, err := migrate.PlanMigration(db, "postgres", migrations, migrate.Up, 0)
 	if err != nil {
 		log.Err(err).Msg("Error while planning migrations")
-		return 0, err
+		return 0, fmt.Errorf("failed to plan migrations: %w", err)
 	}
 
 	var appliedMigrationsCount int
@@ -84,7 +82,7 @@ func ApplyMigrations(ctx context.Context, serviceConfig config.Server) (int, err
 		n, err := migrate.ExecMax(db, "postgres", migrations, migrate.Up, 1)
 		if err != nil {
 			log.Err(err).Msg("Error while applying migration")
-			return 0, err
+			return 0, fmt.Errorf("failed to apply migration: %w", err)
 		}
 
 		log.Info().Int("appliedMigrationsCount", n).Msg("Applied migration")

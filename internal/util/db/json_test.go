@@ -41,7 +41,7 @@ func TestWhereJSONStruct(t *testing.T) {
 	sql, args := buildWhereJSONQuery(t, filter)
 
 	test.Snapshoter.Label("SQL").Save(t, sql)
-	test.Snapshoter.Label("Args").Save(t, args)
+	test.Snapshoter.Label("Args").Save(t, args...)
 }
 
 func TestWhereJSONStructComposition(t *testing.T) {
@@ -63,14 +63,14 @@ func TestWhereJSONStructComposition(t *testing.T) {
 	sql, args := buildWhereJSONQuery(t, filter)
 
 	test.Snapshoter.Label("SQL").Save(t, sql)
-	test.Snapshoter.Label("Args").Save(t, args)
+	test.Snapshoter.Label("Args").Save(t, args...)
 }
 
 func TestWhereJSONString(t *testing.T) {
 	sql, args := buildWhereJSONQuery(t, "https://example.org/users/123/profile")
 
 	test.Snapshoter.Label("SQL").Save(t, sql)
-	test.Snapshoter.Label("Args").Save(t, args)
+	test.Snapshoter.Label("Args").Save(t, args...)
 }
 
 func TestWhereJSONPanicEmptyResult(t *testing.T) {
@@ -195,11 +195,11 @@ func TestWhereJSONPanicRecursion(t *testing.T) {
 func buildWhereJSONQuery(t *testing.T, filter interface{}) (string, []interface{}) {
 	t.Helper()
 
-	q := models.NewQuery(
+	query := models.NewQuery(
 		qm.Select("*"),
 		qm.From("users"),
 		db.WhereJSON("users", "profile", filter),
 	)
 
-	return queries.BuildQuery(q)
+	return queries.BuildQuery(query)
 }

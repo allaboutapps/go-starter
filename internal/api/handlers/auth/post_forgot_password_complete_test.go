@@ -31,7 +31,6 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())
 		require.NoError(t, err)
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"token":    passwordResetToken.Token,
 			"password": newPassword,
@@ -50,20 +49,20 @@ func TestPostForgotPasswordCompleteSuccess(t *testing.T) {
 		test.Snapshoter.Skip([]string{"AccessToken", "RefreshToken"}).Save(t, response)
 
 		err = fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 
 		cnt, err := fix.User1.AccessTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		cnt, err = fix.User1.RefreshTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		err = fix.User1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotEqual(t, fixtures.HashedTestUserPassword, fix.User1.Password.String)
 	})
 }
@@ -73,7 +72,6 @@ func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"token":    "fd5c04ea-f39c-49e9-bb40-7f570ed1f66f",
 			"password": newPassword,
@@ -83,20 +81,20 @@ func TestPostForgotPasswordCompleteUnknownToken(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.ErrNotFoundTokenNotFound)
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		cnt, err := fix.User1.AccessTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		cnt, err = fix.User1.RefreshTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		err = fix.User1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fixtures.HashedTestUserPassword, fix.User1.Password.String)
 	})
 }
@@ -114,7 +112,6 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())
 		require.NoError(t, err)
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"token":    passwordResetToken.Token,
 			"password": newPassword,
@@ -124,20 +121,20 @@ func TestPostForgotPasswordCompleteExpiredToken(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.ErrConflictTokenExpired)
 
 		err = fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		cnt, err := fix.User1.AccessTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		cnt, err = fix.User1.RefreshTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		err = fix.User1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fixtures.HashedTestUserPassword, fix.User1.Password.String)
 	})
 }
@@ -155,7 +152,6 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())
 		require.NoError(t, err)
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"token":    passwordResetToken.Token,
 			"password": newPassword,
@@ -165,20 +161,20 @@ func TestPostForgotPasswordCompleteDeactivatedUser(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.ErrForbiddenUserDeactivated)
 
 		err = fix.UserDeactivatedAccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = fix.UserDeactivatedRefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		cnt, err := fix.UserDeactivated.AccessTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		cnt, err = fix.UserDeactivated.RefreshTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		err = fix.UserDeactivated.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, fixtures.HashedTestUserPassword, fix.UserDeactivated.Password.String)
 	})
 }
@@ -196,7 +192,6 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 		err := passwordResetToken.Insert(ctx, s.DB, boil.Infer())
 		require.NoError(t, err)
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"token":    passwordResetToken.Token,
 			"password": newPassword,
@@ -211,20 +206,20 @@ func TestPostForgotPasswordCompleteUserWithoutPassword(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
 
 		err = fix.User2AccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = fix.User2RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		cnt, err := fix.User2.AccessTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		cnt, err = fix.User2.RefreshTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		err = fix.User2.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.False(t, fix.User2.Password.Valid)
 	})
 }

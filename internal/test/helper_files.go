@@ -47,7 +47,7 @@ func CleanupTestFiles(t *testing.T) {
 
 // WithTempDir creates a folder unique to the tests and ensures cleanup of the folder will be
 // performed after the fn got called.
-func WithTempDir(t *testing.T, fn func(localBasePath string, basePath string)) {
+func WithTempDir(t *testing.T, testFunc func(localBasePath string, basePath string)) {
 	t.Helper()
 
 	localBasePath := filepath.Join(util.GetProjectRootDir(), "assets", "mnt", strings.ToLower(t.Name()))
@@ -58,5 +58,5 @@ func WithTempDir(t *testing.T, fn func(localBasePath string, basePath string)) {
 
 	defer CleanupTestFiles(t)
 
-	fn(localBasePath, basePath)
+	testFunc(localBasePath, basePath)
 }

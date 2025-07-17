@@ -15,14 +15,15 @@ import (
 // Should you ever need to force a disabled logger for a context, use `util.DisableLogger(ctx, true)`
 // and pass the context returned to other code/`LogFromContext`.
 func LogFromContext(ctx context.Context) *zerolog.Logger {
-	l := log.Ctx(ctx)
-	if l.GetLevel() == zerolog.Disabled {
+	logger := log.Ctx(ctx)
+	if logger.GetLevel() == zerolog.Disabled {
 		if ShouldDisableLogger(ctx) {
-			return l
+			return logger
 		}
-		l = &log.Logger
+		logger = &log.Logger
 	}
-	return l
+
+	return logger
 }
 
 // LogFromEchoContext returns a request-specific zerolog instance using the echo.Context of the request.
@@ -32,11 +33,11 @@ func LogFromEchoContext(c echo.Context) *zerolog.Logger {
 }
 
 func LogLevelFromString(s string) zerolog.Level {
-	l, err := zerolog.ParseLevel(s)
+	level, err := zerolog.ParseLevel(s)
 	if err != nil {
 		log.Error().Err(err).Msgf("Failed to parse log level, defaulting to %s", zerolog.DebugLevel)
 		return zerolog.DebugLevel
 	}
 
-	return l
+	return level
 }

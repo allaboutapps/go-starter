@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"allaboutapps.dev/aw/go-starter/internal/config"
@@ -85,16 +86,16 @@ func newServerWithComponents(
 }
 
 type AuthService interface {
-	GetAppUserProfileIfExists(context.Context, string) (*dto.AppUserProfile, error)
-	InitPasswordReset(context.Context, dto.InitPasswordResetRequest) (dto.InitPasswordResetResult, error)
-	Login(context.Context, dto.LoginRequest) (dto.LoginResult, error)
-	Logout(context.Context, dto.LogoutRequest) error
-	Refresh(context.Context, dto.RefreshRequest) (dto.LoginResult, error)
-	Register(context.Context, dto.RegisterRequest) (dto.RegisterResult, error)
-	CompleteRegister(context.Context, dto.CompleteRegisterRequest) (dto.LoginResult, error)
-	DeleteUserAccount(context.Context, dto.DeleteUserAccountRequest) error
-	ResetPassword(context.Context, dto.ResetPasswordRequest) (dto.LoginResult, error)
-	UpdatePassword(context.Context, dto.UpdatePasswordRequest) (dto.LoginResult, error)
+	GetAppUserProfile(ctx context.Context, id string) (*dto.AppUserProfile, error)
+	InitPasswordReset(ctx context.Context, request dto.InitPasswordResetRequest) (dto.InitPasswordResetResult, error)
+	Login(ctx context.Context, request dto.LoginRequest) (dto.LoginResult, error)
+	Logout(ctx context.Context, request dto.LogoutRequest) error
+	Refresh(ctx context.Context, request dto.RefreshRequest) (dto.LoginResult, error)
+	Register(ctx context.Context, request dto.RegisterRequest) (dto.RegisterResult, error)
+	CompleteRegister(ctx context.Context, request dto.CompleteRegisterRequest) (dto.LoginResult, error)
+	DeleteUserAccount(ctx context.Context, request dto.DeleteUserAccountRequest) error
+	ResetPassword(ctx context.Context, request dto.ResetPasswordRequest) (dto.LoginResult, error)
+	UpdatePassword(ctx context.Context, request dto.UpdatePasswordRequest) (dto.LoginResult, error)
 }
 
 func NewServer(config config.Server) *Server {
@@ -119,7 +120,11 @@ func (s *Server) Start() error {
 		return errors.New("server is not ready")
 	}
 
-	return s.Echo.Start(s.Config.Echo.ListenAddress)
+	if err := s.Echo.Start(s.Config.Echo.ListenAddress); err != nil {
+		return fmt.Errorf("failed to start echo server: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Server) Shutdown(ctx context.Context) []error {
@@ -143,7 +148,6 @@ func (s *Server) Shutdown(ctx context.Context) []error {
 			log.Error().Err(err).Msg("Failed to shutdown echo server")
 			errs = append(errs, err)
 		}
-
 	}
 
 	return errs

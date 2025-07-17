@@ -16,7 +16,9 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func assertUserAndRelatedData(ctx context.Context, s *api.Server, t *testing.T, userID string, expectExists bool) {
+func assertUserAndRelatedData(ctx context.Context, t *testing.T, s *api.Server, userID string, expectExists bool) {
+	t.Helper()
+
 	userExists, err := models.Users(
 		models.UserWhere.ID.EQ(userID),
 	).Exists(ctx, s.DB)
@@ -54,7 +56,7 @@ func TestDeleteUserAccount(t *testing.T) {
 		fix := fixtures.Fixtures()
 
 		// expect the user to have a app user profile and different kinds of tokens (access, refresh, push, password reset)
-		assertUserAndRelatedData(ctx, s, t, fix.User1.ID, true)
+		assertUserAndRelatedData(ctx, t, s, fix.User1.ID, true)
 
 		payload := test.GenericPayload{
 			"currentPassword": fixtures.PlainTestUserPassword,
@@ -64,7 +66,7 @@ func TestDeleteUserAccount(t *testing.T) {
 		require.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		// expect the user and all related data to be deleted
-		assertUserAndRelatedData(ctx, s, t, fix.User1.ID, false)
+		assertUserAndRelatedData(ctx, t, s, fix.User1.ID, false)
 	})
 }
 

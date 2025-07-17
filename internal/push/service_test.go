@@ -16,12 +16,12 @@ import (
 )
 
 func TestSendMessageSuccess(t *testing.T) {
-	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
+	test.WithTestPusher(t, func(service *push.Service, db *sql.DB) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		err := p.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
-		assert.NoError(t, err)
+		err := service.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
+		require.NoError(t, err)
 
 		tokenCount, err2 := fix.User1.PushTokens().Count(ctx, db)
 		require.NoError(t, err2)
@@ -30,13 +30,13 @@ func TestSendMessageSuccess(t *testing.T) {
 }
 
 func TestSendMessageSuccessWithGenericError(t *testing.T) {
-	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
+	test.WithTestPusher(t, func(service *push.Service, db *sql.DB) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
 		// provoke error from mock provider
-		err := p.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "other error", "World")
-		assert.NoError(t, err)
+		err := service.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "other error", "World")
+		require.NoError(t, err)
 
 		tokenCount, err2 := fix.User1.PushTokens().Count(ctx, db)
 		require.NoError(t, err2)
@@ -45,7 +45,7 @@ func TestSendMessageSuccessWithGenericError(t *testing.T) {
 }
 
 func TestSendMessageWithInvalidToken(t *testing.T) {
-	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
+	test.WithTestPusher(t, func(service *push.Service, db *sql.DB) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
@@ -62,8 +62,8 @@ func TestSendMessageWithInvalidToken(t *testing.T) {
 		require.NoError(t, err2)
 		require.Equal(t, int64(3), tokenCount)
 
-		err = p.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
-		assert.NoError(t, err)
+		err = service.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
+		require.NoError(t, err)
 
 		tokenCount, err2 = fix.User1.PushTokens().Count(ctx, db)
 		require.NoError(t, err2)
@@ -72,16 +72,15 @@ func TestSendMessageWithInvalidToken(t *testing.T) {
 }
 
 func TestSendMessageWithNoProvider(t *testing.T) {
-	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
-
+	test.WithTestPusher(t, func(service *push.Service, db *sql.DB) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		p.ResetProviders()
-		require.Equal(t, 0, p.GetProviderCount())
+		service.ResetProviders()
+		require.Equal(t, 0, service.GetProviderCount())
 
-		err := p.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
-		assert.Error(t, err)
+		err := service.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
+		require.Error(t, err)
 
 		tokenCount, err2 := fix.User1.PushTokens().Count(ctx, db)
 		require.NoError(t, err2)
@@ -90,20 +89,20 @@ func TestSendMessageWithNoProvider(t *testing.T) {
 }
 
 func TestSendMessageWithMultipleProvider(t *testing.T) {
-	test.WithTestPusher(t, func(p *push.Service, db *sql.DB) {
+	test.WithTestPusher(t, func(service *push.Service, db *sql.DB) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		p.ResetProviders()
-		require.Equal(t, 0, p.GetProviderCount())
+		service.ResetProviders()
+		require.Equal(t, 0, service.GetProviderCount())
 
 		mockProviderFCM := provider.NewMock(push.ProviderTypeFCM)
 		mockProviderAPN := provider.NewMock(push.ProviderTypeAPN)
-		p.RegisterProvider(mockProviderAPN)
-		p.RegisterProvider(mockProviderFCM)
+		service.RegisterProvider(mockProviderAPN)
+		service.RegisterProvider(mockProviderFCM)
 
-		err := p.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
-		assert.NoError(t, err)
+		err := service.SendToUser(ctx, mapper.LocalUserToDTO(fix.User1).Ptr(), "Hello", "World")
+		require.NoError(t, err)
 
 		tokenCount, err2 := fix.User1.PushTokens().Count(ctx, db)
 		require.NoError(t, err2)

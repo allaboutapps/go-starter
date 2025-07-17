@@ -12,12 +12,12 @@ const (
 	CacheControlDirectiveNoStore
 )
 
-func (d CacheControlDirective) HasDirective(dir CacheControlDirective) bool { return d&dir != 0 }
-func (d *CacheControlDirective) AddDirective(dir CacheControlDirective)     { *d |= dir }
-func (d *CacheControlDirective) ClearDirective(dir CacheControlDirective)   { *d &= ^dir }
-func (d *CacheControlDirective) ToggleDirective(dir CacheControlDirective)  { *d ^= dir }
+func (d *CacheControlDirective) HasDirective(dir CacheControlDirective) bool { return *d&dir != 0 }
+func (d *CacheControlDirective) AddDirective(dir CacheControlDirective)      { *d |= dir }
+func (d *CacheControlDirective) ClearDirective(dir CacheControlDirective)    { *d &= ^dir }
+func (d *CacheControlDirective) ToggleDirective(dir CacheControlDirective)   { *d ^= dir }
 
-func (d CacheControlDirective) String() string {
+func (d *CacheControlDirective) String() string {
 	res := make([]string, 0)
 
 	if d.HasDirective(CacheControlDirectiveNoCache) {
@@ -47,10 +47,10 @@ func ParseCacheControlHeader(val string) CacheControlDirective {
 
 	directives := strings.Split(val, ",")
 	for _, dir := range directives {
-		res = res | ParseCacheControlDirective(dir)
+		res |= ParseCacheControlDirective(dir)
 	}
 
-	return CacheControlDirective(res)
+	return res
 }
 
 func CacheControlDirectiveFromContext(ctx context.Context) CacheControlDirective {

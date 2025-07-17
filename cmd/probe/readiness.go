@@ -71,8 +71,8 @@ func RunReadiness(ctx context.Context, config config.Server, flags ReadinessFlag
 
 	db, err := sql.Open("postgres", config.Database.ConnectionString())
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to open database connection")
-		return nil, err
+		log.Error().Err(err).Msg("Failed to open the database")
+		return nil, fmt.Errorf("failed to open the database: %w", err)
 	}
 	defer db.Close()
 
@@ -82,7 +82,7 @@ func RunReadiness(ctx context.Context, config config.Server, flags ReadinessFlag
 	str, errs := common.ProbeReadiness(readinessCtx, db, config.Management.ProbeWriteablePathsAbs)
 
 	if flags.Verbose {
-		fmt.Print(str)
+		log.Info().Msg(str)
 	}
 
 	return errs, nil

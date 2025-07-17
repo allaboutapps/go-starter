@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,9 +19,7 @@ func TestGetMapFromStruct(t *testing.T) {
 		G *int
 	}
 
-	f := "stringPtr"
-	g := 5
-	x := tmp{
+	data := tmp{
 		A: "string",
 		B: 1,
 		C: tmp{
@@ -28,11 +27,11 @@ func TestGetMapFromStruct(t *testing.T) {
 		},
 		D: 2.3,
 		E: true,
-		F: &f,
-		G: &g,
+		F: swag.String("stringPtr"),
+		G: swag.Int(5),
 	}
 
-	xMap := test.GetMapFromStruct(x)
+	xMap := test.GetMapFromStruct(data)
 	assert.Len(t, xMap, 7)
 	assert.Equal(t, "string", xMap["A"])
 	assert.Equal(t, "1", xMap["B"])
@@ -54,9 +53,7 @@ func TestGetMapFromStructByTag(t *testing.T) {
 		G *int        `x:"6"`
 	}
 
-	f := "stringPtr"
-	g := 5
-	x := tmp{
+	data := tmp{
 		A: "string",
 		B: 1,
 		C: tmp{
@@ -64,11 +61,11 @@ func TestGetMapFromStructByTag(t *testing.T) {
 		},
 		D: 2.3,
 		E: true,
-		F: &f,
-		G: &g,
+		F: swag.String("stringPtr"),
+		G: swag.Int(5),
 	}
 
-	xMap := test.GetMapFromStructByTag("x", x)
+	xMap := test.GetMapFromStructByTag("x", data)
 	assert.Len(t, xMap, 7)
 	assert.Equal(t, "string", xMap["1"])
 	assert.Equal(t, "1", xMap["3"])
@@ -78,7 +75,7 @@ func TestGetMapFromStructByTag(t *testing.T) {
 	assert.Equal(t, "stringPtr", xMap["4"])
 	assert.Equal(t, "5", xMap["6"])
 
-	yMap := test.GetMapFromStructByTag("y", x)
+	yMap := test.GetMapFromStructByTag("y", data)
 	assert.Len(t, yMap, 1)
 	assert.Equal(t, "string", yMap["2"])
 }

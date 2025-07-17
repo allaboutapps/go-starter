@@ -1,6 +1,7 @@
 package test_test
 
 import (
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -35,14 +36,20 @@ func (m *TestRequestPayload) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
-	return swag.WriteJSON(m)
+
+	res, err := swag.WriteJSON(m)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal binary: %w", err)
+	}
+
+	return res, nil
 }
 
 // UnmarshalBinary interface implementation
 func (m *TestRequestPayload) UnmarshalBinary(b []byte) error {
 	var res TestRequestPayload
 	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal binary: %w", err)
 	}
 	*m = res
 	return nil
@@ -58,28 +65,32 @@ func (m *TestResponsePayload) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
-	return swag.WriteJSON(m)
+
+	res, err := swag.WriteJSON(m)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal binary: %w", err)
+	}
+
+	return res, nil
 }
 
 // UnmarshalBinary interface implementation
 func (m *TestResponsePayload) UnmarshalBinary(b []byte) error {
 	var res TestResponsePayload
 	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal binary: %w", err)
 	}
 	*m = res
 	return nil
 }
 
 func TestWithTestServer(t *testing.T) {
-	test.WithTestServer(t, func(s1 *api.Server) {
-		test.WithTestServer(t, func(s2 *api.Server) {
-
+	test.WithTestServer(t, func(server1 *api.Server) {
+		test.WithTestServer(t, func(server2 *api.Server) {
 			path := "/testing-f679dbac-62bb-445d-b7e8-9f2c71ca382c"
 
 			// add an new route to s1 for the purpose of this test.
-			s1.Echo.POST(path, func(c echo.Context) error {
-
+			server1.Echo.POST(path, func(c echo.Context) error {
 				var body TestRequestPayload
 				if err := util.BindAndValidateBody(c, &body); err != nil {
 					t.Fatal(err)
@@ -96,7 +107,7 @@ func TestWithTestServer(t *testing.T) {
 				"name": "Mario",
 			}
 
-			res1 := test.PerformRequest(t, s1, "POST", path, payload, nil)
+			res1 := test.PerformRequest(t, server1, "POST", path, payload, nil)
 			assert.Equal(t, http.StatusOK, res1.Result().StatusCode)
 
 			var response1 TestResponsePayload
@@ -104,12 +115,10 @@ func TestWithTestServer(t *testing.T) {
 
 			assert.Equal(t, "Mario", response1.Hello)
 
-			res2 := test.PerformRequest(t, s2, "POST", path, payload, nil)
+			res2 := test.PerformRequest(t, server2, "POST", path, payload, nil)
 			assert.Equal(t, http.StatusNotFound, res2.Result().StatusCode)
-
 		})
 	})
-
 }
 
 func TestWithTestServerFromDump(t *testing.T) {
@@ -118,16 +127,15 @@ func TestWithTestServerFromDump(t *testing.T) {
 	serverConfig := config.DefaultServiceConfigFromEnv()
 	dumpConfig := test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true, ApplyTestFixtures: true}
 
-	test.WithTestServerFromDump(t, dumpConfig, func(s1 *api.Server) {
-		test.WithTestServerConfigurableFromDump(t, serverConfig, dumpConfig, func(s2 *api.Server) {
-
+	test.WithTestServerFromDump(t, dumpConfig, func(server1 *api.Server) {
+		test.WithTestServerConfigurableFromDump(t, serverConfig, dumpConfig, func(server2 *api.Server) {
 			var db1Name string
-			if err := s1.DB.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
+			if err := server1.DB.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
 				t.Fatal(err)
 			}
 
 			var db2Name string
-			if err := s2.DB.QueryRow("SELECT current_database();").Scan(&db2Name); err != nil {
+			if err := server2.DB.QueryRow("SELECT current_database();").Scan(&db2Name); err != nil {
 				t.Fatal(err)
 			}
 
@@ -138,8 +146,6 @@ func TestWithTestServerFromDump(t *testing.T) {
 			db2Hash := strings.Split(strings.Join(strings.Split(db2Name, "integresql_test_"), ""), "_")[0]
 
 			require.Equal(t, db1Hash, db2Hash)
-
 		})
 	})
-
 }

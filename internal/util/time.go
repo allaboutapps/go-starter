@@ -1,22 +1,35 @@
 package util
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-openapi/swag"
 )
 
 const (
-	DateFormat = "2006-01-02"
+	DateFormat       = "2006-01-02"
+	monthsPerQuarter = 3
+	daysPerWeek      = 7
 )
 
 // TimeFromString returns an instance of time.Time from a given string asuming RFC3339 format
 func TimeFromString(timeString string) (time.Time, error) {
-	return time.Parse(time.RFC3339, timeString)
+	result, err := time.Parse(time.RFC3339, timeString)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse time string: %w", err)
+	}
+
+	return result, nil
 }
 
 func DateFromString(dateString string) (time.Time, error) {
-	return time.Parse(DateFormat, dateString)
+	result, err := time.Parse(DateFormat, dateString)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse date string: %w", err)
+	}
+
+	return result, nil
 }
 
 func EndOfMonth(d time.Time) time.Time {
@@ -40,20 +53,21 @@ func StartOfMonth(d time.Time) time.Time {
 }
 
 func StartOfQuarter(d time.Time) time.Time {
-	quarter := (int(d.Month()) - 1) / 3
-	m := quarter*3 + 1
+	quarter := (int(d.Month()) - 1) / monthsPerQuarter
+	m := quarter*monthsPerQuarter + 1
 	return time.Date(d.Year(), time.Month(m), 1, 0, 0, 0, 0, d.Location())
 }
 
-// StartOfWeek returns the monday (assuming week starts at monday) of the week of the date
-func StartOfWeek(d time.Time) time.Time {
-	dayOffset := int(d.Weekday()) - 1
+// StartOfWeek returns the monday (assuming week starts at monday) of the week of the date.
+func StartOfWeek(date time.Time) time.Time {
+	dayOffset := int(date.Weekday()) - 1
 
 	// go time is starting weeks at sunday
 	if dayOffset < 0 {
 		dayOffset = 6
 	}
-	return time.Date(d.Year(), d.Month(), d.Day()-dayOffset, 0, 0, 0, 0, d.Location())
+
+	return time.Date(date.Year(), date.Month(), date.Day()-dayOffset, 0, 0, 0, 0, date.Location())
 }
 
 func Date(year int, month int, day int, loc *time.Location) time.Time {
@@ -61,7 +75,7 @@ func Date(year int, month int, day int, loc *time.Location) time.Time {
 }
 
 func AddWeeks(d time.Time, weeks int) time.Time {
-	return d.AddDate(0, 0, 7*weeks)
+	return d.AddDate(0, 0, daysPerWeek*weeks)
 }
 
 func AddMonths(d time.Time, months int) time.Time {
@@ -84,6 +98,7 @@ func MaxTime(times ...time.Time) time.Time {
 			latestTime = t
 		}
 	}
+
 	return latestTime
 }
 

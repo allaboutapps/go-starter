@@ -26,13 +26,14 @@ func FileNameWithoutExtension(path string) string {
 // element of the path will be considered as a name.
 // If the provided path is empty or consists entirely of separators,
 // empty strings will be returned.
-func FileNameAndExtension(path string) (fileName string, extension string) {
+func FileNameAndExtension(path string) (string, string) {
 	base := filepath.Base(path)
 	if base == "." || base == "/" {
 		return "", ""
 	}
 
-	extension = filepath.Ext(path)
+	extension := filepath.Ext(path)
+	fileName := strings.TrimSuffix(base, extension)
 
-	return strings.TrimSuffix(base, extension), extension
+	return fileName, extension
 }

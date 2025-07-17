@@ -14,7 +14,7 @@ func WhereIn(tableName string, columnName string, slice []string) qm.QueryMod {
 }
 
 // IN is a replacement for sqlboilers IN query mod. sqlboilers IN will set a param for
-// each element in the slice and we do not reccomend to use this, because it will run into driver and
+// each element in the slice and we do not recommend to use this, because it will run into driver and
 // database limits. While the sqlboiler IN fails at about ~10000 params this was tested with over 1000000.
 func IN(path string, slice []string) qm.QueryMod {
 	return qm.Where(fmt.Sprintf("%s = any(?)", path), pq.StringArray(slice))

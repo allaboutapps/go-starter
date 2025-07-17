@@ -10,6 +10,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	// We use 521 to indicate an error state
+	// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
+	httpStatusDown = 521
+)
+
 func GetHealthyRoute(s *api.Server) *echo.Route {
 	return s.Router.Management.GET("/healthy", getHealthyHandler(s))
 }
@@ -21,11 +27,8 @@ func GetHealthyRoute(s *api.Server) *echo.Route {
 // Structured upon https://prometheus.io/docs/prometheus/latest/management_api/
 func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		if !s.Ready() {
-			// We use 521 to indicate an error state
-			// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
-			return c.String(521, "Not ready.")
+			return c.String(httpStatusDown, "Not ready.")
 		}
 
 		var str strings.Builder
@@ -41,9 +44,7 @@ func getHealthyHandler(s *api.Server) echo.HandlerFunc {
 		// Finally return the health status according to the seen states
 		if ctx.Err() != nil || len(errs) != 0 {
 			fmt.Fprintln(&str, "Probes failed.")
-			// We use 521 to indicate this error state
-			// same as Cloudflare: https://support.cloudflare.com/hc/en-us/articles/115003011431#521error
-			return c.String(521, str.String())
+			return c.String(httpStatusDown, str.String())
 		}
 
 		fmt.Fprintln(&str, "Probes succeeded.")

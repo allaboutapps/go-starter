@@ -19,12 +19,15 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+const (
+	newPassword = "correct horse battery staple"
+)
+
 func TestPostChangePasswordSuccess(t *testing.T) {
 	test.WithTestServer(t, func(s *api.Server) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"currentPassword": fixtures.PlainTestUserPassword,
 			"newPassword":     newPassword,
@@ -44,20 +47,20 @@ func TestPostChangePasswordSuccess(t *testing.T) {
 		assert.Equal(t, auth.TokenTypeBearer, *response.TokenType)
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 
 		cnt, err := fix.User1.AccessTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		cnt, err = fix.User1.RefreshTokens().Count(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, int64(1), cnt)
 
 		err = fix.User1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotEqual(t, fixtures.HashedTestUserPassword, fix.User1.Password.String)
 	})
 }
@@ -67,7 +70,6 @@ func TestPostChangePasswordInvalidPassword(t *testing.T) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"currentPassword": "not my password",
 			"newPassword":     newPassword,
@@ -77,9 +79,9 @@ func TestPostChangePasswordInvalidPassword(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.NewFromEcho(echo.ErrUnauthorized))
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -88,7 +90,6 @@ func TestPostChangePasswordDeactivatedUser(t *testing.T) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"currentPassword": fixtures.PlainTestUserPassword,
 			"newPassword":     newPassword,
@@ -98,9 +99,9 @@ func TestPostChangePasswordDeactivatedUser(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.ErrForbiddenUserDeactivated)
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -109,7 +110,6 @@ func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 		ctx := t.Context()
 		fix := fixtures.Fixtures()
 
-		newPassword := "correct horse battery staple"
 		payload := test.GenericPayload{
 			"currentPassword": fixtures.PlainTestUserPassword,
 			"newPassword":     newPassword,
@@ -124,9 +124,9 @@ func TestPostChangePasswordUserWithoutPassword(t *testing.T) {
 		test.RequireHTTPError(t, res, httperrors.ErrForbiddenNotLocalUser)
 
 		err = fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -142,7 +142,7 @@ func TestPostChangePasswordBadRequest(t *testing.T) {
 			{
 				name: "MissingCurrentPassword",
 				payload: test.GenericPayload{
-					"newPassword": "correct horse battery staple",
+					"newPassword": newPassword,
 				},
 			},
 			{
@@ -155,7 +155,7 @@ func TestPostChangePasswordBadRequest(t *testing.T) {
 				name: "EmptyCurrentPassword",
 				payload: test.GenericPayload{
 					"currentPassword": "",
-					"newPassword":     "correct horse battery staple",
+					"newPassword":     newPassword,
 				},
 			},
 			{
@@ -178,9 +178,9 @@ func TestPostChangePasswordBadRequest(t *testing.T) {
 				test.Snapshoter.Save(t, response)
 
 				err := fix.User1AccessToken1.Reload(ctx, s.DB)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			})
 		}
 	})

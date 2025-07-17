@@ -32,7 +32,7 @@ func HTTPErrorHandler() echo.HTTPErrorHandler {
 func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHandler {
 	return func(err error, c echo.Context) {
 		var code int64
-		var he error
+		var resultErr error
 
 		var httpError *httperrors.HTTPError
 		var httpValidationError *httperrors.HTTPValidationError
@@ -41,7 +41,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 		switch {
 		case errors.As(err, &httpError):
 			code = *httpError.Code
-			he = httpError
+			resultErr = httpError
 
 			if code == http.StatusInternalServerError && config.HideInternalServerErrorDetails {
 				if httpError.Internal == nil {
@@ -53,7 +53,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 			}
 		case errors.As(err, &httpValidationError):
 			code = *httpValidationError.Code
-			he = httpValidationError
+			resultErr = httpValidationError
 
 			if code == http.StatusInternalServerError && config.HideInternalServerErrorDetails {
 				if httpValidationError.Internal == nil {
@@ -66,13 +66,14 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 		case errors.As(err, &echoHTTPError):
 			code = int64(echoHTTPError.Code)
 
+			//nolint:nestif
 			if code == http.StatusInternalServerError && config.HideInternalServerErrorDetails {
 				if echoHTTPError.Internal == nil {
 					//nolint:errorlint
 					echoHTTPError.Internal = fmt.Errorf("internal error: %s", echoHTTPError)
 				}
 
-				he = &httperrors.HTTPError{
+				resultErr = &httperrors.HTTPError{
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(echoHTTPError.Code)),
 						Title: swag.String(http.StatusText(http.StatusInternalServerError)),
@@ -90,7 +91,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 					}
 				}
 
-				he = &httperrors.HTTPError{
+				resultErr = &httperrors.HTTPError{
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(echoHTTPError.Code)),
 						Title: &msg,
@@ -102,7 +103,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 		default:
 			code = http.StatusInternalServerError
 			if config.HideInternalServerErrorDetails {
-				he = &httperrors.HTTPError{
+				resultErr = &httperrors.HTTPError{
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(http.StatusInternalServerError)),
 						Title: swag.String(http.StatusText(http.StatusInternalServerError)),
@@ -112,7 +113,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 					Internal: err,
 				}
 			} else {
-				he = &httperrors.HTTPError{
+				resultErr = &httperrors.HTTPError{
 					PublicHTTPError: types.PublicHTTPError{
 						Code:  swag.Int64(int64(http.StatusInternalServerError)),
 						Title: swag.String(err.Error()),
@@ -126,7 +127,7 @@ func HTTPErrorHandlerWithConfig(config HTTPErrorHandlerConfig) echo.HTTPErrorHan
 			if c.Request().Method == http.MethodHead {
 				err = c.NoContent(int(code))
 			} else {
-				err = c.JSON(int(code), he)
+				err = c.JSON(int(code), resultErr)
 			}
 
 			if err != nil {

@@ -21,20 +21,24 @@ func TestCacheControl(t *testing.T) {
 
 		s.Echo.GET(path, func(c echo.Context) error {
 			cache := util.CacheControlDirectiveFromContext(c.Request().Context())
-			if cache.HasDirective(util.CacheControlDirectiveNoCache) &&
-				cache.HasDirective(util.CacheControlDirectiveNoStore) {
+
+			switch {
+			case cache.HasDirective(util.CacheControlDirectiveNoCache) && cache.HasDirective(util.CacheControlDirectiveNoStore):
 				return c.JSON(http.StatusOK, "no-cache,no-store")
-			} else if cache.HasDirective(util.CacheControlDirectiveNoCache) {
+			case cache.HasDirective(util.CacheControlDirectiveNoCache):
 				return c.JSON(http.StatusOK, "no-cache")
-			} else if cache.HasDirective(util.CacheControlDirectiveNoStore) {
+			case cache.HasDirective(util.CacheControlDirectiveNoStore):
 				return c.JSON(http.StatusOK, "no-store")
 			}
-			return c.NoContent(http.StatusNoContent)
 
+			return c.NoContent(http.StatusNoContent)
 		}, middleware.CacheControl())
 
+		cacheControlNoCache := util.CacheControlDirectiveNoCache
+		cacheControlNoStore := util.CacheControlDirectiveNoStore
+
 		header := http.Header{}
-		header.Set(util.HTTPHeaderCacheControl, fmt.Sprintf("%s,%s", util.CacheControlDirectiveNoStore, util.CacheControlDirectiveNoCache))
+		header.Set(util.HTTPHeaderCacheControl, fmt.Sprintf("%s,%s", cacheControlNoStore.String(), cacheControlNoCache.String()))
 
 		res := test.PerformRequest(t, s, "GET", path, nil, header)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
@@ -44,7 +48,7 @@ func TestCacheControl(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "no-cache,no-store", resp)
 
-		header.Set(util.HTTPHeaderCacheControl, util.CacheControlDirectiveNoCache.String())
+		header.Set(util.HTTPHeaderCacheControl, cacheControlNoCache.String())
 
 		res = test.PerformRequest(t, s, "GET", path, nil, header)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
@@ -53,7 +57,7 @@ func TestCacheControl(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "no-cache", resp)
 
-		header.Set(util.HTTPHeaderCacheControl, util.CacheControlDirectiveNoStore.String())
+		header.Set(util.HTTPHeaderCacheControl, cacheControlNoStore.String())
 
 		res = test.PerformRequest(t, s, "GET", path, nil, header)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)

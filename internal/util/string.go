@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -20,14 +21,14 @@ var (
 // An error will be returned if reading from the secure random number generator fails, at which point
 // the returned result should be discarded and not used any further.
 func GenerateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
+	result := make([]byte, n)
 
-	_, err := rand.Read(b)
+	_, err := rand.Read(result)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate random bytes: %w", err)
 	}
 
-	return b, nil
+	return result, nil
 }
 
 // GenerateRandomBase64String returns a string with n random bytes securely generated using the system's
@@ -81,24 +82,24 @@ func GenerateRandomString(n int, ranges []CharRange, extra string) (string, erro
 		return "", errors.New("random string can only be created if set of characters or extra string characters supplied")
 	}
 
-	validateFn := func(c byte) bool {
+	validateFn := func(elem byte) bool {
 		// IndexByte(string, byte) is basically Contains(string, string) without casting
-		if strings.IndexByte(extra, c) >= 0 {
+		if strings.IndexByte(extra, elem) >= 0 {
 			return true
 		}
 
 		for _, r := range ranges {
 			switch r {
 			case CharRangeNumeric:
-				if c >= '0' && c <= '9' {
+				if elem >= '0' && elem <= '9' {
 					return true
 				}
 			case CharRangeAlphaLowerCase:
-				if c >= 'a' && c <= 'z' {
+				if elem >= 'a' && elem <= 'z' {
 					return true
 				}
 			case CharRangeAlphaUpperCase:
-				if c >= 'A' && c <= 'Z' {
+				if elem >= 'A' && elem <= 'Z' {
 					return true
 				}
 			}
@@ -108,7 +109,6 @@ func GenerateRandomString(n int, ranges []CharRange, extra string) (string, erro
 	}
 
 	for str.Len() < n {
-
 		buf, err := GenerateRandomBytes(n)
 		if err != nil {
 			return "", err
@@ -150,24 +150,24 @@ func EmptyIfNil(s *string) string {
 	return *s
 }
 
-// ContainsAll returns true if a string (str) contains all substrings (sub)
-func ContainsAll(str string, sub ...string) bool {
-	subLen := len(sub)
+// ContainsAll returns true if a string (str) contains all substrings (sub).
+func ContainsAll(str string, subs ...string) bool {
+	subLen := len(subs)
 	contains := make([]bool, subLen)
 	indices := make([]int, subLen)
-	runes := make([][]rune, subLen)
-	for i, s := range sub {
-		runes[i] = []rune(s)
+	substrings := make([][]rune, subLen)
+	for i, substring := range subs {
+		substrings[i] = []rune(substring)
 	}
 
 	for _, marked := range str {
-		for i, r := range runes {
-			if len(r) == 0 {
+		for i, sub := range substrings {
+			if len(sub) == 0 {
 				contains[i] = true
 			}
-			if !contains[i] && marked == r[indices[i]] {
+			if !contains[i] && marked == sub[indices[i]] {
 				indices[i]++
-				if indices[i] >= len(r) {
+				if indices[i] >= len(sub) {
 					contains[i] = true
 				}
 			}

@@ -12,6 +12,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPostLogoutSuccess(t *testing.T) {
@@ -23,10 +24,10 @@ func TestPostLogoutSuccess(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -43,10 +44,10 @@ func TestPostLogoutSuccessWithRefreshToken(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
 
@@ -63,10 +64,10 @@ func TestPostLogoutSuccessWithUnknownRefreshToken(t *testing.T) {
 		assert.Equal(t, http.StatusNoContent, res.Result().StatusCode)
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sql.ErrNoRows)
 
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -87,10 +88,10 @@ func TestPostLogoutInvalidRefreshToken(t *testing.T) {
 		test.Snapshoter.Save(t, response)
 
 		err := fix.User1AccessToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = fix.User1RefreshToken1.Reload(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 

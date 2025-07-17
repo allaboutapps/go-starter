@@ -12,9 +12,9 @@ func TestGetFileNameWithoutExtension(t *testing.T) {
 	assert.Equal(t, "example", util.FileNameWithoutExtension("example.jpg"))
 	assert.Equal(t, "example_test-check", util.FileNameWithoutExtension("example_test-check.jpg"))
 	assert.Equal(t, "example", util.FileNameWithoutExtension("example"))
-	assert.Equal(t, "", util.FileNameWithoutExtension(""))
-	assert.Equal(t, "", util.FileNameWithoutExtension("."))
-	assert.Equal(t, "", util.FileNameWithoutExtension("///"))
+	assert.Empty(t, util.FileNameWithoutExtension(""))
+	assert.Empty(t, util.FileNameWithoutExtension("."))
+	assert.Empty(t, util.FileNameWithoutExtension("///"))
 }
 
 func TestFileNameAndExtension(t *testing.T) {

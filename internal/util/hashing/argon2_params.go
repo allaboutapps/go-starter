@@ -6,11 +6,15 @@ var (
 	// DefaultArgon2Params represents Argon2ID parameter recommendations in accordance with:
 	// https://pkg.go.dev/golang.org/x/crypto@v0.0.0-20200420201142-3c4aac89819a/argon2?tab=doc#IDKey @ 2020-04-22T11:23:38Z
 	DefaultArgon2Params = &Argon2Params{
-		Time:       1,         // 1 second
-		Memory:     64 * 1024, // ~64MB memory costs
-		Threads:    4,         // 4 threads
-		KeyLength:  32,        // 256 bit key length
-		SaltLength: 16,        // 126 bit salt length
+		Time: 1, // 1 second
+		//nolint:mnd
+		Memory: 64 * 1024, // ~64MB memory costs
+		//nolint:mnd
+		Threads: 4, // 4 threads
+		//nolint:mnd
+		KeyLength: 32, // 256 bit key length
+		//nolint:mnd
+		SaltLength: 16, // 126 bit salt length
 	}
 )
 
@@ -23,7 +27,7 @@ type Argon2Params struct {
 }
 
 func DefaultArgon2ParamsFromEnv() *Argon2Params {
-	p := &Argon2Params{
+	params := &Argon2Params{
 		Time:       util.GetEnvAsUint32("AUTH_HASHING_ARGON2_TIME", DefaultArgon2Params.Time),
 		Memory:     util.GetEnvAsUint32("AUTH_HASHING_ARGON2_MEMORY", DefaultArgon2Params.Memory),
 		Threads:    util.GetEnvAsUint8("AUTH_HASHING_ARGON2_THREADS", DefaultArgon2Params.Threads),
@@ -31,5 +35,5 @@ func DefaultArgon2ParamsFromEnv() *Argon2Params {
 		SaltLength: util.GetEnvAsUint32("AUTH_HASHING_ARGON2_SALT_LENGTH", DefaultArgon2Params.SaltLength),
 	}
 
-	return p
+	return params
 }

@@ -35,6 +35,7 @@ var scaffoldCmd = &cobra.Command{
 	Run:   generate,
 }
 
+//nolint:gochecknoinits
 func init() {
 	rootCmd.AddCommand(scaffoldCmd)
 	scaffoldCmd.Flags().StringSliceP(methodsFlag, "m", defaultMethods, "Specify HTTP methods to generate handlers for. Example: scaffold --methods get-all,get,delete")

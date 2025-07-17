@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"os"
 	"time"
 )
@@ -13,17 +14,15 @@ func TouchFile(absolutePathToFile string) (time.Time, error) {
 
 	if os.IsNotExist(err) {
 		file, err := os.Create(absolutePathToFile)
-
 		if err != nil {
-			return time.Time{}, err
+			return time.Time{}, fmt.Errorf("failed to create file: %w", err)
 		}
 
 		defer file.Close()
 
 		stat, err := file.Stat()
-
 		if err != nil {
-			return time.Time{}, err
+			return time.Time{}, fmt.Errorf("failed to stat file: %w", err)
 		}
 
 		return stat.ModTime(), nil
@@ -31,5 +30,9 @@ func TouchFile(absolutePathToFile string) (time.Time, error) {
 
 	currentTime := time.Now().Local()
 	err = os.Chtimes(absolutePathToFile, currentTime, currentTime)
-	return currentTime, err
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to change file time: %w", err)
+	}
+
+	return currentTime, nil
 }

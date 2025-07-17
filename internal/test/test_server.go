@@ -91,5 +91,6 @@ func execClosureNewTestServer(ctx context.Context, t *testing.T, config config.S
 	}
 
 	// disallow any further refs to managed object after running the test
+	//nolint: wastedassign
 	s = nil
 }

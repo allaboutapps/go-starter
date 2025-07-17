@@ -1,14 +1,17 @@
 package hashing
 
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"fmt"
+)
 
 func generateSalt(n uint32) ([]byte, error) {
-	b := make([]byte, n)
+	result := make([]byte, n)
 
-	_, err := rand.Read(b)
+	_, err := rand.Read(result)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate salt: %w", err)
 	}
 
-	return b, nil
+	return result, nil
 }

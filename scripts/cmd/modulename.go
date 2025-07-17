@@ -3,10 +3,8 @@
 package cmd
 
 import (
-	"fmt"
-	"log"
-
 	"allaboutapps.dev/aw/go-starter/scripts/internal/util"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +18,7 @@ var moduleCmd = &cobra.Command{
 	},
 }
 
+//nolint:gochecknoinits
 func init() {
 	rootCmd.AddCommand(moduleCmd)
 }
@@ -28,8 +27,8 @@ func runModulename() {
 	baseModuleName, err := util.GetModuleName(modulePath)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("Failed to get module name")
 	}
 
-	fmt.Println(baseModuleName)
+	log.Info().Msg(baseModuleName)
 }

@@ -2,6 +2,7 @@ package util_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -42,7 +43,7 @@ func TestBindAndValidateSuccess(t *testing.T) {
 		var body types.PostRefreshPayload
 
 		err := util.BindAndValidate(c, &body, &testParam1, &testParam2)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotEmpty(t, body)
 		assert.Equal(t, strfmt.UUID4(testToken), *body.RefreshToken)
 
@@ -74,7 +75,7 @@ func TestBindAndValidateBadRequest(t *testing.T) {
 		var body types.PostRefreshPayload
 
 		err := util.BindAndValidateBody(c, &body)
-		assert.Error(t, err)
+		require.Error(t, err)
 
 		return nil
 	})
@@ -95,7 +96,6 @@ func TestParseFileUplaod(t *testing.T) {
 
 	e := echo.New()
 	e.POST("/", func(c echo.Context) error {
-
 		fh, file, mime, err := util.ParseFileUpload(c, "file", []string{"image/jpeg"})
 		require.NoError(t, err)
 		assert.True(t, mime.Is("image/jpeg"))
@@ -123,7 +123,6 @@ func TestParseFileUplaodUnsupported(t *testing.T) {
 
 	e := echo.New()
 	e.POST("/", func(c echo.Context) error {
-
 		fh, file, mime, err := util.ParseFileUpload(c, "file", []string{"image/png"})
 		assert.Nil(t, fh)
 		assert.Nil(t, file)
@@ -143,7 +142,6 @@ func TestParseFileUplaodUnsupported(t *testing.T) {
 	headers.Set(echo.HeaderContentType, contentType)
 
 	res := test.PerformRequestWithRawBody(t, s, "POST", "/", body, headers, nil)
-
 	require.Equal(t, http.StatusUnsupportedMediaType, res.Result().StatusCode)
 }
 
@@ -159,14 +157,13 @@ func TestParseFileUplaodEmpty(t *testing.T) {
 
 	e := echo.New()
 	e.POST("/", func(c echo.Context) error {
-
 		fh, file, mime, err := util.ParseFileUpload(c, "file", []string{"text/plain"})
 		assert.Nil(t, fh)
 		assert.Nil(t, file)
 		assert.Nil(t, mime)
 		assert.Equal(t, httperrors.ErrBadRequestZeroFileSize, err)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to parse file upload: %w", err)
 		}
 
 		return c.NoContent(204)

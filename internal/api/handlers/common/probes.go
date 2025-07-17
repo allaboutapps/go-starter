@@ -29,7 +29,6 @@ func ProbeReadiness(ctx context.Context, database *sql.DB, writeablePaths []stri
 
 	// FS (potentially) writeable?
 	for _, writeablePath := range writeablePaths {
-
 		fsPermStr, fsPermErr := probePathWriteablePermission(ctx, writeablePath)
 		str.WriteString(fsPermStr)
 
@@ -44,7 +43,6 @@ func ProbeReadiness(ctx context.Context, database *sql.DB, writeablePaths []stri
 }
 
 func ProbeLiveness(ctx context.Context, database *sql.DB, writeablePaths []string, touch string) (string, []error) {
-
 	// fail immediately if any readiness probes above have already failed.
 	readinessProbeStr, readinessProbeErrs := ProbeReadiness(ctx, database, writeablePaths)
 
@@ -70,7 +68,6 @@ func ProbeLiveness(ctx context.Context, database *sql.DB, writeablePaths []strin
 
 	// FS writeable?
 	for _, writeablePath := range writeablePaths {
-
 		fsTouchStr, fsTouchErr := probePathWriteableTouch(ctx, writeablePath, touch)
 		str.WriteString(fsTouchStr)
 		if fsTouchErr != nil {

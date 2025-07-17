@@ -175,6 +175,5 @@ func TestPostLoginBadRequest(t *testing.T) {
 				test.Snapshoter.Save(t, response)
 			})
 		}
-
 	})
 }

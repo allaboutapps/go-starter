@@ -3,6 +3,7 @@
 package util
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -17,7 +18,7 @@ func GetModuleName(absolutePathToGoMod string) (string, error) {
 
 	if err != nil {
 		log.Fatal(err)
-		return "", err
+		return "", fmt.Errorf("failed to read go.mod file: %w", err)
 	}
 
 	mod := modfile.ModulePath(dat)

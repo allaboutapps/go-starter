@@ -11,7 +11,7 @@ import (
 )
 
 func TestDotEnvOverride(t *testing.T) {
-	assert.Equal(t, "", os.Getenv("IS_THIS_A_TEST_ENV"))
+	assert.Empty(t, os.Getenv("IS_THIS_A_TEST_ENV"))
 
 	orgPsqlUser := os.Getenv("PSQL_USER")
 
@@ -35,21 +35,19 @@ func TestDotEnvOverride(t *testing.T) {
 
 func TestNoopEnvNotFound(t *testing.T) {
 	assert.NotPanics(t, assert.PanicTestFunc(func() {
-
 		config.DotEnvTryLoad(
 			filepath.Join(util.GetProjectRootDir(), "/internal/config/testdata/.env.does.not.exist"),
-			func(k string, v string) error { t.Setenv(k, v); return nil })
-
+			func(k string, v string) error { t.Setenv(k, v); return nil },
+		)
 	}), "does not panic on file inexistance")
 }
 
 func TestEmptyEnv(t *testing.T) {
 	assert.NotPanics(t, assert.PanicTestFunc(func() {
-
 		config.DotEnvTryLoad(
 			filepath.Join(util.GetProjectRootDir(), "/internal/config/testdata/.env.local.sample"),
-			func(k string, v string) error { t.Setenv(k, v); return nil })
-
+			func(k string, v string) error { t.Setenv(k, v); return nil },
+		)
 	}), "does not panic on file inexistance")
 
 	assert.Empty(t, os.Getenv("EMPTY_VARIABLE_INIT"), "should be empty")
@@ -57,10 +55,9 @@ func TestEmptyEnv(t *testing.T) {
 
 func TestPanicsOnEnvMalform(t *testing.T) {
 	assert.Panics(t, assert.PanicTestFunc(func() {
-
 		config.DotEnvTryLoad(
 			filepath.Join(util.GetProjectRootDir(), "/internal/config/testdata/.env.local.malformed"),
-			func(k string, v string) error { t.Setenv(k, v); return nil })
-
+			func(k string, v string) error { t.Setenv(k, v); return nil },
+		)
 	}), "does panic on file malform")
 }

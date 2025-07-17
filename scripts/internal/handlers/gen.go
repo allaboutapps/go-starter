@@ -13,13 +13,14 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/rs/zerolog/log"
 
 	"allaboutapps.dev/aw/go-starter/scripts/internal/util"
 )
@@ -78,45 +79,39 @@ type TempateData struct {
 
 // get all functions in above handler packages
 // that match <methodPrefixes>*<methodSuffix>
-func GenHandlers(printOnly bool) {
+func GenHandlers(printOnly bool) error {
 	funcs := []ResolvedFunction{}
 
 	baseModuleName, err := util.GetModuleName(pathModFile)
-
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("Failed to get module name")
 	}
 
 	set := token.NewFileSet()
 
-	err = filepath.Walk(pathHandlersRoot, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(pathHandlersRoot, func(path string, fileInfo os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Printf("Failed to access path %q: %v\n", path, err)
-			os.Exit(1)
+			return fmt.Errorf("failed to access path %q: %w", path, err)
 		}
 
 		// ignore handler file to be generated
 		// ignore directories
 		// ignore non go files
 		// ignore test go files
-		if path == pathHandlersFile || f.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "test.go") {
+		if path == pathHandlersFile || fileInfo.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "test.go") {
 			return nil
 		}
 
 		gofile, err := parser.ParseFile(set, path, nil, 0)
-
 		if err != nil {
-			fmt.Println("Failed to parse package:", err)
-			os.Exit(1)
+			return fmt.Errorf("failed to parse package: %q: %w", path, err)
 		}
 
 		fileDir := filepath.Dir(path)
 		packageNameFQDN := strings.Replace(fileDir, pathProjectRoot, baseModuleName, 1)
 
 		for _, d := range gofile.Decls {
-
 			if fn, isFn := d.(*ast.FuncDecl); isFn {
-
 				fnName := fn.Name.String()
 
 				for _, prefix := range methodPrefixes {
@@ -135,21 +130,19 @@ func GenHandlers(printOnly bool) {
 
 		return nil
 	})
-
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to walk handlers root: %w", err)
 	}
 
 	// stable sort the functions
 	// first PackageName then FunctionName
-	sort.Slice(funcs[:], func(i, j int) bool {
+	sort.Slice(funcs, func(i, j int) bool {
 		return funcs[i].PackageNameFQDN+funcs[i].FunctionName < funcs[j].PackageNameFQDN+funcs[j].FunctionName
 	})
 
 	// only add subPkg if there was actually a route within it found
 	subPkgs := []string{}
 	for _, fun := range funcs {
-
 		mustAppend := true
 
 		for _, a := range subPkgs {
@@ -165,25 +158,26 @@ func GenHandlers(printOnly bool) {
 
 	if printOnly {
 		for _, function := range funcs {
-			fmt.Println(function.PackageNameFQDN, function.FunctionName)
+			log.Info().Msgf("%s %s", function.PackageNameFQDN, function.FunctionName)
 		}
 
 		// bailout
-		return
+		return nil
 	}
 
-	f, err := os.Create(pathHandlersFile)
-
+	handlersFile, err := os.Create(pathHandlersFile)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to create handlers file: %w", err)
 	}
 
-	defer f.Close()
+	defer handlersFile.Close()
 
-	if err = packageTemplate.Execute(f, TempateData{
+	if err = packageTemplate.Execute(handlersFile, TempateData{
 		SubPkgs: subPkgs,
 		Funcs:   funcs,
 	}); err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to execute package template: %w", err)
 	}
+
+	return nil
 }

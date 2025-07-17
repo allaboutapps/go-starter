@@ -162,7 +162,6 @@ func Init(s *api.Server) error {
 	}
 
 	if s.Config.Pprof.Enable {
-
 		pprofAuthMiddleware := middleware.Noop()
 
 		if s.Config.Pprof.EnableManagementKeyAuth {
@@ -208,6 +207,7 @@ func Init(s *api.Server) error {
 				return key == s.Config.Management.Secret, nil
 			},
 			Skipper: func(c echo.Context) bool {
+				//nolint:gocritic
 				switch c.Path() {
 				case "/-/ready":
 					return true

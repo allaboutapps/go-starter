@@ -117,38 +117,38 @@ func (s AuthTokenSource) String() string {
 	}
 }
 
-func (s AuthTokenSource) Extract(c echo.Context, key string, scheme string) (token string, exists bool) {
-	var t string
+func (s AuthTokenSource) Extract(c echo.Context, key string, scheme string) (string, bool) {
+	var token string
 
 	switch s {
 	case AuthTokenSourceHeader:
-		t = c.Request().Header.Get(key)
+		token = c.Request().Header.Get(key)
 	case AuthTokenSourceForm:
-		t = c.FormValue(key)
+		token = c.FormValue(key)
 	case AuthTokenSourceQuery:
-		t = c.QueryParam(key)
+		token = c.QueryParam(key)
 	default:
 		return "", false
 	}
 
-	if len(t) == 0 {
+	if len(token) == 0 {
 		return "", false
 	}
 
 	lenScheme := len(scheme)
 	if lenScheme == 0 {
-		return t, true
+		return token, true
 	}
 
-	if len(t) < lenScheme+1 {
+	if len(token) < lenScheme+1 {
 		return "", true
 	}
 
-	if t[:lenScheme] != scheme {
+	if token[:lenScheme] != scheme {
 		return "", true
 	}
 
-	return t[lenScheme+1:], true
+	return token[lenScheme+1:], true
 }
 
 type AuthTokenFormatValidator func(string) bool
@@ -348,16 +348,14 @@ func AuthWithConfig(config AuthConfig) echo.MiddlewareFunc {
 
 			if res.ValidUntil.IsZero() {
 				log.Trace().Str("user_id", user.ID).Msg("Auth token has no expiry, allowing request")
-			} else {
-				if config.S.Clock.Now().After(res.ValidUntil) {
-					if config.Mode == AuthModeTry {
-						log.Trace().Time("valid_until", res.ValidUntil).Str("user_id", user.ID).Msg("Auth token is expired, but auth mode permits access, allowing request")
-						return next(c)
-					}
-
-					log.Trace().Time("valid_until", res.ValidUntil).Str("user_id", user.ID).Msg("Auth token is expired, rejecting request")
-					return config.FailureMode.Error()
+			} else if config.S.Clock.Now().After(res.ValidUntil) {
+				if config.Mode == AuthModeTry {
+					log.Trace().Time("valid_until", res.ValidUntil).Str("user_id", user.ID).Msg("Auth token is expired, but auth mode permits access, allowing request")
+					return next(c)
 				}
+
+				log.Trace().Time("valid_until", res.ValidUntil).Str("user_id", user.ID).Msg("Auth token is expired, rejecting request")
+				return config.FailureMode.Error()
 			}
 
 			// ! User has been explicitly deactivated - we do not allow access here, even with AuthModeTry

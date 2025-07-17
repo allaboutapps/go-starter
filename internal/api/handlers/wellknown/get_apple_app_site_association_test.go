@@ -15,12 +15,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetAppleWellKnown(t *testing.T) {
-	config := config.DefaultServiceConfigFromEnv()
-	config.Paths.AppleAppSiteAssociationFile = filepath.Join(util.GetProjectRootDir(), "test", "testdata", "apple-app-site-association.json")
+func testGetWellKnown(t *testing.T, config config.Server, path string) {
+	t.Helper()
 
 	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
-		res := test.PerformRequest(t, s, "GET", "/.well-known/apple-app-site-association", nil, nil)
+		res := test.PerformRequest(t, s, "GET", path, nil, nil)
 		require.Equal(t, http.StatusOK, res.Result().StatusCode)
 
 		result, err := io.ReadAll(res.Body)
@@ -28,6 +27,13 @@ func TestGetAppleWellKnown(t *testing.T) {
 
 		test.Snapshoter.SaveString(t, string(result))
 	})
+}
+
+func TestGetAppleWellKnown(t *testing.T) {
+	config := config.DefaultServiceConfigFromEnv()
+	config.Paths.AppleAppSiteAssociationFile = filepath.Join(util.GetProjectRootDir(), "test", "testdata", "apple-app-site-association.json")
+
+	testGetWellKnown(t, config, "/.well-known/apple-app-site-association")
 }
 
 func TestGetAppleWellKnownNotFound(t *testing.T) {

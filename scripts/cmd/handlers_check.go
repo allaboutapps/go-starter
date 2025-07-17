@@ -30,6 +30,7 @@ var handlersCheckCmd = &cobra.Command{
 	},
 }
 
+//nolint:gochecknoinits
 func init() {
 	handlersCmd.AddCommand(handlersCheckCmd)
 	handlersCheckCmd.Flags().Bool(printAllFlag, false, "Print only print the current implemented handlers, do not generate the file.")

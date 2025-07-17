@@ -9,6 +9,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/cmd/probe"
 	"allaboutapps.dev/aw/go-starter/cmd/server"
 	"allaboutapps.dev/aw/go-starter/internal/config"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -26,13 +27,6 @@ Requires configuration through ENV.`, config.ModuleName),
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-func init() {
 	rootCmd.SetVersionTemplate(`{{printf "%s\n" .Version}}`)
 
 	// attach the subcommands
@@ -42,4 +36,9 @@ func init() {
 		probe.New(),
 		server.New(),
 	)
+
+	if err := rootCmd.Execute(); err != nil {
+		log.Error().Err(err).Msg("Failed to execute root command")
+		os.Exit(1)
+	}
 }

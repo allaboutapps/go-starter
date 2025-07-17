@@ -37,6 +37,7 @@ var (
 	defaultPoolPaths = []string{migDir, fixFile, selfFile}
 )
 
+//nolint:gochecknoinits
 func init() {
 	// autoinitialize IntegreSQL client
 	c, err := integresql.DefaultClientFromEnv()
@@ -61,11 +62,16 @@ func WithTestDatabase(t *testing.T, closure func(db *sql.DB)) {
 func WithTestDatabaseContext(ctx context.Context, t *testing.T, closure func(db *sql.DB)) {
 	t.Helper()
 
-	poolID := strings.Join(defaultPoolPaths[:], ",")
+	poolID := strings.Join(defaultPoolPaths, ",")
 
 	// Get a hold of the &sync.Once{} for this integresql pool in this pkg scope...
-	doOnce, _ := poolInitMap.LoadOrStore(poolID, &sync.Once{})
-	doOnce.(*sync.Once).Do(func() {
+	initOnce, _ := poolInitMap.LoadOrStore(poolID, &sync.Once{})
+	doOnce, ok := initOnce.(*sync.Once)
+	if !ok {
+		t.Fatalf("Expected doOnce to be of type *sync.Once, but got %T", initOnce)
+	}
+
+	doOnce.Do(func() {
 		t.Helper()
 
 		// compute and store poolID -> poolHash map (computes hash of all files/dirs specified)
@@ -122,11 +128,16 @@ func WithTestDatabaseFromDumpContext(ctx context.Context, t *testing.T, config D
 
 	// poolID must incorporate additional config args in the final hash
 	fragments := fmt.Sprintf("?migrations=%v&fixtures=%v", config.ApplyMigrations, config.ApplyTestFixtures)
-	poolID := strings.Join([]string{config.DumpFile, selfFile}[:], ",") + fragments
+	poolID := strings.Join([]string{config.DumpFile, selfFile}, ",") + fragments
 
 	// Get a hold of the &sync.Once{} for this integresql pool in this pkg scope...
-	doOnce, _ := poolInitMap.LoadOrStore(poolID, &sync.Once{})
-	doOnce.(*sync.Once).Do(func() {
+	initOnce, _ := poolInitMap.LoadOrStore(poolID, &sync.Once{})
+	doOnce, ok := initOnce.(*sync.Once)
+	if !ok {
+		t.Fatalf("Expected doOnce to be of type *sync.Once, but got %T", initOnce)
+	}
+
+	doOnce.Do(func() {
 		t.Helper()
 
 		// compute and store poolID -> poolHash map (computes hash of all files/dirs specified)
@@ -183,8 +194,13 @@ func WithTestDatabaseEmptyContext(ctx context.Context, t *testing.T, closure fun
 	poolID := selfFile
 
 	// Get a hold of the &sync.Once{} for this integresql pool in this pkg scope...
-	doOnce, _ := poolInitMap.LoadOrStore(poolID, &sync.Once{})
-	doOnce.(*sync.Once).Do(func() {
+	initOnce, _ := poolInitMap.LoadOrStore(poolID, &sync.Once{})
+	doOnce, ok := initOnce.(*sync.Once)
+	if !ok {
+		t.Fatalf("Expected doOnce to be of type *sync.Once, but got %T", initOnce)
+	}
+
+	doOnce.Do(func() {
 		t.Helper()
 
 		// compute and store poolID -> poolHash map (computes hash of all files/dirs specified)
@@ -226,14 +242,21 @@ func storePoolHash(t *testing.T, poolID string, hashPaths []string, fragments ..
 
 // Gets precomputed integresql hash via poolID identifier from our synchronized map (see storePoolHash)
 func getPoolHash(t *testing.T, poolID string) string {
-	poolHash, ok := poolHashMap.Load(poolID)
+	t.Helper()
 
+	poolHash, ok := poolHashMap.Load(poolID)
 	if !ok {
 		t.Fatalf("Failed to get poolHash from poolID '%v'. Is poolHashMap initialized yet?", poolID)
 		return ""
 	}
 
-	return poolHash.(string)
+	hash, ok := poolHash.(string)
+	if !ok {
+		t.Fatalf("Expected poolHash to be of type string, but got %T", poolHash)
+		return ""
+	}
+
+	return hash
 }
 
 // Executes closure on an integresql **template** database
@@ -241,7 +264,6 @@ func execClosureNewIntegresTemplate(ctx context.Context, t *testing.T, poolHash 
 	t.Helper()
 
 	if err := client.SetupTemplateWithDBClient(ctx, poolHash, closure); err != nil {
-
 		// This error is exceptionally fatal as it hinders ANY future other
 		// test execution with this hash as the template was *never* properly
 		// setuped successfully. All GetTestDatabase will wait unti timeout
@@ -253,7 +275,6 @@ func execClosureNewIntegresTemplate(ctx context.Context, t *testing.T, poolHash 
 		}
 
 		t.Fatalf("Failed to setup template database (discarded) for poolHash %q: %v", poolHash, err)
-
 	}
 }
 
@@ -288,47 +309,48 @@ func execClosureNewIntegresDatabase(ctx context.Context, t *testing.T, poolHash 
 	}
 
 	// disallow any further refs to managed object after running the test
+	//nolint: wastedassign
 	db = nil
 }
 
 // ApplyMigrations applies all current database migrations to db
-func ApplyMigrations(t *testing.T, db *sql.DB) (countMigrations int, err error) {
+func ApplyMigrations(t *testing.T, db *sql.DB) (int, error) {
 	t.Helper()
 
 	// In case an old default sql-migrate migration table (named "gorp_migrations") still exists we rename it to the new name equivalent
 	// in sync with the settings in dbconfig.yml and config.DatabaseMigrationTable.
 	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to rename migrations table: %w", err)
 	}
 
 	migrations := &migrate.FileMigrationSource{Dir: migDir}
-	countMigrations, err = migrate.Exec(db, "postgres", migrations, migrate.Up)
+	countMigrations, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to apply migrations: %w", err)
 	}
 
-	return countMigrations, err
+	return countMigrations, nil
 }
 
 // ApplyTestFixtures applies all current test fixtures (insert) to db
-func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (countFixtures int, err error) {
+func ApplyTestFixtures(ctx context.Context, t *testing.T, db *sql.DB) (int, error) {
 	t.Helper()
 
 	inserts := fixtures.Inserts()
 
 	// insert test fixtures in an auto-managed db transaction
-	err = dbutil.WithTransaction(ctx, db, func(tx boil.ContextExecutor) error {
+	err := dbutil.WithTransaction(ctx, db, func(tx boil.ContextExecutor) error {
 		t.Helper()
 		for _, fixture := range inserts {
 			if err := fixture.Insert(ctx, tx, boil.Infer()); err != nil {
-				return err
+				return fmt.Errorf("failed to insert fixture: %w", err)
 			}
 		}
 		return nil
 	})
 
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to apply test fixtures: %w", err)
 	}
 
 	return len(inserts), nil
@@ -340,13 +362,13 @@ func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) e
 
 	// ensure file exists
 	if _, err := os.Stat(dumpFile); err != nil {
-		return err
+		return fmt.Errorf("failed to stat dump file: %w", err)
 	}
 
 	// we need to get the db name before being able to do anything.
 	var targetDB string
 	if err := db.QueryRowContext(ctx, "SELECT current_database();").Scan(&targetDB); err != nil {
-		return err
+		return fmt.Errorf("failed to get current database: %w", err)
 	}
 
 	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("cat %q | psql %q", dumpFile, targetDB)) //nolint:gosec
@@ -356,5 +378,5 @@ func ApplyDump(ctx context.Context, t *testing.T, db *sql.DB, dumpFile string) e
 		return errors.Wrap(err, string(combinedOutput))
 	}
 
-	return err
+	return nil
 }

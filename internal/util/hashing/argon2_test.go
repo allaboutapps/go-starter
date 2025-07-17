@@ -35,9 +35,11 @@ func BenchmarkHashPassword(b *testing.B) {
 	}
 }
 
-func TestComparePasswordAndHash(t *testing.T) {
-	hash := "$argon2id$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk"
+const (
+	hash = "$argon2id$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk"
+)
 
+func TestComparePasswordAndHash(t *testing.T) {
 	match, err := hashing.ComparePasswordAndHash("t3stp4ssw0rd", hash)
 	require.NoError(t, err)
 	assert.True(t, match)
@@ -48,8 +50,6 @@ func TestComparePasswordAndHash(t *testing.T) {
 }
 
 func BenchmarkComparePasswordAndHash(b *testing.B) {
-	hash := "$argon2id$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk"
-
 	for i := 0; i < b.N; i++ {
 		_, err := hashing.ComparePasswordAndHash("t3stp4ssw0rd", hash)
 		if err != nil {
@@ -59,8 +59,6 @@ func BenchmarkComparePasswordAndHash(b *testing.B) {
 }
 
 func BenchmarkCompareWrongPasswordAndHash(b *testing.B) {
-	hash := "$argon2id$v=19$m=65536,t=1,p=4$c8FqPHMT83tyxE2v0xDAFw$s2qmbRoRRbfyLIVFUzRwzE7F8PLjchpLKaV7Wf7tHgk"
-
 	for i := 0; i < b.N; i++ {
 		_, err := hashing.ComparePasswordAndHash("wr0ngt3stp4ssw0rd", hash)
 		if err != nil {

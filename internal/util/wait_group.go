@@ -15,13 +15,13 @@ var (
 // See https://stackoverflow.com/questions/32840687/timeout-for-waitgroup-wait
 // Note that the spawned goroutine to wg.Wait() gets leaked and will continue running detached
 func WaitTimeout(wg *sync.WaitGroup, timeout time.Duration) error {
-	c := make(chan struct{})
+	waitChan := make(chan struct{})
 	go func() {
-		defer close(c)
+		defer close(waitChan)
 		wg.Wait()
 	}()
 	select {
-	case <-c:
+	case <-waitChan:
 		return nil // completed normally
 	case <-time.After(timeout):
 		return ErrWaitTimeout // timed out

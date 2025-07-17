@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/models"
@@ -65,14 +66,14 @@ func (s *Service) SendToUser(ctx context.Context, user *dto.User, title string, 
 	}
 	log := util.LogFromContext(ctx)
 
-	for k, p := range s.provider {
+	for providerType, provider := range s.provider {
 		// get all registered tokens for provider
 		pushTokens, err := models.PushTokens(
-			models.PushTokenWhere.Provider.EQ(string(k)),
+			models.PushTokenWhere.Provider.EQ(string(providerType)),
 			models.PushTokenWhere.UserID.EQ(user.ID),
 		).All(ctx, s.DB)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get push tokens: %w", err)
 		}
 
 		var tokens []string
@@ -80,11 +81,11 @@ func (s *Service) SendToUser(ctx context.Context, user *dto.User, title string, 
 			tokens = append(tokens, token.Token)
 		}
 
-		responseSlice := p.SendMulticast(tokens, title, message)
+		responseSlice := provider.SendMulticast(tokens, title, message)
 		tokenToDelete := make([]string, 0)
 		for _, res := range responseSlice {
 			if res.Err != nil && res.Valid {
-				log.Debug().Err(res.Err).Str("token", res.Token).Str("provider", string(p.GetProviderType())).Msgf("Error while sending push message to provider with valid token.")
+				log.Debug().Err(res.Err).Str("token", res.Token).Str("provider", string(provider.GetProviderType())).Msgf("Error while sending push message to provider with valid token.")
 			}
 
 			if !res.Valid {
@@ -97,7 +98,7 @@ func (s *Service) SendToUser(ctx context.Context, user *dto.User, title string, 
 			models.PushTokenWhere.UserID.EQ(user.ID),
 		).DeleteAll(ctx, s.DB)
 		if err != nil {
-			log.Debug().Err(err).Str("provider", string(p.GetProviderType())).Msg("Could not delete invalid tokens for provider")
+			log.Debug().Err(err).Str("provider", string(provider.GetProviderType())).Msg("Could not delete invalid tokens for provider")
 			return err
 		}
 	}

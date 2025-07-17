@@ -54,14 +54,14 @@ func TestPostRegisterSuccess(t *testing.T) {
 			qm.Load(models.UserRels.AccessTokens),
 			qm.Load(models.UserRels.RefreshTokens),
 		).One(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, null.StringFrom(username), user.Username)
-		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
+		assert.True(t, user.LastAuthenticatedAt.Valid)
 		assert.Equal(t, now, user.LastAuthenticatedAt.Time)
 		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
 
 		assert.NotNil(t, user.R.AppUserProfile)
-		assert.Equal(t, false, user.R.AppUserProfile.LegalAcceptedAt.Valid)
+		assert.False(t, user.R.AppUserProfile.LegalAcceptedAt.Valid)
 
 		assert.Len(t, user.R.AccessTokens, 1)
 		assert.Equal(t, strfmt.UUID4(user.R.AccessTokens[0].Token), *response.AccessToken)
@@ -90,7 +90,7 @@ func TestPostRegisterWithConfirmationSuccess(t *testing.T) {
 	test.WithTestServerConfigurable(t, config, func(s *api.Server) {
 		ctx := t.Context()
 
-		username := "usernew@example.com"
+		username := "usernew-with-confirmation@example.com"
 		payload := test.GenericPayload{
 			"username": username,
 			"password": fixtures.PlainTestUserPassword,
@@ -113,19 +113,19 @@ func TestPostRegisterWithConfirmationSuccess(t *testing.T) {
 			qm.Load(models.UserRels.RefreshTokens),
 			qm.Load(models.UserRels.ConfirmationTokens),
 		).One(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, null.StringFrom(username), user.Username)
-		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
+		assert.True(t, user.LastAuthenticatedAt.Valid)
 		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
 		assert.False(t, user.IsActive)
 		assert.True(t, user.RequiresConfirmation)
 
 		assert.NotNil(t, user.R.AppUserProfile)
-		assert.Equal(t, false, user.R.AppUserProfile.LegalAcceptedAt.Valid)
+		assert.False(t, user.R.AppUserProfile.LegalAcceptedAt.Valid)
 
 		// expect the user to have no access or refresh tokens
-		assert.Len(t, user.R.AccessTokens, 0)
-		assert.Len(t, user.R.RefreshTokens, 0)
+		assert.Empty(t, user.R.AccessTokens)
+		assert.Empty(t, user.R.RefreshTokens)
 		require.Len(t, user.R.ConfirmationTokens, 1)
 		confirmationToken := user.R.ConfirmationTokens[0]
 
@@ -219,14 +219,14 @@ func TestPostRegisterSuccessLowercaseTrimWhitespaces(t *testing.T) {
 			qm.Load(models.UserRels.AccessTokens),
 			qm.Load(models.UserRels.RefreshTokens),
 		).One(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, null.StringFrom(usernameLowerTrimmed), user.Username)
-		assert.Equal(t, true, user.LastAuthenticatedAt.Valid)
+		assert.True(t, user.LastAuthenticatedAt.Valid)
 		assert.WithinDuration(t, s.Clock.Now(), user.LastAuthenticatedAt.Time, time.Second*10)
 		assert.EqualValues(t, s.Config.Auth.DefaultUserScopes, user.Scopes)
 
 		assert.NotNil(t, user.R.AppUserProfile)
-		assert.Equal(t, false, user.R.AppUserProfile.LegalAcceptedAt.Valid)
+		assert.False(t, user.R.AppUserProfile.LegalAcceptedAt.Valid)
 
 		assert.Len(t, user.R.AccessTokens, 1)
 		assert.Equal(t, strfmt.UUID4(user.R.AccessTokens[0].Token), *response.AccessToken)
@@ -267,7 +267,7 @@ func TestPostRegisterAlreadyExists(t *testing.T) {
 			qm.Load(models.UserRels.AccessTokens),
 			qm.Load(models.UserRels.RefreshTokens),
 		).One(ctx, s.DB)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, user.ID, fix.User1.ID)
 
 		assert.NotNil(t, user.R.AppUserProfile)

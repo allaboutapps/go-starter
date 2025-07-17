@@ -25,7 +25,7 @@ var (
 	ErrIncompatibleArgon2Version = errors.New("incompatible argon2 version")
 )
 
-func HashPassword(password string, params *Argon2Params) (hash string, err error) {
+func HashPassword(password string, params *Argon2Params) (string, error) {
 	salt, err := generateSalt(params.SaltLength)
 	if err != nil {
 		return "", err
@@ -39,7 +39,7 @@ func HashPassword(password string, params *Argon2Params) (hash string, err error
 	return fmt.Sprintf("$%s$v=%d$m=%d,t=%d,p=%d$%s$%s", Argon2HashID, argon2.Version, params.Memory, params.Time, params.Threads, b64Salt, b64Key), nil
 }
 
-func ComparePasswordAndHash(password string, hash string) (matches bool, err error) {
+func ComparePasswordAndHash(password string, hash string) (bool, error) {
 	params, salt, key, err := decodeArgon2Hash(hash)
 	if err != nil {
 		return false, err
@@ -65,9 +65,13 @@ func ComparePasswordAndHash(password string, hash string) (matches bool, err err
 	return true, nil
 }
 
-func decodeArgon2Hash(hash string) (params *Argon2Params, salt []byte, key []byte, err error) {
+const (
+	argon2HashParts = 6
+)
+
+func decodeArgon2Hash(hash string) (*Argon2Params, []byte, []byte, error) {
 	vals := strings.Split(hash, "$") // splits into array of 6 values, with val[0] being empty --> length/indicies "offset" by one
-	if len(vals) != 6 {
+	if len(vals) != argon2HashParts {
 		return nil, nil, nil, ErrInvalidArgon2Hash
 	}
 	if vals[1] != Argon2HashID {
@@ -75,7 +79,7 @@ func decodeArgon2Hash(hash string) (params *Argon2Params, salt []byte, key []byt
 	}
 
 	var version int
-	_, err = fmt.Sscanf(vals[2], "v=%d", &version)
+	_, err := fmt.Sscanf(vals[2], "v=%d", &version)
 	if err != nil {
 		return nil, nil, nil, ErrIncompatibleArgon2Version
 	}
@@ -83,18 +87,18 @@ func decodeArgon2Hash(hash string) (params *Argon2Params, salt []byte, key []byt
 		return nil, nil, nil, ErrIncompatibleArgon2Version
 	}
 
-	params = &Argon2Params{}
+	params := &Argon2Params{}
 	_, err = fmt.Sscanf(vals[3], "m=%d,t=%d,p=%d", &params.Memory, &params.Time, &params.Threads)
 	if err != nil {
 		return nil, nil, nil, ErrInvalidArgon2Hash
 	}
 
-	salt, err = base64.RawStdEncoding.DecodeString(vals[4])
+	salt, err := base64.RawStdEncoding.DecodeString(vals[4])
 	if err != nil {
 		return nil, nil, nil, ErrInvalidArgon2Hash
 	}
 
-	key, err = base64.RawStdEncoding.DecodeString(vals[5])
+	key, err := base64.RawStdEncoding.DecodeString(vals[5])
 	if err != nil {
 		return nil, nil, nil, ErrInvalidArgon2Hash
 	}

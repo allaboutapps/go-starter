@@ -16,6 +16,7 @@ const (
 	CTXKeyDisableLogger contextKey = "disable_logger"
 )
 
+//nolint:containedctx
 type detachedContext struct {
 	parent context.Context
 }

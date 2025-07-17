@@ -8,6 +8,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPrepareTestFile(t *testing.T) {
@@ -21,10 +22,10 @@ func TestPrepareTestFile(t *testing.T) {
 
 		path = filepath.Join(localBasePath, basePath, fileName)
 		_, err := os.Stat(path)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	_, err := os.Stat(path)
-	assert.Error(t, err)
-	assert.ErrorIs(t, err, os.ErrNotExist)
+	require.Error(t, err)
+	require.ErrorIs(t, err, os.ErrNotExist)
 }

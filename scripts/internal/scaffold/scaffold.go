@@ -36,12 +36,12 @@ type StorageResource struct {
 func ParseModel(path string) (*StorageResource, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read model file: %w", err)
 	}
 
 	regex, err := regexp.Compile(`type ([^\s]+) (struct {[^}]+})`)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to compile model expression regex: %w", err)
 	}
 
 	matches := regex.FindStringSubmatch(string(content))
@@ -50,7 +50,7 @@ func ParseModel(path string) (*StorageResource, error) {
 
 	node, err := parser.ParseExpr(expression)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse model expression: %w", err)
 	}
 
 	structType, ok := node.(*ast.StructType)
@@ -143,39 +143,48 @@ func toSwaggerResource(resource *StorageResource) *SwaggerResource {
 	return &swaggerResource
 }
 
+const (
+	propertyTypeString   = "string"
+	propertyTypeInteger  = "integer"
+	propertyTypeBoolean  = "boolean"
+	propertyTypeNumber   = "number"
+	propertyTypeDateTime = "date-time"
+	propertyTypeUUID4    = "uuid4"
+)
+
 func fieldToProperty(field Field) Property {
-	propertyType := "string" // Fallback type
+	propertyType := propertyTypeString // Fallback type
 	required := true
 	var format *string
 
 	switch field.Type.Name {
 	case "int":
-		propertyType = "integer"
+		propertyType = propertyTypeInteger
 	case "null.Int":
-		propertyType = "integer"
+		propertyType = propertyTypeInteger
 		required = false
 	case "bool":
-		propertyType = "boolean"
+		propertyType = propertyTypeBoolean
 	case "null.Bool":
-		propertyType = "boolean"
+		propertyType = propertyTypeBoolean
 		required = false
 	case "null.String":
-		propertyType = "string"
+		propertyType = propertyTypeString
 		required = false
 	case "types.Decimal":
-		propertyType = "number"
+		propertyType = propertyTypeNumber
 	case "types.NullDecimal":
-		propertyType = "number"
+		propertyType = propertyTypeNumber
 		required = false
 	case "time.Time":
-		format = swag.String("date-time")
+		format = swag.String(propertyTypeDateTime)
 	case "null.Time":
-		format = swag.String("date-time")
+		format = swag.String(propertyTypeDateTime)
 		required = false
 	}
 
 	if strings.Contains(field.Name, "ID") {
-		format = swag.String("uuid4")
+		format = swag.String(propertyTypeUUID4)
 	}
 
 	return Property{
@@ -266,7 +275,7 @@ func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath stri
 
 	if _, err := os.Stat(resourceBaseDir); os.IsNotExist(err) {
 		if err := os.Mkdir(resourceBaseDir, 0755); err != nil {
-			return err
+			return fmt.Errorf("failed to create resource base directory: %w", err)
 		}
 	}
 
