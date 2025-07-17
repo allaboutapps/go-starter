@@ -13,6 +13,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/metrics"
 	"database/sql"
 	"github.com/google/wire"
+	"testing"
 )
 
 import (
@@ -39,7 +40,8 @@ func InitNewServer(server config.Server) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	clock := NewClock(server)
+	v := NoTest()
+	clock := NewClock(v...)
 	authService := NewAuthService(server, db, clock)
 	localService := local.NewService(server, db, clock)
 	metricsService, err := metrics.New(server, db)
@@ -52,7 +54,7 @@ func InitNewServer(server config.Server) (*Server, error) {
 
 // InitNewServerWithDB returns a new Server instance with the given DB instance.
 // All the other components are initialized via go wire according to the configuration.
-func InitNewServerWithDB(server config.Server, db *sql.DB) (*Server, error) {
+func InitNewServerWithDB(server config.Server, db *sql.DB, t ...*testing.T) (*Server, error) {
 	mailer, err := NewMailer(server)
 	if err != nil {
 		return nil, err
@@ -65,7 +67,7 @@ func InitNewServerWithDB(server config.Server, db *sql.DB) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	clock := NewClock(server)
+	clock := NewClock(t...)
 	authService := NewAuthService(server, db, clock)
 	localService := local.NewService(server, db, clock)
 	metricsService, err := metrics.New(server, db)
