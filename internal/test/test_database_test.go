@@ -55,13 +55,13 @@ func TestWithTestDatabase(t *testing.T) {
 	test.WithTestDatabase(t, func(db1 *sql.DB) {
 		test.WithTestDatabase(t, func(db2 *sql.DB) {
 			var db1Name string
-			err := db1.QueryRow("SELECT current_database();").Scan(&db1Name)
+			err := db1.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db1Name)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			var db2Name string
-			err = db2.QueryRow("SELECT current_database();").Scan(&db2Name)
+			err = db2.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db2Name)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -77,29 +77,29 @@ func TestWithTestDatabaseFromDump(t *testing.T) {
 	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db1 *sql.DB) {
 		test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile}, func(db2 *sql.DB) {
 			var db1Name string
-			if err := db1.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
+			if err := db1.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db1Name); err != nil {
 				t.Fatal(err)
 			}
 
 			var db2Name string
-			if err := db2.QueryRow("SELECT current_database();").Scan(&db2Name); err != nil {
+			if err := db2.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db2Name); err != nil {
 				t.Fatal(err)
 			}
 
 			require.NotEqual(t, db1Name, db2Name)
 
-			if _, err := db2.Exec("DELETE FROM users WHERE true;"); err != nil {
+			if _, err := db2.ExecContext(t.Context(), "DELETE FROM users WHERE true;"); err != nil {
 				t.Fatal(err)
 			}
 
 			var userCount1 int
-			if err := db1.QueryRow("SELECT count(id) FROM users;").Scan(&userCount1); err != nil {
+			if err := db1.QueryRowContext(t.Context(), "SELECT count(id) FROM users;").Scan(&userCount1); err != nil {
 				t.Fatal(err)
 			}
 			require.Equal(t, 3, userCount1)
 
 			var userCount2 int
-			if err := db2.QueryRow("SELECT count(id) FROM users;").Scan(&userCount2); err != nil {
+			if err := db2.QueryRowContext(t.Context(), "SELECT count(id) FROM users;").Scan(&userCount2); err != nil {
 				t.Fatal(err)
 			}
 			require.Equal(t, 0, userCount2)
@@ -118,17 +118,17 @@ func TestWithTestDatabaseFromDumpAutoMigrateAndTestFixtures(t *testing.T) {
 				// db2: has migrations and testFixtures
 
 				var db0Name string
-				if err := db0.QueryRow("SELECT current_database();").Scan(&db0Name); err != nil {
+				if err := db0.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db0Name); err != nil {
 					t.Fatal(err)
 				}
 
 				var db1Name string
-				if err := db1.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
+				if err := db1.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db1Name); err != nil {
 					t.Fatal(err)
 				}
 
 				var db2Name string
-				if err := db2.QueryRow("SELECT current_database();").Scan(&db2Name); err != nil {
+				if err := db2.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db2Name); err != nil {
 					t.Fatal(err)
 				}
 
@@ -156,7 +156,7 @@ func TestWithTestDatabaseFromDumpGorp(t *testing.T) {
 	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: true}, func(db *sql.DB) {
 		// check that we properly renamed the "gorp_migrations" migration tracking table to config.DatabaseMigrationTable
 		var migrationsTableName string
-		if err := db.QueryRow(fmt.Sprintf("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s';", config.DatabaseMigrationTable)).Scan(&migrationsTableName); err != nil {
+		if err := db.QueryRowContext(t.Context(), fmt.Sprintf("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s';", config.DatabaseMigrationTable)).Scan(&migrationsTableName); err != nil {
 			t.Fatal(err)
 		}
 
@@ -164,14 +164,14 @@ func TestWithTestDatabaseFromDumpGorp(t *testing.T) {
 
 		// check that gorp_migrations does not exist!
 		var gorp string
-		err := db.QueryRow("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gorp_migrations';").Scan(&gorp)
+		err := db.QueryRowContext(t.Context(), "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gorp_migrations';").Scan(&gorp)
 
 		require.Error(t, err)
 
 		// we can expect that the '20200428064736-install-extension-uuid.sql' migration within the uuid_extension_only.sql is a very stable migrations.
 		// let's check if other migrations were applied...
 		var migrationsCount int
-		err = db.QueryRow("SELECT COUNT(table_name) FROM information_schema.tables WHERE table_schema = 'public';").Scan(&migrationsCount)
+		err = db.QueryRowContext(t.Context(), "SELECT COUNT(table_name) FROM information_schema.tables WHERE table_schema = 'public';").Scan(&migrationsCount)
 		require.NoError(t, err)
 
 		require.Greater(t, migrationsCount, 1)
@@ -181,7 +181,7 @@ func TestWithTestDatabaseFromDumpGorp(t *testing.T) {
 	test.WithTestDatabaseFromDump(t, test.DatabaseDumpConfig{DumpFile: dumpFile, ApplyMigrations: false}, func(db *sql.DB) {
 		// check that "gorp_migrations" migration tracking table still exists (as we have not set ApplyMigrations to true!)
 		var migrationsTableName string
-		if err := db.QueryRow("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gorp_migrations';").Scan(&migrationsTableName); err != nil {
+		if err := db.QueryRowContext(t.Context(), "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'gorp_migrations';").Scan(&migrationsTableName); err != nil {
 			t.Fatal(err)
 		}
 
@@ -193,13 +193,13 @@ func TestWithTestDatabaseEmpty(t *testing.T) {
 	test.WithTestDatabaseEmpty(t, func(db1 *sql.DB) {
 		test.WithTestDatabaseEmpty(t, func(db2 *sql.DB) {
 			var db1Name string
-			err := db1.QueryRow("SELECT current_database();").Scan(&db1Name)
+			err := db1.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db1Name)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			var db2Name string
-			err = db2.QueryRow("SELECT current_database();").Scan(&db2Name)
+			err = db2.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db2Name)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -219,7 +219,7 @@ func TestWithTestDatabaseEmpty(t *testing.T) {
 
 			// check user count
 			var usrCount int
-			if err := db1.QueryRow("SELECT count(id) FROM users;").Scan(&usrCount); err != nil {
+			if err := db1.QueryRowContext(t.Context(), "SELECT count(id) FROM users;").Scan(&usrCount); err != nil {
 				t.Fatal(err)
 			}
 

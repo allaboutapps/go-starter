@@ -1,3 +1,4 @@
+// nolint:revive
 package util
 
 func MergeStringMap(base map[string]string, toMerge map[string]string) map[string]string {

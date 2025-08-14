@@ -1,5 +1,6 @@
 //go:build !scripts
 
+// nolint:revive
 package util
 
 import (

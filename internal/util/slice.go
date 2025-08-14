@@ -1,3 +1,4 @@
+// nolint:revive
 package util
 
 // ContainsAllString checks whether the given string slice contains all strings provided.

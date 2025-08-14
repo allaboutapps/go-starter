@@ -61,7 +61,7 @@ func ApplyMigrations(ctx context.Context, serviceConfig config.Server) (int, err
 
 	// In case an old default sql-migrate migration table (named "gorp_migrations") still exists we rename it to the new name equivalent
 	// in sync with the settings in dbconfig.yml and config.DatabaseMigrationTable.
-	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
+	if _, err := db.ExecContext(ctx, fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
 		return 0, fmt.Errorf("failed to rename migrations table: %w", err)
 	}
 

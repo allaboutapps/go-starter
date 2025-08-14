@@ -1,3 +1,4 @@
+// nolint:revive
 package util
 
 import "github.com/go-openapi/swag"
