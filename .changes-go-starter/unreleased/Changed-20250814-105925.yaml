@@ -1,0 +1,3 @@
+kind: Changed
+body: Update to [golang:1.25.0-bookworm](https://hub.docker.com/layers/library/golang/1.25.0-bookworm/images/sha256-89bd1d243f3a5a48c9acc03e5fb01e97e0ba4874c249a54e693dee430f9ef74e) (requires `./docker-helper.sh --rebuild`)
+time: 2025-08-14T10:59:25.052650599Z
