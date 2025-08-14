@@ -11,9 +11,9 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/command"
 	dbutil "allaboutapps.dev/aw/go-starter/internal/util/db"
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func newSeed() *cobra.Command {

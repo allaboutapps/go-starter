@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/volatiletech/null/v8"
+import "github.com/aarondl/null/v8"
 
 type UpdatePushTokenRequest struct {
 	User          User

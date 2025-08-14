@@ -15,10 +15,10 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/util"
 
 	apitypes "allaboutapps.dev/aw/go-starter/internal/types"
+	"github.com/aarondl/sqlboiler/v4/types"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 const (

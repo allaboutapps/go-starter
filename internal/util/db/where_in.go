@@ -3,8 +3,8 @@ package db
 import (
 	"fmt"
 
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lib/pq"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // WhereIn was a copy from sqlboiler's WHERE IN query helpers since these don't get generated for nullable columns.

@@ -16,11 +16,11 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	dbutil "allaboutapps.dev/aw/go-starter/internal/util/db"
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/allaboutapps/integresql-client-go"
 	"github.com/allaboutapps/integresql-client-go/pkg/util"
 	"github.com/pkg/errors"
 	migrate "github.com/rubenv/sql-migrate"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var (

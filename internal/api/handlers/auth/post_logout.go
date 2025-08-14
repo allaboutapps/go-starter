@@ -8,8 +8,8 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
+	"github.com/aarondl/null/v8"
 	"github.com/labstack/echo/v4"
-	"github.com/volatiletech/null/v8"
 )
 
 func PostLogoutRoute(s *api.Server) *echo.Route {

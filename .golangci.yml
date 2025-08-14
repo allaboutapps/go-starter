@@ -119,7 +119,7 @@ linters:
         - error
         - empty
         - stdlib
-        - github.com/volatiletech/sqlboiler/v4/queries/qm.QueryMod
+        - github.com/aarondl/sqlboiler/v4/queries/qm.QueryMod
         - github.com/labstack/echo/v4.Context
         - github.com/dropbox/godropbox/time2.Clock
     godox:

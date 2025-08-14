@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/lib/pq"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 const (
