@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 // InnerJoinWithFilter returns an InnerJoin QueryMod formatted using the provided join tables and columns including an

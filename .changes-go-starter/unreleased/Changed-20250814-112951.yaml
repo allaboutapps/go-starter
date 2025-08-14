@@ -1,0 +1,15 @@
+kind: Changed
+body: |
+Dependency updates:
+  - Package replacement: [Replaced github.com/volatiletech packages with github.com/aarondl equivalents and bumped to latest versions](https://github.com/aarondl)
+  - Patch: [Bump github.com/gabriel-vasile/mimetype from v1.4.8 to v1.4.9](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.9)
+  - Patch: [Bump github.com/go-openapi/errors from v0.22.1 to v0.22.2](https://github.com/go-openapi/errors/releases/tag/v0.22.2)
+  - Patch: [Bump github.com/labstack/echo/v4 from v4.13.3 to v4.13.4](https://github.com/labstack/echo/releases/tag/v4.13.4)
+  - Minor: [Bump github.com/rubenv/sql-migrate from v1.7.1 to v1.8.0](https://github.com/rubenv/sql-migrate/releases/tag/v1.8.0)
+  - Minor: [Bump github.com/prometheus/client_golang from v1.21.1 to v1.23.0](https://github.com/prometheus/client_golang/releases/tag/v1.23.0)
+  - Minor: [Bump golang.org/x/crypto from v0.36.0 to v0.41.0](https://github.com/golang/crypto/releases/tag/v0.41.0)
+  - Minor: [Bump golang.org/x/mod from v0.24.0 to v0.26.0](https://github.com/golang/mod/releases/tag/v0.26.0)
+  - Minor: [Bump golang.org/x/sys from v0.31.0 to v0.35.0](https://github.com/golang/sys/releases/tag/v0.35.0)
+  - Minor: [Bump golang.org/x/text from v0.23.0 to v0.28.0](https://github.com/golang/text/releases/tag/v0.28.0)
+  - Minor: [Bump google.golang.org/api from v0.228.0 to v0.247.0](https://github.com/googleapis/google-api-go-client/releases/tag/v0.247.0)
+time: 2025-08-14T11:29:51.904654531Z

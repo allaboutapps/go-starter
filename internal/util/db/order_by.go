@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/types"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 func OrderBy(orderDir types.OrderDir, path ...string) qm.QueryMod {

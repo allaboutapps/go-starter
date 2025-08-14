@@ -130,12 +130,12 @@ func TestWithTestServerFromDump(t *testing.T) {
 	test.WithTestServerFromDump(t, dumpConfig, func(server1 *api.Server) {
 		test.WithTestServerConfigurableFromDump(t, serverConfig, dumpConfig, func(server2 *api.Server) {
 			var db1Name string
-			if err := server1.DB.QueryRow("SELECT current_database();").Scan(&db1Name); err != nil {
+			if err := server1.DB.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db1Name); err != nil {
 				t.Fatal(err)
 			}
 
 			var db2Name string
-			if err := server2.DB.QueryRow("SELECT current_database();").Scan(&db2Name); err != nil {
+			if err := server2.DB.QueryRowContext(t.Context(), "SELECT current_database();").Scan(&db2Name); err != nil {
 				t.Fatal(err)
 			}
 

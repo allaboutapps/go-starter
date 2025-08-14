@@ -16,11 +16,11 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test/fixtures"
 	pUtil "allaboutapps.dev/aw/go-starter/internal/util"
 	dbutil "allaboutapps.dev/aw/go-starter/internal/util/db"
+	"github.com/aarondl/sqlboiler/v4/boil"
 	"github.com/allaboutapps/integresql-client-go"
 	"github.com/allaboutapps/integresql-client-go/pkg/util"
 	"github.com/pkg/errors"
 	migrate "github.com/rubenv/sql-migrate"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var (
@@ -319,7 +319,7 @@ func ApplyMigrations(t *testing.T, db *sql.DB) (int, error) {
 
 	// In case an old default sql-migrate migration table (named "gorp_migrations") still exists we rename it to the new name equivalent
 	// in sync with the settings in dbconfig.yml and config.DatabaseMigrationTable.
-	if _, err := db.Exec(fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
+	if _, err := db.ExecContext(t.Context(), fmt.Sprintf("ALTER TABLE IF EXISTS gorp_migrations RENAME TO %s;", config.DatabaseMigrationTable)); err != nil {
 		return 0, fmt.Errorf("failed to rename migrations table: %w", err)
 	}
 

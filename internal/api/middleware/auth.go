@@ -15,11 +15,11 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/models"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/go-openapi/strfmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 var (

@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/volatiletech/sqlboiler/v4/queries"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/aarondl/sqlboiler/v4/queries"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 // QueryMods represents a slice of query mods, implementing the `queries.Applicator`

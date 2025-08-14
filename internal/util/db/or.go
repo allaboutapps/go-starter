@@ -1,6 +1,6 @@
 package db
 
-import "github.com/volatiletech/sqlboiler/v4/queries/qm"
+import "github.com/aarondl/sqlboiler/v4/queries/qm"
 
 // CombineWithOr receives a slice of query mods and returns a new slice with
 // a single query mod, combining all other query mods into an OR expression.
