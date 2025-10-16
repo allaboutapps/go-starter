@@ -1,6 +1,6 @@
 kind: Changed
 body: |
-Dependency updates:
+  Dependency updates:
   - Package replacement: [Replaced github.com/volatiletech packages with github.com/aarondl equivalents and bumped to latest versions](https://github.com/aarondl)
   - Patch: [Bump github.com/gabriel-vasile/mimetype from v1.4.8 to v1.4.9](https://github.com/gabriel-vasile/mimetype/releases/tag/v1.4.9)
   - Patch: [Bump github.com/go-openapi/errors from v0.22.1 to v0.22.2](https://github.com/go-openapi/errors/releases/tag/v0.22.2)
