@@ -8,6 +8,10 @@ on:
   #   types: [opened, reopened] # avoid running twice (on push above), see https://github.com/open-telemetry/opentelemetry-python/issues/1370
 env:
   DOCKER_ENV_FILE: ".github/workflows/docker.env"
+permissions:
+  security-events: write
+  actions: write
+  contents: read
 jobs:
   build-test:
     runs-on: ubuntu-latest
