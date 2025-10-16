@@ -1,3 +1,0 @@
-kind: Removed
-body: 'Remove the mailer option UseTLS (`SERVER_SMTP_USE_TLS`) in favour of Encryption (`SERVER_SMTP_ENCRYPTION`). **BREAKING**: If you were using the `SERVER_SMTP_USE_TLS` flag before to enable TLS, you will need to migrate to the `SERVER_SMTP_ENCRYPTION` setting of `tls`. See [Mailer UseTLS SERVER_SMTP_USE_TLS Deprecation](https://github.com/allaboutapps/go-starter/wiki/Mailer-UseTLS-SERVER_SMTP_USE_TLS-Deprecation)'
-time: 2025-04-29T13:49:34.04468951Z
