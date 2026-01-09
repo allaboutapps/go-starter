@@ -4,30 +4,33 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.25.12-bookworm AS development
+FROM golang:1.27.0-trixie AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Our Makefile / env fully supports parallel job execution
-ENV MAKEFLAGS "-j 8 --no-print-directory"
+ENV MAKEFLAGS="-j 8 --no-print-directory"
 
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
 # https://wiki.postgresql.org/wiki/Apt
 # run lsb_release -c inside the container to pick the proper repository flavor
-# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg, bookworm=>bookworm-pgdg
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
-    | tee /etc/apt/sources.list.d/pgdg.list \
-    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-    | apt-key add -
+# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg, trixie=>trixie-pgdg
+# Install required packages for adding repositories (gnupg, wget, ca-certificates)
+RUN apt-get update && apt-get install -y gnupg wget ca-certificates && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/apt/keyrings \
+    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ trixie-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 
 # Setup GPG key to install Trivy to locally scan for vulnerabilities
+# NOTE: Trixie (Debian 13) is not yet fully supported by the Trivy repo as of now.
 RUN mkdir -m 0755 -p /etc/apt/keyrings/ \
     && wget -O- https://aquasecurity.github.io/trivy-repo/deb/public.key | \
     gpg --dearmor | \
     tee /etc/apt/keyrings/trivy.gpg > /dev/null; \
     chmod 644 /etc/apt/keyrings/trivy.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb bookworm main" \
+    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" \
     | tee /etc/apt/sources.list.d/trivy.list
 
 # Install required system dependencies
@@ -64,7 +67,7 @@ RUN apt-get update \
     bsdmainutils \
     graphviz \
     xz-utils \
-    postgresql-client-17 \
+    postgresql-client-18 \
     icu-devtools \
     tmux \
     rsync \
@@ -81,7 +84,7 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
 
-ENV LANG en_US.UTF-8
+ENV LANG=en_US.UTF-8
 
 # sql pgFormatter: Integrates with vscode-pgFormatter (we pin pgFormatter.pgFormatterPath for the extension to this version)
 # requires perl to be installed
@@ -101,8 +104,8 @@ RUN mkdir -p /tmp/pgFormatter \
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.12.3/gotestsum_1.12.3_linux_${ARCH}.tar.gz" \
-    && tar xzf "gotestsum_1.12.3_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.13.0/gotestsum_1.13.0_linux_${ARCH}.tar.gz" \
+    && tar xzf "gotestsum_1.13.0_linux_${ARCH}.tar.gz" \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum
 
@@ -110,13 +113,13 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v2.4.0
+    | sh -s -- -b $(go env GOPATH)/bin v2.6.2
 
 # go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
 RUN ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
     && curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.29.0/swagger_linux_${ARCH}" \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.33.1/swagger_linux_${ARCH}" \
     && chmod +x /usr/local/bin/swagger
 
 # lichen: go license util
@@ -133,7 +136,7 @@ RUN go install github.com/spf13/cobra-cli@v1.3.0
 RUN go install golang.org/x/vuln/cmd/govulncheck@latest
 
 # changie: a tool to help manage changelogs
-RUN go install github.com/miniscruff/changie@v1.21.0
+RUN go install github.com/miniscruff/changie@v1.24.0
 
 # watchexec
 # https://github.com/watchexec/watchexec/releases
@@ -209,8 +212,8 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/home/$USERNA
 # E.g. "which golangci-lint" should report "/go/bin" not "/app/bin" (where VSCode will place it).
 # https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
 WORKDIR /app
-ENV GOBIN /app/bin
-ENV PATH $PATH:$GOBIN
+ENV GOBIN=/app/bin
+ENV PATH=$PATH:$GOBIN
 
 ### -----------------------
 # --- Stage: builder
@@ -239,9 +242,9 @@ RUN make go-build
 # https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
 # The :debug image provides a busybox shell to enter (base-debian10 only, not static).
 # https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian12:debug AS app
+FROM gcr.io/distroless/base-debian13:debug AS app
 
-# FROM debian:bookworm-slim AS app
+# FROM debian:trixie-slim AS app
 # RUN apt-get update \
 #     && apt-get install -y \
 #     #

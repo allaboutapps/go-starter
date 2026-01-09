@@ -71,7 +71,7 @@ const (
 )
 
 // for schema
-var publicHttpErrorTypeEnum []interface{}
+var publicHttpErrorTypeEnum []any
 
 func init() {
 	var res []PublicHTTPErrorType

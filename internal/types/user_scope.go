@@ -38,7 +38,7 @@ const (
 )
 
 // for schema
-var userScopeEnum []interface{}
+var userScopeEnum []any
 
 func init() {
 	var res []UserScope
