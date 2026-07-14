@@ -1,0 +1,313 @@
+# Woodpecker 3.x pipeline — converted from the legacy Drone 0.8 `.drone.yml`.
+#
+# Conversion notes (see the drone-to-woodpecker skill for the full ruleset):
+#  - `matrix` (1-row, set nothing) dropped; `alias` -> `variables`; `pipeline`
+#    map -> `steps` list; `group: X` -> `depends_on`; DRONE_* -> CI_*.
+#  - docker-socket sibling build kept (`docker:27-cli` + /var/run/docker.sock);
+#    repo must be marked --trusted-volumes on the server.
+#  - `plugins/gcr` publish rewritten as a plain docker login+tag+push step.
+#  - `aaa-drone-kubernetes` params -> `settings`, secrets -> `environment`/`from_secret`;
+#    write-back paths updated from the old `namespaces/...` to `clusters/...` layout.
+#
+# DAY-ONE VERIFY (things that couldn't be settled statically):
+#  - Local builder-image reuse: many steps run `image: <repo>-builder:<sha>`, an
+#    image built on the HOST docker daemon (not a registry). The agent must use
+#    the local image and NOT force-pull it. If test steps fail pulling the
+#    builder image, that's the cause.
+#  - The postgres service performance tuning (`-c fsync=off ...`) was passed via
+#    Drone's service `command:`, which Woodpecker services don't support. Dropped
+#    (it was a test-speed optimization only); postgres runs with defaults.
+#  - `when:` on services is unsupported and was dropped (services always start).
+
+variables:
+  # The image will be tagged with this, pushed to gcr and referenced in the k8s deploy
+  - &IMAGE_DEPLOY_TAG ${CI_COMMIT_SHA}
+  # The image name, lowercase repo name <owner>/<project>
+  - &IMAGE_DEPLOY_NAME ${CI_REPO,,}
+  # The intermediate builder image (built on the host daemon, reused as a step image)
+  - &IMAGE_BUILDER_ID ${CI_REPO,,}-builder:${CI_COMMIT_SHA}
+  # The full uniquely tagged app image
+  - &IMAGE_DEPLOY_ID ${CI_REPO,,}:${CI_COMMIT_SHA}
+
+  # ENV for executing within the test env (mirrors docker-compose.yml)
+  - &TEST_ENV
+    CI: ${CI}
+    PGDATABASE: &PGDATABASE "development"
+    PGUSER: &PGUSER "dbuser"
+    PGPASSWORD: &PGPASSWORD "dbpass"
+    PGHOST: &PGHOST "postgres"
+    PGPORT: &PGPORT "5432"
+    PGSSLMODE: &PGSSLMODE "disable"
+    PSQL_DBNAME: "spec"
+    PSQL_USER: *PGUSER
+    PSQL_PASS: *PGPASSWORD
+    PSQL_HOST: *PGHOST
+    PSQL_PORT: *PGPORT
+    PSQL_SSLMODE: *PGSSLMODE
+    PROJECT_ROOT_DIR: /app
+    SERVER_MANAGEMENT_SECRET: "mgmt-secret"
+
+  # Which build events trigger the main pipeline
+  - &BUILD_EVENTS [push, tag]
+  # Merge helper: only execute on a build event
+  - &WHEN_BUILD_EVENT
+    when:
+      event: *BUILD_EVENTS
+
+steps:
+  # ---------------------------------------------------------------------------
+  # BUILD  (drone group: build)
+  # ---------------------------------------------------------------------------
+  database-connection:
+    image: postgres:17.4-alpine
+    depends_on: []
+    commands:
+      - |
+        until psql -U $PGUSER -d $PGDATABASE -h postgres \
+         -c "SELECT 1;" >/dev/null 2>&1; do sleep 1; done
+      - |
+        psql -U $PGUSER -d $PGDATABASE -h postgres \
+          -c "SELECT name, setting FROM pg_settings;"
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  docker-build-builder:
+    image: docker:27-cli
+    depends_on: []
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      IMAGE_TAG: *IMAGE_BUILDER_ID
+    commands:
+      - "docker build --target builder --compress -t $${IMAGE_TAG} ."
+    <<: *WHEN_BUILD_EVENT
+
+  # ---------------------------------------------------------------------------
+  # BUILD APP  (drone group: build-app)
+  # ---------------------------------------------------------------------------
+  docker-build-app:
+    image: docker:27-cli
+    depends_on: [database-connection, docker-build-builder]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      IMAGE_TAG: *IMAGE_DEPLOY_ID
+    commands:
+      - "docker build --target app --compress -t $${IMAGE_TAG} ."
+    <<: *WHEN_BUILD_EVENT
+
+  # ---------------------------------------------------------------------------
+  # CHECK  (drone group: pre-test)
+  # ---------------------------------------------------------------------------
+  trivy-scan:
+    image: aquasec/trivy:latest
+    depends_on: [docker-build-app]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /server/drone/trivy-cache:/root/.cache/
+    environment:
+      IMAGE_TAG: *IMAGE_DEPLOY_ID
+    commands:
+      - "trivy image --exit-code 0 --no-progress $${IMAGE_TAG}"
+      - "trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress --ignore-unfixed $${IMAGE_TAG}"
+    <<: *WHEN_BUILD_EVENT
+
+  build-diff:
+    image: *IMAGE_BUILDER_ID # local host-daemon image (see day-one verify note)
+    depends_on: [docker-build-app]
+    commands:
+      - cd $PROJECT_ROOT_DIR # reuse go build cache from Dockerfile builder stage
+      - make tidy
+      - make build
+      - /bin/cp -Rf $PROJECT_ROOT_DIR/* $CI_WORKSPACE # switch back to ci workspace ...
+      - cd $CI_WORKSPACE
+      - "git diff --exit-code" # ... for git diffing (.git is .dockerignored)
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  # ---------------------------------------------------------------------------
+  # TEST  (drone group: test)
+  # ---------------------------------------------------------------------------
+  info:
+    image: *IMAGE_BUILDER_ID
+    depends_on: [trivy-scan, build-diff]
+    commands:
+      - cd $PROJECT_ROOT_DIR
+      - make info
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  test:
+    image: *IMAGE_BUILDER_ID
+    depends_on: [trivy-scan, build-diff]
+    commands:
+      - cd $PROJECT_ROOT_DIR
+      - make test
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  test-scripts:
+    image: *IMAGE_BUILDER_ID
+    depends_on: [trivy-scan, build-diff]
+    commands:
+      - cd $PROJECT_ROOT_DIR
+      - make test-scripts
+    environment: *TEST_ENV
+    when:
+      - repo: allaboutapps/AW-go-starter
+        event: *BUILD_EVENTS
+
+  git-compare-go-starter:
+    image: *IMAGE_BUILDER_ID
+    depends_on: [trivy-scan, build-diff]
+    commands:
+      - make git-compare-go-starter
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  swagger-codegen-cli:
+    image: swaggerapi/swagger-codegen-cli
+    depends_on: [trivy-scan, build-diff]
+    commands:
+      - "java -jar /opt/swagger-codegen-cli/swagger-codegen-cli.jar validate -i ./api/swagger.yml"
+    <<: *WHEN_BUILD_EVENT
+
+  binary-deps:
+    image: *IMAGE_BUILDER_ID
+    depends_on: [trivy-scan, build-diff]
+    commands:
+      - cd $PROJECT_ROOT_DIR
+      - make get-embedded-modules-count
+      - make get-embedded-modules
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  binary-licenses:
+    image: *IMAGE_BUILDER_ID
+    depends_on: [trivy-scan, build-diff]
+    commands:
+      - cd $PROJECT_ROOT_DIR
+      - make get-licenses
+    environment: *TEST_ENV
+    <<: *WHEN_BUILD_EVENT
+
+  docker-run-app:
+    image: docker:27-cli
+    depends_on: [trivy-scan, build-diff]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      <<: *TEST_ENV
+      IMAGE_TAG: *IMAGE_DEPLOY_ID
+    commands:
+      # NO network tests possible here (sibling containers, not on the per-build network)
+      - (env | grep "^\S*=" | grep -v -e "CI=" -e "CI_" -e "HOME=" -e "HOSTNAME=" -e "SHELL=" -e "PWD=" -e "PATH=") > .hostenv
+      - cat .hostenv
+      - "docker run --env-file .hostenv $${IMAGE_TAG} help"
+      - "docker run --env-file .hostenv $${IMAGE_TAG} -v"
+      - "docker run --env-file .hostenv $${IMAGE_TAG} env"
+    <<: *WHEN_BUILD_EVENT
+
+  # ---------------------------------------------------------------------------
+  # PUBLISH  (go-starter only; drone group: go-starter-publish)
+  # plugins/gcr -> plain docker login + tag + push (image already on host daemon)
+  # ---------------------------------------------------------------------------
+  go-starter-publish:
+    image: docker:27-cli
+    depends_on:
+      - info
+      - test
+      - test-scripts
+      - git-compare-go-starter
+      - swagger-codegen-cli
+      - binary-deps
+      - binary-licenses
+      - docker-run-app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      GCR_JSON_KEY:
+        from_secret: AAA_GCR_SERVICE_ACCOUNT_JSON
+      SRC_IMAGE: *IMAGE_DEPLOY_ID
+      GCR_REPO: eu.gcr.io/a3cloud-192413/${CI_REPO,,}
+    commands:
+      - echo "$GCR_JSON_KEY" | docker login -u _json_key --password-stdin https://eu.gcr.io
+      - |
+        for TAG in \
+          "build_${CI_PIPELINE_NUMBER}" \
+          "${CI_COMMIT_BRANCH//\//-}_${CI_COMMIT_SHA:0:10}" \
+          "${CI_COMMIT_SHA}" \
+          "latest" \
+          "${CI_COMMIT_BRANCH//\//-}" \
+          "${CI_COMMIT_SHA:0:10}"; do
+          docker tag "$${SRC_IMAGE}" "$${GCR_REPO}:$${TAG}"
+          docker push "$${GCR_REPO}:$${TAG}"
+        done
+    when:
+      - repo: allaboutapps/AW-go-starter
+        branch: [master]
+        event: [push, tag]
+
+  # ---------------------------------------------------------------------------
+  # DEPLOYMENT  (go-starter only; drone group: go-starter-deploy)
+  # aaa-drone-kubernetes: params -> settings, secrets -> environment/from_secret
+  # ---------------------------------------------------------------------------
+  go-starter-deploy:
+    # TODO(migration): pin this plugin image by @sha256 digest before go-live.
+    image: eu.gcr.io/a3cloud-192413/aw/aaa-drone-kubernetes:latest
+    depends_on: [go-starter-publish]
+    settings:
+      deployment: app
+      repo: eu.gcr.io/a3cloud-192413/${CI_REPO,,}
+      container: [app]
+      tag: *IMAGE_DEPLOY_TAG
+      gcr_service_account_email: drone-ci-a3cloud@a3cloud-192413.iam.gserviceaccount.com
+      mgmt_repo: https://github.com/allaboutapps/a3cloud-mgmt.git
+      mgmt_git_email: infrastructure+drone@allaboutapps.at
+      namespace: allaboutapps-go-starter-dev
+      # write-back path updated from legacy `namespaces/...` to the `clusters/...` layout
+      mgmt_deployment_yaml: clusters/a3cloud-dev/allaboutapps-go-starter/dev/app.deployment.yaml
+      skip_live_update: true
+      kubernetes_cluster: a3cloud-dev
+      # pre-sync migration job
+      job: pre-sync-migration
+      mgmt_job_yaml: clusters/a3cloud-dev/allaboutapps-go-starter/dev/application.yaml
+    environment:
+      KUBERNETES_SERVER:
+        from_secret: AAA_K8S_SERVER
+      KUBERNETES_CERT:
+        from_secret: AAA_K8S_SERVICE_ACCOUNT_CRT
+      KUBERNETES_TOKEN:
+        from_secret: AAA_K8S_SERVICE_ACCOUNT_TOKEN
+      GCR_SERVICE_ACCOUNT:
+        from_secret: AAA_GCR_SERVICE_ACCOUNT_JSON
+    when:
+      - repo: allaboutapps/AW-go-starter
+        branch: [master]
+        event: [push, tag]
+
+# Long-living services (hostname = service name). `when:` and postgres tuning
+# `command:` were dropped (unsupported on Woodpecker services) — see header.
+services:
+  env:
+    image: alpine
+    commands:
+      - "env | sort"
+
+  postgres:
+    image: postgres:17.4-alpine
+
+    environment:
+      POSTGRES_DB: *PGDATABASE
+      POSTGRES_USER: *PGUSER
+      POSTGRES_PASSWORD: *PGPASSWORD
+
+  integresql:
+    image: ghcr.io/allaboutapps/integresql:v1.1.0
+    environment:
+      PGHOST: *PGHOST
+      PGUSER: *PGUSER
+      PGPASSWORD: *PGPASSWORD
+
+  mailhog:
+    image: mailhog/mailhog
