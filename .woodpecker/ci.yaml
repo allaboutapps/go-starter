@@ -254,33 +254,32 @@ steps:
   # ---------------------------------------------------------------------------
   go-starter-deploy:
     # TODO(migration): pin this plugin image by @sha256 digest before go-live.
-    image: eu.gcr.io/a3cloud-192413/aw/aaa-drone-kubernetes:latest
+    image: eu.gcr.io/a3cloud-192413/allaboutapps/aw-aaa-drone-kubernetes@sha256:396fd4b39ca017b743e3bac2b2af5524ea6c5b638570a7ef631b900f2eae5031 # TEST-ONLY pin to dev build (has the CI_* netrc fix). Fleet standard is :latest once the fix is on the plugin master.
     depends_on: [go-starter-publish]
+    # Plugin inputs ALL go under `settings:` (Woodpecker maps settings.<key> ->
+    # PLUGIN_<KEY>, which is exactly what aaa-drone-kubernetes/update.sh reads,
+    # incl. the secrets). A plugin step must NOT also declare `environment:`.
     settings:
       deployment: app
       repo: eu.gcr.io/a3cloud-192413/${CI_REPO,,}
       container: [app]
       tag: *IMAGE_DEPLOY_TAG
       gcr_service_account_email: drone-ci-a3cloud@a3cloud-192413.iam.gserviceaccount.com
-      mgmt_repo: https://github.com/allaboutapps/a3cloud-mgmt.git
-      mgmt_git_email: infrastructure+drone@allaboutapps.at
       namespace: allaboutapps-go-starter-dev
       # write-back path updated from legacy `namespaces/...` to the `clusters/...` layout
       mgmt_deployment_yaml: clusters/a3cloud-dev/allaboutapps-go-starter/dev/app.deployment.yaml
+      mgmt_repo: https://github.com/allaboutapps/a3cloud-mgmt.git
+      mgmt_git_email: infrastructure+drone@allaboutapps.at
       skip_live_update: true
       kubernetes_cluster: a3cloud-dev
       # pre-sync migration job
       job: pre-sync-migration
       mgmt_job_yaml: clusters/a3cloud-dev/allaboutapps-go-starter/dev/application.yaml
-    environment:
-      KUBERNETES_SERVER:
-        from_secret: AAA_K8S_SERVER
-      KUBERNETES_CERT:
-        from_secret: AAA_K8S_SERVICE_ACCOUNT_CRT
-      KUBERNETES_TOKEN:
-        from_secret: AAA_K8S_SERVICE_ACCOUNT_TOKEN
-      GCR_SERVICE_ACCOUNT:
-        from_secret: AAA_GCR_SERVICE_ACCOUNT_JSON
+      # secrets -> PLUGIN_* via settings.from_secret (was a separate `environment:` block)
+      kubernetes_server: { from_secret: AAA_K8S_SERVER }
+      kubernetes_cert: { from_secret: AAA_K8S_SERVICE_ACCOUNT_CRT }
+      kubernetes_token: { from_secret: AAA_K8S_SERVICE_ACCOUNT_TOKEN }
+      gcr_service_account: { from_secret: AAA_GCR_SERVICE_ACCOUNT_JSON }
     when:
       - repo: allaboutapps/AW-go-starter
         branch: [master]
