@@ -4,7 +4,7 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.25.5-bookworm AS development
+FROM golang:1.25.12-bookworm AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -156,7 +156,10 @@ RUN mkdir -p /tmp/yq \
 
 # spectral: OpenAPI / JSON schema linter
 # https://github.com/stoplightio/spectral
-RUN curl -L https://raw.github.com/stoplightio/spectral/master/scripts/install.sh | sh
+# Pin v6.15.0: it's the last release that ships the `spectral-linux-x64` binary asset;
+# `latest` (>=v6.16.1) dropped binaries, so the upstream install.sh 404s. (-f: fail on HTTP error.)
+RUN curl -fL https://github.com/stoplightio/spectral/releases/download/v6.15.0/spectral-linux-x64 -o /usr/local/bin/spectral \
+    && chmod +x /usr/local/bin/spectral
 
 # gsdev
 # The sole purpose of the "gsdev" cli util is to provide a handy short command for the following (all args are passed):

@@ -253,8 +253,8 @@ steps:
   # aaa-drone-kubernetes: params -> settings, secrets -> environment/from_secret
   # ---------------------------------------------------------------------------
   go-starter-deploy:
-    # TODO(migration): pin this plugin image by @sha256 digest before go-live.
-    image: eu.gcr.io/a3cloud-192413/allaboutapps/aw-aaa-drone-kubernetes@sha256:396fd4b39ca017b743e3bac2b2af5524ea6c5b638570a7ef631b900f2eae5031 # TEST-ONLY pin to dev build (has the CI_* netrc fix). Fleet standard is :latest once the fix is on the plugin master.
+    # Fleet standard: current path on :latest (plugin's own CI rebuilds :latest from master).
+    image: eu.gcr.io/a3cloud-192413/allaboutapps/aw-aaa-drone-kubernetes:latest
     depends_on: [go-starter-publish]
     # Plugin inputs ALL go under `settings:` (Woodpecker maps settings.<key> ->
     # PLUGIN_<KEY>, which is exactly what aaa-drone-kubernetes/update.sh reads,
