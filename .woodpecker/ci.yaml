@@ -272,9 +272,9 @@ steps:
       mgmt_git_email: infrastructure+drone@allaboutapps.at
       skip_live_update: true
       kubernetes_cluster: a3cloud-dev
-      # pre-sync migration job
-      job: pre-sync-migration
-      mgmt_job_yaml: clusters/a3cloud-dev/allaboutapps-go-starter/dev/application.yaml
+      # (pre-sync migration job removed — go-starter no longer ships one; the mgmt
+      #  application.yaml is just the ArgoCD Application, so `job`/`mgmt_job_yaml`
+      #  pointed at a non-existent Job and the plugin exited 1 after the deploy patch.)
       # secrets -> PLUGIN_* via settings.from_secret (was a separate `environment:` block)
       kubernetes_server: { from_secret: AAA_K8S_SERVER }
       kubernetes_cert: { from_secret: AAA_K8S_SERVICE_ACCOUNT_CRT }
