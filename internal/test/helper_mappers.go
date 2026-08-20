@@ -26,7 +26,7 @@ func GetMapFromStructByTag(tag string, input any) map[string]string {
 			continue
 		}
 		field := val.Field(i)
-		if field.Kind() == reflect.Ptr {
+		if field.Kind() == reflect.Pointer {
 			if !field.IsNil() {
 				res[tagvalue] = fmt.Sprintf("%v", field.Elem().Interface())
 			}
@@ -51,7 +51,7 @@ func GetMapFromStruct(input any) map[string]string {
 	for i := 0; i < inputType.NumField(); i++ {
 		field := inputType.Field(i)
 		fieldValue := val.Field(i)
-		if fieldValue.Kind() == reflect.Ptr {
+		if fieldValue.Kind() == reflect.Pointer {
 			if !fieldValue.IsNil() {
 				res[field.Name] = fmt.Sprintf("%v", fieldValue.Elem().Interface())
 			}

@@ -7,7 +7,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/api/httperrors"
 	"allaboutapps.dev/aw/go-starter/internal/types"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/stretchr/testify/require"
 )
 
@@ -41,13 +41,13 @@ func TestHTTPErrorAdditionalData(t *testing.T) {
 }
 
 var valErrs = append(make([]*types.HTTPValidationErrorDetail, 0, 2), &types.HTTPValidationErrorDetail{
-	Key:   swag.String("test1"),
-	In:    swag.String("body.test1"),
-	Error: swag.String("ValidationError"),
+	Key:   conv.Pointer("test1"),
+	In:    conv.Pointer("body.test1"),
+	Error: conv.Pointer("ValidationError"),
 }, &types.HTTPValidationErrorDetail{
-	Key:   swag.String("test2"),
-	In:    swag.String("body.test2"),
-	Error: swag.String("Validation Error"),
+	Key:   conv.Pointer("test2"),
+	In:    conv.Pointer("body.test2"),
+	Error: conv.Pointer("Validation Error"),
 })
 
 func TestHTTPValidationErrorSimple(t *testing.T) {

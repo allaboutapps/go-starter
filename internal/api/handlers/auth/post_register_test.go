@@ -18,7 +18,7 @@ import (
 	"github.com/aarondl/null/v8"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -103,7 +103,7 @@ func TestPostRegisterWithConfirmationSuccess(t *testing.T) {
 		var response types.RegisterResponse
 		test.ParseResponseAndValidate(t, res, &response)
 
-		assert.True(t, swag.BoolValue(response.RequiresConfirmation))
+		assert.True(t, conv.Value(response.RequiresConfirmation))
 
 		// expect the user to be normally created
 		user, err := models.Users(
@@ -153,7 +153,7 @@ func TestPostRegisterWithConfirmationSuccess(t *testing.T) {
 		test.ParseResponseAndValidate(t, registerAgainRes, &registerAgainResponse)
 
 		// expect the confirmation to be required
-		assert.True(t, swag.BoolValue(registerAgainResponse.RequiresConfirmation))
+		assert.True(t, conv.Value(registerAgainResponse.RequiresConfirmation))
 
 		confirmationTokenCount, err := user.ConfirmationTokens().Count(ctx, s.DB)
 		require.NoError(t, err)
@@ -168,7 +168,7 @@ func TestPostRegisterWithConfirmationSuccess(t *testing.T) {
 
 		var registerLaterAgainResponse types.RegisterResponse
 		test.ParseResponseAndValidate(t, registerLaterAgainRes, &registerLaterAgainResponse)
-		assert.True(t, swag.BoolValue(registerLaterAgainResponse.RequiresConfirmation))
+		assert.True(t, conv.Value(registerLaterAgainResponse.RequiresConfirmation))
 
 		confirmationTokens, err := models.ConfirmationTokens(
 			models.ConfirmationTokenWhere.UserID.EQ(user.ID),

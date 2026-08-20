@@ -4,7 +4,7 @@ package util
 import (
 	"math"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 )
 
 func IntPtrToInt64Ptr(num *int) *int64 {
@@ -12,7 +12,7 @@ func IntPtrToInt64Ptr(num *int) *int64 {
 		return nil
 	}
 
-	return swag.Int64(int64(*num))
+	return conv.Pointer(int64(*num))
 }
 
 func Int64PtrToIntPtr(num *int64) *int {
@@ -20,7 +20,7 @@ func Int64PtrToIntPtr(num *int64) *int {
 		return nil
 	}
 
-	return swag.Int(int(*num))
+	return conv.Pointer(int(*num))
 }
 
 func IntToInt32Ptr(num int) *int32 {
@@ -28,5 +28,5 @@ func IntToInt32Ptr(num int) *int32 {
 		return nil
 	}
 
-	return swag.Int32(int32(num))
+	return conv.Pointer(int32(num))
 }

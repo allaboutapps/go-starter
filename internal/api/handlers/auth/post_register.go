@@ -8,7 +8,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"allaboutapps.dev/aw/go-starter/internal/util/url"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,7 +30,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 
 		result, err := s.Auth.Register(ctx, dto.RegisterRequest{
 			Username: username,
-			Password: swag.StringValue(body.Password),
+			Password: conv.Value(body.Password),
 		})
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to register user")
@@ -40,7 +40,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 		if !result.RequiresConfirmation {
 			loginResult, err := s.Auth.Login(ctx, dto.LoginRequest{
 				Username: username,
-				Password: swag.StringValue(body.Password),
+				Password: conv.Value(body.Password),
 			})
 			if err != nil {
 				log.Debug().Err(err).Msg("Failed to authenticate user after registration")
@@ -66,7 +66,7 @@ func postRegisterHandler(s *api.Server) echo.HandlerFunc {
 		}
 
 		return util.ValidateAndReturn(c, http.StatusAccepted, &types.RegisterResponse{
-			RequiresConfirmation: swag.Bool(result.RequiresConfirmation),
+			RequiresConfirmation: conv.Pointer(result.RequiresConfirmation),
 		})
 	}
 }

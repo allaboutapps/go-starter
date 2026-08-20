@@ -31,9 +31,9 @@ func ILike(val string, path ...string) qm.QueryMod {
 // The query is split on whitespace characters and for each word an escaped
 // ILIKE with prefix and suffix wildcard will be generated.
 func ILikeSearch(query string, path ...string) qm.QueryMod {
-	res := []qm.QueryMod{}
-
 	terms := likeQueryWhiteSpaceRegex.Split(strings.TrimSpace(query), -1)
+
+	res := make([]qm.QueryMod, 0, len(terms))
 	for _, t := range terms {
 		res = append(res, ILike("%"+EscapeLike(t)+"%", path...))
 	}

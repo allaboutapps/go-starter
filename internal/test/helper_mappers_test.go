@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/test"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,8 +27,8 @@ func TestGetMapFromStruct(t *testing.T) {
 		},
 		D: 2.3,
 		E: true,
-		F: swag.String("stringPtr"),
-		G: swag.Int(5),
+		F: conv.Pointer("stringPtr"),
+		G: conv.Pointer(5),
 	}
 
 	xMap := test.GetMapFromStruct(data)
@@ -61,8 +61,8 @@ func TestGetMapFromStructByTag(t *testing.T) {
 		},
 		D: 2.3,
 		E: true,
-		F: swag.String("stringPtr"),
-		G: swag.Int(5),
+		F: conv.Pointer("stringPtr"),
+		G: conv.Pointer(5),
 	}
 
 	xMap := test.GetMapFromStructByTag("x", data)

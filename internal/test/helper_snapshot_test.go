@@ -16,7 +16,7 @@ import (
 
 	apitypes "allaboutapps.dev/aw/go-starter/internal/types"
 	"github.com/aarondl/sqlboiler/v4/types"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -38,7 +38,7 @@ func TestSnapshot(t *testing.T) {
 		A: "foo",
 		B: 1,
 		C: true,
-		D: swag.String("bar"),
+		D: conv.Pointer("bar"),
 	}
 
 	test.Snapshoter.Save(t, data, helloWorld)
@@ -61,7 +61,7 @@ func TestSnapshotWithReplacer(t *testing.T) {
 		A:  "foo",
 		B:  1,
 		C:  true,
-		D:  swag.String("bar"),
+		D:  conv.Pointer("bar"),
 	}
 
 	replacer := func(s string) string {
@@ -85,7 +85,7 @@ func TestSnapshotShouldFail(t *testing.T) {
 		A: "fo",
 		B: 1,
 		C: true,
-		D: swag.String("bar"),
+		D: conv.Pointer("bar"),
 	}
 
 	tMock := new(mocks.TestingT)
@@ -111,7 +111,7 @@ func TestSnapshotWithUpdate(t *testing.T) {
 		A: "fo",
 		B: 1,
 		C: true,
-		D: swag.String("bar"),
+		D: conv.Pointer("bar"),
 	}
 
 	tMock := new(mocks.TestingT)
@@ -137,7 +137,7 @@ func TestSnapshotNotExists(t *testing.T) {
 		A: "foo",
 		B: 1,
 		C: true,
-		D: swag.String("bar"),
+		D: conv.Pointer("bar"),
 	}
 
 	defer func() {
@@ -174,7 +174,7 @@ func TestSnapshotSkipFields(t *testing.T) {
 		A:  "foo",
 		B:  1,
 		C:  true,
-		D:  swag.String("bar"),
+		D:  conv.Pointer("bar"),
 	}
 
 	test.Snapshoter.Skip([]string{"ID"}).Save(t, data)
@@ -199,7 +199,7 @@ func TestSnapshotSkipPrefixedFields(t *testing.T) {
 		OtherIDStr:  "id str",
 		OtherIDInt:  4,
 		OtherIDBool: true,
-		OtherIDPTR:  swag.String("ID str ptr"),
+		OtherIDPTR:  conv.Pointer("ID str ptr"),
 		OtherIDStruct: struct{ ID string }{
 			ID: "foo",
 		},
@@ -258,7 +258,7 @@ func TestSnapshotWithLabel(t *testing.T) {
 		A: "foo",
 		B: 1,
 		C: true,
-		D: swag.String("bar"),
+		D: conv.Pointer("bar"),
 	}
 
 	test.Snapshoter.Label("_A").Save(t, data)
@@ -278,7 +278,7 @@ func TestSnapshotWithLocation(t *testing.T) {
 		A: "foo",
 		B: 1,
 		C: true,
-		D: swag.String("bar"),
+		D: conv.Pointer("bar"),
 	}
 
 	location := filepath.Join(util.GetProjectRootDir(), "/internal/test/testdata")

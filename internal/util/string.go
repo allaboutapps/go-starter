@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 )
 
 var (
@@ -136,7 +136,7 @@ func ToUsernameFormat(s string) string {
 // NonEmptyOrNil returns a pointer to passed string if it is not empty. Passing empty strings returns nil instead.
 func NonEmptyOrNil(s string) *string {
 	if len(s) > 0 {
-		return swag.String(s)
+		return conv.Pointer(s)
 	}
 
 	return nil

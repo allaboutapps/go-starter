@@ -4,22 +4,24 @@
 # --- https://hub.docker.com/_/golang
 # --- https://github.com/microsoft/vscode-remote-try-go/blob/master/.devcontainer/Dockerfile
 ### -----------------------
-FROM golang:1.25.12-bookworm AS development
+FROM golang:1.27.0-trixie AS development
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Our Makefile / env fully supports parallel job execution
-ENV MAKEFLAGS "-j 8 --no-print-directory"
+ENV MAKEFLAGS="-j 8 --no-print-directory"
 
 # postgresql-support: Add the official postgres repo to install the matching postgresql-client tools of your stack
 # https://wiki.postgresql.org/wiki/Apt
 # run lsb_release -c inside the container to pick the proper repository flavor
-# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg, bookworm=>bookworm-pgdg
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" \
-    | tee /etc/apt/sources.list.d/pgdg.list \
-    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-    | apt-key add -
+# e.g. stretch=>stretch-pgdg, buster=>buster-pgdg, bullseye=>bullseye-pgdg, trixie=>trixie-pgdg
+# Install required packages for adding repositories (gnupg, wget, ca-certificates)
+RUN apt-get update && apt-get install -y gnupg wget ca-certificates && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/apt/keyrings \
+    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ trixie-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 
 # Setup GPG key to install Trivy to locally scan for vulnerabilities
 RUN mkdir -m 0755 -p /etc/apt/keyrings/ \
@@ -27,7 +29,7 @@ RUN mkdir -m 0755 -p /etc/apt/keyrings/ \
     gpg --dearmor | \
     tee /etc/apt/keyrings/trivy.gpg > /dev/null; \
     chmod 644 /etc/apt/keyrings/trivy.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb bookworm main" \
+    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb trixie main" \
     | tee /etc/apt/sources.list.d/trivy.list
 
 # Install required system dependencies
@@ -64,7 +66,7 @@ RUN apt-get update \
     bsdmainutils \
     graphviz \
     xz-utils \
-    postgresql-client-17 \
+    postgresql-client-18 \
     icu-devtools \
     tmux \
     rsync \
@@ -81,7 +83,7 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
 
-ENV LANG en_US.UTF-8
+ENV LANG=en_US.UTF-8
 
 # sql pgFormatter: Integrates with vscode-pgFormatter (we pin pgFormatter.pgFormatterPath for the extension to this version)
 # requires perl to be installed
@@ -89,9 +91,9 @@ ENV LANG en_US.UTF-8
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v5.5.tar.gz \
-    && tar xzf v5.5.tar.gz \
-    && cd pgFormatter-5.5 \
+    && wget https://github.com/darold/pgFormatter/archive/v5.10.tar.gz \
+    && tar xzf v5.10.tar.gz \
+    && cd pgFormatter-5.10 \
     && perl Makefile.PL \
     && make && make install \
     && rm -rf /tmp/pgFormatter
@@ -101,22 +103,35 @@ RUN mkdir -p /tmp/pgFormatter \
 RUN mkdir -p /tmp/gotestsum \
     && cd /tmp/gotestsum \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.12.3/gotestsum_1.12.3_linux_${ARCH}.tar.gz" \
-    && tar xzf "gotestsum_1.12.3_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/gotestyourself/gotestsum/releases/download/v1.13.0/gotestsum_1.13.0_linux_${ARCH}.tar.gz" \
+    && tar xzf "gotestsum_1.13.0_linux_${ARCH}.tar.gz" \
     && cp gotestsum /usr/local/bin/gotestsum \
     && rm -rf /tmp/gotestsum
 
 # go linting: (this package should NOT be installed via go get)
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v2.4.0
+# We fetch the release tarball directly instead of piping the upstream install.sh.
+# That script greps the checksums file for the tarball name unanchored, and since
+# v2.12.0 the release also ships a "<tarball>.sbom.json" entry, so the grep returns two
+# lines and the comparison against the single computed hash can never succeed. It is
+# therefore unusable for >= v2.12.0 (v2.11.4 and older still have a single match), and
+# upstream no longer documents the script for CI installs anyway.
+RUN mkdir -p /tmp/golangci-lint \
+    && cd /tmp/golangci-lint \
+    && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && wget "https://github.com/golangci/golangci-lint/releases/download/v2.13.0/golangci-lint-2.13.0-linux-${ARCH}.tar.gz" \
+    && wget -O- "https://github.com/golangci/golangci-lint/releases/download/v2.13.0/golangci-lint-2.13.0-checksums.txt" \
+    | grep "golangci-lint-2.13.0-linux-${ARCH}.tar.gz$" | sha256sum -c - \
+    && tar xzf "golangci-lint-2.13.0-linux-${ARCH}.tar.gz" \
+    && cp "golangci-lint-2.13.0-linux-${ARCH}/golangci-lint" "$(go env GOPATH)/bin/golangci-lint" \
+    && rm -rf /tmp/golangci-lint
 
 # go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
 RUN ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
     && curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.29.0/swagger_linux_${ARCH}" \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.36.4/swagger_linux_${ARCH}" \
     && chmod +x /usr/local/bin/swagger
 
 # lichen: go license util
@@ -130,18 +145,19 @@ RUN go install github.com/uw-labs/lichen@v0.1.7
 RUN go install github.com/spf13/cobra-cli@v1.3.0
 
 # govulncheck: go vulnerability checker
-RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+# https://github.com/golang/vuln/releases
+RUN go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
 
 # changie: a tool to help manage changelogs
-RUN go install github.com/miniscruff/changie@v1.21.0
+RUN go install github.com/miniscruff/changie@v1.25.2
 
 # watchexec
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/v1.25.1/watchexec-1.25.1-$(arch)-unknown-linux-musl.tar.xz \
-    && tar xf watchexec-1.25.1-$(arch)-unknown-linux-musl.tar.xz \
-    && cp watchexec-1.25.1-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/v2.5.1/watchexec-2.5.1-$(arch)-unknown-linux-musl.tar.xz \
+    && tar xf watchexec-2.5.1-$(arch)-unknown-linux-musl.tar.xz \
+    && cp watchexec-2.5.1-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # yq
@@ -149,16 +165,17 @@ RUN mkdir -p /tmp/watchexec \
 RUN mkdir -p /tmp/yq \
     && cd /tmp/yq \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/mikefarah/yq/releases/download/v4.53.4/yq_linux_${ARCH}.tar.gz" \
     && tar xzf "yq_linux_${ARCH}.tar.gz" \
     && cp "yq_linux_${ARCH}" /usr/local/bin/yq \
     && rm -rf /tmp/yq
 
 # spectral: OpenAPI / JSON schema linter
 # https://github.com/stoplightio/spectral
-# Pin v6.15.0: it's the last release that ships the `spectral-linux-x64` binary asset;
-# `latest` (>=v6.16.1) dropped binaries, so the upstream install.sh 404s. (-f: fail on HTTP error.)
-RUN curl -fL https://github.com/stoplightio/spectral/releases/download/v6.15.0/spectral-linux-x64 -o /usr/local/bin/spectral \
+# We fetch the release binary directly instead of piping the upstream install.sh: it always
+# resolves to `latest`, and v6.16.0 shipped without binary assets, which made the script 404.
+# Assets are published again since v6.16.1, but pin explicitly. (-f: fail on HTTP error.)
+RUN curl -fL https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-linux-x64 -o /usr/local/bin/spectral \
     && chmod +x /usr/local/bin/spectral
 
 # gsdev
@@ -209,8 +226,8 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/home/$USERNA
 # E.g. "which golangci-lint" should report "/go/bin" not "/app/bin" (where VSCode will place it).
 # https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md#walk-through
 WORKDIR /app
-ENV GOBIN /app/bin
-ENV PATH $PATH:$GOBIN
+ENV GOBIN=/app/bin
+ENV PATH=$PATH:$GOBIN
 
 ### -----------------------
 # --- Stage: builder
@@ -239,9 +256,9 @@ RUN make go-build
 # https://github.com/GoogleContainerTools/distroless/blob/master/base/README.md
 # The :debug image provides a busybox shell to enter (base-debian10 only, not static).
 # https://github.com/GoogleContainerTools/distroless#debug-images
-FROM gcr.io/distroless/base-debian12:debug AS app
+FROM gcr.io/distroless/base-debian13:debug AS app
 
-# FROM debian:bookworm-slim AS app
+# FROM debian:trixie-slim AS app
 # RUN apt-get update \
 #     && apt-get install -y \
 #     #

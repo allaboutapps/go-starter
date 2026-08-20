@@ -16,7 +16,7 @@ BEGIN
     FROM
         pg_catalog.pg_constraint c
         /* enumerated key column numbers per foreign key */
-    CROSS JOIN LATERAL unnest(c.conkey)
+        CROSS JOIN LATERAL unnest(c.conkey)
     WITH ORDINALITY AS x (attnum, n)
     /* name for each key column */
     JOIN pg_catalog.pg_attribute a ON a.attnum = x.attnum

@@ -16,7 +16,7 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 	// Verify if structPtr is a pointer to a struct
 	inputParamStructType := reflect.TypeOf(structPtr)
 	if inputParamStructType == nil ||
-		inputParamStructType.Kind() != reflect.Ptr ||
+		inputParamStructType.Kind() != reflect.Pointer ||
 		inputParamStructType.Elem().Kind() != reflect.Struct {
 		return nil, errors.New("invalid input structPtr param: should be a pointer to a struct")
 	}
@@ -24,7 +24,7 @@ func GetFieldsImplementing[T any](structPtr interface{}, interfaceObject *T) ([]
 	inputParamIfcType := reflect.TypeOf(interfaceObject)
 	// Verify if interfaceObject is a pointer to an interface
 	if inputParamIfcType == nil ||
-		inputParamIfcType.Kind() != reflect.Ptr ||
+		inputParamIfcType.Kind() != reflect.Pointer ||
 		inputParamIfcType.Elem().Kind() != reflect.Interface {
 		return nil, errors.New("invalid input interfaceObject param: should be a pointer to an interface")
 	}

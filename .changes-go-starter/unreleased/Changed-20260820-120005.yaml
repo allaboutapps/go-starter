@@ -1,0 +1,12 @@
+kind: Changed
+body: |-
+  Update pinned dev tooling (requires `./docker-helper.sh --rebuild`)
+    - [golangci-lint `v2.4.0` → `v2.13.0`](https://github.com/golangci/golangci-lint/releases/tag/v2.13.0), the release that adds go1.27 support
+    - [go-swagger `v0.29.0` → `v0.36.4`](https://github.com/go-swagger/go-swagger/releases/tag/v0.36.4), which also pulls the `go-openapi` stack forward: `runtime` v0.28.0 → v0.33.0, `strfmt` v0.23.0 → v0.27.0, `validate` v0.24.0 → v0.26.3, `errors` v0.22.2 → v0.22.8
+    - [changie `v1.21.0` → `v1.25.2`](https://github.com/miniscruff/changie/releases/tag/v1.25.2), [yq `v4.40.5` → `v4.53.4`](https://github.com/mikefarah/yq/releases/tag/v4.53.4), [watchexec `v1.25.1` → `v2.5.1`](https://github.com/watchexec/watchexec/releases/tag/v2.5.1), [pgFormatter `v5.5` → `v5.10`](https://github.com/darold/pgFormatter/releases/tag/v5.10), [spectral `v6.15.0` → `v6.16.3`](https://github.com/stoplightio/spectral/releases/tag/v6.16.3)
+    - `govulncheck` is now pinned to `v1.7.0`; it was the only tool installed via `@latest` and therefore the only thing making image builds non-reproducible
+    - `docker:27-cli` → `docker:29.7.2-cli` in the Woodpecker pipeline
+    - golangci-lint is now fetched as a release tarball with an explicit checksum verification instead of piping the upstream `install.sh`. That script cannot install `>= v2.12.0`: it greps the checksums file for the tarball name **unanchored**, and since v2.12.0 the release also ships a `<tarball>.sbom.json` entry, so the grep returns two lines and the comparison can never succeed.
+    - `gomodguard` was renamed to `gomodguard_v2` in `.golangci.yml` (deprecated upstream since golangci-lint v2.12.0).
+    - Expect new lint findings in your own code after this jump. What we hit and how each was resolved: [docs/migration-guides/go-swagger-and-golangci-lint.md](docs/migration-guides/go-swagger-and-golangci-lint.md)
+time: 2026-08-20T12:00:05.000000000Z

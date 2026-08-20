@@ -3,7 +3,7 @@
 # Conversion notes (see the drone-to-woodpecker skill for the full ruleset):
 #  - `matrix` (1-row, set nothing) dropped; `alias` -> `variables`; `pipeline`
 #    map -> `steps` list; `group: X` -> `depends_on`; DRONE_* -> CI_*.
-#  - docker-socket sibling build kept (`docker:27-cli` + /var/run/docker.sock);
+#  - docker-socket sibling build kept (`docker:29.7.2-cli` + /var/run/docker.sock);
 #    repo must be marked --trusted-volumes on the server.
 #  - `plugins/gcr` publish rewritten as a plain docker login+tag+push step.
 #  - `aaa-drone-kubernetes` params -> `settings`, secrets -> `environment`/`from_secret`;
@@ -59,7 +59,7 @@ steps:
   # BUILD  (drone group: build)
   # ---------------------------------------------------------------------------
   database-connection:
-    image: postgres:17.4-alpine
+    image: postgres:18.6-alpine # should be the same version as used in .drone.yml, .woodpecker/ci.yaml, .github/workflows, Dockerfile and live
     depends_on: []
     commands:
       - |
@@ -72,7 +72,7 @@ steps:
     <<: *WHEN_BUILD_EVENT
 
   docker-build-builder:
-    image: docker:27-cli
+    image: docker:29.7.2-cli
     depends_on: []
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -86,7 +86,7 @@ steps:
   # BUILD APP  (drone group: build-app)
   # ---------------------------------------------------------------------------
   docker-build-app:
-    image: docker:27-cli
+    image: docker:29.7.2-cli
     depends_on: [database-connection, docker-build-builder]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -192,7 +192,7 @@ steps:
     <<: *WHEN_BUILD_EVENT
 
   docker-run-app:
-    image: docker:27-cli
+    image: docker:29.7.2-cli
     depends_on: [trivy-scan, build-diff]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -213,7 +213,7 @@ steps:
   # plugins/gcr -> plain docker login + tag + push (image already on host daemon)
   # ---------------------------------------------------------------------------
   go-starter-publish:
-    image: docker:27-cli
+    image: docker:29.7.2-cli
     depends_on:
       - info
       - test
@@ -294,7 +294,7 @@ services:
       - "env | sort"
 
   postgres:
-    image: postgres:17.4-alpine
+    image: postgres:18.6-alpine # should be the same version as used in .drone.yml, .woodpecker/ci.yaml, .github/workflows, Dockerfile and live
 
     environment:
       POSTGRES_DB: *PGDATABASE

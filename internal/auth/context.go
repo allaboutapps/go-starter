@@ -5,7 +5,7 @@ import (
 
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -72,7 +72,7 @@ func AccessTokenFromContext(ctx context.Context) *string {
 		return nil
 	}
 
-	return swag.String(token)
+	return conv.Pointer(token)
 }
 
 // AccessTokenFromEchoContext returns the access token model of the token used to authentication from an echo context. If no authentication

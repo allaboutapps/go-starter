@@ -165,8 +165,7 @@ import (
     "{{ .Module }}/internal/types"
     "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
-    "github.com/go-openapi/strfmt/conv"
-    "github.com/go-openapi/swag"
+    "github.com/go-openapi/swag/conv"
     "github.com/labstack/echo/v4"
 )
 
@@ -210,8 +209,7 @@ import (
     "{{ .Module }}/internal/types"
     "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
-    "github.com/go-openapi/strfmt/conv"
-    "github.com/go-openapi/swag"
+    "github.com/go-openapi/swag/conv"
     "github.com/labstack/echo/v4"
 )
 
@@ -248,8 +246,7 @@ import (
     "{{ .Module }}/internal/types"
     "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
-    "github.com/go-openapi/strfmt/conv"
-    "github.com/go-openapi/swag"
+    "github.com/go-openapi/swag/conv"
     "github.com/labstack/echo/v4"
 )
 
@@ -291,8 +288,7 @@ import (
     "{{ .Module }}/internal/types"
     "{{ .Module }}/internal/util"
     "github.com/go-openapi/strfmt"
-    "github.com/go-openapi/strfmt/conv"
-    "github.com/go-openapi/swag"
+    "github.com/go-openapi/swag/conv"
     "github.com/labstack/echo/v4"
 )
 

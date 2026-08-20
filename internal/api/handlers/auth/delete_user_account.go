@@ -8,7 +8,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,7 +29,7 @@ func deleteUserAccountHandler(s *api.Server) echo.HandlerFunc {
 
 		err := s.Auth.DeleteUserAccount(ctx, dto.DeleteUserAccountRequest{
 			User:            *user,
-			CurrentPassword: swag.StringValue(body.CurrentPassword),
+			CurrentPassword: conv.Value(body.CurrentPassword),
 		})
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to delete user")

@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -69,7 +69,7 @@ func TestGetFieldsImplementingNoFields(t *testing.T) {
 	assert.Empty(t, structPrivateFields)
 
 	// No fields returned if struct fields are primitive
-	structPrimitive := testStructPrimitives{X: 12, Y: "y", XPtr: swag.Int(15), YPtr: swag.String("YPtr")}
+	structPrimitive := testStructPrimitives{X: 12, Y: "y", XPtr: conv.Pointer(15), YPtr: conv.Pointer("YPtr")}
 	structPrimitiveFields, err := util.GetFieldsImplementing(&structPrimitive, (*readInterface)(nil))
 	require.NoError(t, err)
 	assert.Empty(t, structPrimitiveFields)

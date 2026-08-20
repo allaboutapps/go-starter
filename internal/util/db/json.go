@@ -90,7 +90,7 @@ func whereJSON(table string, column string, filter interface{}, level int) []qm.
 			case reflect.Struct:
 				qms = append(qms, whereJSON(table, column, filterValueField.Interface(), level+1)...)
 				continue
-			case reflect.Ptr:
+			case reflect.Pointer:
 				if !filterValueField.IsValid() || filterValueField.IsNil() {
 					continue
 				}
