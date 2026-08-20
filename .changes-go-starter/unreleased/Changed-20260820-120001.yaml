@@ -1,0 +1,12 @@
+kind: Changed
+body: |-
+  **BREAKING** Bump Postgres from `postgres:17.4-alpine` to `postgres:18.6-alpine`
+    - **A Postgres 18 server cannot read a Postgres 17 data directory. There is no in-place upgrade path — a running deployment needs an explicit `pg_upgrade` or a dump/restore, and skipping this leaves the database refusing to start.**
+    - In addition, the official Postgres image changed its data layout in 18: `PGDATA` moved from `/var/lib/postgresql/data` to `/var/lib/postgresql/<major>/docker`, and the declared `VOLUME` moved from `/var/lib/postgresql/data` to `/var/lib/postgresql`. Our `docker-compose.yml` was updated accordingly (`pgvolume:/var/lib/postgresql`).
+    - **If you keep the old `pgvolume:/var/lib/postgresql/data` mount, Postgres 18 still starts up perfectly happily — but it writes to an anonymous volume instead, so it comes up with an empty database and every write is silently discarded on the next `docker compose down`.** This failure mode is easy to miss because nothing errors.
+    - Before rolling out this change:
+      - **Local development**: run `docker compose down -v` *before* rebuilding. Your local database is recreated from scratch; run `make sql-reset && make sql-spec-reset && make sql-spec-migrate && make all` afterwards. If you kept anything valuable in your local database, dump it first with `pg_dump`.
+      - **Live / staging**: plan the major upgrade explicitly (`pg_upgrade` or dump/restore), and verify your managed-database provider actually offers Postgres 18 before merging.
+      - If you deliberately want to stay on Postgres 17 for now, pin `postgres:17.11-alpine` and `postgresql-client-17` and keep the `pgvolume:/var/lib/postgresql/data` mount — but note the mount path and the client version must match the server major you choose.
+    - See the official Postgres release notes for the intermediate majors: https://www.postgresql.org/docs/release/18.0/
+time: 2026-08-20T12:00:01.000000000Z

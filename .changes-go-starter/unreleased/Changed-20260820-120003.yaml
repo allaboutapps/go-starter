@@ -1,0 +1,11 @@
+kind: Changed
+body: |-
+  **BREAKING** Re-forked our go-swagger server templates in `api/templates/server` from upstream v0.36.4
+    - `builder.gotmpl` and `parameter.gotmpl` are forks of upstream templates that had not been refreshed since Feb/Jun 2020. They no longer work with the current generator: the `comment` and `blockcomment` template functions were replaced by `lineComment` / `blockComment` (with different semantics — `blockComment` now emits the `/* */` wrapper itself, which produced nested, invalid comments), and parameter docs moved from block to line comments.
+    - Rather than patching a 6-year-old fork, both were rebased onto the upstream v0.36.4 templates with only our customizations re-applied, each marked with `BEGIN/END CUSTOM BY AAA` and now documented inline:
+      - the `query` / `param` / `form` struct tags, needed because we bind through `echo.DefaultBinder` rather than go-swagger's generated server
+      - the standalone `Validate(strfmt.Registry) error` method, which is what makes the generated `Params` types satisfy `go-openapi/runtime.Validatable` — the interface every `internal/util.BindAndValidate*` helper accepts
+      - the supporting `customsliceparamvalidator` / nullable / recursive-array validation plumbing
+    - **If your project has its own modifications to these two templates, they are not preserved — diff your versions against the pre-upgrade files and re-apply your changes on top of the new upstream base.** Run `make swagger` afterwards and review the diff in `internal/types/`.
+    - The stock `BindRequest` is still generated but remains unused by this project.
+time: 2026-08-20T12:00:03.000000000Z
