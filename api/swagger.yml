@@ -16,9 +16,12 @@ paths:
                 Returns an human readable string about the current service status.
                 In addition to readiness probes, it performs actual write probes.
                 Note that /-/healthy is private (shielded by the mgmt-secret) as it may expose sensitive information about your service.
-            operationId: GetHealthyRoute
             produces:
                 - text/plain
+            tags:
+                - common
+            summary: Get healthy (liveness probe)
+            operationId: GetHealthyRoute
             responses:
                 "200":
                     description: Ready.
@@ -26,67 +29,67 @@ paths:
                     description: Not ready.
             security:
                 - Management: []
-            summary: Get healthy (liveness probe)
-            tags:
-                - common
     /-/ready:
         get:
             description: |-
                 This endpoint returns 200 when the service is ready to serve traffic.
                 Does read-only probes apart from the general server ready state.
                 Note that /-/ready is typically public (and not shielded by a mgmt-secret), we thus prevent information leakage here and only return `"Ready."`.
-            operationId: GetReadyRoute
             produces:
                 - text/plain
+            tags:
+                - common
+            summary: Get ready (readiness probe)
+            operationId: GetReadyRoute
             responses:
                 "200":
                     description: Ready.
                 "521":
                     description: Not ready.
-            summary: Get ready (readiness probe)
-            tags:
-                - common
     /-/version:
         get:
             description: This endpoint returns the module name, commit and build-date baked into the app binary.
-            operationId: GetVersionRoute
             produces:
                 - text/plain
+            tags:
+                - common
+            summary: Get version
+            operationId: GetVersionRoute
             responses:
                 "200":
                     description: ModuleName @ Commit (BuildDate)
             security:
                 - Management: []
-            summary: Get version
-            tags:
-                - common
     /.well-known/apple-app-site-association:
         get:
             description: Returns the Apple App Site Association file.
+            tags:
+                - well-known
+            summary: Apple App Site Association
             operationId: GetAppleAppSiteAssociationRoute
             responses:
                 "200":
                     description: Apple App Site Association
-            summary: Apple App Site Association
-            tags:
-                - well-known
     /.well-known/assetlinks.json:
         get:
             description: Returns the Android Digital Asset Links file.
+            tags:
+                - well-known
+            summary: Android Digital Asset Links
             operationId: GetAndroidDigitalAssetLinksRoute
             responses:
                 "200":
                     description: Android Digital Asset Links
-            summary: Android Digital Asset Links
-            tags:
-                - well-known
     /api/v1/auth/account:
         delete:
             description: Completely delete the user account. This action is irreversible and therefore requires additional password authentication.
+            tags:
+                - auth
+            summary: Delete user account
             operationId: DeleteUserAccountRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/deleteUserAccountPayload'
             responses:
@@ -106,18 +109,18 @@ paths:
                         $ref: '#/definitions/publicHttpError'
             security:
                 - Bearer: []
-            summary: Delete user account
-            tags:
-                - auth
     /api/v1/auth/change-password:
         post:
             description: |-
                 After successful password change, all current access and refresh tokens are
                 invalidated and a new set of auth tokens is returned
+            tags:
+                - auth
+            summary: Change local user's password
             operationId: PostChangePasswordRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/postChangePasswordPayload'
             responses:
@@ -139,19 +142,19 @@ paths:
                         $ref: '#/definitions/publicHttpError'
             security:
                 - Bearer: []
-            summary: Change local user's password
-            tags:
-                - auth
     /api/v1/auth/forgot-password:
         post:
             description: |-
                 Initiates a password reset for a local user, sending an email with a password
                 reset link to the provided email address if a user account exists. Will always
                 succeed, even if no user was found in order to prevent user enumeration
+            tags:
+                - auth
+            summary: Initiate password reset for local user
             operationId: PostForgotPasswordRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/postForgotPasswordPayload'
             responses:
@@ -161,19 +164,19 @@ paths:
                     description: PublicHTTPValidationError
                     schema:
                         $ref: '#/definitions/publicHttpValidationError'
-            summary: Initiate password reset for local user
-            tags:
-                - auth
     /api/v1/auth/forgot-password/complete:
         post:
             description: |-
                 Completes a password reset for a local user, using the password reset token sent via email
                 to confirm user access, setting the new password if successful. All current access and refresh
                 tokens are invalidated and a new set of auth tokens is returned
+            tags:
+                - auth
+            summary: Completes password reset for local user
             operationId: PostForgotPasswordCompleteRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/postForgotPasswordCompletePayload'
             responses:
@@ -197,16 +200,16 @@ paths:
                     description: PublicHTTPError, type `TOKEN_EXPIRED`
                     schema:
                         $ref: '#/definitions/publicHttpError'
-            summary: Completes password reset for local user
-            tags:
-                - auth
     /api/v1/auth/login:
         post:
             description: Returns an access and refresh token on successful authentication
+            tags:
+                - auth
+            summary: Login with local user
             operationId: PostLoginRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/postLoginPayload'
             responses:
@@ -226,18 +229,18 @@ paths:
                     description: PublicHTTPError, type `USER_DEACTIVATED`
                     schema:
                         $ref: '#/definitions/publicHttpError'
-            summary: Login with local user
-            tags:
-                - auth
     /api/v1/auth/logout:
         post:
             description: |-
                 Logs the local user out, destroying the provided access token.
                 A refresh token can optionally be provided, destroying it as well if found.
+            tags:
+                - auth
+            summary: Log out local user
             operationId: PostLogoutRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/postLogoutPayload'
             responses:
@@ -253,18 +256,18 @@ paths:
                         $ref: '#/definitions/publicHttpError'
             security:
                 - Bearer: []
-            summary: Log out local user
-            tags:
-                - auth
     /api/v1/auth/refresh:
         post:
             description: |-
                 Returns a fresh set of access and refresh tokens if a valid refresh token was provided.
                 The old refresh token used to authenticate the request will be invalidated.
+            tags:
+                - auth
+            summary: Refresh tokens
             operationId: PostRefreshRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/postRefreshPayload'
             responses:
@@ -284,36 +287,36 @@ paths:
                     description: PublicHTTPError, type `USER_DEACTIVATED`
                     schema:
                         $ref: '#/definitions/publicHttpError'
-            summary: Refresh tokens
-            tags:
-                - auth
     /api/v1/auth/register:
         get:
-            operationId: GetCompleteRegisterRoute
-            parameters:
-                - description: Registration token to complete the registration process
-                  format: uuid4
-                  in: query
-                  name: token
-                  required: true
-                  type: string
             produces:
                 - text/html
+            tags:
+                - auth
+            summary: Page to complete registration
+            operationId: GetCompleteRegisterRoute
+            parameters:
+                - type: string
+                  format: uuid4
+                  description: Registration token to complete the registration process
+                  name: token
+                  in: query
+                  required: true
             responses:
                 "200":
                     description: Page to complete registration
-            summary: Page to complete registration
-            tags:
-                - auth
         post:
             description: |
                 Registers a local user. If the registration process requires a confirmation
                 the status code `202` is returned without auth tokens. Afterwards the registration needs to be confirmed
                 using the `POST /api/v1/auth/register/{registrationToken}` endpoint.
+            tags:
+                - auth
+            summary: Registers a local user
             operationId: PostRegisterRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/postRegisterPayload'
             responses:
@@ -333,20 +336,20 @@ paths:
                     description: PublicHTTPError, type `USER_ALREADY_EXISTS`
                     schema:
                         $ref: '#/definitions/publicHttpError'
-            summary: Registers a local user
-            tags:
-                - auth
     /api/v1/auth/register/{registrationToken}:
         post:
             description: Completes registration for a local user
+            tags:
+                - auth
+            summary: Complete registration
             operationId: PostCompleteRegisterRoute
             parameters:
-                - description: Registration token to complete the registration process
+                - type: string
                   format: uuid4
-                  in: path
+                  description: Registration token to complete the registration process
                   name: registrationToken
+                  in: path
                   required: true
-                  type: string
             responses:
                 "200":
                     description: PostLoginResponse
@@ -354,14 +357,14 @@ paths:
                         $ref: '#/definitions/postLoginResponse'
                 "401":
                     description: Unauthorized
-            summary: Complete registration
-            tags:
-                - auth
     /api/v1/auth/userinfo:
         get:
             description: |-
                 Returns user information compatible with the OpenID Connect Core 1.0 specification.
                 Information returned depends on the requesting user as some data is only available if an app user profile exists.
+            tags:
+                - auth
+            summary: Get user info
             operationId: GetUserInfoRoute
             responses:
                 "200":
@@ -370,19 +373,19 @@ paths:
                         $ref: '#/definitions/getUserInfoResponse'
             security:
                 - Bearer: []
-            summary: Get user info
-            tags:
-                - auth
     /api/v1/push/token:
         put:
             description: |-
                 Adds a push token for the given provider to the current user.
                 If the oldToken is present it will be deleted.
                 Currently only the provider 'fcm' is supported.
+            tags:
+                - push
+            summary: Adds a push token to the user
             operationId: PutUpdatePushTokenRoute
             parameters:
-                - in: body
-                  name: Payload
+                - name: Payload
+                  in: body
                   schema:
                     $ref: '#/definitions/putUpdatePushTokenPayload'
             responses:
@@ -398,63 +401,65 @@ paths:
                         $ref: '#/definitions/publicHttpError'
             security:
                 - Bearer: []
-            summary: Adds a push token to the user
-            tags:
-                - push
     /swagger.yml:
         get:
             description: |-
                 OpenAPI Specification ver. 2 (fka Swagger)
                 Returns our handcrafted and validated `swagger.yml`.
-            operationId: GetSwaggerRoute
             produces:
                 - text/plain
+            tags:
+                - common
+            summary: Get swagger.yml
+            operationId: GetSwaggerRoute
             responses:
                 "200":
                     description: OK
-            summary: Get swagger.yml
-            tags:
-                - common
 definitions:
     deleteUserAccountPayload:
+        type: object
+        required:
+            - currentPassword
         properties:
             currentPassword:
                 description: Current password of user
-                example: correct horse battery staple
+                type: string
                 maxLength: 500
                 minLength: 1
-                type: string
-        required:
-            - currentPassword
-        type: object
+                example: correct horse battery staple
     getUserInfoResponse:
-        properties:
-            email:
-                description: Email address of user, if available
-                example: user@example.com
-                format: email
-                maxLength: 255
-                type: string
-            scopes:
-                description: Auth-Scopes of the user, if available
-                example:
-                    - app
-                items:
-                    $ref: '#/definitions/userScope'
-                type: array
-            sub:
-                description: ID of user
-                example: 82ebdfad-c586-4407-a873-4cc1c33d56fc
-                type: string
-            updated_at:
-                description: Unix timestamp the user's info was last updated at
-                example: 1591960808
-                type: integer
+        type: object
         required:
             - sub
             - updated_at
-        type: object
+        properties:
+            email:
+                description: Email address of user, if available
+                type: string
+                format: email
+                maxLength: 255
+                example: user@example.com
+            scopes:
+                description: Auth-Scopes of the user, if available
+                type: array
+                items:
+                    $ref: '#/definitions/userScope'
+                example:
+                    - app
+            sub:
+                description: ID of user
+                type: string
+                example: 82ebdfad-c586-4407-a873-4cc1c33d56fc
+            updated_at:
+                description: Unix timestamp the user's info was last updated at
+                type: integer
+                example: 1591960808
     httpValidationErrorDetail:
+        type: object
+        required:
+            - key
+            - in
+            - error
         properties:
             error:
                 description: Error describing field validation failure
@@ -465,173 +470,169 @@ definitions:
             key:
                 description: Key of field failing validation
                 type: string
-        required:
-            - key
-            - in
-            - error
-        type: object
     orderDir:
+        type: string
         enum:
             - asc
             - desc
-        type: string
     postChangePasswordPayload:
-        properties:
-            currentPassword:
-                description: Current password of user
-                example: correct horse battery staple
-                maxLength: 500
-                minLength: 1
-                type: string
-            newPassword:
-                description: New password to set for user
-                example: correct horse battery staple
-                maxLength: 500
-                minLength: 1
-                type: string
+        type: object
         required:
             - currentPassword
             - newPassword
-        type: object
-    postForgotPasswordCompletePayload:
         properties:
-            password:
-                description: New password to set for user
-                example: correct horse battery staple
+            currentPassword:
+                description: Current password of user
+                type: string
                 maxLength: 500
                 minLength: 1
+                example: correct horse battery staple
+            newPassword:
+                description: New password to set for user
                 type: string
-            token:
-                description: Password reset token sent via email
-                example: ec16f032-3c44-4148-bbcc-45557466fa74
-                format: uuid4
-                type: string
+                maxLength: 500
+                minLength: 1
+                example: correct horse battery staple
+    postForgotPasswordCompletePayload:
+        type: object
         required:
             - token
             - password
-        type: object
+        properties:
+            password:
+                description: New password to set for user
+                type: string
+                maxLength: 500
+                minLength: 1
+                example: correct horse battery staple
+            token:
+                description: Password reset token sent via email
+                type: string
+                format: uuid4
+                example: ec16f032-3c44-4148-bbcc-45557466fa74
     postForgotPasswordPayload:
+        type: object
+        required:
+            - username
         properties:
             username:
                 description: Username to initiate password reset for
-                example: user@example.com
+                type: string
                 format: email
                 maxLength: 255
                 minLength: 1
-                type: string
-        required:
-            - username
-        type: object
+                example: user@example.com
     postLoginPayload:
-        properties:
-            password:
-                description: Password of user to authenticate as
-                example: correct horse battery staple
-                maxLength: 500
-                minLength: 1
-                type: string
-            username:
-                description: Username of user to authenticate as
-                example: user@example.com
-                format: email
-                maxLength: 255
-                minLength: 1
-                type: string
+        type: object
         required:
             - username
             - password
-        type: object
-    postLoginResponse:
         properties:
-            access_token:
-                description: Access token required for accessing protected API endpoints
-                example: c1247d8d-0d65-41c4-bc86-ec041d2ac437
-                format: uuid4
+            password:
+                description: Password of user to authenticate as
                 type: string
-            expires_in:
-                description: Access token expiry in seconds
-                example: 86400
-                format: int64
-                type: integer
-            refresh_token:
-                description: Refresh token for refreshing the access token once it expires
-                example: 1dadb3bd-50d8-485d-83a3-6111392568f0
-                format: uuid4
+                maxLength: 500
+                minLength: 1
+                example: correct horse battery staple
+            username:
+                description: Username of user to authenticate as
                 type: string
-            token_type:
-                description: Type of access token, will always be `bearer`
-                example: bearer
-                type: string
+                format: email
+                maxLength: 255
+                minLength: 1
+                example: user@example.com
+    postLoginResponse:
+        type: object
         required:
             - access_token
             - token_type
             - expires_in
             - refresh_token
-        type: object
+        properties:
+            access_token:
+                description: Access token required for accessing protected API endpoints
+                type: string
+                format: uuid4
+                example: c1247d8d-0d65-41c4-bc86-ec041d2ac437
+            expires_in:
+                description: Access token expiry in seconds
+                type: integer
+                format: int64
+                example: 86400
+            refresh_token:
+                description: Refresh token for refreshing the access token once it expires
+                type: string
+                format: uuid4
+                example: 1dadb3bd-50d8-485d-83a3-6111392568f0
+            token_type:
+                description: Type of access token, will always be `bearer`
+                type: string
+                example: bearer
     postLogoutPayload:
+        type: object
         properties:
             refresh_token:
                 description: Optional refresh token to delete while logging out
-                example: 700ebed3-40f7-4211-bc83-a89b22b9875e
-                format: uuid4
                 type: string
-        type: object
+                format: uuid4
+                example: 700ebed3-40f7-4211-bc83-a89b22b9875e
     postRefreshPayload:
+        type: object
+        required:
+            - refresh_token
         properties:
             refresh_token:
                 description: Refresh token to use for retrieving new token set
-                example: 7503cd8a-c921-4368-a32d-6c1d01d86da9
+                type: string
                 format: uuid4
-                type: string
-        required:
-            - refresh_token
-        type: object
+                example: 7503cd8a-c921-4368-a32d-6c1d01d86da9
     postRegisterPayload:
-        properties:
-            password:
-                description: Password to register with
-                example: correct horse battery staple
-                maxLength: 500
-                minLength: 1
-                type: string
-            username:
-                description: Username to register with
-                example: user@example.com
-                format: email
-                maxLength: 255
-                minLength: 1
-                type: string
+        type: object
         required:
             - username
             - password
-        type: object
-    publicHttpError:
         properties:
-            detail:
-                description: More detailed, human-readable, optional explanation of the error
-                example: User is lacking permission to access this resource
+            password:
+                description: Password to register with
                 type: string
-            status:
-                description: HTTP status code returned for the error
-                example: 403
-                format: int64
-                maximum: 599
-                minimum: 100
-                type: integer
-                x-go-name: Code
-            title:
-                description: Short, human-readable description of the error
-                example: Forbidden
+                maxLength: 500
+                minLength: 1
+                example: correct horse battery staple
+            username:
+                description: Username to register with
                 type: string
-            type:
-                $ref: '#/definitions/publicHttpErrorType'
+                format: email
+                maxLength: 255
+                minLength: 1
+                example: user@example.com
+    publicHttpError:
+        type: object
         required:
             - status
             - type
             - title
-        type: object
+        properties:
+            detail:
+                description: More detailed, human-readable, optional explanation of the error
+                type: string
+                example: User is lacking permission to access this resource
+            status:
+                description: HTTP status code returned for the error
+                type: integer
+                format: int64
+                maximum: 599
+                minimum: 100
+                x-go-name: Code
+                example: 403
+            title:
+                description: Short, human-readable description of the error
+                type: string
+                example: Forbidden
+            type:
+                $ref: '#/definitions/publicHttpErrorType'
     publicHttpErrorType:
         description: Type of error returned, should be used for client-side error handling
+        type: string
         enum:
             - generic
             - PUSH_TOKEN_ALREADY_EXISTS
@@ -646,63 +647,62 @@ definitions:
             - MALFORMED_TOKEN
             - LAST_AUTHENTICATED_AT_EXCEEDED
             - MISSING_SCOPES
-        type: string
     publicHttpValidationError:
+        type: object
+        required:
+            - validationErrors
         allOf:
             - $ref: '#/definitions/publicHttpError'
         properties:
             validationErrors:
                 description: List of errors received while validating payload against schema
+                type: array
                 items:
                     $ref: '#/definitions/httpValidationErrorDetail'
-                type: array
-        required:
-            - validationErrors
-        type: object
     putUpdatePushTokenPayload:
-        properties:
-            newToken:
-                description: New push token for given provider.
-                example: 1c91e550-8167-439c-8021-dee7de2f7e96
-                maxLength: 500
-                type: string
-            oldToken:
-                description: Old token that can be deleted if present.
-                example: 495179de-b771-48f0-aab2-8d23701b0f02
-                maxLength: 500
-                type: string
-                x-nullable: true
-            provider:
-                description: Identifier of the provider the token is for (eg. "fcm", "apn"). Currently only "fcm" is supported.
-                example: fcm
-                maxLength: 500
-                type: string
+        type: object
         required:
             - newToken
             - provider
-        type: object
+        properties:
+            newToken:
+                description: New push token for given provider.
+                type: string
+                maxLength: 500
+                example: 1c91e550-8167-439c-8021-dee7de2f7e96
+            oldToken:
+                description: Old token that can be deleted if present.
+                type: string
+                maxLength: 500
+                x-nullable: true
+                example: 495179de-b771-48f0-aab2-8d23701b0f02
+            provider:
+                description: Identifier of the provider the token is for (eg. "fcm", "apn"). Currently only "fcm" is supported.
+                type: string
+                maxLength: 500
+                example: fcm
     registerResponse:
+        type: object
+        required:
+            - requiresConfirmation
         properties:
             requiresConfirmation:
                 description: Indicates whether the registration process requires email confirmation
-                example: true
                 type: boolean
-        required:
-            - requiresConfirmation
-        type: object
+                example: true
     userScope:
+        type: string
         enum:
             - app
             - cms
-        type: string
 parameters:
     registrationTokenParam:
-        description: Registration token to complete the registration process
-        format: uuid4
-        in: path
-        name: registrationToken
-        required: true
         type: string
+        format: uuid4
+        description: Registration token to complete the registration process
+        name: registrationToken
+        in: path
+        required: true
 responses:
     AuthForbiddenResponse:
         description: PublicHTTPError, type `USER_DEACTIVATED`/`NOT_LOCAL_USER`
@@ -725,12 +725,12 @@ securityDefinitions:
         description: |-
             Access token for application access, **must** include "Bearer " prefix.
             Example: `Bearer b4a94a42-3ea2-4af3-9699-8bcbfee6e6d2`
-        in: header
-        name: Authorization
         type: apiKey
+        name: Authorization
+        in: header
         x-keyPrefix: 'Bearer '
     Management:
         description: Management secret, used for monitoring and infrastructure related calls
-        in: query
-        name: mgmt-secret
         type: apiKey
+        name: mgmt-secret
+        in: query

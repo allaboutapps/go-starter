@@ -111,14 +111,27 @@ RUN mkdir -p /tmp/gotestsum \
 # go linting: (this package should NOT be installed via go get)
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v2.13.0
+# We fetch the release tarball directly instead of piping the upstream install.sh.
+# That script greps the checksums file for the tarball name unanchored, and since
+# v2.12.0 the release also ships a "<tarball>.sbom.json" entry, so the grep returns two
+# lines and the comparison against the single computed hash can never succeed. It is
+# therefore unusable for >= v2.12.0 (v2.11.4 and older still have a single match), and
+# upstream no longer documents the script for CI installs anyway.
+RUN mkdir -p /tmp/golangci-lint \
+    && cd /tmp/golangci-lint \
+    && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
+    && wget "https://github.com/golangci/golangci-lint/releases/download/v2.13.0/golangci-lint-2.13.0-linux-${ARCH}.tar.gz" \
+    && wget -O- "https://github.com/golangci/golangci-lint/releases/download/v2.13.0/golangci-lint-2.13.0-checksums.txt" \
+    | grep "golangci-lint-2.13.0-linux-${ARCH}.tar.gz$" | sha256sum -c - \
+    && tar xzf "golangci-lint-2.13.0-linux-${ARCH}.tar.gz" \
+    && cp "golangci-lint-2.13.0-linux-${ARCH}/golangci-lint" "$(go env GOPATH)/bin/golangci-lint" \
+    && rm -rf /tmp/golangci-lint
 
 # go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
 RUN ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
     && curl -o /usr/local/bin/swagger -L'#' \
-    "https://github.com/go-swagger/go-swagger/releases/download/v0.33.1/swagger_linux_${ARCH}" \
+    "https://github.com/go-swagger/go-swagger/releases/download/v0.36.4/swagger_linux_${ARCH}" \
     && chmod +x /usr/local/bin/swagger
 
 # lichen: go license util
