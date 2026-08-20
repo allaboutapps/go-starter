@@ -91,9 +91,9 @@ ENV LANG=en_US.UTF-8
 # https://github.com/darold/pgFormatter/releases
 RUN mkdir -p /tmp/pgFormatter \
     && cd /tmp/pgFormatter \
-    && wget https://github.com/darold/pgFormatter/archive/v5.5.tar.gz \
-    && tar xzf v5.5.tar.gz \
-    && cd pgFormatter-5.5 \
+    && wget https://github.com/darold/pgFormatter/archive/v5.10.tar.gz \
+    && tar xzf v5.10.tar.gz \
+    && cd pgFormatter-5.10 \
     && perl Makefile.PL \
     && make && make install \
     && rm -rf /tmp/pgFormatter
@@ -112,7 +112,7 @@ RUN mkdir -p /tmp/gotestsum \
 # https://github.com/golangci/golangci-lint#binary
 # https://github.com/golangci/golangci-lint/releases
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
-    | sh -s -- -b $(go env GOPATH)/bin v2.6.2
+    | sh -s -- -b $(go env GOPATH)/bin v2.13.0
 
 # go swagger: (this package should NOT be installed via go get)
 # https://github.com/go-swagger/go-swagger/releases
@@ -132,18 +132,19 @@ RUN go install github.com/uw-labs/lichen@v0.1.7
 RUN go install github.com/spf13/cobra-cli@v1.3.0
 
 # govulncheck: go vulnerability checker
-RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+# https://github.com/golang/vuln/releases
+RUN go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
 
 # changie: a tool to help manage changelogs
-RUN go install github.com/miniscruff/changie@v1.24.0
+RUN go install github.com/miniscruff/changie@v1.25.2
 
 # watchexec
 # https://github.com/watchexec/watchexec/releases
 RUN mkdir -p /tmp/watchexec \
     && cd /tmp/watchexec \
-    && wget https://github.com/watchexec/watchexec/releases/download/v1.25.1/watchexec-1.25.1-$(arch)-unknown-linux-musl.tar.xz \
-    && tar xf watchexec-1.25.1-$(arch)-unknown-linux-musl.tar.xz \
-    && cp watchexec-1.25.1-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
+    && wget https://github.com/watchexec/watchexec/releases/download/v2.5.1/watchexec-2.5.1-$(arch)-unknown-linux-musl.tar.xz \
+    && tar xf watchexec-2.5.1-$(arch)-unknown-linux-musl.tar.xz \
+    && cp watchexec-2.5.1-$(arch)-unknown-linux-musl/watchexec /usr/local/bin/watchexec \
     && rm -rf /tmp/watchexec
 
 # yq
@@ -151,16 +152,17 @@ RUN mkdir -p /tmp/watchexec \
 RUN mkdir -p /tmp/yq \
     && cd /tmp/yq \
     && ARCH="$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)" \
-    && wget "https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_${ARCH}.tar.gz" \
+    && wget "https://github.com/mikefarah/yq/releases/download/v4.53.4/yq_linux_${ARCH}.tar.gz" \
     && tar xzf "yq_linux_${ARCH}.tar.gz" \
     && cp "yq_linux_${ARCH}" /usr/local/bin/yq \
     && rm -rf /tmp/yq
 
 # spectral: OpenAPI / JSON schema linter
 # https://github.com/stoplightio/spectral
-# Pin v6.15.0: it's the last release that ships the `spectral-linux-x64` binary asset;
-# `latest` (>=v6.16.1) dropped binaries, so the upstream install.sh 404s. (-f: fail on HTTP error.)
-RUN curl -fL https://github.com/stoplightio/spectral/releases/download/v6.15.0/spectral-linux-x64 -o /usr/local/bin/spectral \
+# We fetch the release binary directly instead of piping the upstream install.sh: it always
+# resolves to `latest`, and v6.16.0 shipped without binary assets, which made the script 404.
+# Assets are published again since v6.16.1, but pin explicitly. (-f: fail on HTTP error.)
+RUN curl -fL https://github.com/stoplightio/spectral/releases/download/v6.16.3/spectral-linux-x64 -o /usr/local/bin/spectral \
     && chmod +x /usr/local/bin/spectral
 
 # gsdev
