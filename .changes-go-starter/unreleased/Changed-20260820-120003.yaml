@@ -7,5 +7,6 @@ body: |-
       - the standalone `Validate(strfmt.Registry) error` method, which is what makes the generated `Params` types satisfy `go-openapi/runtime.Validatable` — the interface every `internal/util.BindAndValidate*` helper accepts
       - the supporting `customsliceparamvalidator` / nullable / recursive-array validation plumbing
     - **If your project has its own modifications to these two templates, they are not preserved — diff your versions against the pre-upgrade files and re-apply your changes on top of the new upstream base.** Run `make swagger` afterwards and review the diff in `internal/types/`.
+    - **Instructions for re-applying your own template changes: [docs/migration-guides/go-swagger-and-golangci-lint.md](docs/migration-guides/go-swagger-and-golangci-lint.md)**
     - The stock `BindRequest` is still generated but remains unused by this project.
 time: 2026-08-20T12:00:03.000000000Z

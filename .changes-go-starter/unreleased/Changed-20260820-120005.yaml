@@ -8,4 +8,5 @@ body: |-
     - `docker:27-cli` → `docker:29.7.2-cli` in the Woodpecker pipeline
     - golangci-lint is now fetched as a release tarball with an explicit checksum verification instead of piping the upstream `install.sh`. That script cannot install `>= v2.12.0`: it greps the checksums file for the tarball name **unanchored**, and since v2.12.0 the release also ships a `<tarball>.sbom.json` entry, so the grep returns two lines and the comparison can never succeed.
     - `gomodguard` was renamed to `gomodguard_v2` in `.golangci.yml` (deprecated upstream since golangci-lint v2.12.0).
+    - Expect new lint findings in your own code after this jump. What we hit and how each was resolved: [docs/migration-guides/go-swagger-and-golangci-lint.md](docs/migration-guides/go-swagger-and-golangci-lint.md)
 time: 2026-08-20T12:00:05.000000000Z

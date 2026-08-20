@@ -8,5 +8,6 @@ body: |-
       - `swag.ReadJSON` / `WriteJSON` → `jsonutils.ReadJSON` / `jsonutils.WriteJSON`
     - `github.com/go-openapi/strfmt/conv` was **dropped entirely** rather than aliased. We only used its `UUID4` and `DateTime` pointer helpers, and the generic `conv.Pointer[T]` from `github.com/go-openapi/swag/conv` subsumes both. This keeps a single unaliased `conv` import.
     - **Application code that uses any of these helpers will no longer compile as-is and needs the same treatment.** The mapping above is mechanical and the compiler will point at every site. Watch out for untyped numeric constants: `swag.Int64(3600)` becomes `conv.Pointer(int64(3600))`, since `conv.Pointer(3600)` infers `*int`.
+    - **Full migration guide, including the complete 124-symbol mapping table, a `gofmt -r` recipe and the untyped-constant gotcha: [docs/migration-guides/swag-root-package-to-submodules.md](docs/migration-guides/swag-root-package-to-submodules.md)**
     - The scaffold templates in `scripts/internal/scaffold` emit the new API too, so newly scaffolded handlers stay valid.
 time: 2026-08-20T12:00:02.000000000Z
