@@ -12,7 +12,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/jsonutils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +37,7 @@ func (m *TestRequestPayload) MarshalBinary() ([]byte, error) {
 		return nil, nil
 	}
 
-	res, err := swag.WriteJSON(m)
+	res, err := jsonutils.WriteJSON(m)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal binary: %w", err)
 	}
@@ -48,7 +48,7 @@ func (m *TestRequestPayload) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *TestRequestPayload) UnmarshalBinary(b []byte) error {
 	var res TestRequestPayload
-	if err := swag.ReadJSON(b, &res); err != nil {
+	if err := jsonutils.ReadJSON(b, &res); err != nil {
 		return fmt.Errorf("failed to unmarshal binary: %w", err)
 	}
 	*m = res
@@ -66,7 +66,7 @@ func (m *TestResponsePayload) MarshalBinary() ([]byte, error) {
 		return nil, nil
 	}
 
-	res, err := swag.WriteJSON(m)
+	res, err := jsonutils.WriteJSON(m)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal binary: %w", err)
 	}
@@ -77,7 +77,7 @@ func (m *TestResponsePayload) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *TestResponsePayload) UnmarshalBinary(b []byte) error {
 	var res TestResponsePayload
-	if err := swag.ReadJSON(b, &res); err != nil {
+	if err := jsonutils.ReadJSON(b, &res); err != nil {
 		return fmt.Errorf("failed to unmarshal binary: %w", err)
 	}
 	*m = res

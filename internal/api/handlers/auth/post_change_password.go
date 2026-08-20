@@ -8,7 +8,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,8 +29,8 @@ func postChangePasswordHandler(s *api.Server) echo.HandlerFunc {
 
 		result, err := s.Auth.UpdatePassword(ctx, dto.UpdatePasswordRequest{
 			User:            *user,
-			CurrentPassword: swag.StringValue(body.CurrentPassword),
-			NewPassword:     swag.StringValue(body.NewPassword),
+			CurrentPassword: conv.Value(body.CurrentPassword),
+			NewPassword:     conv.Value(body.NewPassword),
 		})
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to update password")

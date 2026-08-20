@@ -34,7 +34,7 @@ type Database struct {
 // ConnectionString generates a connection string to be passed to sql.Open or equivalents, assuming Postgres syntax
 func (c Database) ConnectionString() string {
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s", c.Host, c.Port, c.Username, c.Password, c.Database))
+	fmt.Fprintf(&builder, "host=%s port=%d user=%s password=%s dbname=%s", c.Host, c.Port, c.Username, c.Password, c.Database)
 
 	if _, ok := c.AdditionalParams["sslmode"]; !ok {
 		builder.WriteString(" sslmode=disable")

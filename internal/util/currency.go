@@ -1,7 +1,7 @@
 // nolint:revive
 package util
 
-import "github.com/go-openapi/swag"
+import "github.com/go-openapi/swag/conv"
 
 const (
 	centFactor = 100
@@ -16,7 +16,7 @@ func Int64PtrWithCentsToFloat64Ptr(c *int64) *float64 {
 }
 
 func Int64WithCentsToFloat64Ptr(c int64) *float64 {
-	return swag.Float64(float64(c) / centFactor)
+	return conv.Pointer(float64(c) / centFactor)
 }
 
 func IntPtrWithCentsToFloat64Ptr(c *int) *float64 {
@@ -28,7 +28,7 @@ func IntPtrWithCentsToFloat64Ptr(c *int) *float64 {
 }
 
 func IntWithCentsToFloat64Ptr(c int) *float64 {
-	return swag.Float64(float64(c) / centFactor)
+	return conv.Pointer(float64(c) / centFactor)
 }
 
 func Float64PtrToInt64PtrWithCents(f *float64) *int64 {
@@ -36,11 +36,11 @@ func Float64PtrToInt64PtrWithCents(f *float64) *int64 {
 		return nil
 	}
 
-	return swag.Int64(Float64PtrToInt64WithCents(f))
+	return conv.Pointer(Float64PtrToInt64WithCents(f))
 }
 
 func Float64PtrToInt64WithCents(f *float64) int64 {
-	return int64(swag.Float64Value(f) * centFactor)
+	return int64(conv.Value(f) * centFactor)
 }
 
 func Float64ToInt64WithCents(f float64) int64 {
@@ -52,9 +52,9 @@ func Float64PtrToIntPtrWithCents(f *float64) *int {
 		return nil
 	}
 
-	return swag.Int(Float64PtrToIntWithCents(f))
+	return conv.Pointer(Float64PtrToIntWithCents(f))
 }
 
 func Float64PtrToIntWithCents(f *float64) int {
-	return int(swag.Float64Value(f) * centFactor)
+	return int(conv.Value(f) * centFactor)
 }

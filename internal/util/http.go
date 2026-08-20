@@ -18,7 +18,7 @@ import (
 	oerrors "github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -301,7 +301,7 @@ func validatePayload(c echo.Context, v runtime.Validatable) error {
 				{
 					Key:   &validationError.Name,
 					In:    &validationError.In,
-					Error: swag.String(validationError.Error()),
+					Error: conv.Pointer(validationError.Error()),
 				},
 			}
 
@@ -361,7 +361,7 @@ func formatValidationErrors(ctx context.Context, compositeError *oerrors.Composi
 			valErrs = append(valErrs, &types.HTTPValidationErrorDetail{
 				Key:   &validationError.Name,
 				In:    &validationError.In,
-				Error: swag.String(validationError.Error()),
+				Error: conv.Pointer(validationError.Error()),
 			})
 
 			continue

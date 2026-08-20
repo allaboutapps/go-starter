@@ -27,10 +27,8 @@ func New(config config.Server, db *sql.DB) (*Service, error) {
 func (s *Service) RegisterMetrics(ctx context.Context) error {
 	log := util.LogFromContext(ctx)
 
-	var metrics []prometheus.Collector
-
 	// custom metrics
-	metrics = append(metrics, users.Metrics(ctx, users.NewDatabaseMetricsCollector(s.db))...)
+	metrics := users.Metrics(ctx, users.NewDatabaseMetricsCollector(s.db))
 
 	// sqlstats metrics, see https://github.com/dlmiddlecote/sqlstats?tab=readme-ov-file#exposed-metrics for the exposed metrics
 	metrics = append(metrics, sqlstats.NewStatsCollector(s.config.Database.Database, s.db))

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 )
 
 const (
@@ -109,5 +109,5 @@ func NonZeroTimeOrNil(t time.Time) *time.Time {
 		return nil
 	}
 
-	return swag.Time(t)
+	return conv.Pointer(t)
 }

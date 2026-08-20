@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"golang.org/x/mod/modfile"
 )
 
@@ -149,6 +149,9 @@ const (
 	propertyTypeBoolean  = "boolean"
 	propertyTypeNumber   = "number"
 	propertyTypeDateTime = "date-time"
+
+	// goFileExtension is the file extension used for all scaffolded handler files.
+	goFileExtension = ".go"
 	propertyTypeUUID4    = "uuid4"
 )
 
@@ -177,14 +180,14 @@ func fieldToProperty(field Field) Property {
 		propertyType = propertyTypeNumber
 		required = false
 	case "time.Time":
-		format = swag.String(propertyTypeDateTime)
+		format = conv.Pointer(propertyTypeDateTime)
 	case "null.Time":
-		format = swag.String(propertyTypeDateTime)
+		format = conv.Pointer(propertyTypeDateTime)
 		required = false
 	}
 
 	if strings.Contains(field.Name, "ID") {
-		format = swag.String(propertyTypeUUID4)
+		format = conv.Pointer(propertyTypeUUID4)
 	}
 
 	return Property{
@@ -228,24 +231,24 @@ func toHandlerResource(storageResource *StorageResource, swaggerResource *Swagge
 }
 
 func propertyToHandlerField(property Property) HandlerField {
-	placeholderValue := `swag.String("` + property.Name + `")` // Fallback placeholder
+	placeholderValue := `conv.Pointer("` + property.Name + `")` // Fallback placeholder
 
 	switch property.Type {
 	case "integer":
-		placeholderValue = `swag.Int64(100)`
+		placeholderValue = `conv.Pointer(int64(100))`
 	case "boolean":
-		placeholderValue = `swag.Bool(true)`
+		placeholderValue = `conv.Pointer(true)`
 	case "number":
-		placeholderValue = `swag.Float64(10.0)`
+		placeholderValue = `conv.Pointer(float64(10))`
 	}
 
 	if property.Format != nil {
 		switch *property.Format {
 		case "date-time":
-			placeholderValue = `conv.DateTime(strfmt.DateTime(time.Now()))`
+			placeholderValue = `conv.Pointer(strfmt.DateTime(time.Now()))`
 
 		case "uuid4":
-			placeholderValue = `conv.UUID4(strfmt.UUID4("1606388b-1f88-4f56-bd97-c27fbc3fe080"))`
+			placeholderValue = `conv.Pointer(strfmt.UUID4("1606388b-1f88-4f56-bd97-c27fbc3fe080"))`
 		}
 	}
 
@@ -263,10 +266,10 @@ type handlerConfig struct {
 
 var configuredHandlers = map[string]handlerConfig{
 	"get-all": {"get_", "_list.go", getListHandlerTemplate},
-	"get":     {"get_", ".go", getHandlerTemplate},
-	"post":    {"post_", ".go", postHandlerTemplate},
-	"put":     {"put_", ".go", putHandlerTemplate},
-	"delete":  {"delete_", ".go", deleteHandlerTemplate},
+	"get":     {"get_", goFileExtension, getHandlerTemplate},
+	"post":    {"post_", goFileExtension, postHandlerTemplate},
+	"put":     {"put_", goFileExtension, putHandlerTemplate},
+	"delete":  {"delete_", goFileExtension, deleteHandlerTemplate},
 }
 
 func GenerateHandlers(resource *StorageResource, handlerBaseDir, modulePath string, methods []string, force bool) error {

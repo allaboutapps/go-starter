@@ -2,6 +2,7 @@ package test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -62,7 +63,8 @@ func PerformRequestWithArrayAndParams(t TestingT, s *api.Server, method string, 
 func PerformRequestWithRawBody(t TestingT, s *api.Server, method string, path string, body io.Reader, headers http.Header, queryParams map[string]string) *httptest.ResponseRecorder {
 	t.Helper()
 
-	req := httptest.NewRequest(method, path, body)
+	// TestingT (unlike *testing.T) carries no context, so use a background one here.
+	req := httptest.NewRequestWithContext(context.Background(), method, path, body)
 
 	if headers != nil {
 		req.Header = headers

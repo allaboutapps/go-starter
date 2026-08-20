@@ -11,7 +11,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/test"
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/strfmt/conv"
+	"github.com/go-openapi/swag/conv"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,7 +42,7 @@ func TestCompareAllPayload(t *testing.T) {
 		"C":   2.3,
 		"D":   true,
 		"E":   "2020-02-01",
-		"F":   conv.UUID4(strfmt.UUID4("0862573e-6ccb-4684-847d-276d3364e91e")),
+		"F":   conv.Pointer(strfmt.UUID4("0862573e-6ccb-4684-847d-276d3364e91e")),
 		"X_Y": "skipped",
 	}
 	response := map[string]string{
@@ -65,7 +65,7 @@ func TestCompareAllPayload(t *testing.T) {
 		"C":   2.3,
 		"d":   true,
 		"e":   "2020-02-01",
-		"F":   conv.UUID4(strfmt.UUID4("0862573e-6ccb-4684-847d-276d3364e91e")),
+		"F":   conv.Pointer(strfmt.UUID4("0862573e-6ccb-4684-847d-276d3364e91e")),
 		"X_Y": "skipped",
 	}
 	test.CompareAllPayload(t, payload, response, toSkip, strings.ToUpper)

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"allaboutapps.dev/aw/go-starter/internal/types"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,9 +29,9 @@ type HTTPValidationError struct {
 func NewHTTPError(code int, errorType types.PublicHTTPErrorType, title string) *HTTPError {
 	return &HTTPError{
 		PublicHTTPError: types.PublicHTTPError{
-			Code:  swag.Int64(int64(code)),
+			Code:  conv.Pointer(int64(code)),
 			Type:  errorType.Pointer(),
-			Title: swag.String(title),
+			Title: conv.Pointer(title),
 		},
 	}
 }
@@ -39,9 +39,9 @@ func NewHTTPError(code int, errorType types.PublicHTTPErrorType, title string) *
 func NewHTTPErrorWithDetail(code int, errorType types.PublicHTTPErrorType, title string, detail string) *HTTPError {
 	return &HTTPError{
 		PublicHTTPError: types.PublicHTTPError{
-			Code:   swag.Int64(int64(code)),
+			Code:   conv.Pointer(int64(code)),
 			Type:   errorType.Pointer(),
-			Title:  swag.String(title),
+			Title:  conv.Pointer(title),
 			Detail: detail,
 		},
 	}
@@ -85,9 +85,9 @@ func NewHTTPValidationError(code int, errorType types.PublicHTTPErrorType, title
 	return &HTTPValidationError{
 		PublicHTTPValidationError: types.PublicHTTPValidationError{
 			PublicHTTPError: types.PublicHTTPError{
-				Code:  swag.Int64(int64(code)),
+				Code:  conv.Pointer(int64(code)),
 				Type:  errorType.Pointer(),
-				Title: swag.String(title),
+				Title: conv.Pointer(title),
 			},
 			ValidationErrors: validationErrors,
 		},
@@ -98,9 +98,9 @@ func NewHTTPValidationErrorWithDetail(code int, errorType types.PublicHTTPErrorT
 	return &HTTPValidationError{
 		PublicHTTPValidationError: types.PublicHTTPValidationError{
 			PublicHTTPError: types.PublicHTTPError{
-				Code:   swag.Int64(int64(code)),
+				Code:   conv.Pointer(int64(code)),
 				Type:   errorType.Pointer(),
-				Title:  swag.String(title),
+				Title:  conv.Pointer(title),
 				Detail: detail,
 			},
 			ValidationErrors: validationErrors,

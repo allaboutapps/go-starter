@@ -7,7 +7,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,7 +27,7 @@ func postLoginHandler(s *api.Server) echo.HandlerFunc {
 
 		result, err := s.Auth.Login(ctx, dto.LoginRequest{
 			Username: dto.NewUsername(body.Username.String()),
-			Password: swag.StringValue(body.Password),
+			Password: conv.Value(body.Password),
 		})
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to authenticate user")

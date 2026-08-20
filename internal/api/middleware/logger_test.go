@@ -23,7 +23,7 @@ func TestLogWithCaller(t *testing.T) {
 	cfg.LogCaller = false
 
 	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", nil)
 	loggerMW := middleware.LoggerWithConfig(cfg, rec)
 
 	e := echo.New()

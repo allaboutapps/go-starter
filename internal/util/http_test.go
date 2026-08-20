@@ -19,8 +19,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/strfmt/conv"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,10 +30,10 @@ func TestBindAndValidateSuccess(t *testing.T) {
 	//nolint:gosec
 	testToken := "a546daf5-c845-46a7-8fa6-3d94ae7e1424"
 	testResponse := &types.PostLoginResponse{
-		AccessToken:  conv.UUID4(strfmt.UUID4("afbcbc30-4794-48bd-93f1-08373a031fe3")),
-		RefreshToken: conv.UUID4(strfmt.UUID4("1dd1228c-fa9a-4755-b995-30e24dd6247d")),
-		ExpiresIn:    swag.Int64(3600),
-		TokenType:    swag.String("Bearer"),
+		AccessToken:  conv.Pointer(strfmt.UUID4("afbcbc30-4794-48bd-93f1-08373a031fe3")),
+		RefreshToken: conv.Pointer(strfmt.UUID4("1dd1228c-fa9a-4755-b995-30e24dd6247d")),
+		ExpiresIn:    conv.Pointer(int64(3600)),
+		TokenType:    conv.Pointer("Bearer"),
 	}
 
 	e.POST("/", func(c echo.Context) error {

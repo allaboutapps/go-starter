@@ -37,7 +37,7 @@ linters:
     - godox
     - goheader
     - gomoddirectives
-    - gomodguard
+    - gomodguard_v2
     - goprintffuncname
     - grouper
     - iface
@@ -84,7 +84,19 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      # gosec G101 flags our static test tokens (plain UUIDs) as "hardcoded
+      # credentials". They are fixtures for the test database, never secrets.
+      - linters:
+          - gosec
+        text: "G101"
+        path: (_test\.go|^internal/test/fixtures/)
   settings:
+    goconst:
+      # Our table-driven tests name their cases with repeated literals
+      # ("InvalidUsername", "MissingPassword", ...). Extracting those into
+      # constants hurts readability of the test tables more than it helps.
+      ignore-tests: true
     wrapcheck:
       ignore-package-globs:
       - "*/internal/*"

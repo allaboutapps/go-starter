@@ -8,8 +8,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/util"
 	"github.com/aarondl/null/v8"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/strfmt/conv"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 )
 
 type User struct {
@@ -53,8 +52,8 @@ func (u User) Ptr() *User {
 
 func (u User) ToTypes() *types.GetUserInfoResponse {
 	return &types.GetUserInfoResponse{
-		Sub:       swag.String(u.ID),
-		UpdatedAt: swag.Int64(u.LastUpdatedAt().Unix()),
+		Sub:       conv.Pointer(u.ID),
+		UpdatedAt: conv.Pointer(u.LastUpdatedAt().Unix()),
 		Email:     strfmt.Email(u.Username.String),
 		Scopes:    u.Scopes.ToTypes(),
 	}
@@ -103,10 +102,10 @@ type LoginResult struct {
 
 func (l LoginResult) ToTypes() *types.PostLoginResponse {
 	return &types.PostLoginResponse{
-		AccessToken:  conv.UUID4(strfmt.UUID4(l.AccessToken)),
-		RefreshToken: conv.UUID4(strfmt.UUID4(l.RefreshToken)),
-		ExpiresIn:    swag.Int64(l.ExpiresIn),
-		TokenType:    swag.String(l.TokenType),
+		AccessToken:  conv.Pointer(strfmt.UUID4(l.AccessToken)),
+		RefreshToken: conv.Pointer(strfmt.UUID4(l.RefreshToken)),
+		ExpiresIn:    conv.Pointer(l.ExpiresIn),
+		TokenType:    conv.Pointer(l.TokenType),
 	}
 }
 

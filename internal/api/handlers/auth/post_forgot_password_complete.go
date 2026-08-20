@@ -7,7 +7,7 @@ import (
 	"allaboutapps.dev/aw/go-starter/internal/data/dto"
 	"allaboutapps.dev/aw/go-starter/internal/types"
 	"allaboutapps.dev/aw/go-starter/internal/util"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,7 +27,7 @@ func postForgotPasswordCompleteHandler(s *api.Server) echo.HandlerFunc {
 
 		result, err := s.Auth.ResetPassword(ctx, dto.ResetPasswordRequest{
 			ResetToken:  body.Token.String(),
-			NewPassword: swag.StringValue(body.Password),
+			NewPassword: conv.Value(body.Password),
 		})
 		if err != nil {
 			log.Debug().Err(err).Msg("Failed to reset password")
