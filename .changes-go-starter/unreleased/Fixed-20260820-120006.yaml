@@ -1,7 +1,0 @@
-kind: Fixed
-body: |-
-  **`make test` silently exited 0 when tests failed** — CI would report green on a red test suite
-    - The `test` target opts out of the global `SHELL = /app/rksh` wrapper via a per-target `SHELL` / `.SHELLFLAGS` override. Because the Makefile sets `.ONESHELL:`, the entire recipe runs as a *single* shell invocation, so with a plain `-c` the exit status reported to make is the status of the **last** recipe line (`go-test-print-coverage`) — a failing `go-test-by-pkg` was swallowed.
-    - The flags are now `-cEeuo pipefail`, matching the "normal POSIX bash shell mode" already documented at the bottom of the Makefile.
-    - **If you are on a version of this template that contains the broken override, your test pipeline may have been passing over failing tests. Re-run `make test` after upgrading and check for failures that were previously hidden.**
-time: 2026-08-20T12:00:06.000000000Z

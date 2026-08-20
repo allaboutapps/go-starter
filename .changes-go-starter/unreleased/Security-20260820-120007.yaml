@@ -1,8 +1,0 @@
-kind: Security
-body: |-
-  Bump `google.golang.org/grpc` and `golang.org/x/mod` to clear vulnerability scanner findings
-    - [`google.golang.org/grpc` v1.79.3 → v1.83.1](https://github.com/grpc/grpc-go/releases/tag/v1.83.1) fixes [GO-2026-6061](https://pkg.go.dev/vuln/GO-2026-6061) (xDS RBAC authorization engine and HTTP/2 transport server). `govulncheck` reported this one as **reachable** from our code.
-    - `golang.org/x/mod` v0.37.0 → v0.40.0 fixes CVE-2026-56864 and CVE-2026-56865, where a malicious `GOSUMDB` / `GOPROXY` could serve or forge module content. Not reachable from our code, so `govulncheck` stayed quiet — but `make trivy` scans `go.mod` directly and failed on them.
-    - Both pull transitive dependencies forward: `google.golang.org/api`, `golang.org/x/crypto`, `golang.org/x/net`, `golang.org/x/text`, `golang.org/x/tools` and `google.golang.org/protobuf`.
-    - One advisory remains reported by `govulncheck` at module level and is knowingly not actioned: [GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932) flags `golang.org/x/crypto/openpgp` as unmaintained. We do not import that package, and `golang.org/x/crypto` is already at its latest release.
-time: 2026-08-20T12:00:07.000000000Z

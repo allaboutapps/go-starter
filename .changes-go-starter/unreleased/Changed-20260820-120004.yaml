@@ -1,8 +1,0 @@
-kind: Changed
-body: |-
-  Upgrade the dev container to Debian 13 (trixie) and `golang:1.27.0-trixie` (requires `./docker-helper.sh --rebuild`)
-    - The `go` directive in `go.mod` moves to `1.27.0`.
-    - The final app stage now builds on `gcr.io/distroless/base-debian13:debug`.
-    - `postgresql-client-18` is installed from the `trixie-pgdg` repository, and the pgdg apt key setup was reworked to use `/etc/apt/keyrings` + `gpg --dearmor`, since `apt-key` no longer exists on Debian 13.
-    - Trivy is installed from its `trixie` apt dist again; the temporary `generic` fallback is gone.
-time: 2026-08-20T12:00:04.000000000Z
