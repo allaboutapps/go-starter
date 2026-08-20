@@ -90,7 +90,7 @@ services:
         while sleep 1000; do :; done
 
   postgres:
-    image: postgres:18.1-alpine # should be the same version as used in .drone.yml, .github/workflows, Dockerfile and live
+    image: postgres:18.6-alpine # should be the same version as used in .drone.yml, .woodpecker/ci.yaml, .github/workflows, Dockerfile and live
     # ATTENTION
     # fsync=off, synchronous_commit=off and full_page_writes=off
     # gives us a major speed up during local development and testing (~30%),
@@ -109,7 +109,11 @@ services:
       POSTGRES_USER: *PGUSER
       POSTGRES_PASSWORD: *PGPASSWORD
     volumes:
-      - pgvolume:/var/lib/postgresql/data
+      # ATTENTION: postgres 18+ moved PGDATA to /var/lib/postgresql/<major>/docker and
+      # the image VOLUME from /var/lib/postgresql/data to /var/lib/postgresql.
+      # Mounting the old path still starts up fine, but the actual data would then live
+      # in an anonymous volume and silently vanish on "docker compose down".
+      - pgvolume:/var/lib/postgresql
 
   integresql:
     image: ghcr.io/allaboutapps/integresql:v1.1.0

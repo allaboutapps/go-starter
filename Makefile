@@ -80,8 +80,13 @@ check-script-dir: ##- (opt) Ensures all scripts/**/*.go files have the "//go:bui
 # note that these tests should not run verbose by default (e.g. use your IDE for this)
 # TODO: add test shuffling/seeding when landed in go v1.15 (https://github.com/golang/go/issues/28592)
 # tests by pkgname
+# ATTENTION: opting out of the global "SHELL = /app/rksh" (see bottom of this file).
+# .SHELLFLAGS MUST keep "-Eeuo pipefail" here: with .ONESHELL the whole recipe runs as a
+# single shell invocation, so a plain "-c" would report the exit status of the LAST line
+# only and silently swallow a failing "go-test-by-pkg" (i.e. green CI on red tests).
+# TODO: re-evaluate whether this opt-out is still needed at all.
 test: SHELL = /bin/bash
-test: .SHELLFLAGS = -c
+test: .SHELLFLAGS = -cEeuo pipefail
 test: ##- Run tests, output by package, print coverage.
 	@$(MAKE) go-test-by-pkg
 	@$(MAKE) go-test-print-coverage

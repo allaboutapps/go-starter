@@ -24,13 +24,12 @@ RUN mkdir -p /etc/apt/keyrings \
     && echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ trixie-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 
 # Setup GPG key to install Trivy to locally scan for vulnerabilities
-# NOTE: Trixie (Debian 13) is not yet fully supported by the Trivy repo as of now.
 RUN mkdir -m 0755 -p /etc/apt/keyrings/ \
     && wget -O- https://aquasecurity.github.io/trivy-repo/deb/public.key | \
     gpg --dearmor | \
     tee /etc/apt/keyrings/trivy.gpg > /dev/null; \
     chmod 644 /etc/apt/keyrings/trivy.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" \
+    && echo "deb [signed-by=/etc/apt/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb trixie main" \
     | tee /etc/apt/sources.list.d/trivy.list
 
 # Install required system dependencies
