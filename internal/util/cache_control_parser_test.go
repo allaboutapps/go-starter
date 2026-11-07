@@ -1,9 +1,14 @@
-package util
+package util_test
 
-import "testing"
+import (
+	"testing"
+
+	"allaboutapps.dev/aw/go-starter/internal/util"
+	"github.com/stretchr/testify/assert"
+)
 
 func TestParseCacheControlWhitespace(t *testing.T) {
-	want := CacheControlDirectiveNoCache | CacheControlDirectiveNoStore
+	want := util.CacheControlDirectiveNoCache | util.CacheControlDirectiveNoStore
 	for _, input := range []string{
 		"no-cache,no-store",
 		"no-cache, no-store",
@@ -12,9 +17,7 @@ func TestParseCacheControlWhitespace(t *testing.T) {
 		"max-age=0, no-cache, no-store",
 	} {
 		t.Run(input, func(t *testing.T) {
-			if got := ParseCacheControlHeader(input); got != want {
-				t.Fatalf("ParseCacheControlHeader(%q) = %d, want %d", input, got, want)
-			}
+			assert.Equal(t, want, util.ParseCacheControlHeader(input))
 		})
 	}
 }
