@@ -33,7 +33,7 @@ func (d *CacheControlDirective) String() string {
 
 func ParseCacheControlDirective(d string) CacheControlDirective {
 	parts := strings.Split(d, "=")
-	switch strings.ToLower(parts[0]) {
+	switch strings.ToLower(strings.Trim(parts[0], " \t")) {
 	case "no-cache":
 		return CacheControlDirectiveNoCache
 	case "no-store":
